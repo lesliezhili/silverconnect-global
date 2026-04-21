@@ -1,0 +1,1577 @@
+
+> silverconnect-global@0.1.0 test:e2e:uat
+> playwright test e2e/uat-signin-flow.spec.ts --reporter=html
+
+
+Running 120 tests using 5 workers
+
+[1A[2K[1/120] [chromium] › e2e/uat-signin-flow.spec.ts:57:7 › SilverConnect Global - Sign-In UAT › UAT-004: Sign In modal contains email and password fields
+[1A[2K[2/120] [chromium] › e2e/uat-signin-flow.spec.ts:74:7 › SilverConnect Global - Sign-In UAT › UAT-005: User can enter email in sign-in form
+[1A[2K[3/120] [chromium] › e2e/uat-signin-flow.spec.ts:35:7 › SilverConnect Global - Sign-In UAT › UAT-002: Sign In button is visible and clickable
+[1A[2K[4/120] [chromium] › e2e/uat-signin-flow.spec.ts:22:7 › SilverConnect Global - Sign-In UAT › UAT-001: Homepage loads successfully
+[1A[2K[5/120] [chromium] › e2e/uat-signin-flow.spec.ts:44:7 › SilverConnect Global - Sign-In UAT › UAT-003: Clicking Sign In opens authentication modal
+[1A[2K[6/120] [chromium] › e2e/uat-signin-flow.spec.ts:90:7 › SilverConnect Global - Sign-In UAT › UAT-006: User can enter password in sign-in form
+[1A[2K[7/120] [chromium] › e2e/uat-signin-flow.spec.ts:106:7 › SilverConnect Global - Sign-In UAT › UAT-007: Sign In form has submit button
+[1A[2K[8/120] [chromium] › e2e/uat-signin-flow.spec.ts:120:7 › SilverConnect Global - Sign-In UAT › UAT-008: Complete sign-in form with valid inputs
+[1A[2K[9/120] [chromium] › e2e/uat-signin-flow.spec.ts:143:7 › SilverConnect Global - Sign-In UAT › UAT-009: Sign In modal has close button
+[1A[2K  1) [chromium] › e2e/uat-signin-flow.spec.ts:106:7 › SilverConnect Global - Sign-In UAT › UAT-007: Sign In form has submit button 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('button').filter({ hasText: /Sign In|Login|Submit/i })
+    Expected: visible
+    Error: strict mode violation: locator('button').filter({ hasText: /Sign In|Login|Submit/i }) resolved to 2 elements:
+        1) <button class="bg-green-600 text-white px-6 py-2 rounded-full hover:bg-green-700 transition">Sign In</button> aka getByRole('banner').getByRole('button', { name: 'Sign In' })
+        2) <button class="w-full bg-green-600 text-white py-2 rounded-lg font-medium hover:bg-green-700 disabled:bg-gray-400 transition">Sign In</button> aka getByRole('button', { name: 'Sign In' }).nth(1)
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('button').filter({ hasText: /Sign In|Login|Submit/i })[22m
+
+
+      114 |     // Find submit/login button
+      115 |     const submitButton = page.locator('button').filter({ hasText: /Sign In|Login|Submit/i });
+    > 116 |     await expect(submitButton).toBeVisible();
+          |                                ^
+      117 |     await expect(submitButton).toBeEnabled();
+      118 |   });
+      119 |
+        at /Users/zhili/silverconnect-global/e2e/uat-signin-flow.spec.ts:116:32
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/uat-signin-flow-SilverConn-660b2-n-In-form-has-submit-button-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/uat-signin-flow-SilverConn-660b2-n-In-form-has-submit-button-chromium/error-context.md
+
+
+[1A[2K  2) [chromium] › e2e/uat-signin-flow.spec.ts:120:7 › SilverConnect Global - Sign-In UAT › UAT-008: Complete sign-in form with valid inputs 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeEnabled[2m([22m[2m)[22m failed
+
+    Locator: locator('button').filter({ hasText: /Sign In|Login|Submit/i })
+    Expected: enabled
+    Error: strict mode violation: locator('button').filter({ hasText: /Sign In|Login|Submit/i }) resolved to 2 elements:
+        1) <button class="bg-green-600 text-white px-6 py-2 rounded-full hover:bg-green-700 transition">Sign In</button> aka getByRole('banner').getByRole('button', { name: 'Sign In' })
+        2) <button class="w-full bg-green-600 text-white py-2 rounded-lg font-medium hover:bg-green-700 disabled:bg-gray-400 transition">Sign In</button> aka getByRole('button', { name: 'Sign In' }).nth(1)
+
+    Call log:
+    [2m  - Expect "toBeEnabled" with timeout 5000ms[22m
+    [2m  - waiting for locator('button').filter({ hasText: /Sign In|Login|Submit/i })[22m
+
+
+      138 |     // Verify form is filled and ready to submit
+      139 |     await expect(emailInput).toHaveValue('test@example.com');
+    > 140 |     await expect(submitButton).toBeEnabled();
+          |                                ^
+      141 |   });
+      142 |
+      143 |   test('UAT-009: Sign In modal has close button', async ({ page }) => {
+        at /Users/zhili/silverconnect-global/e2e/uat-signin-flow.spec.ts:140:32
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/uat-signin-flow-SilverConn-daaed-n-in-form-with-valid-inputs-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/uat-signin-flow-SilverConn-daaed-n-in-form-with-valid-inputs-chromium/error-context.md
+
+
+[1A[2K[10/120] [chromium] › e2e/uat-signin-flow.spec.ts:160:7 › SilverConnect Global - Sign-In UAT › UAT-010: Homepage displays country selector
+[1A[2K[11/120] [chromium] › e2e/uat-signin-flow.spec.ts:172:7 › SilverConnect Global - Sign-In UAT › UAT-011: Page performance - Homepage loads within 3 seconds
+[1A[2K[12/120] [chromium] › e2e/uat-signin-flow.spec.ts:185:7 › SilverConnect Global - Sign-In UAT › UAT-012: Mobile responsiveness - Sign In works on mobile viewport
+[1A[2K  3) [chromium] › e2e/uat-signin-flow.spec.ts:160:7 › SilverConnect Global - Sign-In UAT › UAT-010: Homepage displays country selector 
+
+    Error: locator.isVisible: Error: strict mode violation: locator('select, button').filter({ hasText: /Country|Australia|Canada|China/i }) resolved to 3 elements:
+        1) <button class="px-4 py-2 rounded-full transition-all flex items-center gap-2 bg-green-600 text-white shadow-md">…</button> aka getByRole('button', { name: '🇦🇺 Australia' })
+        2) <button class="px-4 py-2 rounded-full transition-all flex items-center gap-2 bg-gray-100 text-gray-700 hover:bg-gray-200">…</button> aka getByRole('button', { name: '🇨🇳 China' })
+        3) <button class="px-4 py-2 rounded-full transition-all flex items-center gap-2 bg-gray-100 text-gray-700 hover:bg-gray-200">…</button> aka getByRole('button', { name: '🇨🇦 Canada' })
+
+    Call log:
+    [2m    - checking visibility of locator('select, button').filter({ hasText: /Country|Australia|Canada|China/i })[22m
+
+
+      165 |     
+      166 |     // Verify country selector is visible
+    > 167 |     if (await countrySelector.isVisible()) {
+          |                               ^
+      168 |       await expect(countrySelector).toBeVisible();
+      169 |     }
+      170 |   });
+        at /Users/zhili/silverconnect-global/e2e/uat-signin-flow.spec.ts:167:31
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/uat-signin-flow-SilverConn-be789-e-displays-country-selector-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/uat-signin-flow-SilverConn-be789-e-displays-country-selector-chromium/error-context.md
+
+
+[1A[2K[13/120] [chromium] › e2e/uat-signin-flow.spec.ts:214:7 › SilverConnect Global - Sign-Up UAT › UAT-013: Sign Up button is visible and clickable
+[1A[2K[chromium] › e2e/uat-signin-flow.spec.ts:172:7 › SilverConnect Global - Sign-In UAT › UAT-011: Page performance - Homepage loads within 3 seconds
+✅ Homepage loaded in 600ms
+
+[1A[2K[14/120] [chromium] › e2e/uat-signin-flow.spec.ts:225:7 › SilverConnect Global - Sign-Up UAT › UAT-014: Clicking Sign Up opens authentication modal
+[1A[2K[15/120] [chromium] › e2e/uat-signin-flow.spec.ts:241:7 › SilverConnect Global - Sign-Up UAT › UAT-015: Sign Up modal contains email and password fields
+[1A[2K[16/120] [chromium] › e2e/uat-signin-flow.spec.ts:265:7 › SilverConnect Global - Sign-Up UAT › UAT-016: User can enter email in sign-up form
+[1A[2K  4) [chromium] › e2e/uat-signin-flow.spec.ts:22:7 › SilverConnect Global - Sign-In UAT › UAT-001: Homepage loads successfully 
+
+    Error: [2mexpect([22m[31mpage[39m[2m).[22mtoHaveTitle[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Expected pattern: [32m/SilverConnect|Senior Care/i[39m
+    Received string:  [31m"Create Next App"[39m
+    Timeout: 5000ms
+
+    Call log:
+    [2m  - Expect "toHaveTitle" with timeout 5000ms[22m
+    [2m    9 × unexpected value "Create Next App"[22m
+
+
+      22 |   test('UAT-001: Homepage loads successfully', async ({ page }) => {
+      23 |     // Verify page title and main elements
+    > 24 |     await expect(page).toHaveTitle(/SilverConnect|Senior Care/i);
+         |                        ^
+      25 |     
+      26 |     // Verify header is visible
+      27 |     const header = page.locator('header');
+        at /Users/zhili/silverconnect-global/e2e/uat-signin-flow.spec.ts:24:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/uat-signin-flow-SilverConn-698d1-Homepage-loads-successfully-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/uat-signin-flow-SilverConn-698d1-Homepage-loads-successfully-chromium/error-context.md
+
+
+[1A[2K[17/120] [chromium] › e2e/uat-signin-flow.spec.ts:284:7 › SilverConnect Global - Sign-Up UAT › UAT-017: User can enter password in sign-up form
+[1A[2K[18/120] [chromium] › e2e/uat-signin-flow.spec.ts:303:7 › SilverConnect Global - Sign-Up UAT › UAT-018: Sign Up form has submit button
+[1A[2K[19/120] [chromium] › e2e/uat-signin-flow.spec.ts:321:7 › SilverConnect Global - Sign-Up UAT › UAT-019: Complete sign-up form with valid inputs
+[1A[2K  5) [chromium] › e2e/uat-signin-flow.spec.ts:44:7 › SilverConnect Global - Sign-In UAT › UAT-003: Clicking Sign In opens authentication modal 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[role="dialog"]')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('[role="dialog"]')[22m
+
+
+      52 |     // Verify modal/dialog is visible
+      53 |     const modal = page.locator('[role="dialog"]');
+    > 54 |     await expect(modal).toBeVisible();
+         |                         ^
+      55 |   });
+      56 |
+      57 |   test('UAT-004: Sign In modal contains email and password fields', async ({ page }) => {
+        at /Users/zhili/silverconnect-global/e2e/uat-signin-flow.spec.ts:54:25
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/uat-signin-flow-SilverConn-6103e--opens-authentication-modal-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/uat-signin-flow-SilverConn-6103e--opens-authentication-modal-chromium/error-context.md
+
+
+[1A[2K[20/120] [chromium] › e2e/uat-signin-flow.spec.ts:350:7 › SilverConnect Global - Sign-Up UAT › UAT-020: Sign Up modal has close button
+[1A[2K[21/120] [chromium] › e2e/uat-signin-flow.spec.ts:369:7 › SilverConnect Global - Sign-Up UAT › UAT-021: Sign Up form accepts different password strengths
+[1A[2K[22/120] [chromium] › e2e/uat-signin-flow.spec.ts:388:7 › SilverConnect Global - Sign-Up UAT › UAT-022: Mobile responsiveness - Sign Up works on mobile viewport
+[1A[2K[23/120] [chromium] › e2e/uat-signin-flow.spec.ts:414:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNIN: Sign In flow on current browser
+[1A[2K[chromium] › e2e/uat-signin-flow.spec.ts:414:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNIN: Sign In flow on current browser
+🔄 Testing Sign In on chromium...
+
+[1A[2K[24/120] [chromium] › e2e/uat-signin-flow.spec.ts:435:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNUP: Sign Up flow on current browser
+[1A[2K[chromium] › e2e/uat-signin-flow.spec.ts:435:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNUP: Sign Up flow on current browser
+🔄 Testing Sign Up on chromium...
+
+[1A[2K[25/120] [firefox] › e2e/uat-signin-flow.spec.ts:22:7 › SilverConnect Global - Sign-In UAT › UAT-001: Homepage loads successfully
+[1A[2K⚠️  Sign Up button not visible on chromium
+
+[1A[2K[26/120] [firefox] › e2e/uat-signin-flow.spec.ts:35:7 › SilverConnect Global - Sign-In UAT › UAT-002: Sign In button is visible and clickable
+[1A[2K[27/120] [firefox] › e2e/uat-signin-flow.spec.ts:44:7 › SilverConnect Global - Sign-In UAT › UAT-003: Clicking Sign In opens authentication modal
+[1A[2K  6) [chromium] › e2e/uat-signin-flow.spec.ts:185:7 › SilverConnect Global - Sign-In UAT › UAT-012: Mobile responsiveness - Sign In works on mobile viewport 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[role="dialog"]')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('[role="dialog"]')[22m
+
+
+      199 |     await page.waitForTimeout(500);
+      200 |     const modal = page.locator('[role="dialog"]');
+    > 201 |     await expect(modal).toBeVisible();
+          |                         ^
+      202 |   });
+      203 | });
+      204 |
+        at /Users/zhili/silverconnect-global/e2e/uat-signin-flow.spec.ts:201:25
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/uat-signin-flow-SilverConn-c0125-In-works-on-mobile-viewport-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/uat-signin-flow-SilverConn-c0125-In-works-on-mobile-viewport-chromium/error-context.md
+
+
+[1A[2K[28/120] [firefox] › e2e/uat-signin-flow.spec.ts:74:7 › SilverConnect Global - Sign-In UAT › UAT-005: User can enter email in sign-in form
+[1A[2K[29/120] [firefox] › e2e/uat-signin-flow.spec.ts:57:7 › SilverConnect Global - Sign-In UAT › UAT-004: Sign In modal contains email and password fields
+[1A[2K[30/120] [firefox] › e2e/uat-signin-flow.spec.ts:90:7 › SilverConnect Global - Sign-In UAT › UAT-006: User can enter password in sign-in form
+[1A[2K[31/120] [firefox] › e2e/uat-signin-flow.spec.ts:106:7 › SilverConnect Global - Sign-In UAT › UAT-007: Sign In form has submit button
+[1A[2K  7) [chromium] › e2e/uat-signin-flow.spec.ts:414:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNIN: Sign In flow on current browser 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[role="dialog"]')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('[role="dialog"]')[22m
+
+
+      428 |     // Verify modal
+      429 |     const modal = page.locator('[role="dialog"]');
+    > 430 |     await expect(modal).toBeVisible();
+          |                         ^
+      431 |     
+      432 |     console.log(`✅ Sign In works on ${browserName}`);
+      433 |   });
+        at /Users/zhili/silverconnect-global/e2e/uat-signin-flow.spec.ts:430:25
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/uat-signin-flow-SilverConn-a7639--In-flow-on-current-browser-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/uat-signin-flow-SilverConn-a7639--In-flow-on-current-browser-chromium/error-context.md
+
+
+[1A[2K[32/120] [firefox] › e2e/uat-signin-flow.spec.ts:143:7 › SilverConnect Global - Sign-In UAT › UAT-009: Sign In modal has close button
+[1A[2K[33/120] [firefox] › e2e/uat-signin-flow.spec.ts:120:7 › SilverConnect Global - Sign-In UAT › UAT-008: Complete sign-in form with valid inputs
+[1A[2K  8) [firefox] › e2e/uat-signin-flow.spec.ts:106:7 › SilverConnect Global - Sign-In UAT › UAT-007: Sign In form has submit button 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('button').filter({ hasText: /Sign In|Login|Submit/i })
+    Expected: visible
+    Error: strict mode violation: locator('button').filter({ hasText: /Sign In|Login|Submit/i }) resolved to 2 elements:
+        1) <button class="bg-green-600 text-white px-6 py-2 rounded-full hover:bg-green-700 transition">Sign In</button> aka getByRole('banner').getByRole('button', { name: 'Sign In' })
+        2) <button class="w-full bg-green-600 text-white py-2 rounded-lg font-medium hover:bg-green-700 disabled:bg-gray-400 transition">Sign In</button> aka getByRole('button', { name: 'Sign In' }).nth(1)
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('button').filter({ hasText: /Sign In|Login|Submit/i })[22m
+
+
+      114 |     // Find submit/login button
+      115 |     const submitButton = page.locator('button').filter({ hasText: /Sign In|Login|Submit/i });
+    > 116 |     await expect(submitButton).toBeVisible();
+          |                                ^
+      117 |     await expect(submitButton).toBeEnabled();
+      118 |   });
+      119 |
+        at /Users/zhili/silverconnect-global/e2e/uat-signin-flow.spec.ts:116:32
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/uat-signin-flow-SilverConn-660b2-n-In-form-has-submit-button-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/uat-signin-flow-SilverConn-660b2-n-In-form-has-submit-button-firefox/error-context.md
+
+
+[1A[2K[34/120] [firefox] › e2e/uat-signin-flow.spec.ts:160:7 › SilverConnect Global - Sign-In UAT › UAT-010: Homepage displays country selector
+[1A[2K[35/120] [firefox] › e2e/uat-signin-flow.spec.ts:172:7 › SilverConnect Global - Sign-In UAT › UAT-011: Page performance - Homepage loads within 3 seconds
+[1A[2K  9) [firefox] › e2e/uat-signin-flow.spec.ts:22:7 › SilverConnect Global - Sign-In UAT › UAT-001: Homepage loads successfully 
+
+    Error: [2mexpect([22m[31mpage[39m[2m).[22mtoHaveTitle[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Expected pattern: [32m/SilverConnect|Senior Care/i[39m
+    Received string:  [31m"Create Next App"[39m
+    Timeout: 5000ms
+
+    Call log:
+    [2m  - Expect "toHaveTitle" with timeout 5000ms[22m
+    [2m    9 × unexpected value "Create Next App"[22m
+
+
+      22 |   test('UAT-001: Homepage loads successfully', async ({ page }) => {
+      23 |     // Verify page title and main elements
+    > 24 |     await expect(page).toHaveTitle(/SilverConnect|Senior Care/i);
+         |                        ^
+      25 |     
+      26 |     // Verify header is visible
+      27 |     const header = page.locator('header');
+        at /Users/zhili/silverconnect-global/e2e/uat-signin-flow.spec.ts:24:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/uat-signin-flow-SilverConn-698d1-Homepage-loads-successfully-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/uat-signin-flow-SilverConn-698d1-Homepage-loads-successfully-firefox/error-context.md
+
+
+[1A[2K[36/120] [firefox] › e2e/uat-signin-flow.spec.ts:185:7 › SilverConnect Global - Sign-In UAT › UAT-012: Mobile responsiveness - Sign In works on mobile viewport
+[1A[2K  10) [firefox] › e2e/uat-signin-flow.spec.ts:120:7 › SilverConnect Global - Sign-In UAT › UAT-008: Complete sign-in form with valid inputs 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeEnabled[2m([22m[2m)[22m failed
+
+    Locator: locator('button').filter({ hasText: /Sign In|Login|Submit/i })
+    Expected: enabled
+    Error: strict mode violation: locator('button').filter({ hasText: /Sign In|Login|Submit/i }) resolved to 2 elements:
+        1) <button class="bg-green-600 text-white px-6 py-2 rounded-full hover:bg-green-700 transition">Sign In</button> aka getByRole('banner').getByRole('button', { name: 'Sign In' })
+        2) <button class="w-full bg-green-600 text-white py-2 rounded-lg font-medium hover:bg-green-700 disabled:bg-gray-400 transition">Sign In</button> aka getByRole('button', { name: 'Sign In' }).nth(1)
+
+    Call log:
+    [2m  - Expect "toBeEnabled" with timeout 5000ms[22m
+    [2m  - waiting for locator('button').filter({ hasText: /Sign In|Login|Submit/i })[22m
+
+
+      138 |     // Verify form is filled and ready to submit
+      139 |     await expect(emailInput).toHaveValue('test@example.com');
+    > 140 |     await expect(submitButton).toBeEnabled();
+          |                                ^
+      141 |   });
+      142 |
+      143 |   test('UAT-009: Sign In modal has close button', async ({ page }) => {
+        at /Users/zhili/silverconnect-global/e2e/uat-signin-flow.spec.ts:140:32
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/uat-signin-flow-SilverConn-daaed-n-in-form-with-valid-inputs-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/uat-signin-flow-SilverConn-daaed-n-in-form-with-valid-inputs-firefox/error-context.md
+
+
+[1A[2K[firefox] › e2e/uat-signin-flow.spec.ts:172:7 › SilverConnect Global - Sign-In UAT › UAT-011: Page performance - Homepage loads within 3 seconds
+✅ Homepage loaded in 689ms
+
+[1A[2K[37/120] [firefox] › e2e/uat-signin-flow.spec.ts:225:7 › SilverConnect Global - Sign-Up UAT › UAT-014: Clicking Sign Up opens authentication modal
+[1A[2K[38/120] [firefox] › e2e/uat-signin-flow.spec.ts:214:7 › SilverConnect Global - Sign-Up UAT › UAT-013: Sign Up button is visible and clickable
+[1A[2K  11) [firefox] › e2e/uat-signin-flow.spec.ts:44:7 › SilverConnect Global - Sign-In UAT › UAT-003: Clicking Sign In opens authentication modal 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[role="dialog"]')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('[role="dialog"]')[22m
+
+
+      52 |     // Verify modal/dialog is visible
+      53 |     const modal = page.locator('[role="dialog"]');
+    > 54 |     await expect(modal).toBeVisible();
+         |                         ^
+      55 |   });
+      56 |
+      57 |   test('UAT-004: Sign In modal contains email and password fields', async ({ page }) => {
+        at /Users/zhili/silverconnect-global/e2e/uat-signin-flow.spec.ts:54:25
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/uat-signin-flow-SilverConn-6103e--opens-authentication-modal-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/uat-signin-flow-SilverConn-6103e--opens-authentication-modal-firefox/error-context.md
+
+
+[1A[2K  12) [firefox] › e2e/uat-signin-flow.spec.ts:160:7 › SilverConnect Global - Sign-In UAT › UAT-010: Homepage displays country selector 
+
+    Error: locator.isVisible: Error: strict mode violation: locator('select, button').filter({ hasText: /Country|Australia|Canada|China/i }) resolved to 3 elements:
+        1) <button class="px-4 py-2 rounded-full transition-all flex items-center gap-2 bg-green-600 text-white shadow-md">…</button> aka getByRole('button', { name: '🇦🇺 Australia' })
+        2) <button class="px-4 py-2 rounded-full transition-all flex items-center gap-2 bg-gray-100 text-gray-700 hover:bg-gray-200">…</button> aka getByRole('button', { name: '🇨🇳 China' })
+        ...
+
+    Call log:
+    [2m    - checking visibility of locator('select, button').filter({ hasText: /Country|Australia|Canada|China/i })[22m
+
+
+      165 |     
+      166 |     // Verify country selector is visible
+    > 167 |     if (await countrySelector.isVisible()) {
+          |                               ^
+      168 |       await expect(countrySelector).toBeVisible();
+      169 |     }
+      170 |   });
+        at /Users/zhili/silverconnect-global/e2e/uat-signin-flow.spec.ts:167:31
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/uat-signin-flow-SilverConn-be789-e-displays-country-selector-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/uat-signin-flow-SilverConn-be789-e-displays-country-selector-firefox/error-context.md
+
+
+[1A[2K[39/120] [firefox] › e2e/uat-signin-flow.spec.ts:241:7 › SilverConnect Global - Sign-Up UAT › UAT-015: Sign Up modal contains email and password fields
+[1A[2K[40/120] [firefox] › e2e/uat-signin-flow.spec.ts:265:7 › SilverConnect Global - Sign-Up UAT › UAT-016: User can enter email in sign-up form
+[1A[2K[41/120] [firefox] › e2e/uat-signin-flow.spec.ts:284:7 › SilverConnect Global - Sign-Up UAT › UAT-017: User can enter password in sign-up form
+[1A[2K[42/120] [firefox] › e2e/uat-signin-flow.spec.ts:303:7 › SilverConnect Global - Sign-Up UAT › UAT-018: Sign Up form has submit button
+[1A[2K[43/120] [firefox] › e2e/uat-signin-flow.spec.ts:321:7 › SilverConnect Global - Sign-Up UAT › UAT-019: Complete sign-up form with valid inputs
+[1A[2K[44/120] [firefox] › e2e/uat-signin-flow.spec.ts:350:7 › SilverConnect Global - Sign-Up UAT › UAT-020: Sign Up modal has close button
+[1A[2K[45/120] [firefox] › e2e/uat-signin-flow.spec.ts:369:7 › SilverConnect Global - Sign-Up UAT › UAT-021: Sign Up form accepts different password strengths
+[1A[2K[46/120] [firefox] › e2e/uat-signin-flow.spec.ts:388:7 › SilverConnect Global - Sign-Up UAT › UAT-022: Mobile responsiveness - Sign Up works on mobile viewport
+[1A[2K[47/120] [firefox] › e2e/uat-signin-flow.spec.ts:414:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNIN: Sign In flow on current browser
+[1A[2K[firefox] › e2e/uat-signin-flow.spec.ts:414:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNIN: Sign In flow on current browser
+🔄 Testing Sign In on firefox...
+
+[1A[2K[48/120] [firefox] › e2e/uat-signin-flow.spec.ts:435:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNUP: Sign Up flow on current browser
+[1A[2K[firefox] › e2e/uat-signin-flow.spec.ts:435:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNUP: Sign Up flow on current browser
+🔄 Testing Sign Up on firefox...
+
+[1A[2K⚠️  Sign Up button not visible on firefox
+
+[1A[2K[49/120] [webkit] › e2e/uat-signin-flow.spec.ts:22:7 › SilverConnect Global - Sign-In UAT › UAT-001: Homepage loads successfully
+[1A[2K  13) [webkit] › e2e/uat-signin-flow.spec.ts:22:7 › SilverConnect Global - Sign-In UAT › UAT-001: Homepage loads successfully 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-698d1-Homepage-loads-successfully-webkit/error-context.md
+
+
+[1A[2K[50/120] [webkit] › e2e/uat-signin-flow.spec.ts:44:7 › SilverConnect Global - Sign-In UAT › UAT-003: Clicking Sign In opens authentication modal
+[1A[2K[51/120] [webkit] › e2e/uat-signin-flow.spec.ts:35:7 › SilverConnect Global - Sign-In UAT › UAT-002: Sign In button is visible and clickable
+[1A[2K  14) [webkit] › e2e/uat-signin-flow.spec.ts:44:7 › SilverConnect Global - Sign-In UAT › UAT-003: Clicking Sign In opens authentication modal 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-6103e--opens-authentication-modal-webkit/error-context.md
+
+
+[1A[2K  15) [webkit] › e2e/uat-signin-flow.spec.ts:35:7 › SilverConnect Global - Sign-In UAT › UAT-002: Sign In button is visible and clickable 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-caec9-on-is-visible-and-clickable-webkit/error-context.md
+
+
+[1A[2K[52/120] [webkit] › e2e/uat-signin-flow.spec.ts:74:7 › SilverConnect Global - Sign-In UAT › UAT-005: User can enter email in sign-in form
+[1A[2K[53/120] [webkit] › e2e/uat-signin-flow.spec.ts:90:7 › SilverConnect Global - Sign-In UAT › UAT-006: User can enter password in sign-in form
+[1A[2K  16) [webkit] › e2e/uat-signin-flow.spec.ts:74:7 › SilverConnect Global - Sign-In UAT › UAT-005: User can enter email in sign-in form 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-f50f1-enter-email-in-sign-in-form-webkit/error-context.md
+
+
+[1A[2K  17) [webkit] › e2e/uat-signin-flow.spec.ts:90:7 › SilverConnect Global - Sign-In UAT › UAT-006: User can enter password in sign-in form 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-c0763-er-password-in-sign-in-form-webkit/error-context.md
+
+
+[1A[2K[54/120] [webkit] › e2e/uat-signin-flow.spec.ts:57:7 › SilverConnect Global - Sign-In UAT › UAT-004: Sign In modal contains email and password fields
+[1A[2K  18) [webkit] › e2e/uat-signin-flow.spec.ts:57:7 › SilverConnect Global - Sign-In UAT › UAT-004: Sign In modal contains email and password fields 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-49441-s-email-and-password-fields-webkit/error-context.md
+
+
+[1A[2K[55/120] [webkit] › e2e/uat-signin-flow.spec.ts:106:7 › SilverConnect Global - Sign-In UAT › UAT-007: Sign In form has submit button
+[1A[2K[56/120] [webkit] › e2e/uat-signin-flow.spec.ts:120:7 › SilverConnect Global - Sign-In UAT › UAT-008: Complete sign-in form with valid inputs
+[1A[2K  19) [webkit] › e2e/uat-signin-flow.spec.ts:106:7 › SilverConnect Global - Sign-In UAT › UAT-007: Sign In form has submit button 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-660b2-n-In-form-has-submit-button-webkit/error-context.md
+
+
+[1A[2K  20) [webkit] › e2e/uat-signin-flow.spec.ts:120:7 › SilverConnect Global - Sign-In UAT › UAT-008: Complete sign-in form with valid inputs 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-daaed-n-in-form-with-valid-inputs-webkit/error-context.md
+
+
+[1A[2K[57/120] [webkit] › e2e/uat-signin-flow.spec.ts:143:7 › SilverConnect Global - Sign-In UAT › UAT-009: Sign In modal has close button
+[1A[2K  21) [webkit] › e2e/uat-signin-flow.spec.ts:143:7 › SilverConnect Global - Sign-In UAT › UAT-009: Sign In modal has close button 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-dc7f9-n-In-modal-has-close-button-webkit/error-context.md
+
+
+[1A[2K[58/120] [webkit] › e2e/uat-signin-flow.spec.ts:160:7 › SilverConnect Global - Sign-In UAT › UAT-010: Homepage displays country selector
+[1A[2K[59/120] [webkit] › e2e/uat-signin-flow.spec.ts:172:7 › SilverConnect Global - Sign-In UAT › UAT-011: Page performance - Homepage loads within 3 seconds
+[1A[2K  22) [webkit] › e2e/uat-signin-flow.spec.ts:160:7 › SilverConnect Global - Sign-In UAT › UAT-010: Homepage displays country selector 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-be789-e-displays-country-selector-webkit/error-context.md
+
+
+[1A[2K  23) [webkit] › e2e/uat-signin-flow.spec.ts:172:7 › SilverConnect Global - Sign-In UAT › UAT-011: Page performance - Homepage loads within 3 seconds 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-02899-page-loads-within-3-seconds-webkit/error-context.md
+
+
+[1A[2K[60/120] [webkit] › e2e/uat-signin-flow.spec.ts:185:7 › SilverConnect Global - Sign-In UAT › UAT-012: Mobile responsiveness - Sign In works on mobile viewport
+[1A[2K  24) [webkit] › e2e/uat-signin-flow.spec.ts:185:7 › SilverConnect Global - Sign-In UAT › UAT-012: Mobile responsiveness - Sign In works on mobile viewport 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-c0125-In-works-on-mobile-viewport-webkit/error-context.md
+
+
+[1A[2K[61/120] [webkit] › e2e/uat-signin-flow.spec.ts:225:7 › SilverConnect Global - Sign-Up UAT › UAT-014: Clicking Sign Up opens authentication modal
+[1A[2K[62/120] [webkit] › e2e/uat-signin-flow.spec.ts:214:7 › SilverConnect Global - Sign-Up UAT › UAT-013: Sign Up button is visible and clickable
+[1A[2K  25) [webkit] › e2e/uat-signin-flow.spec.ts:225:7 › SilverConnect Global - Sign-Up UAT › UAT-014: Clicking Sign Up opens authentication modal 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-00c6b--opens-authentication-modal-webkit/error-context.md
+
+
+[1A[2K  26) [webkit] › e2e/uat-signin-flow.spec.ts:214:7 › SilverConnect Global - Sign-Up UAT › UAT-013: Sign Up button is visible and clickable 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-16399-on-is-visible-and-clickable-webkit/error-context.md
+
+
+[1A[2K[63/120] [webkit] › e2e/uat-signin-flow.spec.ts:241:7 › SilverConnect Global - Sign-Up UAT › UAT-015: Sign Up modal contains email and password fields
+[1A[2K  27) [webkit] › e2e/uat-signin-flow.spec.ts:241:7 › SilverConnect Global - Sign-Up UAT › UAT-015: Sign Up modal contains email and password fields 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-8ceb7-s-email-and-password-fields-webkit/error-context.md
+
+
+[1A[2K[64/120] [webkit] › e2e/uat-signin-flow.spec.ts:284:7 › SilverConnect Global - Sign-Up UAT › UAT-017: User can enter password in sign-up form
+[1A[2K[65/120] [webkit] › e2e/uat-signin-flow.spec.ts:265:7 › SilverConnect Global - Sign-Up UAT › UAT-016: User can enter email in sign-up form
+[1A[2K  28) [webkit] › e2e/uat-signin-flow.spec.ts:284:7 › SilverConnect Global - Sign-Up UAT › UAT-017: User can enter password in sign-up form 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-b7aac-er-password-in-sign-up-form-webkit/error-context.md
+
+
+[1A[2K  29) [webkit] › e2e/uat-signin-flow.spec.ts:265:7 › SilverConnect Global - Sign-Up UAT › UAT-016: User can enter email in sign-up form 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-30821-enter-email-in-sign-up-form-webkit/error-context.md
+
+
+[1A[2K[66/120] [webkit] › e2e/uat-signin-flow.spec.ts:303:7 › SilverConnect Global - Sign-Up UAT › UAT-018: Sign Up form has submit button
+[1A[2K  30) [webkit] › e2e/uat-signin-flow.spec.ts:303:7 › SilverConnect Global - Sign-Up UAT › UAT-018: Sign Up form has submit button 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-6a16f-n-Up-form-has-submit-button-webkit/error-context.md
+
+
+[1A[2K[67/120] [webkit] › e2e/uat-signin-flow.spec.ts:321:7 › SilverConnect Global - Sign-Up UAT › UAT-019: Complete sign-up form with valid inputs
+[1A[2K[68/120] [webkit] › e2e/uat-signin-flow.spec.ts:350:7 › SilverConnect Global - Sign-Up UAT › UAT-020: Sign Up modal has close button
+[1A[2K  31) [webkit] › e2e/uat-signin-flow.spec.ts:321:7 › SilverConnect Global - Sign-Up UAT › UAT-019: Complete sign-up form with valid inputs 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-5fe72-n-up-form-with-valid-inputs-webkit/error-context.md
+
+
+[1A[2K  32) [webkit] › e2e/uat-signin-flow.spec.ts:350:7 › SilverConnect Global - Sign-Up UAT › UAT-020: Sign Up modal has close button 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-411e3-n-Up-modal-has-close-button-webkit/error-context.md
+
+
+[1A[2K[69/120] [webkit] › e2e/uat-signin-flow.spec.ts:369:7 › SilverConnect Global - Sign-Up UAT › UAT-021: Sign Up form accepts different password strengths
+[1A[2K  33) [webkit] › e2e/uat-signin-flow.spec.ts:369:7 › SilverConnect Global - Sign-Up UAT › UAT-021: Sign Up form accepts different password strengths 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-5a61d-ifferent-password-strengths-webkit/error-context.md
+
+
+[1A[2K[70/120] [webkit] › e2e/uat-signin-flow.spec.ts:414:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNIN: Sign In flow on current browser
+[1A[2K[71/120] [webkit] › e2e/uat-signin-flow.spec.ts:388:7 › SilverConnect Global - Sign-Up UAT › UAT-022: Mobile responsiveness - Sign Up works on mobile viewport
+[1A[2K  34) [webkit] › e2e/uat-signin-flow.spec.ts:414:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNIN: Sign In flow on current browser 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-a7639--In-flow-on-current-browser-webkit/error-context.md
+
+
+[1A[2K  35) [webkit] › e2e/uat-signin-flow.spec.ts:388:7 › SilverConnect Global - Sign-Up UAT › UAT-022: Mobile responsiveness - Sign Up works on mobile viewport 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-3bd26-Up-works-on-mobile-viewport-webkit/error-context.md
+
+
+[1A[2K[72/120] [webkit] › e2e/uat-signin-flow.spec.ts:435:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNUP: Sign Up flow on current browser
+[1A[2K  36) [webkit] › e2e/uat-signin-flow.spec.ts:435:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNUP: Sign Up flow on current browser 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-d25a7--Up-flow-on-current-browser-webkit/error-context.md
+
+
+[1A[2K[73/120] [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:22:7 › SilverConnect Global - Sign-In UAT › UAT-001: Homepage loads successfully
+[1A[2K[74/120] [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:35:7 › SilverConnect Global - Sign-In UAT › UAT-002: Sign In button is visible and clickable
+[1A[2K[75/120] [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:44:7 › SilverConnect Global - Sign-In UAT › UAT-003: Clicking Sign In opens authentication modal
+[1A[2K  37) [firefox] › e2e/uat-signin-flow.spec.ts:185:7 › SilverConnect Global - Sign-In UAT › UAT-012: Mobile responsiveness - Sign In works on mobile viewport 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[role="dialog"]')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('[role="dialog"]')[22m
+
+
+      199 |     await page.waitForTimeout(500);
+      200 |     const modal = page.locator('[role="dialog"]');
+    > 201 |     await expect(modal).toBeVisible();
+          |                         ^
+      202 |   });
+      203 | });
+      204 |
+        at /Users/zhili/silverconnect-global/e2e/uat-signin-flow.spec.ts:201:25
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/uat-signin-flow-SilverConn-c0125-In-works-on-mobile-viewport-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/uat-signin-flow-SilverConn-c0125-In-works-on-mobile-viewport-firefox/error-context.md
+
+
+[1A[2K[76/120] [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:57:7 › SilverConnect Global - Sign-In UAT › UAT-004: Sign In modal contains email and password fields
+[1A[2K[77/120] [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:74:7 › SilverConnect Global - Sign-In UAT › UAT-005: User can enter email in sign-in form
+[1A[2K[78/120] [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:90:7 › SilverConnect Global - Sign-In UAT › UAT-006: User can enter password in sign-in form
+[1A[2K[79/120] [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:106:7 › SilverConnect Global - Sign-In UAT › UAT-007: Sign In form has submit button
+[1A[2K  38) [firefox] › e2e/uat-signin-flow.spec.ts:414:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNIN: Sign In flow on current browser 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[role="dialog"]')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('[role="dialog"]')[22m
+
+
+      428 |     // Verify modal
+      429 |     const modal = page.locator('[role="dialog"]');
+    > 430 |     await expect(modal).toBeVisible();
+          |                         ^
+      431 |     
+      432 |     console.log(`✅ Sign In works on ${browserName}`);
+      433 |   });
+        at /Users/zhili/silverconnect-global/e2e/uat-signin-flow.spec.ts:430:25
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/uat-signin-flow-SilverConn-a7639--In-flow-on-current-browser-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/uat-signin-flow-SilverConn-a7639--In-flow-on-current-browser-firefox/error-context.md
+
+
+[1A[2K[80/120] [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:143:7 › SilverConnect Global - Sign-In UAT › UAT-009: Sign In modal has close button
+[1A[2K[81/120] [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:120:7 › SilverConnect Global - Sign-In UAT › UAT-008: Complete sign-in form with valid inputs
+[1A[2K  39) [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:106:7 › SilverConnect Global - Sign-In UAT › UAT-007: Sign In form has submit button 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('button').filter({ hasText: /Sign In|Login|Submit/i })
+    Expected: visible
+    Error: strict mode violation: locator('button').filter({ hasText: /Sign In|Login|Submit/i }) resolved to 2 elements:
+        1) <button class="bg-green-600 text-white px-6 py-2 rounded-full hover:bg-green-700 transition">Sign In</button> aka getByRole('banner').getByRole('button', { name: 'Sign In' })
+        2) <button class="w-full bg-green-600 text-white py-2 rounded-lg font-medium hover:bg-green-700 disabled:bg-gray-400 transition">Sign In</button> aka getByRole('button', { name: 'Sign In' }).nth(1)
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('button').filter({ hasText: /Sign In|Login|Submit/i })[22m
+
+
+      114 |     // Find submit/login button
+      115 |     const submitButton = page.locator('button').filter({ hasText: /Sign In|Login|Submit/i });
+    > 116 |     await expect(submitButton).toBeVisible();
+          |                                ^
+      117 |     await expect(submitButton).toBeEnabled();
+      118 |   });
+      119 |
+        at /Users/zhili/silverconnect-global/e2e/uat-signin-flow.spec.ts:116:32
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/uat-signin-flow-SilverConn-660b2-n-In-form-has-submit-button-Mobile-Chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/uat-signin-flow-SilverConn-660b2-n-In-form-has-submit-button-Mobile-Chrome/error-context.md
+
+
+[1A[2K[82/120] [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:160:7 › SilverConnect Global - Sign-In UAT › UAT-010: Homepage displays country selector
+[1A[2K[83/120] [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:172:7 › SilverConnect Global - Sign-In UAT › UAT-011: Page performance - Homepage loads within 3 seconds
+[1A[2K  40) [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:120:7 › SilverConnect Global - Sign-In UAT › UAT-008: Complete sign-in form with valid inputs 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeEnabled[2m([22m[2m)[22m failed
+
+    Locator: locator('button').filter({ hasText: /Sign In|Login|Submit/i })
+    Expected: enabled
+    Error: strict mode violation: locator('button').filter({ hasText: /Sign In|Login|Submit/i }) resolved to 2 elements:
+        1) <button class="bg-green-600 text-white px-6 py-2 rounded-full hover:bg-green-700 transition">Sign In</button> aka getByRole('banner').getByRole('button', { name: 'Sign In' })
+        2) <button class="w-full bg-green-600 text-white py-2 rounded-lg font-medium hover:bg-green-700 disabled:bg-gray-400 transition">Sign In</button> aka getByRole('button', { name: 'Sign In' }).nth(1)
+
+    Call log:
+    [2m  - Expect "toBeEnabled" with timeout 5000ms[22m
+    [2m  - waiting for locator('button').filter({ hasText: /Sign In|Login|Submit/i })[22m
+
+
+      138 |     // Verify form is filled and ready to submit
+      139 |     await expect(emailInput).toHaveValue('test@example.com');
+    > 140 |     await expect(submitButton).toBeEnabled();
+          |                                ^
+      141 |   });
+      142 |
+      143 |   test('UAT-009: Sign In modal has close button', async ({ page }) => {
+        at /Users/zhili/silverconnect-global/e2e/uat-signin-flow.spec.ts:140:32
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/uat-signin-flow-SilverConn-daaed-n-in-form-with-valid-inputs-Mobile-Chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/uat-signin-flow-SilverConn-daaed-n-in-form-with-valid-inputs-Mobile-Chrome/error-context.md
+
+
+[1A[2K[84/120] [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:185:7 › SilverConnect Global - Sign-In UAT › UAT-012: Mobile responsiveness - Sign In works on mobile viewport
+[1A[2K  41) [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:160:7 › SilverConnect Global - Sign-In UAT › UAT-010: Homepage displays country selector 
+
+    Error: locator.isVisible: Error: strict mode violation: locator('select, button').filter({ hasText: /Country|Australia|Canada|China/i }) resolved to 3 elements:
+        1) <button class="px-4 py-2 rounded-full transition-all flex items-center gap-2 bg-green-600 text-white shadow-md">…</button> aka getByRole('button', { name: '🇦🇺 Australia' })
+        2) <button class="px-4 py-2 rounded-full transition-all flex items-center gap-2 bg-gray-100 text-gray-700 hover:bg-gray-200">…</button> aka getByRole('button', { name: '🇨🇳 China' })
+        3) <button class="px-4 py-2 rounded-full transition-all flex items-center gap-2 bg-gray-100 text-gray-700 hover:bg-gray-200">…</button> aka getByRole('button', { name: '🇨🇦 Canada' })
+
+    Call log:
+    [2m    - checking visibility of locator('select, button').filter({ hasText: /Country|Australia|Canada|China/i })[22m
+
+
+      165 |     
+      166 |     // Verify country selector is visible
+    > 167 |     if (await countrySelector.isVisible()) {
+          |                               ^
+      168 |       await expect(countrySelector).toBeVisible();
+      169 |     }
+      170 |   });
+        at /Users/zhili/silverconnect-global/e2e/uat-signin-flow.spec.ts:167:31
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/uat-signin-flow-SilverConn-be789-e-displays-country-selector-Mobile-Chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/uat-signin-flow-SilverConn-be789-e-displays-country-selector-Mobile-Chrome/error-context.md
+
+
+[1A[2K[85/120] [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:214:7 › SilverConnect Global - Sign-Up UAT › UAT-013: Sign Up button is visible and clickable
+[1A[2K  42) [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:22:7 › SilverConnect Global - Sign-In UAT › UAT-001: Homepage loads successfully 
+
+    Error: [2mexpect([22m[31mpage[39m[2m).[22mtoHaveTitle[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Expected pattern: [32m/SilverConnect|Senior Care/i[39m
+    Received string:  [31m"Create Next App"[39m
+    Timeout: 5000ms
+
+    Call log:
+    [2m  - Expect "toHaveTitle" with timeout 5000ms[22m
+    [2m    9 × unexpected value "Create Next App"[22m
+
+
+      22 |   test('UAT-001: Homepage loads successfully', async ({ page }) => {
+      23 |     // Verify page title and main elements
+    > 24 |     await expect(page).toHaveTitle(/SilverConnect|Senior Care/i);
+         |                        ^
+      25 |     
+      26 |     // Verify header is visible
+      27 |     const header = page.locator('header');
+        at /Users/zhili/silverconnect-global/e2e/uat-signin-flow.spec.ts:24:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/uat-signin-flow-SilverConn-698d1-Homepage-loads-successfully-Mobile-Chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/uat-signin-flow-SilverConn-698d1-Homepage-loads-successfully-Mobile-Chrome/error-context.md
+
+
+[1A[2K[86/120] [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:225:7 › SilverConnect Global - Sign-Up UAT › UAT-014: Clicking Sign Up opens authentication modal
+[1A[2K[Mobile Chrome] › e2e/uat-signin-flow.spec.ts:172:7 › SilverConnect Global - Sign-In UAT › UAT-011: Page performance - Homepage loads within 3 seconds
+✅ Homepage loaded in 614ms
+
+[1A[2K[87/120] [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:241:7 › SilverConnect Global - Sign-Up UAT › UAT-015: Sign Up modal contains email and password fields
+[1A[2K  43) [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:44:7 › SilverConnect Global - Sign-In UAT › UAT-003: Clicking Sign In opens authentication modal 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[role="dialog"]')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('[role="dialog"]')[22m
+
+
+      52 |     // Verify modal/dialog is visible
+      53 |     const modal = page.locator('[role="dialog"]');
+    > 54 |     await expect(modal).toBeVisible();
+         |                         ^
+      55 |   });
+      56 |
+      57 |   test('UAT-004: Sign In modal contains email and password fields', async ({ page }) => {
+        at /Users/zhili/silverconnect-global/e2e/uat-signin-flow.spec.ts:54:25
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/uat-signin-flow-SilverConn-6103e--opens-authentication-modal-Mobile-Chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/uat-signin-flow-SilverConn-6103e--opens-authentication-modal-Mobile-Chrome/error-context.md
+
+
+[1A[2K[88/120] [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:265:7 › SilverConnect Global - Sign-Up UAT › UAT-016: User can enter email in sign-up form
+[1A[2K[89/120] [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:284:7 › SilverConnect Global - Sign-Up UAT › UAT-017: User can enter password in sign-up form
+[1A[2K[90/120] [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:303:7 › SilverConnect Global - Sign-Up UAT › UAT-018: Sign Up form has submit button
+[1A[2K[91/120] [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:321:7 › SilverConnect Global - Sign-Up UAT › UAT-019: Complete sign-up form with valid inputs
+[1A[2K[92/120] [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:350:7 › SilverConnect Global - Sign-Up UAT › UAT-020: Sign Up modal has close button
+[1A[2K[93/120] [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:369:7 › SilverConnect Global - Sign-Up UAT › UAT-021: Sign Up form accepts different password strengths
+[1A[2K[94/120] [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:388:7 › SilverConnect Global - Sign-Up UAT › UAT-022: Mobile responsiveness - Sign Up works on mobile viewport
+[1A[2K[95/120] [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:414:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNIN: Sign In flow on current browser
+[1A[2K[Mobile Chrome] › e2e/uat-signin-flow.spec.ts:414:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNIN: Sign In flow on current browser
+🔄 Testing Sign In on chromium...
+
+[1A[2K[96/120] [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:435:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNUP: Sign Up flow on current browser
+[1A[2K[Mobile Chrome] › e2e/uat-signin-flow.spec.ts:435:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNUP: Sign Up flow on current browser
+🔄 Testing Sign Up on chromium...
+
+[1A[2K[97/120] [Mobile Safari] › e2e/uat-signin-flow.spec.ts:22:7 › SilverConnect Global - Sign-In UAT › UAT-001: Homepage loads successfully
+[1A[2K  44) [Mobile Safari] › e2e/uat-signin-flow.spec.ts:22:7 › SilverConnect Global - Sign-In UAT › UAT-001: Homepage loads successfully 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-698d1-Homepage-loads-successfully-Mobile-Safari/error-context.md
+
+
+[1A[2K[98/120] [Mobile Safari] › e2e/uat-signin-flow.spec.ts:35:7 › SilverConnect Global - Sign-In UAT › UAT-002: Sign In button is visible and clickable
+[1A[2K  45) [Mobile Safari] › e2e/uat-signin-flow.spec.ts:35:7 › SilverConnect Global - Sign-In UAT › UAT-002: Sign In button is visible and clickable 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-caec9-on-is-visible-and-clickable-Mobile-Safari/error-context.md
+
+
+[1A[2K⚠️  Sign Up button not visible on chromium
+
+[1A[2K[99/120] [Mobile Safari] › e2e/uat-signin-flow.spec.ts:44:7 › SilverConnect Global - Sign-In UAT › UAT-003: Clicking Sign In opens authentication modal
+[1A[2K  46) [Mobile Safari] › e2e/uat-signin-flow.spec.ts:44:7 › SilverConnect Global - Sign-In UAT › UAT-003: Clicking Sign In opens authentication modal 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-6103e--opens-authentication-modal-Mobile-Safari/error-context.md
+
+
+[1A[2K[100/120] [Mobile Safari] › e2e/uat-signin-flow.spec.ts:57:7 › SilverConnect Global - Sign-In UAT › UAT-004: Sign In modal contains email and password fields
+[1A[2K  47) [Mobile Safari] › e2e/uat-signin-flow.spec.ts:57:7 › SilverConnect Global - Sign-In UAT › UAT-004: Sign In modal contains email and password fields 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-49441-s-email-and-password-fields-Mobile-Safari/error-context.md
+
+
+[1A[2K[101/120] [Mobile Safari] › e2e/uat-signin-flow.spec.ts:74:7 › SilverConnect Global - Sign-In UAT › UAT-005: User can enter email in sign-in form
+[1A[2K[102/120] [Mobile Safari] › e2e/uat-signin-flow.spec.ts:90:7 › SilverConnect Global - Sign-In UAT › UAT-006: User can enter password in sign-in form
+[1A[2K  48) [Mobile Safari] › e2e/uat-signin-flow.spec.ts:74:7 › SilverConnect Global - Sign-In UAT › UAT-005: User can enter email in sign-in form 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-f50f1-enter-email-in-sign-in-form-Mobile-Safari/error-context.md
+
+
+[1A[2K  49) [Mobile Safari] › e2e/uat-signin-flow.spec.ts:90:7 › SilverConnect Global - Sign-In UAT › UAT-006: User can enter password in sign-in form 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-c0763-er-password-in-sign-in-form-Mobile-Safari/error-context.md
+
+
+[1A[2K[103/120] [Mobile Safari] › e2e/uat-signin-flow.spec.ts:106:7 › SilverConnect Global - Sign-In UAT › UAT-007: Sign In form has submit button
+[1A[2K  50) [Mobile Safari] › e2e/uat-signin-flow.spec.ts:106:7 › SilverConnect Global - Sign-In UAT › UAT-007: Sign In form has submit button 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-660b2-n-In-form-has-submit-button-Mobile-Safari/error-context.md
+
+
+[1A[2K[104/120] [Mobile Safari] › e2e/uat-signin-flow.spec.ts:120:7 › SilverConnect Global - Sign-In UAT › UAT-008: Complete sign-in form with valid inputs
+[1A[2K  51) [Mobile Safari] › e2e/uat-signin-flow.spec.ts:120:7 › SilverConnect Global - Sign-In UAT › UAT-008: Complete sign-in form with valid inputs 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-daaed-n-in-form-with-valid-inputs-Mobile-Safari/error-context.md
+
+
+[1A[2K[105/120] [Mobile Safari] › e2e/uat-signin-flow.spec.ts:143:7 › SilverConnect Global - Sign-In UAT › UAT-009: Sign In modal has close button
+[1A[2K  52) [Mobile Safari] › e2e/uat-signin-flow.spec.ts:143:7 › SilverConnect Global - Sign-In UAT › UAT-009: Sign In modal has close button 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-dc7f9-n-In-modal-has-close-button-Mobile-Safari/error-context.md
+
+
+[1A[2K[106/120] [Mobile Safari] › e2e/uat-signin-flow.spec.ts:160:7 › SilverConnect Global - Sign-In UAT › UAT-010: Homepage displays country selector
+[1A[2K[107/120] [Mobile Safari] › e2e/uat-signin-flow.spec.ts:172:7 › SilverConnect Global - Sign-In UAT › UAT-011: Page performance - Homepage loads within 3 seconds
+[1A[2K  53) [Mobile Safari] › e2e/uat-signin-flow.spec.ts:160:7 › SilverConnect Global - Sign-In UAT › UAT-010: Homepage displays country selector 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-be789-e-displays-country-selector-Mobile-Safari/error-context.md
+
+
+[1A[2K  54) [Mobile Safari] › e2e/uat-signin-flow.spec.ts:172:7 › SilverConnect Global - Sign-In UAT › UAT-011: Page performance - Homepage loads within 3 seconds 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-02899-page-loads-within-3-seconds-Mobile-Safari/error-context.md
+
+
+[1A[2K[108/120] [Mobile Safari] › e2e/uat-signin-flow.spec.ts:185:7 › SilverConnect Global - Sign-In UAT › UAT-012: Mobile responsiveness - Sign In works on mobile viewport
+[1A[2K  55) [Mobile Safari] › e2e/uat-signin-flow.spec.ts:185:7 › SilverConnect Global - Sign-In UAT › UAT-012: Mobile responsiveness - Sign In works on mobile viewport 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-c0125-In-works-on-mobile-viewport-Mobile-Safari/error-context.md
+
+
+[1A[2K[109/120] [Mobile Safari] › e2e/uat-signin-flow.spec.ts:214:7 › SilverConnect Global - Sign-Up UAT › UAT-013: Sign Up button is visible and clickable
+[1A[2K[110/120] [Mobile Safari] › e2e/uat-signin-flow.spec.ts:225:7 › SilverConnect Global - Sign-Up UAT › UAT-014: Clicking Sign Up opens authentication modal
+[1A[2K  56) [Mobile Safari] › e2e/uat-signin-flow.spec.ts:214:7 › SilverConnect Global - Sign-Up UAT › UAT-013: Sign Up button is visible and clickable 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-16399-on-is-visible-and-clickable-Mobile-Safari/error-context.md
+
+
+[1A[2K  57) [Mobile Safari] › e2e/uat-signin-flow.spec.ts:225:7 › SilverConnect Global - Sign-Up UAT › UAT-014: Clicking Sign Up opens authentication modal 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-00c6b--opens-authentication-modal-Mobile-Safari/error-context.md
+
+
+[1A[2K[111/120] [Mobile Safari] › e2e/uat-signin-flow.spec.ts:241:7 › SilverConnect Global - Sign-Up UAT › UAT-015: Sign Up modal contains email and password fields
+[1A[2K  58) [Mobile Safari] › e2e/uat-signin-flow.spec.ts:241:7 › SilverConnect Global - Sign-Up UAT › UAT-015: Sign Up modal contains email and password fields 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-8ceb7-s-email-and-password-fields-Mobile-Safari/error-context.md
+
+
+[1A[2K[112/120] [Mobile Safari] › e2e/uat-signin-flow.spec.ts:265:7 › SilverConnect Global - Sign-Up UAT › UAT-016: User can enter email in sign-up form
+[1A[2K[113/120] [Mobile Safari] › e2e/uat-signin-flow.spec.ts:284:7 › SilverConnect Global - Sign-Up UAT › UAT-017: User can enter password in sign-up form
+[1A[2K  59) [Mobile Safari] › e2e/uat-signin-flow.spec.ts:265:7 › SilverConnect Global - Sign-Up UAT › UAT-016: User can enter email in sign-up form 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-30821-enter-email-in-sign-up-form-Mobile-Safari/error-context.md
+
+
+[1A[2K  60) [Mobile Safari] › e2e/uat-signin-flow.spec.ts:284:7 › SilverConnect Global - Sign-Up UAT › UAT-017: User can enter password in sign-up form 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-b7aac-er-password-in-sign-up-form-Mobile-Safari/error-context.md
+
+
+[1A[2K[114/120] [Mobile Safari] › e2e/uat-signin-flow.spec.ts:303:7 › SilverConnect Global - Sign-Up UAT › UAT-018: Sign Up form has submit button
+[1A[2K  61) [Mobile Safari] › e2e/uat-signin-flow.spec.ts:303:7 › SilverConnect Global - Sign-Up UAT › UAT-018: Sign Up form has submit button 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-6a16f-n-Up-form-has-submit-button-Mobile-Safari/error-context.md
+
+
+[1A[2K[115/120] [Mobile Safari] › e2e/uat-signin-flow.spec.ts:350:7 › SilverConnect Global - Sign-Up UAT › UAT-020: Sign Up modal has close button
+[1A[2K[116/120] [Mobile Safari] › e2e/uat-signin-flow.spec.ts:321:7 › SilverConnect Global - Sign-Up UAT › UAT-019: Complete sign-up form with valid inputs
+[1A[2K  62) [Mobile Safari] › e2e/uat-signin-flow.spec.ts:350:7 › SilverConnect Global - Sign-Up UAT › UAT-020: Sign Up modal has close button 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-411e3-n-Up-modal-has-close-button-Mobile-Safari/error-context.md
+
+
+[1A[2K  63) [Mobile Safari] › e2e/uat-signin-flow.spec.ts:321:7 › SilverConnect Global - Sign-Up UAT › UAT-019: Complete sign-up form with valid inputs 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-5fe72-n-up-form-with-valid-inputs-Mobile-Safari/error-context.md
+
+
+[1A[2K[117/120] [Mobile Safari] › e2e/uat-signin-flow.spec.ts:369:7 › SilverConnect Global - Sign-Up UAT › UAT-021: Sign Up form accepts different password strengths
+[1A[2K  64) [Mobile Safari] › e2e/uat-signin-flow.spec.ts:369:7 › SilverConnect Global - Sign-Up UAT › UAT-021: Sign Up form accepts different password strengths 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-5a61d-ifferent-password-strengths-Mobile-Safari/error-context.md
+
+
+[1A[2K[118/120] [Mobile Safari] › e2e/uat-signin-flow.spec.ts:388:7 › SilverConnect Global - Sign-Up UAT › UAT-022: Mobile responsiveness - Sign Up works on mobile viewport
+[1A[2K[119/120] [Mobile Safari] › e2e/uat-signin-flow.spec.ts:414:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNIN: Sign In flow on current browser
+[1A[2K  65) [Mobile Safari] › e2e/uat-signin-flow.spec.ts:414:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNIN: Sign In flow on current browser 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-a7639--In-flow-on-current-browser-Mobile-Safari/error-context.md
+
+
+[1A[2K  66) [Mobile Safari] › e2e/uat-signin-flow.spec.ts:388:7 › SilverConnect Global - Sign-Up UAT › UAT-022: Mobile responsiveness - Sign Up works on mobile viewport 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-3bd26-Up-works-on-mobile-viewport-Mobile-Safari/error-context.md
+
+
+[1A[2K[120/120] [Mobile Safari] › e2e/uat-signin-flow.spec.ts:435:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNUP: Sign Up flow on current browser
+[1A[2K  67) [Mobile Safari] › e2e/uat-signin-flow.spec.ts:435:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNUP: Sign Up flow on current browser 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/zhili/Library/Caches/ms-playwright/webkit-2272/pw_run.sh
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/uat-signin-flow-SilverConn-d25a7--Up-flow-on-current-browser-Mobile-Safari/error-context.md
+
+
+[1A[2K  68) [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:185:7 › SilverConnect Global - Sign-In UAT › UAT-012: Mobile responsiveness - Sign In works on mobile viewport 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[role="dialog"]')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('[role="dialog"]')[22m
+
+
+      199 |     await page.waitForTimeout(500);
+      200 |     const modal = page.locator('[role="dialog"]');
+    > 201 |     await expect(modal).toBeVisible();
+          |                         ^
+      202 |   });
+      203 | });
+      204 |
+        at /Users/zhili/silverconnect-global/e2e/uat-signin-flow.spec.ts:201:25
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/uat-signin-flow-SilverConn-c0125-In-works-on-mobile-viewport-Mobile-Chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/uat-signin-flow-SilverConn-c0125-In-works-on-mobile-viewport-Mobile-Chrome/error-context.md
+
+
+[1A[2K  69) [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:414:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNIN: Sign In flow on current browser 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('[role="dialog"]')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('[role="dialog"]')[22m
+
+
+      428 |     // Verify modal
+      429 |     const modal = page.locator('[role="dialog"]');
+    > 430 |     await expect(modal).toBeVisible();
+          |                         ^
+      431 |     
+      432 |     console.log(`✅ Sign In works on ${browserName}`);
+      433 |   });
+        at /Users/zhili/silverconnect-global/e2e/uat-signin-flow.spec.ts:430:25
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/uat-signin-flow-SilverConn-a7639--In-flow-on-current-browser-Mobile-Chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/uat-signin-flow-SilverConn-a7639--In-flow-on-current-browser-Mobile-Chrome/error-context.md
+
+
+[1A[2K  69 failed
+    [chromium] › e2e/uat-signin-flow.spec.ts:22:7 › SilverConnect Global - Sign-In UAT › UAT-001: Homepage loads successfully 
+    [chromium] › e2e/uat-signin-flow.spec.ts:44:7 › SilverConnect Global - Sign-In UAT › UAT-003: Clicking Sign In opens authentication modal 
+    [chromium] › e2e/uat-signin-flow.spec.ts:106:7 › SilverConnect Global - Sign-In UAT › UAT-007: Sign In form has submit button 
+    [chromium] › e2e/uat-signin-flow.spec.ts:120:7 › SilverConnect Global - Sign-In UAT › UAT-008: Complete sign-in form with valid inputs 
+    [chromium] › e2e/uat-signin-flow.spec.ts:160:7 › SilverConnect Global - Sign-In UAT › UAT-010: Homepage displays country selector 
+    [chromium] › e2e/uat-signin-flow.spec.ts:185:7 › SilverConnect Global - Sign-In UAT › UAT-012: Mobile responsiveness - Sign In works on mobile viewport 
+    [chromium] › e2e/uat-signin-flow.spec.ts:414:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNIN: Sign In flow on current browser 
+    [firefox] › e2e/uat-signin-flow.spec.ts:22:7 › SilverConnect Global - Sign-In UAT › UAT-001: Homepage loads successfully 
+    [firefox] › e2e/uat-signin-flow.spec.ts:44:7 › SilverConnect Global - Sign-In UAT › UAT-003: Clicking Sign In opens authentication modal 
+    [firefox] › e2e/uat-signin-flow.spec.ts:106:7 › SilverConnect Global - Sign-In UAT › UAT-007: Sign In form has submit button 
+    [firefox] › e2e/uat-signin-flow.spec.ts:120:7 › SilverConnect Global - Sign-In UAT › UAT-008: Complete sign-in form with valid inputs 
+    [firefox] › e2e/uat-signin-flow.spec.ts:160:7 › SilverConnect Global - Sign-In UAT › UAT-010: Homepage displays country selector 
+    [firefox] › e2e/uat-signin-flow.spec.ts:185:7 › SilverConnect Global - Sign-In UAT › UAT-012: Mobile responsiveness - Sign In works on mobile viewport 
+    [firefox] › e2e/uat-signin-flow.spec.ts:414:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNIN: Sign In flow on current browser 
+    [webkit] › e2e/uat-signin-flow.spec.ts:22:7 › SilverConnect Global - Sign-In UAT › UAT-001: Homepage loads successfully 
+    [webkit] › e2e/uat-signin-flow.spec.ts:35:7 › SilverConnect Global - Sign-In UAT › UAT-002: Sign In button is visible and clickable 
+    [webkit] › e2e/uat-signin-flow.spec.ts:44:7 › SilverConnect Global - Sign-In UAT › UAT-003: Clicking Sign In opens authentication modal 
+    [webkit] › e2e/uat-signin-flow.spec.ts:57:7 › SilverConnect Global - Sign-In UAT › UAT-004: Sign In modal contains email and password fields 
+    [webkit] › e2e/uat-signin-flow.spec.ts:74:7 › SilverConnect Global - Sign-In UAT › UAT-005: User can enter email in sign-in form 
+    [webkit] › e2e/uat-signin-flow.spec.ts:90:7 › SilverConnect Global - Sign-In UAT › UAT-006: User can enter password in sign-in form 
+    [webkit] › e2e/uat-signin-flow.spec.ts:106:7 › SilverConnect Global - Sign-In UAT › UAT-007: Sign In form has submit button 
+    [webkit] › e2e/uat-signin-flow.spec.ts:120:7 › SilverConnect Global - Sign-In UAT › UAT-008: Complete sign-in form with valid inputs 
+    [webkit] › e2e/uat-signin-flow.spec.ts:143:7 › SilverConnect Global - Sign-In UAT › UAT-009: Sign In modal has close button 
+    [webkit] › e2e/uat-signin-flow.spec.ts:160:7 › SilverConnect Global - Sign-In UAT › UAT-010: Homepage displays country selector 
+    [webkit] › e2e/uat-signin-flow.spec.ts:172:7 › SilverConnect Global - Sign-In UAT › UAT-011: Page performance - Homepage loads within 3 seconds 
+    [webkit] › e2e/uat-signin-flow.spec.ts:185:7 › SilverConnect Global - Sign-In UAT › UAT-012: Mobile responsiveness - Sign In works on mobile viewport 
+    [webkit] › e2e/uat-signin-flow.spec.ts:214:7 › SilverConnect Global - Sign-Up UAT › UAT-013: Sign Up button is visible and clickable 
+    [webkit] › e2e/uat-signin-flow.spec.ts:225:7 › SilverConnect Global - Sign-Up UAT › UAT-014: Clicking Sign Up opens authentication modal 
+    [webkit] › e2e/uat-signin-flow.spec.ts:241:7 › SilverConnect Global - Sign-Up UAT › UAT-015: Sign Up modal contains email and password fields 
+    [webkit] › e2e/uat-signin-flow.spec.ts:265:7 › SilverConnect Global - Sign-Up UAT › UAT-016: User can enter email in sign-up form 
+    [webkit] › e2e/uat-signin-flow.spec.ts:284:7 › SilverConnect Global - Sign-Up UAT › UAT-017: User can enter password in sign-up form 
+    [webkit] › e2e/uat-signin-flow.spec.ts:303:7 › SilverConnect Global - Sign-Up UAT › UAT-018: Sign Up form has submit button 
+    [webkit] › e2e/uat-signin-flow.spec.ts:321:7 › SilverConnect Global - Sign-Up UAT › UAT-019: Complete sign-up form with valid inputs 
+    [webkit] › e2e/uat-signin-flow.spec.ts:350:7 › SilverConnect Global - Sign-Up UAT › UAT-020: Sign Up modal has close button 
+    [webkit] › e2e/uat-signin-flow.spec.ts:369:7 › SilverConnect Global - Sign-Up UAT › UAT-021: Sign Up form accepts different password strengths 
+    [webkit] › e2e/uat-signin-flow.spec.ts:388:7 › SilverConnect Global - Sign-Up UAT › UAT-022: Mobile responsiveness - Sign Up works on mobile viewport 
+    [webkit] › e2e/uat-signin-flow.spec.ts:414:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNIN: Sign In flow on current browser 
+    [webkit] › e2e/uat-signin-flow.spec.ts:435:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNUP: Sign Up flow on current browser 
+    [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:22:7 › SilverConnect Global - Sign-In UAT › UAT-001: Homepage loads successfully 
+    [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:44:7 › SilverConnect Global - Sign-In UAT › UAT-003: Clicking Sign In opens authentication modal 
+    [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:106:7 › SilverConnect Global - Sign-In UAT › UAT-007: Sign In form has submit button 
+    [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:120:7 › SilverConnect Global - Sign-In UAT › UAT-008: Complete sign-in form with valid inputs 
+    [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:160:7 › SilverConnect Global - Sign-In UAT › UAT-010: Homepage displays country selector 
+    [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:185:7 › SilverConnect Global - Sign-In UAT › UAT-012: Mobile responsiveness - Sign In works on mobile viewport 
+    [Mobile Chrome] › e2e/uat-signin-flow.spec.ts:414:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNIN: Sign In flow on current browser 
+    [Mobile Safari] › e2e/uat-signin-flow.spec.ts:22:7 › SilverConnect Global - Sign-In UAT › UAT-001: Homepage loads successfully 
+    [Mobile Safari] › e2e/uat-signin-flow.spec.ts:35:7 › SilverConnect Global - Sign-In UAT › UAT-002: Sign In button is visible and clickable 
+    [Mobile Safari] › e2e/uat-signin-flow.spec.ts:44:7 › SilverConnect Global - Sign-In UAT › UAT-003: Clicking Sign In opens authentication modal 
+    [Mobile Safari] › e2e/uat-signin-flow.spec.ts:57:7 › SilverConnect Global - Sign-In UAT › UAT-004: Sign In modal contains email and password fields 
+    [Mobile Safari] › e2e/uat-signin-flow.spec.ts:74:7 › SilverConnect Global - Sign-In UAT › UAT-005: User can enter email in sign-in form 
+    [Mobile Safari] › e2e/uat-signin-flow.spec.ts:90:7 › SilverConnect Global - Sign-In UAT › UAT-006: User can enter password in sign-in form 
+    [Mobile Safari] › e2e/uat-signin-flow.spec.ts:106:7 › SilverConnect Global - Sign-In UAT › UAT-007: Sign In form has submit button 
+    [Mobile Safari] › e2e/uat-signin-flow.spec.ts:120:7 › SilverConnect Global - Sign-In UAT › UAT-008: Complete sign-in form with valid inputs 
+    [Mobile Safari] › e2e/uat-signin-flow.spec.ts:143:7 › SilverConnect Global - Sign-In UAT › UAT-009: Sign In modal has close button 
+    [Mobile Safari] › e2e/uat-signin-flow.spec.ts:160:7 › SilverConnect Global - Sign-In UAT › UAT-010: Homepage displays country selector 
+    [Mobile Safari] › e2e/uat-signin-flow.spec.ts:172:7 › SilverConnect Global - Sign-In UAT › UAT-011: Page performance - Homepage loads within 3 seconds 
+    [Mobile Safari] › e2e/uat-signin-flow.spec.ts:185:7 › SilverConnect Global - Sign-In UAT › UAT-012: Mobile responsiveness - Sign In works on mobile viewport 
+    [Mobile Safari] › e2e/uat-signin-flow.spec.ts:214:7 › SilverConnect Global - Sign-Up UAT › UAT-013: Sign Up button is visible and clickable 
+    [Mobile Safari] › e2e/uat-signin-flow.spec.ts:225:7 › SilverConnect Global - Sign-Up UAT › UAT-014: Clicking Sign Up opens authentication modal 
+    [Mobile Safari] › e2e/uat-signin-flow.spec.ts:241:7 › SilverConnect Global - Sign-Up UAT › UAT-015: Sign Up modal contains email and password fields 
+    [Mobile Safari] › e2e/uat-signin-flow.spec.ts:265:7 › SilverConnect Global - Sign-Up UAT › UAT-016: User can enter email in sign-up form 
+    [Mobile Safari] › e2e/uat-signin-flow.spec.ts:284:7 › SilverConnect Global - Sign-Up UAT › UAT-017: User can enter password in sign-up form 
+    [Mobile Safari] › e2e/uat-signin-flow.spec.ts:303:7 › SilverConnect Global - Sign-Up UAT › UAT-018: Sign Up form has submit button 
+    [Mobile Safari] › e2e/uat-signin-flow.spec.ts:321:7 › SilverConnect Global - Sign-Up UAT › UAT-019: Complete sign-up form with valid inputs 
+    [Mobile Safari] › e2e/uat-signin-flow.spec.ts:350:7 › SilverConnect Global - Sign-Up UAT › UAT-020: Sign Up modal has close button 
+    [Mobile Safari] › e2e/uat-signin-flow.spec.ts:369:7 › SilverConnect Global - Sign-Up UAT › UAT-021: Sign Up form accepts different password strengths 
+    [Mobile Safari] › e2e/uat-signin-flow.spec.ts:388:7 › SilverConnect Global - Sign-Up UAT › UAT-022: Mobile responsiveness - Sign Up works on mobile viewport 
+    [Mobile Safari] › e2e/uat-signin-flow.spec.ts:414:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNIN: Sign In flow on current browser 
+    [Mobile Safari] › e2e/uat-signin-flow.spec.ts:435:7 › SilverConnect Global - Multi-Browser UAT › UAT-BROWSER-SIGNUP: Sign Up flow on current browser 
+  51 passed (41.3s)
+
+[36m  Serving HTML report at http://localhost:63719. Press Ctrl+C to quit.[39m

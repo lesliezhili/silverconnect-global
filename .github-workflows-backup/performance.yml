@@ -1,0 +1,132 @@
+name: 📊 Performance & Load Testing
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 3 * * 0'  # Weekly on Sunday at 3 AM UTC
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  # Job 1: Lighthouse CI
+  lighthouse:
+    name: 💡 Lighthouse Performance Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📥 Install dependencies
+        run: npm ci
+
+      - name: 🏗️ Build application
+        run: npm run build
+
+      - name: 💡 Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          configPath: './lighthouserc.json'
+          runs: 3
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+      - name: 📊 Upload Lighthouse results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: lighthouse-results
+          path: .lighthouseci/
+          retention-days: 30
+
+  # Job 2: Bundle Size Analysis
+  bundle-analysis:
+    name: 📦 Bundle Size Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📥 Install dependencies
+        run: npm ci
+
+      - name: 🏗️ Build application
+        run: npm run build
+
+      - name: 📦 Analyze bundle
+        run: npm run analyze:bundle
+
+      - name: 📊 Upload bundle analysis
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: bundle-analysis
+          path: bundle-report/
+          retention-days: 30
+
+  # Job 3: Load Testing with k6
+  load-testing:
+    name: 🔥 Load Testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐳 Run k6 load tests
+        uses: grafana/k6-action@v0.3.0
+        with:
+          filename: k6/load-test.js
+          cloud: false
+          script: ./k6/load-test.js
+
+      - name: 📊 Upload load test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: load-test-results
+          path: k6-results/
+          retention-days: 30
+
+  # Job 4: Memory Leak Detection
+  memory-leak:
+    name: 💾 Memory Leak Detection
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📥 Install dependencies
+        run: npm ci
+
+      - name: 🏗️ Build application
+        run: npm run build
+
+      - name: 💾 Run memory leak tests
+        run: npm run test:memory
+
+      - name: 📊 Upload memory leak report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: memory-leak-report
+          path: memory-results/
+          retention-days: 30

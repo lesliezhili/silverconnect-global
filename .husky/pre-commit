@@ -1,0 +1,20 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🧪 Running pre-commit checks..."
+
+# Lint and format
+npm run lint:fix
+
+# Type check
+npm run type-check
+
+# Run unit tests
+npm run test:unit -- --bail --findRelatedTests
+
+if [ $? -ne 0 ]; then
+ echo "❌ Pre-commit check failed. Commit aborted."
+ exit 1
+fi
+
+echo "✅ Pre-commit checks passed!"

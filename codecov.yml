@@ -1,0 +1,36 @@
+codecov:
+  require:
+    - changes
+    - patch
+    - project
+
+coverage:
+  precision: 2
+  round: down
+  range:
+    - 70
+    - 100
+
+ignore:
+  - "**/*.d.ts"
+  - "**/node_modules/**"
+  - "**/.next/**"
+  - "**/__tests__/**"
+  - "**/e2e/**"
+
+flags:
+  unit:
+    carryforward: true
+    paths:
+      - "coverage/unit/"
+  integration:
+    carryforward: true
+    paths:
+      - "coverage/integration/"
+
+comment:
+  layout: "reach,diff,flags,tree"
+  behavior: default
+  require_changes: false
+  require_base: false
+  require_head: true

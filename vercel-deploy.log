@@ -1,0 +1,55 @@
+? Set up and deploy “~/silverconnect-global”? (Y/n)[53G[2K[G? Set up and deploy “~/silverconnect-global”? (Y/n) y[54G[2K[G? Set up and deploy “~/silverconnect-global”? yes[50G
+[?25hLoading scopes…
+? Which scope should contain your project? (Use arrow keys)
+❯ Zhi's projects[?25l[17G[2K[1A[2K[G? Which scope should contain your project? Zhi's projects[58G
+[?25hSearching for existing projects…
+? Link to existing project? (y/N)[35G[2K[G? Link to existing project? (y/N) n[36G[2K[G? Link to existing project? no[31G
+[?25h? What’s your project’s name? (silverconnect-global)[54G[2K[G⠋ What’s your project’s name? (silverconnect-global)[54G[2K[G⠙ What’s your project’s name? (silverconnect-global)[54G[2K[G⠹ What’s your project’s name? (silverconnect-global)[54G[2K[G⠸ What’s your project’s name? (silverconnect-global)[54G[2K[G⠼ What’s your project’s name? (silverconnect-global)[54G[2K[G⠴ What’s your project’s name? (silverconnect-global)[54G[2K[G⠦ What’s your project’s name? (silverconnect-global)[54G[2K[G⠧ What’s your project’s name? (silverconnect-global)[54G[2K[G⠇ What’s your project’s name? (silverconnect-global)[54G[2K[G⠇ What’s your project’s name? silverconnect-global[51G[2K[G? What’s your project’s name? silverconnect-global[51G
+[?25h? In which directory is your code located? ./[46G[2K[G⠋ In which directory is your code located? ./[46G[2K[G? In which directory is your code located? ./[46G
+[?25h> Auto-detected Project Settings for Next.js
+
+? Want to modify these settings? (y/N)[40G[2K[G? Want to modify these settings? (y/N) n[41G[2K[G? Want to modify these settings? no[36G
+[?25h? Do you want to change additional project settings? (y/N)[60G[2K[G? Do you want to change additional project settings? (y/N) y[61G[2K[G? Do you want to change additional project settings? yes[57G
+[?25h? Want to use the default Deployment Protection settings? (Vercel
+Authentication: Standard Protection) (Y/n)[1A[110G[1B[2K[1A[2K[G? Want to use the default Deployment Protection settings? (Vercel
+Authentication: Standard Protection) yes[1A[107G[1B
+[?25hLinked to zhis-projects-0c959f70/silverconnect-global (created .vercel)
+? Detected a repository. Connect it to this project? (Y/n)[60G[2K[G? Detected a repository. Connect it to this project? yes[57G
+[?25h> Connecting GitHub repository: https://github.com/lesliezhili/silverconnect-global
+Error: Failed to link lesliezhili/silverconnect-global. You need to add a Login Connection to your GitHub account first. (400)
+Visit https://vercel.com/docs/accounts/create-an-account#login-methods-and-connections for more information.
+Deploying zhis-projects-0c959f70/silverconnect-global
+Uploading [--------------------] (0.0B/303.6KB)
+Uploading [=====---------------] (76.3KB/303.6KB)
+Uploading [==========----------] (163.8KB/303.6KB)
+Uploading [===============-----] (227.8KB/303.6KB)
+Uploading [====================] (303.6KB/303.6KB)
+Inspect: https://vercel.com/zhis-projects-0c959f70/silverconnect-global/FHpjXKnftcsQ677owx27irEz4wSv [4s]
+Production: https://silverconnect-global-e80rpstl7-zhis-projects-0c959f70.vercel.app [4s]
+https://silverconnect-global-e80rpstl7-zhis-projects-0c959f70.vercel.appBuilding...
+Building...
+Building: Running build in Washington, D.C., USA (East) – iad1
+Building: Build machine configuration: 2 cores, 8 GB
+Building: Retrieving list of deployment files...
+Building: Previous build caches not available.
+Building: Downloading 28 deployment files...
+Building: Running "vercel build"
+Building: Vercel CLI 51.6.1
+Building: Installing dependencies...
+Building: added 434 packages in 12s
+Building: 147 packages are looking for funding
+Building: run `npm fund` for details
+Building: Detected Next.js version: 16.2.4
+Building: Running "npm run build"
+Building: > silverconnect-global@0.1.0 build
+Building: > next build
+Building: Applying modifyConfig from Vercel
+Building: Attention: Next.js now collects completely anonymous telemetry regarding usage.
+Building: This information is used to shape Next.js' roadmap and prioritize features.
+Building: You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+Building: https://nextjs.org/telemetry
+Building: ▲ Next.js 16.2.4 (Turbopack)
+Building: Creating an optimized production build ...
+Building: ✓ Compiled successfully in 5.1s
+Building: Running TypeScript ...
+Error: Command "npm run build" exited with 1
