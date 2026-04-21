@@ -36,26 +36,27 @@ export default function HomePage() {
       )}
 
       <nav className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 flex-shrink-0">
-            <div className="w-9 h-9 rounded-xl bg-[#2D6A5E] flex items-center justify-center">
-              <svg className="w-5 h-5 fill-white" viewBox="0 0 24 24">
+        <div className="max-w-7xl mx-auto px-3 md:px-6 py-2 md:h-16 flex items-center justify-between gap-2 md:gap-4 flex-wrap md:flex-nowrap">
+          <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+            <div className="w-8 md:w-9 h-8 md:h-9 rounded-xl bg-[#2D6A5E] flex items-center justify-center">
+              <svg className="w-4 md:w-5 h-4 md:h-5 fill-white" viewBox="0 0 24 24">
                 <path d="M12 21.7C5.8 17.4 2 13.5 2 9.5 2 6.4 4.4 4 7.5 4c1.7 0 3.4.8 4.5 2.1C13.1 4.8 14.8 4 16.5 4 19.6 4 22 6.4 22 9.5c0 4-3.8 7.9-10 12.2z"/>
               </svg>
             </div>
             <div>
-              <div className="font-serif font-semibold text-lg leading-tight">SilverConnect</div>
-              <div className="text-[9px] text-gray-400 tracking-widest uppercase">Care with Love</div>
+              <div className="font-serif font-semibold text-base md:text-lg leading-tight">SilverConnect</div>
+              <div className="text-[7px] md:text-[9px] text-gray-400 tracking-widest uppercase">Care with Love</div>
             </div>
           </div>
-          <div className="flex-1 max-w-xs">
+          <div className="flex-1 max-w-xs order-3 md:order-2 w-full md:w-auto">
             <LocationDetector compact onLocationChange={undefined} />
           </div>
-          <div className="hidden md:flex">
+          <div className="order-2 md:order-3">
             <CountrySelector 
               selectedCountry={selectedCountry} 
               onCountryChange={setSelectedCountry} 
-              countries={countries} 
+              countries={countries}
+              compact={true}
             />
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
