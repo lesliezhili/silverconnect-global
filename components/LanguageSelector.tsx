@@ -12,7 +12,7 @@ export default function LanguageSelector({
   compact?: boolean;
 }) {
   const languages = {
-    en: { name: 'English', flag: '🇬🇧' },
+    en: { name: 'English', flag: '�🇸' }, // Changed from UK to US flag for English
     zh: { name: '中文', flag: '🇨🇳' }
   };
 

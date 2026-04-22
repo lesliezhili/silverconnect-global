@@ -42,7 +42,7 @@ export default function HomePage() {
       
       setSelectedCountry(savedCountry)
       
-      // Set language based on country if not saved
+      // Set language based on country if not saved (defaults: Chinese for China, English for others)
       if (savedLanguage) {
         setLanguage(savedLanguage)
       } else if (savedCountry === 'CN') {
@@ -53,18 +53,19 @@ export default function HomePage() {
     } catch {}
   }, [])
 
-  // Save country to localStorage and update language
+  // Save country to localStorage and update language (only if no language preference saved)
   const handleCountryChange = (country: string) => {
     setSelectedCountry(country)
     localStorage.setItem('selectedCountry', country)
     
-    // Auto-set language based on country if it's the first time selecting
-    if (country === 'CN' && language !== 'zh') {
-      setLanguage('zh')
-      localStorage.setItem('selectedLanguage', 'zh')
-    } else if (country !== 'CN' && language === 'zh') {
-      setLanguage('en')
-      localStorage.setItem('selectedLanguage', 'en')
+    // Only auto-set language if user hasn't manually selected a language before
+    const hasLanguagePreference = localStorage.getItem('selectedLanguage') !== null
+    if (!hasLanguagePreference) {
+      if (country === 'CN') {
+        setLanguage('zh')
+      } else {
+        setLanguage('en')
+      }
     }
   }
 

@@ -3,5 +3,10 @@
   "outputDirectory": ".next",
   "env": {
     "SKIP_ENV_VALIDATION": "true"
+  },
+  "functions": {
+    "app/api/**/*.ts": {
+      "maxDuration": 30
+    }
   }
 }
