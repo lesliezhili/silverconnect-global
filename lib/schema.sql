@@ -205,6 +205,7 @@ CREATE TABLE service_providers (
   is_verified BOOLEAN DEFAULT false,
   verification_date TIMESTAMP,
   available_hours TEXT, -- JSON format: {"monday": "9am-5pm", ...}
+  stripe_connect_id TEXT, -- Stripe Connect account ID for payouts
   created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -331,6 +332,45 @@ CREATE TABLE booking_status_history (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
+-- Provider Payouts
+CREATE TABLE provider_payouts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  booking_id UUID REFERENCES bookings(id) ON DELETE CASCADE UNIQUE,
+  provider_id UUID REFERENCES service_providers(id) ON DELETE CASCADE,
+  amount DECIMAL(10,2) NOT NULL,
+  platform_fee DECIMAL(10,2) NOT NULL,
+  stripe_payout_id TEXT UNIQUE,
+  status TEXT DEFAULT 'pending', -- pending, paid, failed
+  currency TEXT DEFAULT 'USD',
+  processed_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Disputes and Complaints
+CREATE TABLE disputes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  booking_id UUID REFERENCES bookings(id) ON DELETE CASCADE,
+  initiated_by UUID REFERENCES users(id),
+  reason TEXT NOT NULL,
+  description TEXT,
+  status TEXT DEFAULT 'open', -- open, investigating, resolved, closed
+  resolution TEXT,
+  resolved_by UUID REFERENCES users(id),
+  resolved_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- AI Conversations (for analytics and context)
+CREATE TABLE ai_conversations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  booking_id UUID REFERENCES bookings(id) ON DELETE CASCADE,
+  user_message TEXT NOT NULL,
+  ai_response TEXT NOT NULL,
+  actions_taken JSONB DEFAULT '[]',
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
 -- Enable RLS
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
@@ -346,6 +386,9 @@ ALTER TABLE countries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE booking_status_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE provider_payouts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE disputes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ai_conversations ENABLE ROW LEVEL SECURITY;
 
 -- Messaging RLS Policies
 CREATE POLICY "Users can view conversations they're part of" ON conversations FOR SELECT USING (

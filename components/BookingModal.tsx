@@ -12,7 +12,7 @@ interface BookingModalProps {
   user: any;
   country: any;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (data?: { booking: any; provider: any; price: number }) => void;
   language?: Language;
 }
 
@@ -51,31 +51,48 @@ export default function BookingModal({
     setError('');
 
     try {
-      const { data, error: bookError } = await supabase
-        .from('bookings')
-        .insert({
-          user_id: user.id,
-          service_id: service.id,
-          country_code: country,
-          booking_date: date,
-          booking_time: time,
+      // Get user's location coordinates (simplified - in production use geocoding service)
+      const latitude = user.latitude || null;
+      const longitude = user.longitude || null;
+
+      const response = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          serviceId: service.id,
+          countryCode: country,
+          bookingDate: date,
+          bookingTime: time,
           address,
-          special_instructions: instructions,
-          total_price: price.price_with_tax,
-          status: 'PENDING',
-          payment_status: 'PENDING_PAYMENT',
-        })
-        .select()
-        .single();
+          latitude,
+          longitude,
+          specialInstructions: instructions,
+        }),
+      });
 
-      if (bookError) throw bookError;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create booking');
+      }
 
-      onSuccess();
-      onClose();
+      const { booking, provider, price: finalPrice } = await response.json();
+
+      // Update local state with booking details
       setDate('');
       setTime('');
       setAddress('');
       setInstructions('');
+
+      // Call success callback with booking and provider info
+      onSuccess({
+        booking,
+        provider,
+        price: finalPrice,
+      });
+      onClose();
     } catch (err: any) {
       setError(err.message);
     } finally {

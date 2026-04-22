@@ -29,8 +29,9 @@ export default function ProviderDashboard({ user, language }: ProviderDashboardP
   const [provider, setProvider] = useState<any>(null);
   const [services, setServices] = useState<Service[]>([]);
   const [providerServices, setProviderServices] = useState<ProviderService[]>([]);
+  const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'profile' | 'services' | 'availability' | 'earnings'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'services' | 'bookings' | 'availability' | 'earnings'>('profile');
   const [saving, setSaving] = useState(false);
 
   const t = (key: string) => translations[language][key as keyof typeof translations.en] || key;
@@ -39,6 +40,7 @@ export default function ProviderDashboard({ user, language }: ProviderDashboardP
     if (user) {
       fetchProviderData();
       fetchServices();
+      loadBookings();
     }
   }, [user]);
 
@@ -96,6 +98,59 @@ export default function ProviderDashboard({ user, language }: ProviderDashboardP
       }
     } catch (error) {
       console.error('Error fetching services:', error);
+    }
+  }
+
+  async function loadBookings() {
+    try {
+      const { data, error } = await supabase
+        .from('bookings')
+        .select(`
+          *,
+          users (
+            full_name,
+            phone,
+            email
+          ),
+          services (
+            name,
+            description,
+            duration_minutes
+          )
+        `)
+        .eq('provider_id', user.id)
+        .order('booking_date', { ascending: true })
+        .order('booking_time', { ascending: true });
+
+      if (error) throw error;
+      setBookings(data || []);
+    } catch (err) {
+      console.error('Error loading bookings:', err);
+    }
+  }
+
+  async function updateBookingStatus(bookingId: string, status: string) {
+    try {
+      const { error } = await supabase
+        .from('bookings')
+        .update({ status })
+        .eq('id', bookingId);
+
+      if (error) throw error;
+
+      // Log status change
+      await supabase.from('booking_status_history').insert({
+        booking_id: bookingId,
+        old_status: bookings.find(b => b.id === bookingId)?.status,
+        new_status: status,
+        changed_by: user.id,
+      });
+
+      // Reload bookings
+      await loadBookings();
+    } catch (err) {
+      console.error('Error updating booking status:', err);
+      alert(language === 'zh' ? '更新预约状态失败' : 'Failed to update booking status');
     }
   }
 
@@ -225,6 +280,7 @@ export default function ProviderDashboard({ user, language }: ProviderDashboardP
               {[
                 { id: 'profile', label: language === 'zh' ? '个人资料' : 'Profile', icon: User },
                 { id: 'services', label: language === 'zh' ? '服务设置' : 'Services', icon: Settings },
+                { id: 'bookings', label: language === 'zh' ? '预约管理' : 'Bookings', icon: Calendar },
                 { id: 'availability', label: language === 'zh' ? '可用时间' : 'Availability', icon: Calendar },
                 { id: 'earnings', label: language === 'zh' ? '收入统计' : 'Earnings', icon: DollarSign },
               ].map((tab) => (
@@ -387,6 +443,138 @@ export default function ProviderDashboard({ user, language }: ProviderDashboardP
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Bookings Tab */}
+            {activeTab === 'bookings' && (
+              <div className="space-y-6">
+                <h2 className="text-xl font-bold">{language === 'zh' ? '预约管理' : 'Booking Management'}</h2>
+
+                {/* Booking Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                  <div className="bg-yellow-50 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-yellow-600">
+                      {bookings.filter(b => b.status === 'PENDING').length}
+                    </div>
+                    <div className="text-sm text-yellow-800">
+                      {language === 'zh' ? '待确认' : 'Pending'}
+                    </div>
+                  </div>
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {bookings.filter(b => b.status === 'CONFIRMED').length}
+                    </div>
+                    <div className="text-sm text-blue-800">
+                      {language === 'zh' ? '已确认' : 'Confirmed'}
+                    </div>
+                  </div>
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600">
+                      {bookings.filter(b => b.status === 'COMPLETED').length}
+                    </div>
+                    <div className="text-sm text-green-800">
+                      {language === 'zh' ? '已完成' : 'Completed'}
+                    </div>
+                  </div>
+                  <div className="bg-red-50 p-4 rounded-lg">
+                    <div className="text-2xl font-bold text-red-600">
+                      {bookings.filter(b => b.status === 'CANCELLED').length}
+                    </div>
+                    <div className="text-sm text-red-800">
+                      {language === 'zh' ? '已取消' : 'Cancelled'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bookings List */}
+                <div className="space-y-4">
+                  {bookings.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      {language === 'zh' ? '暂无预约' : 'No bookings found'}
+                    </div>
+                  ) : (
+                    bookings.map((booking) => (
+                      <div key={booking.id} className="border rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <h3 className="font-semibold text-lg">{booking.services?.name}</h3>
+                            <p className="text-gray-600 text-sm">{booking.services?.description}</p>
+                          </div>
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${
+                            booking.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                            booking.status === 'CONFIRMED' ? 'bg-blue-100 text-blue-800' :
+                            booking.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {booking.status}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                          <div>
+                            <p className="text-sm text-gray-600">
+                              <strong>{language === 'zh' ? '客户' : 'Client'}:</strong> {booking.users?.full_name}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              <strong>{language === 'zh' ? '电话' : 'Phone'}:</strong> {booking.users?.phone}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              <strong>{language === 'zh' ? '地址' : 'Address'}:</strong> {booking.address}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">
+                              <strong>{language === 'zh' ? '日期' : 'Date'}:</strong> {new Date(booking.booking_date).toLocaleDateString()}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              <strong>{language === 'zh' ? '时间' : 'Time'}:</strong> {booking.booking_time}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              <strong>{language === 'zh' ? '价格' : 'Price'}:</strong> {provider?.country_code === 'CN' ? '¥' : '$'}{booking.total_price}
+                            </p>
+                          </div>
+                        </div>
+
+                        {booking.special_instructions && (
+                          <div className="mb-3 p-2 bg-gray-50 rounded">
+                            <p className="text-sm text-gray-700">
+                              <strong>{language === 'zh' ? '特殊要求' : 'Special Instructions'}:</strong> {booking.special_instructions}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-2">
+                          {booking.status === 'PENDING' && (
+                            <>
+                              <button
+                                onClick={() => updateBookingStatus(booking.id, 'CONFIRMED')}
+                                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm"
+                              >
+                                {language === 'zh' ? '接受' : 'Accept'}
+                              </button>
+                              <button
+                                onClick={() => updateBookingStatus(booking.id, 'CANCELLED')}
+                                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm"
+                              >
+                                {language === 'zh' ? '拒绝' : 'Decline'}
+                              </button>
+                            </>
+                          )}
+                          {booking.status === 'CONFIRMED' && (
+                            <button
+                              onClick={() => updateBookingStatus(booking.id, 'COMPLETED')}
+                              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm"
+                            >
+                              {language === 'zh' ? '标记完成' : 'Mark Complete'}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             )}
