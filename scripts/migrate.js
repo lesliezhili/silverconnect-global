@@ -8,6 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
+const postgres = require('postgres');
 
 // Load environment variables from .env.local
 require('dotenv').config({ path: path.join(__dirname, '../.env.local') });
@@ -19,6 +20,21 @@ if (!supabaseUrl || !supabaseKey) {
   console.error('❌ Missing Supabase credentials');
   process.exit(1);
 }
+
+// Extract database connection details from Supabase URL
+const url = new URL(supabaseUrl);
+const host = url.hostname;
+const database = url.pathname.slice(1); // Remove leading slash
+
+// Create postgres client for raw SQL execution
+const sql = postgres({
+  host,
+  database,
+  username: 'postgres',
+  password: supabaseKey,
+  port: 5432,
+  ssl: 'require'
+});
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -47,19 +63,8 @@ async function runMigrations() {
       console.log(`   ${cleanStatement.substring(0, 80)}${cleanStatement.length > 80 ? '...' : ''}`);
 
       try {
-        // Try to execute using Supabase's postgres client
-        const { data, error } = await supabase.rpc('exec_sql', { sql: cleanStatement });
-
-        if (error) {
-          // If rpc fails, try direct query
-          console.log('   RPC failed, trying direct query...');
-          const { error: queryError } = await supabase.from('_supabase_migration_temp').select('*').limit(1);
-          if (queryError && queryError.message.includes('relation') && queryError.message.includes('does not exist')) {
-            // This is expected - we're just testing connection
-          }
-          throw new Error(`Query failed: ${error.message}`);
-        }
-
+        // Execute raw SQL using postgres client
+        await sql.unsafe(cleanStatement);
         console.log('   ✅ Success');
       } catch (err) {
         console.error(`   ❌ Failed: ${err.message}`);
@@ -69,8 +74,12 @@ async function runMigrations() {
     }
 
     console.log('\n✅ All migrations completed successfully!\n');
+    
+    // Close the database connection
+    await sql.end();
   } catch (error) {
     console.error('❌ Migration error:', error.message);
+    await sql.end();
     process.exit(1);
   }
 }
