@@ -69,12 +69,10 @@ export const translations = {
     dashboard: 'Dashboard',
     upcomingServices: 'Upcoming Services',
     noBookings: 'No upcoming bookings',
-    bookNow: 'Book Now',
     cancel: 'Cancel',
     booking: 'Booking...',
     bookingNotification: 'You will receive a confirmation email once the booking is accepted',
     freeCancellationSupport: 'Free cancellation • 24hr support',
-    service: 'Service',
     signInRequired: 'Please sign in to book a service',
     duration: 'Duration',
     specialInstructionsOptional: 'Special Instructions (Optional)',
@@ -175,7 +173,6 @@ export const translations = {
     createAccount: '创建账户',
     
     // Booking
-    bookService: '预订服务',
     date: '日期',
     time: '时间',
     address: '地址',
@@ -196,7 +193,6 @@ export const translations = {
     booking: '预订中...',
     bookingNotification: '预订确认后您将收到确认邮件',
     freeCancellationSupport: '免费取消 • 24小时支持',
-    service: '服务',
     signInRequired: '请先登录以预订服务',
     duration: '时长',
     specialInstructionsOptional: '特殊说明（可选）',
