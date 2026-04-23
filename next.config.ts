@@ -2,8 +2,12 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ['192.168.20.63', 'localhost', '*.local-ip.net'],
-  // Enable CORS for development
+  // Enable CORS only during development to avoid exposing open origins in production.
   async headers() {
+    if (process.env.NODE_ENV === 'production') {
+      return []
+    }
+
     return [
       {
         source: '/:path*',

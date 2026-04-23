@@ -32,7 +32,7 @@ export default function BookingModal({
   const [instructions, setInstructions] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const t = (key: string) => translations[language][key as keyof typeof translations.en] || key;
+  const t = (key: string) => (translations[language] as any)[key] || key;
 
   if (!isOpen || !service || !user) return null;
 

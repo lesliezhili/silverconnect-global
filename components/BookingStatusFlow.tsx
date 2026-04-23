@@ -29,7 +29,7 @@ export default function BookingStatusFlow({
   const [reason, setReason] = useState('');
   const [showReasonInput, setShowReasonInput] = useState(false);
 
-  const t = (key: string) => translations[language][key as keyof typeof translations.en] || key;
+  const t = (key: string) => (translations[language] as any)[key] || key;
 
   const statusColors = {
     PENDING: 'bg-yellow-50 border-yellow-200',

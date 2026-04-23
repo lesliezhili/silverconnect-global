@@ -2,60 +2,59 @@
 
 import { Language } from '@/lib/translations';
 
-export default function LanguageSelector({ 
-  language, 
-  onLanguageChange, 
-  compact = false 
-}: { 
-  language: Language; 
+const languageOptions: Record<Language, { name: string; label: string }> = {
+  en: { name: 'English', label: 'EN' },
+  zh: { name: '中文', label: '中文' }
+};
+
+export default function LanguageSelector({
+  language,
+  onLanguageChange,
+  compact = false
+}: {
+  language: Language;
   onLanguageChange: (lang: Language) => void;
   compact?: boolean;
 }) {
-  const languages = {
-    en: { name: 'English', flag: '�🇸' }, // Changed from UK to US flag for English
-    zh: { name: '中文', flag: '🇨🇳' }
-  };
+  // Only support English and Chinese as requested
+  const supportedLanguages: Language[] = ['en', 'zh'];
 
   if (compact) {
     return (
-      <div className="flex items-center gap-1">
-        {(Object.entries(languages) as Array<[Language, any]>).map(([code, info]) => (
-          <button
-            key={code}
-            onClick={() => onLanguageChange(code)}
-            className={`px-2 py-1 rounded-lg transition-all text-sm font-medium ${
-              language === code
-                ? 'bg-blue-600 text-white shadow-md scale-105'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-            title={info.name}
-          >
-            {info.flag}
-          </button>
-        ))}
-      </div>
+      <select
+        value={language}
+        onChange={(e) => onLanguageChange(e.target.value as Language)}
+        className="px-2 py-1 rounded-lg bg-white border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      >
+        {supportedLanguages.map((code) => {
+          const info = languageOptions[code];
+          return (
+            <option key={code} value={code}>
+              {info.label}
+            </option>
+          );
+        })}
+      </select>
     );
   }
 
   return (
     <div className="flex items-center gap-2">
       <span className="text-xs md:text-sm font-medium text-gray-600">Lang:</span>
-      <div className="flex gap-1 md:gap-2">
-        {(Object.entries(languages) as Array<[Language, any]>).map(([code, info]) => (
-          <button
-            key={code}
-            onClick={() => onLanguageChange(code)}
-            className={`px-2 md:px-3 py-1 rounded-full transition-all text-xs md:text-sm ${
-              language === code
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            <span className="hidden sm:inline">{info.name}</span>
-            <span className="sm:hidden">{info.flag}</span>
-          </button>
-        ))}
-      </div>
+      <select
+        value={language}
+        onChange={(e) => onLanguageChange(e.target.value as Language)}
+        className="px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      >
+        {supportedLanguages.map((code) => {
+          const info = languageOptions[code];
+          return (
+            <option key={code} value={code}>
+              {info.name}
+            </option>
+          );
+        })}
+      </select>
     </div>
   );
 }

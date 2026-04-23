@@ -34,7 +34,7 @@ export default function ProviderDashboard({ user, language }: ProviderDashboardP
   const [activeTab, setActiveTab] = useState<'profile' | 'services' | 'bookings' | 'availability' | 'earnings'>('profile');
   const [saving, setSaving] = useState(false);
 
-  const t = (key: string) => translations[language][key as keyof typeof translations.en] || key;
+  const t = (key: string) => (translations[language] as any)[key] || key;
 
   useEffect(() => {
     if (user) {

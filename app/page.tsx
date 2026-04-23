@@ -25,33 +25,47 @@ export default function HomePage() {
   const nearbyProviders = providersNearPostcode(location.postcode, 15)
   const topProviders    = nearbyProviders.slice(0, 3)
 
+  // For China, show Chinese location; for other countries, show actual location
+  const displayLocation = selectedCountry === 'CN' 
+    ? { suburb: '北京', postcode: '100000', province: '北京市', state: 'Beijing' }
+    : { ...location, province: '' }
+
   const countries = {
     AU: { name: 'Australia', flag: '🇦🇺', currency: 'AUD' },
     CN: { name: 'China', flag: '🇨🇳', currency: 'CNY' },
     CA: { name: 'Canada', flag: '🇨🇦', currency: 'CAD' }
   }
 
-  const t = (key: string) => translations[language][key as keyof typeof translations.en] || key
+  const t = (key: string) => (translations[language] as any)[key] || key;
 
   // Load preferences from localStorage and set default language based on country
   useEffect(() => {
-    setMounted(true)
     try {
       const savedCountry = localStorage.getItem('selectedCountry') || 'AU'
-      const savedLanguage = localStorage.getItem('selectedLanguage') as Language
+      const savedLanguage = localStorage.getItem('selectedLanguage') as Language | null
       
       setSelectedCountry(savedCountry)
       
-      // Set language based on country if not saved (defaults: Chinese for China, English for others)
+      // Set language based on saved preference or country default
       if (savedLanguage) {
         setLanguage(savedLanguage)
       } else if (savedCountry === 'CN') {
         setLanguage('zh')
+        localStorage.setItem('selectedLanguage', 'zh')
       } else {
         setLanguage('en')
+        localStorage.setItem('selectedLanguage', 'en')
       }
     } catch {}
+    setMounted(true)
   }, [])
+
+  // Sync language to localStorage whenever it changes
+  useEffect(() => {
+    if (mounted) {
+      localStorage.setItem('selectedLanguage', language)
+    }
+  }, [language, mounted])
 
   // Save country to localStorage and update language (only if no language preference saved)
   const handleCountryChange = (country: string) => {
@@ -95,8 +109,12 @@ export default function HomePage() {
               </svg>
             </div>
             <div>
-              <div className="font-serif font-semibold text-base md:text-lg leading-tight">SilverConnect</div>
-              <div className="text-[7px] md:text-[9px] text-gray-400 tracking-widest uppercase">Care with Love</div>
+              <div className="font-serif font-semibold text-base md:text-lg leading-tight">
+                {language === 'zh' ? t('appName') : 'SilverConnect'}
+              </div>
+              <div className="text-[7px] md:text-[9px] text-gray-400 tracking-widest uppercase">
+                {language === 'zh' ? t('appTagline') : 'Care with Love'}
+              </div>
             </div>
           </div>
           <div className="flex-1 max-w-xs order-3 md:order-2 w-full md:w-auto">
@@ -116,16 +134,16 @@ export default function HomePage() {
             />
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <Link href="/services"   className="px-3 py-2 rounded-full text-sm text-gray-600 hover:bg-gray-50 hidden md:block">Services</Link>
-            <Link href="/providers"  className="px-3 py-2 rounded-full text-sm text-gray-600 hover:bg-gray-50 hidden md:block">Providers</Link>
-            <Link href="/agedcare"   className="px-3 py-2 rounded-full text-sm text-gray-600 hover:bg-gray-50 hidden md:block">Aged Care</Link>
+            <Link href="/services"   className="px-3 py-2 rounded-full text-sm text-gray-600 hover:bg-gray-50 hidden md:block">{t('services')}</Link>
+            <Link href="/providers"  className="px-3 py-2 rounded-full text-sm text-gray-600 hover:bg-gray-50 hidden md:block">{t('providers')}</Link>
+            <Link href="/agedcare"   className="px-3 py-2 rounded-full text-sm text-gray-600 hover:bg-gray-50 hidden md:block">{t('agedCare')}</Link>
             <button onClick={() => setModal('provider')}
               className="px-3 py-2 rounded-full text-sm border border-gray-200 text-gray-700 hover:border-[#2D6A5E] hover:text-[#2D6A5E] hidden md:block">
               {t('providerDashboard')}
             </button>
             <button onClick={() => setModal('customer')}
               className="px-4 py-2 rounded-full bg-[#2D6A5E] text-white text-sm font-medium hover:bg-[#1A3F38]">
-              {t('bookService')}
+              {t('bookNow')}
             </button>
           </div>
         </div>
@@ -142,13 +160,13 @@ export default function HomePage() {
           </h1>
           <p className="text-gray-500 leading-relaxed max-w-lg mb-4">
             {selectedCountry === 'CN' 
-              ? '为中国老年人提供可信赖的照护服务。在 ' + location.suburb + ' 附近预订经验丰富的照护人员。'
+              ? t('heroDescriptionCN').replace('{location}', displayLocation.suburb)
               : selectedCountry === 'CA'
-              ? 'Professional care services for Canadian seniors. Book experienced care workers near ' + location.suburb + ' today.'
-              : 'Book vetted, professional care workers near ' + location.suburb + ' in minutes. NDIS registered care in Australia.'}
+              ? t('heroDescriptionCA').replace('{location}', displayLocation.suburb)
+              : t('heroDescriptionAU').replace('{location}', displayLocation.suburb)}
           </p>
           <blockquote className="border-l-2 border-amber-400 pl-3 font-serif italic text-sm text-gray-400 mb-5">
-            &#34;{language === 'zh' ? '你们要彼此相爱' : 'Love one another'}&#34;
+            &#34;{language === 'zh' ? t('quoteTextZH') : t('quoteText')}&#34;
           </blockquote>
 
           <div className="mb-5">
@@ -163,13 +181,26 @@ export default function HomePage() {
               </button>
               <button className="flex flex-col px-4 py-3 rounded-xl text-left hover:bg-gray-50 border-l border-gray-100">
                 <span className="text-[10px] font-medium tracking-widest uppercase text-gray-400 mb-0.5">{t('detectedLocation')}</span>
-                <span className="text-sm text-gray-800 truncate">{location.suburb} {location.postcode}</span>
+                <span className="text-sm text-gray-800 truncate">
+                  {selectedCountry === 'CN' 
+                    ? `${displayLocation.province} ${displayLocation.suburb}`
+                    : `${displayLocation.suburb} ${displayLocation.postcode}`}
+                </span>
               </button>
             </div>
             <div className="border-t border-gray-100 mx-2 my-1" />
             <div className="flex items-center justify-between px-3 py-1.5">
               <span className="text-xs text-gray-400">
-                <strong className="text-gray-600">{nearbyProviders.length} {t('noProviders').includes('找不到') ? '位' : ''} provider{nearbyProviders.length !== 1 ? 's' : ''}</strong> near {location.suburb}
+                <strong className="text-gray-600">
+                  {language === 'zh' 
+                    ? t('providersCountZH')
+                        .replace('{count}', nearbyProviders.length.toString())
+                        .replace('{location}', displayLocation.suburb)
+                    : t('providersCount')
+                        .replace('{count}', nearbyProviders.length.toString())
+                        .replace('{plural}', nearbyProviders.length !== 1 ? 's' : '')
+                        .replace('{location}', displayLocation.suburb)}
+                </strong>
               </span>
               <Link href="/booking"
                 className="bg-[#2D6A5E] text-white px-5 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 hover:bg-[#1A3F38]">
@@ -179,7 +210,7 @@ export default function HomePage() {
           </div>
 
           <div className="flex gap-4 mt-4 flex-wrap">
-            {[t('backgroundChecked'), t('support24'), '4.9★', selectedCountry === 'AU' ? 'My Aged Care' : 'Verified'].map(text => (
+            {[t('backgroundChecked'), t('support24'), '4.9★', selectedCountry === 'AU' ? t('myAgedCare') : t('verified')].map(text => (
               <div key={text} className="flex items-center gap-1.5 text-xs text-gray-500">
                 <div className="w-4 h-4 rounded-full bg-[#E8F3EE] flex items-center justify-center text-[#2D6A5E] text-[8px] font-bold">✓</div>
                 {text}
@@ -192,7 +223,9 @@ export default function HomePage() {
           <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
             <div className="flex justify-between items-center mb-3">
               <div className="text-sm font-medium">
-                {t('browseProviders')} {language === 'zh' ? '在' : 'near'} {location.suburb} {language === 'zh' ? '' : location.postcode}
+                {language === 'zh' 
+                  ? t('browseProvidersNearZH').replace('{location}', displayLocation.suburb)
+                  : t('browseProvidersNear').replace('{location}', displayLocation.suburb)}
               </div>
               <Link href="/providers" className="text-xs text-[#2D6A5E] font-medium">{t('showProviders')}</Link>
             </div>

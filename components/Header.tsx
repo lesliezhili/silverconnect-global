@@ -7,7 +7,7 @@ import { translations, Language } from '@/lib/translations';
 
 export default function Header({ user, countryInfo, language = 'en', onSignInClick }: { user: any; countryInfo: any; language?: Language; onSignInClick?: () => void }) {
   const [showMenu, setShowMenu] = useState(false);
-  const t = (key: string) => translations[language][key as keyof typeof translations.en] || key;
+  const t = (key: string) => (translations[language] as any)[key] || key;
 
   async function handleSignOut() {
     await supabase.auth.signOut();

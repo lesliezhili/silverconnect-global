@@ -14,7 +14,7 @@ interface ServiceCardProps {
 }
 
 function getTranslation(language: Language, key: string) {
-  return translations[language][key as keyof typeof translations.en] || key;
+  return (translations[language] as any)[key] || key;
 }
 
 export default function ServiceCard({ service, price, country, onBook, user, language = 'en' }: ServiceCardProps) {

@@ -17,7 +17,7 @@ export default function AdminDashboard({ user, language = 'en' }: AdminDashboard
   const [stats, setStats] = useState<any>({});
   const [loading, setLoading] = useState(true);
 
-  const t = (key: string) => translations[language][key as keyof typeof translations.en] || key;
+  const t = (key: string) => (translations[language] as any)[key] || key;
 
   useEffect(() => {
     loadData();

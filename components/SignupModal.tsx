@@ -26,7 +26,7 @@ export default function SignupModal({ isOpen, onClose, country, language }: Sign
     specialties: [] as string[],
   });
 
-  const t = (key: string) => translations[language][key as keyof typeof translations.en] || key;
+  const t = (key: string) => (translations[language] as any)[key] || key;
 
   if (!isOpen) return null;
 

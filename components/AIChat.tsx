@@ -50,7 +50,7 @@ export default function AIChat({ isOpen, onClose, user, language, region }: AICh
 
   const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  const t = (key: string) => translations[language][key as keyof typeof translations.en] || key;
+  const t = (key: string) => (translations[language] as any)[key] || key;
 
   useEffect(() => {
     if (isOpen) {
