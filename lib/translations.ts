@@ -117,6 +117,87 @@ export const translations = {
     
     // Locations
     kewEast: 'Kew East',
+    
+    // Services Page
+    ourServices: 'Our Senior Care Services',
+    servicesSubtitle: 'Professional, compassionate care tailored to your needs',
+    searchServices: 'Search services...',
+    popular: 'Popular',
+    serviceDuration: 'Duration',
+    insuredProviders: 'Insured providers',
+    perHour: '/hour',
+    whatsIncluded: "What's included:",
+    moreServices: '+ {count} more services',
+    bookThisService: 'Book This Service',
+    noServicesFound: 'No services found matching your criteria.',
+    governmentFunding: 'Government Funding Available',
+    fundingDescription: 'Many of our services are covered by government programs including:',
+    homeCarePackage: 'Home Care Package',
+    homeCareLevels: 'Levels 1-4 available',
+    chsp: 'CHSP',
+    chspDescription: 'Commonwealth Home Support',
+    dva: 'DVA',
+    dvaDescription: "Veterans' Home Care",
+    checkEligibility: 'Check Your Eligibility',
+    
+    // Individual Services
+    servicePersonalCare: 'Personal Care',
+    servicePersonalCareDesc: 'Assistance with bathing, dressing, grooming, and daily hygiene routines.',
+    servicePersonalCareFeatures: ['Bathing assistance', 'Dressing help', 'Grooming support', 'Toileting assistance'],
+    
+    serviceHomeCleaning: 'Home Cleaning',
+    serviceHomeCleaningDesc: 'Regular housekeeping, vacuuming, dusting, mopping, and bathroom cleaning.',
+    serviceHomeCleaningFeatures: ['Vacuuming & mopping', 'Dusting surfaces', 'Bathroom cleaning', 'Kitchen cleaning'],
+    
+    serviceHomeMaintenance: 'Home Maintenance',
+    serviceHomeMaintenanceDesc: 'Small repairs, handyman services, and home safety modifications.',
+    serviceHomeMaintenanceFeatures: ['Light bulb replacement', 'Safety grab bars', 'Door/window repairs', 'Gutter cleaning'],
+    
+    serviceShoppingAssistance: 'Shopping Assistance',
+    serviceShoppingAssistanceDesc: 'Grocery shopping, errands, and prescription pickups.',
+    serviceShoppingAssistanceFeatures: ['Grocery shopping', 'Prescription pickup', 'Returns & exchanges', 'List management'],
+    
+    serviceCompanionship: 'Companionship',
+    serviceCompanionshipDesc: 'Friendly visits, conversation, social activities, and emotional support.',
+    serviceCompanionshipFeatures: ['Friendly conversation', 'Reading together', 'Walks outdoors', 'Game playing'],
+    
+    serviceMealPreparation: 'Meal Preparation',
+    serviceMealPreparationDesc: 'Nutritious meal planning, cooking, and dietary management.',
+    serviceMealPreparationFeatures: ['Meal planning', 'Grocery list creation', 'Cooking meals', 'Dietary compliance'],
+    
+    serviceTransportServices: 'Transport Services',
+    serviceTransportServicesDesc: 'Safe transportation to appointments, social events, and errands.',
+    serviceTransportServicesFeatures: ['Medical appointments', 'Social outings', 'Shopping trips', 'Door-to-door service'],
+    
+    serviceNursingCare: 'Nursing Care',
+    serviceNursingCareDesc: 'Professional nursing services including medication management and wound care.',
+    serviceNursingCareFeatures: ['Medication management', 'Wound care', 'Health monitoring', 'Vital signs check'],
+    
+    // Service Categories
+    categoryHealthWellbeing: 'Health & Wellbeing',
+    categoryHousehold: 'Household',
+    categoryDailyLiving: 'Daily Living',
+    categorySocialSupport: 'Social Support',
+    categoryMobility: 'Mobility',
+    
+    // Provider Card
+    providerYearsExperience: 'years experience',
+    cardBookNow: 'Book Now',
+    kmAway: 'km away',
+    
+    // Provider Names (for bilingual display)
+    providerNames: {
+      "Sarah's Senior Care": "萨拉养老护理",
+      "Golden Years Care": "金色年华护理",
+      "Compassionate Home Care": "温馨家居护理",
+      "Elderly Comfort Services": "长者舒适服务",
+      "Melbourne Senior Care": "墨尔本养老护理",
+      "Sydney Home Care": "悉尼居家护理",
+      "Brisbane Elder Care": "布里斯班长者护理",
+      "Perth Senior Services": "珀斯长者服务",
+      "Adelaide Home Care": "阿德莱德居家护理",
+      "Canberra Elder Support": "堪培拉长者支持",
+    },
   },
 
   zh: {
@@ -237,6 +318,87 @@ export const translations = {
     
     // Locations
     kewEast: 'Kew East',
+    
+    // Services Page
+    ourServices: '我们的养老护理服务',
+    servicesSubtitle: '专业、贴心的个性化护理服务',
+    searchServices: '搜索服务...',
+    popular: '热门',
+    serviceDuration: '时长',
+    insuredProviders: '已投保服务商',
+    perHour: '/小时',
+    whatsIncluded: '包含服务：',
+    moreServices: '+ {count} 项更多服务',
+    bookThisService: '预订此服务',
+    noServicesFound: '未找到符合条件的服务。',
+    governmentFunding: '政府资助可用',
+    fundingDescription: '我们的许多服务都包含在政府资助计划中：',
+    homeCarePackage: '居家护理套餐',
+    homeCareLevels: '1-4级可用',
+    chsp: 'CHSP',
+    chspDescription: '联邦居家支持计划',
+    dva: 'DVA',
+    dvaDescription: '退伍军人居家护理',
+    checkEligibility: '检查您的资格',
+    
+    // Individual Services
+    servicePersonalCare: '个人护理',
+    servicePersonalCareDesc: '协助沐浴、穿衣、梳洗和日常卫生护理。',
+    servicePersonalCareFeatures: ['沐浴协助', '穿衣帮助', '梳洗支持', '如厕协助'],
+    
+    serviceHomeCleaning: '家居清洁',
+    serviceHomeCleaningDesc: '定期家务、吸尘、除尘、拖地和浴室清洁。',
+    serviceHomeCleaningFeatures: ['吸尘和拖地', '除尘表面', '浴室清洁', '厨房清洁'],
+    
+    serviceHomeMaintenance: '家居维护',
+    serviceHomeMaintenanceDesc: '小型维修、手工服务和家居安全改造。',
+    serviceHomeMaintenanceFeatures: ['灯泡更换', '安全扶手', '门窗维修', '排水沟清洁'],
+    
+    serviceShoppingAssistance: '购物协助',
+    serviceShoppingAssistanceDesc: 'grocery购物、跑腿和处方取药。',
+    serviceShoppingAssistanceFeatures: ['grocery购物', '处方取药', '退换货', '清单管理'],
+    
+    serviceCompanionship: '陪伴服务',
+    serviceCompanionshipDesc: '友好探访、聊天、社交活动和情感支持。',
+    serviceCompanionshipFeatures: ['友好聊天', '一起阅读', '户外散步', '游戏娱乐'],
+    
+    serviceMealPreparation: '膳食准备',
+    serviceMealPreparationDesc: '营养膳食计划、烹饪和饮食管理。',
+    serviceMealPreparationFeatures: ['膳食计划', 'grocery清单创建', '烹饪餐食', '饮食搭配'],
+    
+    serviceTransportServices: '交通服务',
+    serviceTransportServicesDesc: '安全送医、社交活动和跑腿。',
+    serviceTransportServicesFeatures: ['医疗预约', '社交外出', '购物出行', '门到门服务'],
+    
+    serviceNursingCare: '护理服务',
+    serviceNursingCareDesc: '专业护理服务，包括药物管理和伤口护理。',
+    serviceNursingCareFeatures: ['药物管理', '伤口护理', '健康监测', '生命体征检查'],
+    
+    // Service Categories
+    categoryHealthWellbeing: '健康与福祉',
+    categoryHousehold: '家务',
+    categoryDailyLiving: '日常生活',
+    categorySocialSupport: '社交支持',
+    categoryMobility: '出行',
+    
+    // Provider Card
+    providerYearsExperience: '年经验',
+    cardBookNow: '立即预订',
+    kmAway: '公里',
+    
+    // Provider Names (for bilingual display)
+    providerNames: {
+      "Sarah's Senior Care": "萨拉养老护理",
+      "Golden Years Care": "金色年华护理",
+      "Compassionate Home Care": "温馨家居护理",
+      "Elderly Comfort Services": "长者舒适服务",
+      "Melbourne Senior Care": "墨尔本养老护理",
+      "Sydney Home Care": "悉尼居家护理",
+      "Brisbane Elder Care": "布里斯班长者护理",
+      "Perth Senior Services": "珀斯长者服务",
+      "Adelaide Home Care": "阿德莱德居家护理",
+      "Canberra Elder Support": "堪培拉长者支持",
+    },
   }
 };
 
@@ -252,7 +414,7 @@ export function getLanguage(country: 'AU' | 'CN' | 'CA'): Language {
   return country === 'CN' ? 'zh' : 'en';
 }
 
-export function t(key: string, lang: Language): string {
+export function t(key: string, lang: Language): string | string[] {
   const keys = key.split('.');
   let value: any = translations[lang];
   
@@ -261,7 +423,7 @@ export function t(key: string, lang: Language): string {
   }
   
   if (!value) {
-    return translations.en[key as keyof typeof translations.en] || key;
+    return (translations.en as any)[key] || key;
   }
   
   return value;

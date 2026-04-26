@@ -25,6 +25,15 @@ interface ProviderService {
   is_offered: boolean;
 }
 
+// Helper to get translated provider name
+function getProviderName(name: string, lang: Language): string {
+  const t = translations[lang];
+  if (lang === 'zh' && (t as any).providerNames?.[name]) {
+    return (t as any).providerNames[name];
+  }
+  return name;
+}
+
 export default function ProviderDashboard({ user, language }: ProviderDashboardProps) {
   const [provider, setProvider] = useState<any>(null);
   const [services, setServices] = useState<Service[]>([]);
@@ -250,7 +259,7 @@ export default function ProviderDashboard({ user, language }: ProviderDashboardP
             </div>
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <div className="font-semibold">{provider.full_name}</div>
+                <div className="font-semibold">{getProviderName(provider.full_name, language)}</div>
                 <div className="text-sm text-gray-500 flex items-center gap-1">
                   <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                   {provider.rating?.toFixed(1) || '5.0'} ({provider.total_ratings || 0})
@@ -259,7 +268,7 @@ export default function ProviderDashboard({ user, language }: ProviderDashboardP
               {provider.profile_image ? (
                 <img
                   src={provider.profile_image}
-                  alt={provider.full_name}
+                  alt={getProviderName(provider.full_name, language)}
                   className="w-12 h-12 rounded-full object-cover"
                 />
               ) : (

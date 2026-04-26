@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useLocation } from './LocationDetector'
 import { VICTORIA_POSTCODES } from '@/lib/location'
+import { supabase } from '@/lib/supabase'
 
 interface FormData {
   firstName: string; lastName: string; email: string; phone: string
@@ -21,11 +22,26 @@ const SERVICES_OPTIONS = [
 const CERT_OPTIONS = ['First Aid', 'CPR', 'NDIS Worker Orientation', 'Dementia Care', 'Manual Handling', 'Food Safety']
 const AVAIL_OPTIONS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
+// Map service names to category keys for database
+const SERVICE_CATEGORY_MAP: Record<string, string> = {
+  'Home cleaning': 'cleaning',
+  'Personal care': 'personal',
+  'Medication assistance': 'personal',
+  'Transport & escort': 'personal',
+  'Companionship': 'personal',
+  'Meal preparation': 'cooking',
+  'Wellness & exercise': 'personal',
+  'Wound care / nursing': 'maintenance',
+  'Garden care': 'gardening',
+  'Shopping assistance': 'personal',
+}
+
 export default function ProviderRegistration({ onClose }: { onClose?: () => void }) {
   const { location } = useLocation()
   const [step, setStep] = useState(1)
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [form, setForm] = useState<FormData>({
     firstName: '', lastName: '', email: '', phone: '',
     postcode: location.postcode, suburb: location.suburb,
@@ -45,13 +61,70 @@ export default function ProviderRegistration({ onClose }: { onClose?: () => void
         : [...(f[k] as string[]), val],
     }))
   }
+const handleSubmit = async () => {
+  setSubmitting(true);
+  setError(null);
 
-  const handleSubmit = async () => {
-    setSubmitting(true)
-    await new Promise(r => setTimeout(r, 1200))
-    setSubmitting(false)
-    setDone(true)
+  try {
+    const profileRes = await fetch('/api/provider/profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        phone: form.phone,
+        postcode: form.postcode,
+        suburb: form.suburb,
+        services: form.services,
+        experience: form.experience,
+        certifications: form.certifications,
+        bio: form.bio,
+      }),
+    });
+
+    let profileJson = null;
+    try {
+      profileJson = await profileRes.json();
+    } catch {
+      setError('Server returned an invalid response');
+      setSubmitting(false);
+      return;
+    }
+
+    if (profileJson.error) {
+      setError(profileJson.error);
+      setSubmitting(false);
+      return;
+    }
+
+    // Save availability with the access token from profile creation
+    if (form.availability.length > 0) {
+      const availabilityRes = await fetch('/api/provider/availability', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(profileJson.accessToken ? { 'Authorization': `Bearer ${profileJson.accessToken}` } : {})
+        },
+        body: JSON.stringify({ availability: form.availability }),
+      });
+      
+      if (!availabilityRes.ok) {
+        const availJson = await availabilityRes.json();
+        console.error('Availability error:', availJson);
+        // Don't fail the whole flow for availability errors
+      }
+    }
+
+    setDone(true);
+    onClose?.();
+  } catch (err: any) {
+    console.error('Submission error:', err);
+    setError(err.message || 'Failed to submit application');
+  } finally {
+    setSubmitting(false);
   }
+}
 
   if (done) return (
     <div className="text-center py-8 px-4">

@@ -3,144 +3,226 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, MapPin, Star, Phone, Mail, CheckCircle } from 'lucide-react';
+import { Search, MapPin, Star, Phone, Mail, CheckCircle, Loader2 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 interface Provider {
   id: string;
-  name: string;
+  full_name: string;
   category: string;
   rating: number;
-  reviews: number;
+  total_ratings: number;
   postcode: string;
+  city: string;
   distance: string;
-  verified: boolean;
+  is_verified: boolean;
   phone: string;
   email: string;
-  services: string[];
-  languages: string[];
-  availability: string;
-  priceRange: string;
+  specialties: string[];
+  bio: string;
+  years_experience: number;
+  certifications: string[];
+  profile_image: string;
   avatar: string;
 }
 
-// Mock provider data (replace with Supabase later)
-const mockProviders: Provider[] = [
-  {
-    id: '1',
-    name: 'Golden Care Services',
-    category: 'Aged Care Specialist',
-    rating: 4.9,
-    reviews: 127,
-    postcode: '3000',
-    distance: '0.8 km',
-    verified: true,
-    phone: '0400 123 456',
-    email: 'info@goldencare.com.au',
-    services: ['Personal Care', 'Cleaning', 'Companionship'],
-    languages: ['English', 'Mandarin'],
-    availability: 'Available today',
-    priceRange: '$45-65/hr',
-    avatar: '👵'
-  },
-  {
-    id: '2',
-    name: 'Helping Hands Senior Care',
-    category: 'Home Care Provider',
-    rating: 4.8,
-    reviews: 94,
-    postcode: '3001',
-    distance: '1.2 km',
-    verified: true,
-    phone: '0400 234 567',
-    email: 'hello@helpinghands.com.au',
-    services: ['Nursing', 'Personal Care', 'Meal Prep'],
-    languages: ['English', 'Italian'],
-    availability: 'Available tomorrow',
-    priceRange: '$50-70/hr',
-    avatar: '🤝'
-  },
-  {
-    id: '3',
-    name: 'Compassionate Companions',
-    category: 'Social Support',
-    rating: 4.7,
-    reviews: 63,
-    postcode: '3002',
-    distance: '2.1 km',
-    verified: true,
-    phone: '0400 345 678',
-    email: 'care@compassionate.com.au',
-    services: ['Companionship', 'Shopping', 'Transport'],
-    languages: ['English', 'Greek'],
-    availability: 'Available today',
-    priceRange: '$35-50/hr',
-    avatar: '💕'
-  },
-  {
-    id: '4',
-    name: 'Reliable Home Maintenance',
-    category: 'Home Repairs',
-    rating: 4.6,
-    reviews: 42,
-    postcode: '3003',
-    distance: '3.0 km',
-    verified: false,
-    phone: '0400 456 789',
-    email: 'repairs@reliable.com.au',
-    services: ['Maintenance', 'Gardening', 'Handyman'],
-    languages: ['English'],
-    availability: 'Available in 2 days',
-    priceRange: '$55-80/hr',
-    avatar: '🔧'
-  },
-  {
-    id: '5',
-    name: 'Nursing Care Plus',
-    category: 'Medical Care',
-    rating: 5.0,
-    reviews: 38,
-    postcode: '3004',
-    distance: '3.5 km',
-    verified: true,
-    phone: '0400 567 890',
-    email: 'nurses@nursingcare.com.au',
-    services: ['Nursing', 'Medication Management', 'Physiotherapy'],
-    languages: ['English', 'Vietnamese'],
-    availability: 'Limited availability',
-    priceRange: '$70-95/hr',
-    avatar: '🏥'
-  },
-  {
-    id: '6',
-    name: 'Happy Seniors Transport',
-    category: 'Transport Services',
-    rating: 4.8,
-    reviews: 56,
-    postcode: '3005',
-    distance: '4.2 km',
-    verified: true,
-    phone: '0400 678 901',
-    email: 'rides@happyseniors.com.au',
-    services: ['Transport', 'Medical Appointments', 'Shopping Trips'],
-    languages: ['English', 'Hindi'],
-    availability: 'Available today',
-    priceRange: '$30-45/hr',
-    avatar: '🚗'
-  }
-];
+// Category display names
+const CATEGORY_MAP: Record<string, string> = {
+  cleaning: 'Home Cleaning',
+  cooking: 'Meal Services',
+  gardening: 'Garden Care',
+  personal: 'Personal Care',
+  maintenance: 'Home Maintenance',
+};
+
+// Helper function to get emoji based on category
+function getCategoryEmoji(category: string | undefined): string {
+  const emojiMap: Record<string, string> = {
+    'Personal Care': '👵',
+    'Home Care': '🏠',
+    'Social Support': '💕',
+    'Home Maintenance': '🔧',
+    'Medical Care': '🏥',
+    'Transport Services': '🚗',
+    'Cleaning': '🧹',
+    'Gardening': '🌱',
+    'Meal Services': '🍲',
+  };
+  return emojiMap[category || ''] || '👵';
+}
+
+// Demo providers for when Supabase is not configured
+function getDemoProviders(): Provider[] {
+  return [
+    {
+      id: 'demo-1',
+      full_name: 'Golden Care Services',
+      category: 'Personal Care',
+      rating: 4.9,
+      total_ratings: 127,
+      postcode: '3000',
+      city: 'Melbourne',
+      distance: '0.8 km',
+      is_verified: true,
+      phone: '0400 123 456',
+      email: 'info@goldencare.com.au',
+      specialties: ['personal', 'cleaning'],
+      bio: 'Experienced aged care provider with 10+ years in senior care.',
+      years_experience: 10,
+      certifications: ['First Aid', 'CPR', 'Dementia Care'],
+      profile_image: '',
+      avatar: '👵'
+    },
+    {
+      id: 'demo-2',
+      full_name: 'Helping Hands Senior Care',
+      category: 'Home Care',
+      rating: 4.8,
+      total_ratings: 94,
+      postcode: '3001',
+      city: 'Melbourne',
+      distance: '1.2 km',
+      is_verified: true,
+      phone: '0400 234 567',
+      email: 'hello@helpinghands.com.au',
+      specialties: ['personal', 'cooking'],
+      bio: 'Compassionate care for seniors with meal preparation and companionship.',
+      years_experience: 5,
+      certifications: ['First Aid', 'NDIS Worker Orientation'],
+      profile_image: '',
+      avatar: '🤝'
+    },
+    {
+      id: 'demo-3',
+      full_name: 'Compassionate Companions',
+      category: 'Social Support',
+      rating: 4.7,
+      total_ratings: 63,
+      postcode: '3002',
+      city: 'Melbourne',
+      distance: '2.1 km',
+      is_verified: true,
+      phone: '0400 345 678',
+      email: 'care@compassionate.com.au',
+      specialties: ['personal'],
+      bio: 'Dedicated companionship and social support for isolated seniors.',
+      years_experience: 3,
+      certifications: ['Dementia Care'],
+      profile_image: '',
+      avatar: '💕'
+    },
+    {
+      id: 'demo-4',
+      full_name: 'Reliable Home Maintenance',
+      category: 'Home Maintenance',
+      rating: 4.6,
+      total_ratings: 42,
+      postcode: '3003',
+      city: 'Melbourne',
+      distance: '3.0 km',
+      is_verified: false,
+      phone: '0400 456 789',
+      email: 'repairs@reliable.com.au',
+      specialties: ['maintenance', 'gardening'],
+      bio: 'Handyman services for seniors - home repairs and garden maintenance.',
+      years_experience: 8,
+      certifications: [],
+      profile_image: '',
+      avatar: '🔧'
+    },
+    {
+      id: 'demo-5',
+      full_name: 'Nursing Care Plus',
+      category: 'Medical Care',
+      rating: 5.0,
+      total_ratings: 38,
+      postcode: '3004',
+      city: 'Melbourne',
+      distance: '3.5 km',
+      is_verified: true,
+      phone: '0400 567 890',
+      email: 'nurses@nursingcare.com.au',
+      specialties: ['personal', 'maintenance'],
+      bio: 'Qualified nursing staff with medication management expertise.',
+      years_experience: 12,
+      certifications: ['First Aid', 'CPR', 'Wound Care'],
+      profile_image: '',
+      avatar: '🏥'
+    },
+    {
+      id: 'demo-6',
+      full_name: 'Happy Seniors Transport',
+      category: 'Transport Services',
+      rating: 4.8,
+      total_ratings: 56,
+      postcode: '3005',
+      city: 'Melbourne',
+      distance: '4.2 km',
+      is_verified: true,
+      phone: '0400 678 901',
+      email: 'rides@happyseniors.com.au',
+      specialties: ['personal'],
+      bio: 'Safe transport to medical appointments, shopping, and social outings.',
+      years_experience: 6,
+      certifications: ['First Aid'],
+      profile_image: '',
+      avatar: '🚗'
+    }
+  ];
+}
 
 export default function ProvidersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedService, setSelectedService] = useState('all');
   const [selectedLanguage, setSelectedLanguage] = useState('all');
   const [userPostcode, setUserPostcode] = useState('3000');
+  const [providers, setProviders] = useState<Provider[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch providers from Supabase
+  useEffect(() => {
+    async function fetchProviders() {
+      try {
+        setLoading(true);
+        
+        const { data, error } = await supabase
+          .from('service_providers')
+          .select('*')
+          .eq('is_verified', true)
+          .order('rating', { ascending: false })
+          .limit(20);
+
+        if (error) {
+          console.warn('Supabase error, using demo data:', error.message);
+          setProviders(getDemoProviders());
+        } else if (data && data.length > 0) {
+          setProviders(data.map(p => ({
+            ...p,
+            category: (p.specialties?.[0] ? CATEGORY_MAP[p.specialties[0]] : 'General Care') || 'General Care',
+            avatar: p.profile_image || getCategoryEmoji(p.category),
+            total_ratings: p.total_ratings || 0,
+            rating: p.rating || 5.0,
+          })));
+        } else {
+          setProviders(getDemoProviders());
+        }
+      } catch (err) {
+        console.warn('Error fetching providers, using demo data:', err);
+        setProviders(getDemoProviders());
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchProviders();
+  }, []);
 
   // Get user's location on load
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          // In production, reverse geocode to get postcode
+        () => {
           setUserPostcode('3000');
         },
         () => {
@@ -150,16 +232,16 @@ export default function ProvidersPage() {
     }
   }, []);
 
-  const filteredProviders = mockProviders.filter(provider => {
-    const matchesSearch = provider.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          provider.services.some(s => s.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesService = selectedService === 'all' || provider.services.some(s => s.toLowerCase().includes(selectedService.toLowerCase()));
-    const matchesLanguage = selectedLanguage === 'all' || provider.languages.includes(selectedLanguage);
-    return matchesSearch && matchesService && matchesLanguage;
+  const filteredProviders = providers.filter(provider => {
+    const matchesSearch = 
+      provider.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      provider.specialties?.some(s => (CATEGORY_MAP[s] || s).toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesService = selectedService === 'all' || 
+      provider.specialties?.some(s => (CATEGORY_MAP[s] || s).toLowerCase().includes(selectedService.toLowerCase()));
+    return matchesSearch && matchesService;
   });
 
-  const allServices = Array.from(new Set(mockProviders.flatMap(p => p.services)));
-  const allLanguages = Array.from(new Set(mockProviders.flatMap(p => p.languages)));
+  const allServices = Array.from(new Set(providers.flatMap(p => p.specialties?.map(s => CATEGORY_MAP[s] || s) || [])));
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -195,6 +277,11 @@ export default function ProvidersPage() {
               {allServices.map(service => (
                 <option key={service} value={service}>{service}</option>
               ))}
+              <option value="cleaning">Home Cleaning</option>
+              <option value="personal">Personal Care</option>
+              <option value="cooking">Meal Services</option>
+              <option value="gardening">Garden Care</option>
+              <option value="maintenance">Home Maintenance</option>
             </select>
 
             <select
@@ -203,9 +290,9 @@ export default function ProvidersPage() {
               onChange={(e) => setSelectedLanguage(e.target.value)}
             >
               <option value="all">All Languages</option>
-              {allLanguages.map(lang => (
-                <option key={lang} value={lang}>{lang}</option>
-              ))}
+              <option value="English">English</option>
+              <option value="Mandarin">Mandarin</option>
+              <option value="Cantonese">Cantonese</option>
             </select>
           </div>
 
@@ -216,86 +303,108 @@ export default function ProvidersPage() {
           </div>
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+            <span className="ml-2 text-gray-600">Loading providers...</span>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <p className="text-red-600">{error}</p>
+          </div>
+        )}
+
         {/* Results Count */}
-        <div className="mb-6">
-          <p className="text-gray-600 text-lg">
-            Found <strong className="text-green-600">{filteredProviders.length}</strong> providers
-          </p>
-        </div>
+        {!loading && !error && (
+          <div className="mb-6">
+            <p className="text-gray-600 text-lg">
+              Found <strong className="text-green-600">{filteredProviders.length}</strong> providers
+            </p>
+          </div>
+        )}
 
         {/* Providers Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {filteredProviders.map((provider) => (
-            <div key={provider.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
-              <div className="flex items-start gap-4">
-                <div className="text-5xl bg-green-100 w-16 h-16 rounded-full flex items-center justify-center">
-                  {provider.avatar}
-                </div>
-                
-                <div className="flex-1">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-800">{provider.name}</h3>
-                      <p className="text-gray-600">{provider.category}</p>
-                    </div>
-                    {provider.verified && (
-                      <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-sm flex items-center gap-1">
-                        <CheckCircle className="w-4 h-4" /> Verified
-                      </span>
-                    )}
+        {!loading && !error && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {filteredProviders.map((provider) => (
+              <div key={provider.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
+                <div className="flex items-start gap-4">
+                  <div className="text-5xl bg-green-100 w-16 h-16 rounded-full flex items-center justify-center">
+                    {provider.avatar || '👵'}
                   </div>
-
-                  <div className="flex items-center gap-4 mb-3">
-                    <div className="flex items-center">
-                      <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                      <span className="font-semibold ml-1">{provider.rating}</span>
-                      <span className="text-gray-500 ml-1">({provider.reviews} reviews)</span>
-                    </div>
-                    <div className="flex items-center text-gray-600">
-                      <MapPin className="w-4 h-4 mr-1" />
-                      {provider.distance}
-                    </div>
-                    <div className="text-green-600 font-semibold">{provider.priceRange}</div>
-                  </div>
-
-                  <div className="mb-3">
-                    <div className="flex flex-wrap gap-2">
-                      {provider.services.map((service, idx) => (
-                        <span key={idx} className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-sm">
-                          {service}
+                  
+                  <div className="flex-1">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-800">{provider.full_name}</h3>
+                        <p className="text-gray-600">{provider.category}</p>
+                      </div>
+                      {provider.is_verified && (
+                        <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-sm flex items-center gap-1">
+                          <CheckCircle className="w-4 h-4" /> Verified
                         </span>
-                      ))}
+                      )}
                     </div>
-                  </div>
 
-                  <div className="mb-3 text-sm text-gray-600">
-                    <span className="font-semibold">Languages:</span> {provider.languages.join(', ')}
-                  </div>
+                    <div className="flex items-center gap-4 mb-3">
+                      <div className="flex items-center">
+                        <Star className="w-5 h-5 text-yellow-400 fill-current" />
+                        <span className="ml-1 font-semibold">{provider.rating?.toFixed(1) || '5.0'}</span>
+                        <span className="text-gray-500 ml-1">({provider.total_ratings || 0} reviews)</span>
+                      </div>
+                      <span className="text-gray-400">|</span>
+                      <span className="text-gray-600">{provider.city || 'Melbourne'}</span>
+                    </div>
 
-                  <div className="mb-4">
-                    <span className="inline-block bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
-                      {provider.availability}
-                    </span>
-                  </div>
+                    <div className="flex items-center text-gray-600 mb-2">
+                      <MapPin className="w-4 h-4 mr-1" />
+                      {provider.distance || provider.postcode}
+                    </div>
 
-                  <div className="flex gap-3">
-                    <button className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition font-semibold">
-                      Book Now
-                    </button>
-                    <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
-                      <Phone className="w-5 h-5" />
-                    </button>
-                    <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
-                      <Mail className="w-5 h-5" />
-                    </button>
+                    <div className="mb-3">
+                      <div className="flex flex-wrap gap-2">
+                        {provider.specialties?.map((specialty, idx) => (
+                          <span key={idx} className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-sm">
+                            {CATEGORY_MAP[specialty] || specialty}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="mb-3 text-sm text-gray-600">
+                      <span className="font-semibold">Experience:</span> {provider.years_experience ? `${provider.years_experience} years` : 'New provider'}
+                    </div>
+
+                    <div className="mb-4">
+                      <span className="inline-block bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
+                        {provider.is_verified ? 'Available now' : 'Pending verification'}
+                      </span>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <button className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition font-semibold">
+                        Book Now
+                      </button>
+                      <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                        <Phone className="w-5 h-5" />
+                      </button>
+                      <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                        <Mail className="w-5 h-5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
-        {filteredProviders.length === 0 && (
+        {/* Empty State */}
+        {filteredProviders.length === 0 && !loading && (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">No providers found matching your criteria.</p>
             <button 

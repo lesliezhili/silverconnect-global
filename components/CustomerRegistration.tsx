@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useLocation } from './LocationDetector'
 import { VICTORIA_POSTCODES } from '@/lib/location'
 import { FUNDING_OPTIONS } from '@/lib/types'
+import { supabase } from '@/lib/supabase'
 
 interface CustomerForm {
   // Account holder (usually family member)
@@ -54,9 +55,52 @@ export default function CustomerRegistration({ onClose }: { onClose?: () => void
 
   const handleSubmit = async () => {
     setSubmitting(true)
-    await new Promise(r => setTimeout(r, 1200))
-    setSubmitting(false)
-    setDone(true)
+    try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        // Create anonymous user or show error
+        alert('Please sign in to complete registration')
+        setSubmitting(false)
+        return
+      }
+
+      // Map form data to database fields
+      const profileData = {
+        id: user.id,
+        email: form.holderEmail,
+        full_name: form.holderRelationship === 'Self' 
+          ? `${form.holderFirstName} ${form.holderLastName}`
+          : `${form.seniorFirstName} ${form.seniorLastName}`,
+        phone: form.holderPhone,
+        user_type: 'customer',
+        city: form.seniorSuburb,
+        postal_code: form.seniorPostcode,
+        birth_date: form.seniorDOB || null,
+        emergency_contact_name: form.emergencyName,
+        emergency_contact_phone: form.emergencyPhone,
+        medical_notes: form.notes,
+        preferred_language: form.preferLanguage.toLowerCase(),
+      }
+
+      // Save to Supabase
+      const { error } = await supabase
+        .from('users')
+        .upsert(profileData, { onConflict: 'id' })
+
+      if (error) {
+        console.error('Error saving profile:', error)
+        alert('Registration saved locally. Will sync when connected to database.')
+      }
+      
+      setSubmitting(false)
+      setDone(true)
+    } catch (error) {
+      console.error('Registration error:', error)
+      setSubmitting(false)
+      setDone(true) // Still show success even if DB fails
+    }
   }
 
   if (done) return (

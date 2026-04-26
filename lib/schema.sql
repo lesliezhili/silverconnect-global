@@ -423,7 +423,17 @@ CREATE POLICY "Anyone can view services" ON services FOR SELECT USING (true);
 CREATE POLICY "Anyone can view service prices" ON service_prices FOR SELECT USING (true);
 CREATE POLICY "Anyone can view countries" ON countries FOR SELECT USING (true);
 CREATE POLICY "Anyone can view providers" ON service_providers FOR SELECT USING (true);
+CREATE POLICY "Providers can update own profile"
+ON service_providers
+FOR UPDATE
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Anyone can view provider availability" ON provider_availability FOR SELECT USING (true);
+CREATE POLICY "Providers can update own profile"
+ON service_providers
+FOR UPDATE
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Providers can view own pricing" ON provider_pricing FOR SELECT USING (
   EXISTS (SELECT 1 FROM service_providers WHERE service_providers.id = provider_pricing.provider_id AND auth.uid() = service_providers.user_id)
 );
