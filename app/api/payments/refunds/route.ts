@@ -1,24 +1,14 @@
-// filepath: app/api/disputes/route.ts
+// filepath: app/api/payments/refunds/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 
-// GET /api/disputes - Get disputes for current user
-export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const status = searchParams.get('status');
-  
+// GET /api/payments/refunds - Get refund requests
+export async function GET() {
   const { data: { user } } = await (await import('@/lib/supabase')).supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  // Check if user is a provider
-  const { data: provider } = await (await import('@/lib/supabase')).supabase
-    .from('service_providers')
-    .select('id')
-    .eq('user_id', user.id)
-    .maybeSingle();
-
-  let query = (await import('@/lib/supabase')).supabase
-    .from('disputes')
+  const { data: refunds, error } = await (await import('@/lib/supabase')).supabase
+    .from('refund_requests')
     .select(`
       *,
       bookings (
@@ -28,44 +18,34 @@ export async function GET(req: NextRequest) {
         total_price,
         services (name),
         service_providers (full_name)
-      )
+      ),
+      payment_transactions (stripe_payment_id, amount)
     `)
+    .eq('requested_by', user.id)
     .order('created_at', { ascending: false });
-
-  if (provider) {
-    query = query.eq('provider_id', provider.id);
-  } else {
-    query = query.eq('customer_id', user.id);
-  }
-
-  if (status) {
-    query = query.eq('status', status);
-  }
-
-  const { data: disputes, error } = await query;
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  return NextResponse.json({ disputes: disputes || [] });
+  return NextResponse.json({ refunds: refunds || [] });
 }
 
-// POST /api/disputes - Create dispute
+// POST /api/payments/refunds - Request refund
 export async function POST(req: NextRequest) {
   try {
     const { data: { user } } = await (await import('@/lib/supabase')).supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
-    const { bookingId, reason, description } = body;
+    const { bookingId, amount, reason } = body;
 
-    if (!bookingId || !reason) {
+    if (!bookingId || !amount || !reason) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // Get booking details
+    // Verify booking ownership and payment status
     const { data: booking, error: bookingError } = await (await import('@/lib/supabase')).supabase
       .from('bookings')
-      .select('*, services (name), service_providers (id, full_name)')
+      .select('*, payment_transactions(*)')
       .eq('id', bookingId)
       .single();
 
@@ -73,28 +53,37 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Booking not found" }, { status: 404 });
     }
 
-    // Verify user is the customer
     if (booking.user_id !== user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const { data, error } = await supabaseAdmin
-      .from('disputes')
+    if (booking.payment_status !== 'PAID') {
+      return NextResponse.json({ error: "Booking not paid" }, { status: 400 });
+    }
+
+    // Get payment transaction
+    const paymentTx = booking.payment_transactions?.[0];
+    if (!paymentTx) {
+      return NextResponse.json({ error: "Payment not found" }, { status: 404 });
+    }
+
+    // Create refund request
+    const { data: refund, error } = await supabaseAdmin
+      .from('refund_requests')
       .insert({
         booking_id: bookingId,
-        customer_id: user.id,
-        provider_id: booking.service_providers.id,
+        payment_transaction_id: paymentTx.id,
+        requested_by: user.id,
+        amount,
         reason,
-        description,
-        amount: booking.total_price,
-        status: 'open',
+        status: 'pending',
       })
       .select()
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-    return NextResponse.json({ success: true, dispute: data });
+    return NextResponse.json({ success: true, refund });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

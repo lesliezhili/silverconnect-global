@@ -1,12 +1,8 @@
-// filepath: app/api/provider/availability/route.ts
+// filepath: app/api/provider/zones/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 
-const DAY_MAP: Record<string, number> = {
-  Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6
-};
-
-// GET /api/provider/availability - Get provider availability
+// GET /api/provider/zones - Get provider zones
 export async function GET() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -19,74 +15,25 @@ export async function GET() {
 
   if (!provider) return NextResponse.json({ error: "Provider not found" }, { status: 404 });
 
-  const { data: availability, error } = await supabase
-    .from('provider_availability')
+  const { data: zones, error } = await supabase
+    .from('provider_zones')
     .select('*')
     .eq('provider_id', provider.id)
-    .order('day_of_week');
+    .order('created_at', { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  return NextResponse.json({ availability: availability || [] });
+  return NextResponse.json({ zones: zones || [] });
 }
 
-// POST /api/provider/availability - Set provider availability
+// POST /api/provider/zones - Add zone
 export async function POST(req: NextRequest) {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
-    const { availability } = body;
-
-    const { data: provider } = await supabase
-      .from('service_providers')
-      .select('id')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    if (!provider) return NextResponse.json({ error: "Provider not found" }, { status: 404 });
-
-    // Delete existing availability
-    await supabase.from('provider_availability').delete().eq('provider_id', provider.id);
-
-    // Insert new availability
-    if (availability && availability.length > 0) {
-      const availabilityRecords = availability.map((slot: any) => ({
-        provider_id: provider.id,
-        day_of_week: DAY_MAP[slot.day] !== undefined ? DAY_MAP[slot.day] : parseInt(slot.day),
-        start_time: slot.start,
-        end_time: slot.end,
-        is_available: slot.available !== false,
-      }));
-
-      const { error: insertError } = await supabaseAdmin
-        .from('provider_availability')
-        .insert(availabilityRecords);
-
-      if (insertError) return NextResponse.json({ error: insertError.message }, { status: 500 });
-    }
-
-    const { data: updatedAvailability } = await supabase
-      .from('provider_availability')
-      .select('*')
-      .eq('provider_id', provider.id)
-      .order('day_of_week');
-
-    return NextResponse.json({ success: true, availability: updatedAvailability });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-}
-
-// PUT /api/provider/availability - Update single availability slot
-export async function PUT(req: NextRequest) {
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const body = await req.json();
-    const { slotId, day, start, end, available } = body;
+    const { countryCode, city, postalCodeStart, postalCodeEnd, maxTravelRadiusKm } = body;
 
     const { data: provider } = await supabase
       .from('service_providers')
@@ -97,41 +44,85 @@ export async function PUT(req: NextRequest) {
     if (!provider) return NextResponse.json({ error: "Provider not found" }, { status: 404 });
 
     const { data, error } = await supabaseAdmin
-      .from('provider_availability')
-      .update({
-        day_of_week: DAY_MAP[day] !== undefined ? DAY_MAP[day] : parseInt(day),
-        start_time: start,
-        end_time: end,
-        is_available: available,
+      .from('provider_zones')
+      .insert({
+        provider_id: provider.id,
+        country_code: countryCode,
+        city,
+        postal_code_start: postalCodeStart,
+        postal_code_end: postalCodeEnd || postalCodeStart,
+        max_travel_radius_km: maxTravelRadiusKm || 20,
       })
-      .eq('id', slotId)
-      .eq('provider_id', provider.id)
       .select()
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-    return NextResponse.json({ success: true, slot: data });
+    return NextResponse.json({ success: true, zone: data });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
-// DELETE /api/provider/availability - Delete availability slot
+// PUT /api/provider/zones - Update zone
+export async function PUT(req: NextRequest) {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const body = await req.json();
+    const { zoneId, countryCode, city, postalCodeStart, postalCodeEnd, maxTravelRadiusKm } = body;
+
+    const { data: provider } = await supabase
+      .from('service_providers')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    const { data, error } = await supabaseAdmin
+      .from('provider_zones')
+      .update({
+        country_code: countryCode,
+        city,
+        postal_code_start: postalCodeStart,
+        postal_code_end: postalCodeEnd,
+        max_travel_radius_km: maxTravelRadiusKm,
+      })
+      .eq('id', zoneId)
+      .eq('provider_id', provider?.id)
+      .select()
+      .single();
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    return NextResponse.json({ success: true, zone: data });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+// DELETE /api/provider/zones - Delete zone
 export async function DELETE(req: NextRequest) {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { searchParams } = new URL(req.url);
-    const slotId = searchParams.get('id');
+    const zoneId = searchParams.get('id');
 
-    if (!slotId) return NextResponse.json({ error: "Slot ID required" }, { status: 400 });
+    if (!zoneId) return NextResponse.json({ error: "Zone ID required" }, { status: 400 });
+
+    const { data: provider } = await supabase
+      .from('service_providers')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle();
 
     const { error } = await supabaseAdmin
-      .from('provider_availability')
+      .from('provider_zones')
       .delete()
-      .eq('id', slotId);
+      .eq('id', zoneId)
+      .eq('provider_id', provider?.id);
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
