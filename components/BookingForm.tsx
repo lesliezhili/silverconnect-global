@@ -13,6 +13,16 @@ interface Provider {
   rating: number;
 }
 
+interface PricingInfo {
+  basePrice: number;
+  dayType: string;
+  timeSlot: string;
+  dayTypeMultiplier: number;
+  finalPrice: number;
+  currency: string;
+  available: boolean;
+}
+
 interface BookingFormProps {
   providerId?: string;
   service?: string;
@@ -25,11 +35,14 @@ export default function BookingForm({ providerId, service, onComplete }: Booking
   const [loading, setLoading] = useState(false);
   const [providers, setProviders] = useState<Provider[]>([]);
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
+  const [pricing, setPricing] = useState<PricingInfo | null>(null);
+  const [pricingLoading, setPricingLoading] = useState(false);
   const [error, setError] = useState("");
   
   const [formData, setFormData] = useState({
     provider_id: providerId || "",
     service_type: service || "",
+    country_code: "AU", // Default to Australia
     booking_date: "",
     start_time: "",
     duration_hours: 2,
@@ -46,6 +59,13 @@ export default function BookingForm({ providerId, service, onComplete }: Booking
     loadProviders();
   }, []);
 
+  // Fetch pricing when date/time/provider changes
+  useEffect(() => {
+    if (formData.provider_id && formData.service_type && formData.booking_date && formData.start_time) {
+      fetchPricing();
+    }
+  }, [formData.provider_id, formData.service_type, formData.booking_date, formData.start_time, formData.country_code]);
+
   const loadProviders = async () => {
     setLoading(true);
     try {
@@ -58,6 +78,39 @@ export default function BookingForm({ providerId, service, onComplete }: Booking
       console.error("Failed to load providers:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchPricing = async () => {
+    setPricingLoading(true);
+    try {
+      const params = new URLSearchParams({
+        service_id: formData.service_type,
+        provider_id: formData.provider_id,
+        country_code: formData.country_code,
+        booking_date: formData.booking_date,
+        booking_time: formData.start_time,
+        duration: formData.duration_hours.toString(),
+      });
+      
+      const response = await fetch(`/api/pricing?${params}`);
+      const data = await response.json();
+      
+      if (data.finalPrice !== undefined) {
+        setPricing({
+          basePrice: data.basePrice,
+          dayType: data.dayType,
+          timeSlot: data.timeSlot,
+          dayTypeMultiplier: data.dayTypeMultiplier,
+          finalPrice: data.finalPrice,
+          currency: data.currency || (formData.country_code === 'AU' ? 'AUD' : 'CAD'),
+          available: data.available,
+        });
+      }
+    } catch (err) {
+      console.error("Failed to fetch pricing:", err);
+    } finally {
+      setPricingLoading(false);
     }
   };
 
@@ -107,8 +160,19 @@ export default function BookingForm({ providerId, service, onComplete }: Booking
   };
 
   const getTotalPrice = () => {
+    if (pricing) {
+      return pricing.finalPrice;
+    }
     if (!selectedProvider) return 0;
     return selectedProvider.hourly_rate * formData.duration_hours;
+  };
+
+  const getCurrencySymbol = () => {
+    return formData.country_code === 'AU' ? 'A$' : 'C$';
+  };
+
+  const formatPrice = (amount: number) => {
+    return `${getCurrencySymbol()}${amount.toFixed(2)}`;
   };
 
   return (
@@ -200,6 +264,22 @@ export default function BookingForm({ providerId, service, onComplete }: Booking
                 <option value="gardening">Gardening</option>
                 <option value="personal">Personal Care</option>
                 <option value="maintenance">Home Maintenance</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Country *
+              </label>
+              <select
+                name="country_code"
+                value={formData.country_code}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="AU">Australia (AU)</option>
+                <option value="CA">Canada (CA)</option>
               </select>
             </div>
 
@@ -425,10 +505,38 @@ export default function BookingForm({ providerId, service, onComplete }: Booking
                   <span className="text-gray-600">Time:</span>
                   <span className="font-medium">{formData.start_time} ({formData.duration_hours}h)</span>
                 </div>
-                <div className="flex justify-between pt-2 border-t">
-                  <span className="text-gray-600">Total:</span>
-                  <span className="font-bold text-lg">${getTotalPrice()}</span>
-                </div>
+                
+                {/* Dynamic Pricing Breakdown */}
+                {pricingLoading ? (
+                  <div className="py-2 text-center text-gray-500">Calculating price...</div>
+                ) : pricing ? (
+                  <>
+                    <div className="flex justify-between pt-2 border-t">
+                      <span className="text-gray-600">Base Price:</span>
+                      <span className="font-medium">{formatPrice(pricing.basePrice)}</span>
+                    </div>
+                    {pricing.dayTypeMultiplier !== 1 && (
+                      <div className="flex justify-between text-orange-600">
+                        <span>{pricing.dayType} Rate ({pricing.dayTypeMultiplier}x):</span>
+                        <span className="font-medium">+{formatPrice(pricing.basePrice * (pricing.dayTypeMultiplier - 1))}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between pt-2 border-t">
+                      <span className="text-gray-600">Total:</span>
+                      <span className="font-bold text-lg">{formatPrice(pricing.finalPrice)}</span>
+                    </div>
+                    {!pricing.available && (
+                      <div className="mt-2 p-2 bg-red-100 text-red-700 text-xs rounded">
+                        ⚠️ Provider not available at selected time
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex justify-between pt-2 border-t">
+                    <span className="text-gray-600">Total:</span>
+                    <span className="font-bold text-lg">{formatPrice(getTotalPrice())}</span>
+                  </div>
+                )}
               </div>
             </div>
 

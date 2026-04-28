@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { matchProviders } from '@/lib/matching';
+import { calculatePrice, calculatePriceSync, PricingInput } from '@/lib/pricing';
+import { checkAvailabilityConflicts, isProviderAvailable } from '@/lib/availability';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -26,6 +28,7 @@ export async function POST(request: NextRequest) {
       latitude,
       longitude,
       specialInstructions,
+      duration,
     } = await request.json();
 
     if (!userId || !serviceId || !countryCode || !bookingDate || !bookingTime || !address) {
@@ -49,24 +52,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get service price for the country
-    const { data: price, error: priceError } = await supabase
-      .from('service_prices')
-      .select('*')
-      .eq('service_id', serviceId)
-      .eq('country_code', countryCode)
-      .single();
-
-    if (priceError || !price) {
-      return NextResponse.json(
-        { error: 'Service price not found for this country' },
-        { status: 404 }
-      );
-    }
-
     // Find available providers near the location
-    // For now, we'll match based on service specialties and location
-    // In a real implementation, we'd also check availability for the specific date/time
     const { data: providers, error: providersError } = await supabase
       .from('service_providers')
       .select(`
@@ -82,9 +68,10 @@ export async function POST(request: NextRequest) {
       console.error('Provider search error:', providersError);
     }
 
-    // Filter providers by distance (simplified - in production use proper geocoding)
+    // Filter providers by distance and availability
     let bestProvider = null;
     let bestDistance = Infinity;
+    const durationHours = duration || service.duration_minutes / 60 || 2;
 
     if (providers && latitude && longitude) {
       for (const provider of providers) {
@@ -95,14 +82,24 @@ export async function POST(request: NextRequest) {
           );
 
           if (distance < bestDistance) {
-            bestDistance = distance;
-            bestProvider = provider;
+            // Check availability for this provider
+            const isAvailable = await isProviderAvailable(provider.id, bookingDate, bookingTime);
+            if (isAvailable) {
+              bestDistance = distance;
+              bestProvider = provider;
+            }
           }
         }
       }
     } else if (providers && providers.length > 0) {
       // Fallback: pick first available provider
-      bestProvider = providers[0];
+      for (const provider of providers) {
+        const isAvailable = await isProviderAvailable(provider.id, bookingDate, bookingTime);
+        if (isAvailable) {
+          bestProvider = provider;
+          break;
+        }
+      }
     }
 
     if (!bestProvider) {
@@ -112,9 +109,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate final price (use custom price if set, otherwise base price)
-    const providerPricing = bestProvider.provider_pricing?.[0];
-    const finalPrice = providerPricing?.custom_price || price.price_with_tax;
+    // Check for conflicts
+    const conflictCheck = await checkAvailabilityConflicts(bestProvider.id, bookingDate, bookingTime, bookingTime);
+    if (conflictCheck.hasConflict) {
+      return NextResponse.json(
+        { error: 'Time slot is not available', conflicts: conflictCheck.conflicts },
+        { status: 409 }
+      );
+    }
+
+    // Calculate final price using new pricing engine
+    const pricingInput: PricingInput = {
+      serviceId,
+      providerId: bestProvider.id,
+      countryCode: countryCode as 'AU' | 'CA',
+      bookingDate,
+      bookingTime,
+      duration: durationHours,
+    };
+
+    let priceResult;
+    try {
+      priceResult = await calculatePrice(pricingInput);
+    } catch (dbError) {
+      console.warn('DB pricing failed, using sync version:', dbError);
+      priceResult = calculatePriceSync(pricingInput);
+    }
 
     // Create booking
     const { data: booking, error: bookingError } = await supabase
@@ -130,7 +150,8 @@ export async function POST(request: NextRequest) {
         latitude,
         longitude,
         special_instructions: specialInstructions,
-        total_price: finalPrice,
+        total_price: priceResult.totalPrice,
+        duration_hours: durationHours,
         status: 'PENDING',
         payment_status: 'PENDING',
       })
@@ -160,7 +181,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       booking,
       provider: bestProvider,
-      price: finalPrice,
+      price: priceResult,
     });
   } catch (error) {
     console.error('Booking API error:', error);

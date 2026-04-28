@@ -12,8 +12,75 @@ const DAY_MAP: Record<string, number> = {
   Sat: 6,
 };
 
-// GET /api/provider - Get provider profile
-export async function GET() {
+// GET /api/provider - Get provider profile or list available providers
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const available = searchParams.get('available');
+  const providerId = searchParams.get('provider_id');
+
+  // If provider_id is provided, return that specific provider's availability
+  if (providerId) {
+    const { data: provider, error } = await supabase
+      .from('service_providers')
+      .select('*')
+      .eq('id', providerId)
+      .maybeSingle();
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (!provider) return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
+
+    // Get availability for this specific provider
+    const { data: availability } = await supabase
+      .from('provider_availability')
+      .select('*')
+      .eq('provider_id', providerId)
+      .eq('is_available', true)
+      .order('day_of_week');
+
+    return NextResponse.json({ provider, availability: availability || [] });
+  }
+
+  // If available=true, return list of verified providers with availability
+  if (available === 'true') {
+    const { data: providers, error } = await supabase
+      .from('service_providers')
+      .select('*')
+      .eq('verified', true)
+      .eq('status', 'active')
+      .order('full_name');
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    // Get availability for each provider
+    const providerIds = providers?.map(p => p.id) || [];
+    let availabilityMap: Record<string, any[]> = {};
+    
+    if (providerIds.length > 0) {
+      const { data: allAvailability } = await supabase
+        .from('provider_availability')
+        .select('*')
+        .in('provider_id', providerIds)
+        .eq('is_available', true);
+      
+      if (allAvailability) {
+        for (const av of allAvailability) {
+          if (!availabilityMap[av.provider_id]) {
+            availabilityMap[av.provider_id] = [];
+          }
+          availabilityMap[av.provider_id].push(av);
+        }
+      }
+    }
+
+    const providersWithAvailability = providers?.map(p => ({
+      ...p,
+      availability: availabilityMap[p.id] || []
+    })) || [];
+
+    return NextResponse.json({ providers: providersWithAvailability });
+  }
+
+  // Default: Get current user's provider profile
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Send, MessageCircle, Phone, X, AlertTriangle } from 'lucide-react';
 import { translations, Language } from '@/lib/translations';
+import { generatePricingExplanation, getQuickEstimate } from '@/lib/ai/pricingTemplates';
 
 interface AIChatProps {
   isOpen: boolean;
@@ -104,6 +105,89 @@ How can I assist you today?`,
     return EMERGENCY_KEYWORDS.some(keyword => lowerMessage.includes(keyword));
   };
 
+  // Check if message is about pricing
+  const checkForPricingQuery = (message: string): boolean => {
+    const pricingKeywords = ['price', 'cost', 'rate', 'fee', 'charge', 'how much', 'pricing', 'expensive', 'cheap'];
+    const lowerMessage = message.toLowerCase();
+    return pricingKeywords.some(keyword => lowerMessage.includes(keyword));
+  };
+
+  // Handle pricing queries with detailed explanations
+  const handlePricingQuery = async (message: string): Promise<string> => {
+    const lowerMessage = message.toLowerCase();
+    const countryCode = region === 'CN' ? 'AU' : region; // Use AU or CA for pricing
+    
+    // Extract potential service type from message
+    let serviceId = 'cleaning';
+    if (lowerMessage.includes('clean') || lowerMessage.includes('house')) serviceId = 'cleaning';
+    else if (lowerMessage.includes('cook') || lowerMessage.includes('meal')) serviceId = 'cooking';
+    else if (lowerMessage.includes('garden')) serviceId = 'gardening';
+    else if (lowerMessage.includes('personal') || lowerMessage.includes('care')) serviceId = 'personal';
+    else if (lowerMessage.includes('handyman') || lowerMessage.includes('maintenance')) serviceId = 'maintenance';
+    
+    // Extract potential date from message (simplified - look for day names)
+    let bookingDate = new Date().toISOString().split('T')[0];
+    if (lowerMessage.includes('tomorrow')) {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      bookingDate = tomorrow.toISOString().split('T')[0];
+    } else if (lowerMessage.includes('saturday') || lowerMessage.includes('sunday')) {
+      // Find next weekend
+      const today = new Date();
+      const dayOfWeek = today.getDay();
+      const daysUntilSaturday = (6 - dayOfWeek + 7) % 7 || 7;
+      const saturday = new Date(today);
+      saturday.setDate(today.getDate() + daysUntilSaturday);
+      bookingDate = saturday.toISOString().split('T')[0];
+    }
+    
+    // Extract potential time from message
+    let bookingTime = '10:00';
+    if (lowerMessage.includes('morning')) bookingTime = '09:00';
+    else if (lowerMessage.includes('afternoon')) bookingTime = '14:00';
+    else if (lowerMessage.includes('evening')) bookingTime = '18:00';
+    
+    try {
+      // Get pricing from API
+      const params = new URLSearchParams({
+        service_id: serviceId,
+        country_code: countryCode,
+        booking_date: bookingDate,
+        booking_time: bookingTime,
+        duration: '2',
+      });
+      
+      const response = await fetch(`/api/pricing?${params}`);
+      const pricingData = await response.json();
+      
+      if (pricingData.finalPrice !== undefined) {
+        // Generate AI-friendly explanation
+        const explanation = generatePricingExplanation({
+          serviceId,
+          countryCode,
+          bookingDate,
+          bookingTime,
+          duration: 2,
+          basePrice: pricingData.basePrice,
+          dayType: pricingData.dayType,
+          timeSlot: pricingData.timeSlot,
+          dayTypeMultiplier: pricingData.dayTypeMultiplier,
+          timeMultiplier: pricingData.timeMultiplier,
+          finalPrice: pricingData.finalPrice,
+          currency: pricingData.currency,
+        });
+        
+        return explanation.fullExplanation;
+      }
+    } catch (error) {
+      console.error('Error fetching pricing for AI chat:', error);
+    }
+    
+    // Fallback to basic pricing info
+    const basicInfo = getQuickEstimate(serviceId, countryCode);
+    return basicInfo;
+  };
+
   const sendMessage = async () => {
     const messageText = inputMessage.trim();
     if (!messageText || isLoading) return;
@@ -126,25 +210,37 @@ How can I assist you today?`,
 
     const sendToAI = async (attempt = 0): Promise<void> => {
       try {
-        const response = await fetch('/api/ai-customer-service', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            message: messageText,
-            user_id: user?.id,
-            language,
-            region,
-            contact_method: 'web'
-          }),
-        });
+        // Check if this is a pricing query
+        const isPricingQuery = checkForPricingQuery(messageText);
+        
+        let responseText: string;
+        
+        if (isPricingQuery) {
+          // Handle pricing query with detailed explanation
+          responseText = await handlePricingQuery(messageText);
+        } else {
+          // Regular AI chat
+          const response = await fetch('/api/ai-customer-service', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              message: messageText,
+              user_id: user?.id,
+              language,
+              region,
+              contact_method: 'web'
+            }),
+          });
 
-        const data = await response.json();
+          const data = await response.json();
+          responseText = data.response;
+        }
 
         const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
-          text: data.response,
+          text: responseText,
           isUser: false,
           timestamp: new Date(),
           type: emergencyDetected ? 'emergency' : 'normal'

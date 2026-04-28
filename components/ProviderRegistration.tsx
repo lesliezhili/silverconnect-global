@@ -66,7 +66,7 @@ const handleSubmit = async () => {
   setError(null);
 
   try {
-    const profileRes = await fetch('/api/provider/profile', {
+    const profileRes = await fetch('/api/provider', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

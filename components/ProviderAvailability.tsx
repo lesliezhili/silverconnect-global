@@ -57,8 +57,9 @@ export default function ProviderAvailability({
   const loadAvailability = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/provider?availability=true&provider_id=${providerId}`);
+      const response = await fetch(`/api/provider?provider_id=${providerId}`);
       const data = await response.json();
+      console.log("Availability data:", data);
       if (data.availability && data.availability.length > 0) {
         const mapped = DAYS.map((day) => {
           const slot = data.availability.find(

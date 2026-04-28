@@ -1,9 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { X, Calendar, Clock, MapPin } from 'lucide-react';
 import { translations, Language } from '@/lib/translations';
+
+interface PricingInfo {
+  basePrice: number;
+  dayType: string;
+  timeSlot: string;
+  dayTypeMultiplier: number;
+  finalPrice: number;
+  currency: string;
+  available: boolean;
+}
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -11,6 +21,7 @@ interface BookingModalProps {
   price: any;
   user: any;
   country: any;
+  providerId?: string;
   onClose: () => void;
   onSuccess: (data?: { booking: any; provider: any; price: number }) => void;
   language?: Language;
@@ -22,6 +33,7 @@ export default function BookingModal({
   price,
   user,
   country,
+  providerId,
   onClose,
   onSuccess,
   language = 'en',
@@ -32,7 +44,59 @@ export default function BookingModal({
   const [instructions, setInstructions] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [pricing, setPricing] = useState<PricingInfo | null>(null);
+  const [pricingLoading, setPricingLoading] = useState(false);
   const t = (key: string) => (translations[language] as any)[key] || key;
+
+  // Fetch pricing when date/time changes
+  useEffect(() => {
+    if (date && time && providerId) {
+      fetchPricing();
+    }
+  }, [date, time, providerId]);
+
+  const fetchPricing = async () => {
+    if (!date || !time || !providerId) return;
+    
+    setPricingLoading(true);
+    try {
+      const params = new URLSearchParams({
+        service_id: service?.id || 'cleaning',
+        provider_id: providerId,
+        country_code: country || 'AU',
+        booking_date: date,
+        booking_time: time,
+        duration: '2',
+      });
+      
+      const response = await fetch(`/api/pricing?${params}`);
+      const data = await response.json();
+      
+      if (data.finalPrice !== undefined) {
+        setPricing({
+          basePrice: data.basePrice,
+          dayType: data.dayType,
+          timeSlot: data.timeSlot,
+          dayTypeMultiplier: data.dayTypeMultiplier,
+          finalPrice: data.finalPrice,
+          currency: data.currency || (country === 'CA' ? 'CAD' : 'AUD'),
+          available: data.available,
+        });
+      }
+    } catch (err) {
+      console.error("Failed to fetch pricing:", err);
+    } finally {
+      setPricingLoading(false);
+    }
+  };
+
+  const getCurrencySymbol = () => {
+    return country === 'CA' ? 'C$' : 'A$';
+  };
+
+  const formatPrice = (amount: number) => {
+    return `${getCurrencySymbol()}${amount.toFixed(2)}`;
+  };
 
   if (!isOpen || !service || !user) return null;
 
@@ -117,12 +181,43 @@ export default function BookingModal({
         <div className="bg-blue-50 p-4 rounded-lg mb-6">
           <p className="font-semibold text-lg">{service.name}</p>
           <p className="text-gray-600 text-sm mt-1">{service.description}</p>
-          <div className="mt-3 pt-3 border-t border-blue-200 flex justify-between">
-            <span className="text-gray-600">{t('duration')}: {service.duration_minutes} min</span>
-            <span className="font-bold text-lg">
-              {country === 'CN' ? '¥' : '$'}{price.price_with_tax}
-            </span>
-          </div>
+          
+          {/* Dynamic Pricing Breakdown */}
+          {pricingLoading ? (
+            <div className="mt-3 pt-3 border-t border-blue-200 flex justify-between items-center">
+              <span className="text-gray-600">Calculating price...</span>
+              <div className="animate-pulse bg-gray-300 h-6 w-20 rounded"></div>
+            </div>
+          ) : pricing ? (
+            <div className="mt-3 pt-3 border-t border-blue-200 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Base Price:</span>
+                <span>{formatPrice(pricing.basePrice)}</span>
+              </div>
+              {pricing.dayTypeMultiplier !== 1 && (
+                <div className="flex justify-between text-sm text-orange-600">
+                  <span>{pricing.dayType} Rate ({pricing.dayTypeMultiplier}x):</span>
+                  <span>+{formatPrice(pricing.basePrice * (pricing.dayTypeMultiplier - 1))}</span>
+                </div>
+              )}
+              <div className="flex justify-between font-bold text-lg">
+                <span>Total:</span>
+                <span>{formatPrice(pricing.finalPrice)}</span>
+              </div>
+              {!pricing.available && (
+                <div className="p-2 bg-red-100 text-red-700 text-xs rounded">
+                  ⚠️ Provider not available at selected time
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="mt-3 pt-3 border-t border-blue-200 flex justify-between">
+              <span className="text-gray-600">{t('duration')}: {service.duration_minutes} min</span>
+              <span className="font-bold text-lg">
+                {country === 'CN' ? '¥' : '$'}{price.price_with_tax}
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="space-y-4">
