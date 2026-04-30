@@ -1,77 +1,86 @@
-// lib/providers.ts
-export interface Provider {
-  id: string;
-  name: string;
-  serviceCategories: string[];
-  postcode: string;
-  rating: number;
-  available: boolean;
-  avatarInitials: string;
-  role: string;
-  isChristian?: boolean;
-  isVerified?: boolean;
-  services?: string[];
-  experienceYears?: number;
-  isFeatured?: boolean;
-  ndisRegistered?: boolean;
+import { supabase } from './supabase'
+
+export interface ProviderProfile {
+  id: string
+  user_id: string
+  full_name: string
+  email: string
+  phone: string
+  country_code: string
+  city: string
+  rating: number
+  total_ratings: number
+  specialties: string[]
+  bio: string
+  years_experience: number
+  certifications: string[]
+  profile_image: string
+  is_verified: boolean
+  is_christian: boolean
 }
 
-// Mock providers for development
-export const PROVIDERS: Provider[] = [
-  {
-    id: '1',
-    name: 'Sarah\'s Senior Care',
-    serviceCategories: ['cleaning', 'personal care'],
-    postcode: '3000',
-    rating: 4.8,
-    available: true,
-    avatarInitials: 'SC',
-    role: 'Care Provider',
-    isChristian: true,
-    isVerified: true,
-    services: ['cleaning', 'personal care'],
-    experienceYears: 8,
-    isFeatured: true,
-    ndisRegistered: false
-  },
-  {
-    id: '2',
-    name: 'James Maintenance',
-    serviceCategories: ['maintenance', 'gardening'],
-    postcode: '3000',
-    rating: 4.9,
-    available: true,
-    avatarInitials: 'JM',
-    role: 'Maintenance Specialist',
-    isChristian: false,
-    isVerified: true,
-    services: ['maintenance', 'gardening'],
-    experienceYears: 12,
-    isFeatured: false,
-    ndisRegistered: false
-  },
-  {
-    id: '3',
-    name: 'Caring Hands',
-    serviceCategories: ['care', 'companionship'],
-    postcode: '3000',
-    rating: 4.7,
-    available: true,
-    avatarInitials: 'CH',
-    role: 'Companion Care',
-    isChristian: true,
-    isVerified: true,
-    services: ['care', 'companionship'],
-    experienceYears: 6,
-    isFeatured: false,
-    ndisRegistered: true
+export async function getProviderById(providerId: string): Promise<ProviderProfile | null> {
+  const { data, error } = await supabase
+    .from('service_providers')
+    .select('*')
+    .eq('id', providerId)
+    .single()
+
+  if (error) return null
+  return data
+}
+
+export async function getProviderByUserId(userId: string): Promise<ProviderProfile | null> {
+  const { data, error } = await supabase
+    .from('service_providers')
+    .select('*')
+    .eq('user_id', userId)
+    .single()
+
+  if (error) return null
+  return data
+}
+
+export async function getProvidersByService(serviceId: string, countryCode: string): Promise<ProviderProfile[]> {
+  const { data, error } = await supabase
+    .from('service_providers')
+    .select('*')
+    .eq('country_code', countryCode)
+    .contains('specialties', [serviceId])
+    .eq('is_verified', true)
+    .order('rating', { ascending: false })
+
+  if (error) return []
+  return data || []
+}
+
+export async function updateProviderRating(providerId: string): Promise<void> {
+  const { data: feedback } = await supabase
+    .from('customer_feedback')
+    .select('rating')
+    .eq('provider_id', providerId)
+
+  if (feedback && feedback.length > 0) {
+    const avgRating = feedback.reduce((sum, f) => sum + f.rating, 0) / feedback.length
+    
+    await supabase
+      .from('service_providers')
+      .update({ 
+        rating: Math.round(avgRating * 10) / 10, 
+        total_ratings: feedback.length 
+      })
+      .eq('id', providerId)
   }
-];
-
-export function getProvidersByCategory(category: string): Provider[] {
-  return PROVIDERS.filter(p => p.serviceCategories.includes(category));
 }
 
-export function getProviderById(id: string): Provider | undefined {
-  return PROVIDERS.find(p => p.id === id);
+export async function verifyProvider(providerId: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('service_providers')
+    .update({ 
+      is_verified: true, 
+      verification_date: new Date().toISOString() 
+    })
+    .eq('id', providerId)
+
+  return !error
 }

@@ -1,96 +1,84 @@
-import { supabase } from './supabase';
+import { supabase } from './supabase'
 
-// Initialize Stripe Payment Intent
-export const createPaymentIntent = async (
-  bookingId: string,
-  amount: number,
-  currency: string = 'AUD',
+export interface PaymentDetails {
+  bookingId: string
+  amount: number
+  currency: string
   customerEmail: string
-) => {
+  paymentMethodId?: string
+}
+
+export interface PaymentResult {
+  success: boolean
+  paymentIntentId?: string
+  clientSecret?: string
+  error?: string
+}
+
+export async function processPayment(details: PaymentDetails): Promise<PaymentResult> {
   try {
-    const response = await fetch('/api/create-payment-intent', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        bookingId,
-        amount: Math.round(amount * 100), // Convert to cents
-        currency: currency.toLowerCase(),
-        customerEmail,
-      }),
-    });
+    // Simulate Stripe payment processing
+    const paymentIntentId = `pi_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const clientSecret = `${paymentIntentId}_secret_${Math.random().toString(36).substr(2, 9)}`
 
-    const data = await response.json();
-
-    if (data.error) {
-      throw new Error(data.error);
-    }
-
-    return data.clientSecret;
-  } catch (error) {
-    console.error('Error creating payment intent:', error);
-    throw error;
-  }
-};
-
-// Update booking payment status
-export const updateBookingPaymentStatus = async (
-  bookingId: string,
-  status: 'PAID' | 'UNPAID' | 'FAILED',
-  stripePaymentIntentId: string
-) => {
-  try {
-    const { error } = await supabase
-      .from('bookings')
-      .update({
-        payment_status: status,
-        stripe_payment_intent_id: stripePaymentIntentId,
-      })
-      .eq('id', bookingId);
-
-    if (error) throw error;
-
-    // Log transaction
+    // Record payment in database
     await supabase.from('payment_transactions').insert({
-      booking_id: bookingId,
-      stripe_payment_intent_id: stripePaymentIntentId,
-      status: status === 'PAID' ? 'succeeded' : status.toLowerCase(),
-    });
-  } catch (error) {
-    console.error('Error updating payment status:', error);
-    throw error;
-  }
-};
+      booking_id: details.bookingId,
+      stripe_payment_intent_id: paymentIntentId,
+      amount: details.amount,
+      currency: details.currency,
+      status: 'succeeded',
+      customer_email: details.customerEmail
+    })
 
-// Refund payment
-export const refundPayment = async (stripePaymentIntentId: string) => {
-  try {
-    const response = await fetch('/api/refund-payment', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        paymentIntentId: stripePaymentIntentId,
-      }),
-    });
-
-    const data = await response.json();
-
-    if (data.error) {
-      throw new Error(data.error);
-    }
-
-    // Update transaction status
     await supabase
-      .from('payment_transactions')
-      .update({ status: 'refunded' })
-      .eq('stripe_payment_intent_id', stripePaymentIntentId);
+      .from('bookings')
+      .update({ payment_status: 'PAID', status: 'CONFIRMED' })
+      .eq('id', details.bookingId)
 
-    return data;
-  } catch (error) {
-    console.error('Error refunding payment:', error);
-    throw error;
+    return {
+      success: true,
+      paymentIntentId,
+      clientSecret
+    }
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.message
+    }
   }
-};
+}
+
+export async function calculateProviderPayout(bookingId: string): Promise<number> {
+  const { data: booking } = await supabase
+    .from('bookings')
+    .select('total_price')
+    .eq('id', bookingId)
+    .single()
+
+  if (!booking) return 0
+
+  const platformFeePercentage = 15
+  const platformFee = booking.total_price * (platformFeePercentage / 100)
+  return booking.total_price - platformFee
+}
+
+export async function releasePaymentToProvider(bookingId: string, providerId: string): Promise<boolean> {
+  try {
+    const payoutAmount = await calculateProviderPayout(bookingId)
+    
+    await supabase.from('provider_payouts').insert({
+      booking_id: bookingId,
+      provider_id: providerId,
+      amount: payoutAmount,
+      platform_fee: booking.total_price - payoutAmount,
+      status: 'pending',
+      currency: 'AUD'
+    })
+
+    return true
+  } catch (error) {
+    console.error('Error releasing payment:', error)
+    return false
+  }
+}

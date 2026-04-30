@@ -2,407 +2,494 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { isSupabaseConfigured } from '@/lib/supabase'
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
 import { SERVICES_AU } from '@/lib/services'
 import { useLocation } from '@/components/LocationDetector'
-import LocationDetector from '@/components/LocationDetector'
-import { providersNearPostcode } from '@/lib/matching'
-import dynamic from 'next/dynamic'
+import { providersNearPostcode, getFeaturedProviders } from '@/lib/matching'
 import CountrySelector from '@/components/CountrySelector'
 import LanguageSelector from '@/components/LanguageSelector'
-import { translations, Language } from '@/lib/translations'
-
-const ProviderRegistration = dynamic(() => import('@/components/ProviderRegistration'), { ssr: false })
-const CustomerRegistration  = dynamic(() => import('@/components/CustomerRegistration'),  { ssr: false })
+import { User, LogOut, Settings, Calendar, Heart, Briefcase, Star, MapPin, Clock } from 'lucide-react'
+import AuthModal from '@/components/AuthModal'
+import ProviderRegistration from '@/components/ProviderRegistration'
+import CustomerRegistration from '@/components/CustomerRegistration'
 
 export default function HomePage() {
+  const router = useRouter()
   const { location } = useLocation()
-  const [modal, setModal] = useState<'provider' | 'customer' | null>(null)
   const [selectedCountry, setSelectedCountry] = useState('AU')
-  const [language, setLanguage] = useState<Language>('en')
-  const [mounted, setMounted] = useState(false)
-  
-  const nearbyProviders = providersNearPostcode(location.postcode, 15)
-  const topProviders    = nearbyProviders.slice(0, 3)
+  const [selectedLanguage, setSelectedLanguage] = useState('en')
+  const [nearbyProviders, setNearbyProviders] = useState<any[]>([])
+  const [featuredProviders, setFeaturedProviders] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [showProviderReg, setShowProviderReg] = useState(false)
+  const [showCustomerReg, setShowCustomerReg] = useState(false)
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login')
+  const [user, setUser] = useState<any>(null)
+  const [userProfile, setUserProfile] = useState<any>(null)
+  const [showUserMenu, setShowUserMenu] = useState(false)
+  const [isProvider, setIsProvider] = useState(false)
 
-  // For China, show Chinese location; for other countries, show actual location
-  const displayLocation = selectedCountry === 'CN' 
-    ? { suburb: '北京', postcode: '100000', province: '北京市', state: 'Beijing' }
-    : { ...location, province: '' }
-
-  const countries = {
-    AU: { name: 'Australia', flag: '🇦🇺', currency: 'AUD' },
-    CN: { name: 'China', flag: '🇨🇳', currency: 'CNY' },
-    CA: { name: 'Canada', flag: '🇨🇦', currency: 'CAD' }
-  }
-
-  const t = (key: string) => (translations[language] as any)[key] || key;
-
-  // Load preferences from localStorage and set default language based on country
+  // Check auth state on mount
   useEffect(() => {
-    try {
-      const savedCountry = localStorage.getItem('selectedCountry') || 'AU'
-      const savedLanguage = localStorage.getItem('selectedLanguage') as Language | null
-      
-      setSelectedCountry(savedCountry)
-      
-      // Set language based on saved preference or country default
-      if (savedLanguage) {
-        setLanguage(savedLanguage)
-      } else if (savedCountry === 'CN') {
-        setLanguage('zh')
-        localStorage.setItem('selectedLanguage', 'zh')
+    checkUser()
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser(session.user)
+        fetchUserProfile(session.user.id)
+        checkIfProvider(session.user.id)
       } else {
-        setLanguage('en')
-        localStorage.setItem('selectedLanguage', 'en')
+        setUser(null)
+        setUserProfile(null)
+        setIsProvider(false)
       }
-    } catch {}
-    setMounted(true)
+    })
+
+    return () => subscription.unsubscribe()
   }, [])
 
-  // Sync language to localStorage whenever it changes
-  useEffect(() => {
-    if (mounted) {
-      localStorage.setItem('selectedLanguage', language)
+  const checkUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    setUser(user)
+    if (user) {
+      await fetchUserProfile(user.id)
+      await checkIfProvider(user.id)
     }
-  }, [language, mounted])
+  }
 
-  // Save country to localStorage and update language (only if no language preference saved)
-  const handleCountryChange = (country: string) => {
-    setSelectedCountry(country)
-    localStorage.setItem('selectedCountry', country)
-    
-    // Only auto-set language if user hasn't manually selected a language before
-    const hasLanguagePreference = localStorage.getItem('selectedLanguage') !== null
-    if (!hasLanguagePreference) {
-      if (country === 'CN') {
-        setLanguage('zh')
+  const checkIfProvider = async (userId: string) => {
+    const { data } = await supabase
+      .from('service_providers')
+      .select('id')
+      .eq('user_id', userId)
+      .maybeSingle()
+    setIsProvider(!!data)
+  }
+
+  const fetchUserProfile = async (userId: string) => {
+    const { data } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle()
+    setUserProfile(data)
+  }
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    setUser(null)
+    setUserProfile(null)
+    setIsProvider(false)
+    setShowUserMenu(false)
+    router.push('/')
+  }
+
+  const handleGetStarted = () => {
+    if (user) {
+      if (isProvider) {
+        router.push('/dashboard/provider')
       } else {
-        setLanguage('en')
+        router.push('/dashboard/customer')
       }
+    } else {
+      setAuthMode('signup')
+      setShowAuthModal(true)
     }
   }
 
-  // Save language to localStorage
-  const handleLanguageChange = (lang: Language) => {
-    setLanguage(lang)
-    localStorage.setItem('selectedLanguage', lang)
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true)
+      
+      if (location.postcode) {
+        const providers = await providersNearPostcode(location.postcode, undefined, 10)
+        setNearbyProviders(providers || [])
+      }
+      
+      const featured = await getFeaturedProviders(6)
+      setFeaturedProviders(featured || [])
+      
+      setLoading(false)
+    }
+    
+    loadData()
+  }, [location.postcode])
+
+  const topProviders = nearbyProviders.slice(0, 3)
+
+  const displayLocation = selectedCountry === 'CN' 
+    ? '中国各地区' 
+    : location.suburb && location.postcode 
+      ? `${location.suburb} ${location.postcode}` 
+      : 'your area'
+
+  const handleOpenAuth = (mode: 'login' | 'signup') => {
+    setAuthMode(mode)
+    setShowAuthModal(true)
   }
 
-  if (!mounted) return null
+  const handleSignupTypeSelect = (type: 'customer' | 'provider') => {
+    setShowAuthModal(false)
+    if (type === 'customer') {
+      setShowCustomerReg(true)
+    } else {
+      setShowProviderReg(true)
+    }
+  }
+
+  const handleProviderApply = () => {
+    if (user) {
+      setShowProviderReg(true)
+    } else {
+      setAuthMode('signup')
+      setShowAuthModal(true)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+      </div>
+    )
+  }
 
   return (
-    <main className="min-h-screen bg-[#FBF7F2]">
-
-      {!isSupabaseConfigured && (
-        <div className="bg-amber-50 border-b border-amber-200 px-4 py-1.5 text-center text-xs text-amber-800">
-          Demo mode — add Supabase credentials to .env.local for live data
-        </div>
-      )}
-
-      <nav className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-3 md:px-6 py-2 md:h-16 flex items-center justify-between gap-2 md:gap-4 flex-wrap md:flex-nowrap">
-          <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
-            <div className="w-8 md:w-9 h-8 md:h-9 rounded-xl bg-[#2D6A5E] flex items-center justify-center">
-              <svg className="w-4 md:w-5 h-4 md:h-5 fill-white" viewBox="0 0 24 24">
-                <path d="M12 21.7C5.8 17.4 2 13.5 2 9.5 2 6.4 4.4 4 7.5 4c1.7 0 3.4.8 4.5 2.1C13.1 4.8 14.8 4 16.5 4 19.6 4 22 6.4 22 9.5c0 4-3.8 7.9-10 12.2z"/>
-              </svg>
-            </div>
-            <div>
-              <div className="font-serif font-semibold text-base md:text-lg leading-tight">
-                {language === 'zh' ? t('appName') : 'SilverConnect'}
-              </div>
-              <div className="text-[7px] md:text-[9px] text-gray-400 tracking-widest uppercase">
-                {language === 'zh' ? t('appTagline') : 'Care with Love'}
-              </div>
-            </div>
-          </div>
-          <div className="flex-1 max-w-xs order-3 md:order-2 w-full md:w-auto">
-            <LocationDetector compact onLocationChange={undefined} />
-          </div>
-          <div className="order-2 md:order-3 flex gap-2 items-center">
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+          <Link href="/" className="text-2xl font-bold text-green-600">
+            SilverConnect
+          </Link>
+          
+          <div className="flex items-center gap-4">
             <CountrySelector 
-              selectedCountry={selectedCountry} 
-              onCountryChange={handleCountryChange} 
-              countries={countries}
-              compact={true}
+              value={selectedCountry} 
+              onChange={setSelectedCountry}
             />
             <LanguageSelector 
-              language={language} 
-              onLanguageChange={handleLanguageChange}
-              compact={true}
+              value={selectedLanguage}
+              onChange={setSelectedLanguage}
             />
-          </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <Link href="/services"   className="px-3 py-2 rounded-full text-sm text-gray-600 hover:bg-gray-50 hidden md:block">{t('services')}</Link>
-            <Link href="/providers"  className="px-3 py-2 rounded-full text-sm text-gray-600 hover:bg-gray-50 hidden md:block">{t('providers')}</Link>
-            <Link href="/agedcare"   className="px-3 py-2 rounded-full text-sm text-gray-600 hover:bg-gray-50 hidden md:block">{t('agedCare')}</Link>
-            <button onClick={() => setModal('provider')}
-              className="px-3 py-2 rounded-full text-sm border border-gray-200 text-gray-700 hover:border-[#2D6A5E] hover:text-[#2D6A5E] hidden md:block">
-              {t('providerDashboard')}
-            </button>
-            <button onClick={() => setModal('customer')}
-              className="px-4 py-2 rounded-full bg-[#2D6A5E] text-white text-sm font-medium hover:bg-[#1A3F38]">
-              {t('bookNow')}
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      <section className="max-w-7xl mx-auto px-6 pt-12 pb-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-        <div>
-          <div className="inline-flex items-center gap-2 bg-amber-50 text-amber-800 text-xs font-medium px-3 py-1.5 rounded-full mb-5 border border-amber-100">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block animate-pulse" />
-            {t('heroSubtitle')}
-          </div>
-          <h1 className="font-serif text-4xl lg:text-5xl font-semibold leading-tight mb-4">
-            {t('heroTitle')}
-          </h1>
-          <p className="text-gray-500 leading-relaxed max-w-lg mb-4">
-            {selectedCountry === 'CN' 
-              ? t('heroDescriptionCN').replace('{location}', displayLocation.suburb)
-              : selectedCountry === 'CA'
-              ? t('heroDescriptionCA').replace('{location}', displayLocation.suburb)
-              : t('heroDescriptionAU').replace('{location}', displayLocation.suburb)}
-          </p>
-          <blockquote className="border-l-2 border-amber-400 pl-3 font-serif italic text-sm text-gray-400 mb-5">
-            &#34;{language === 'zh' ? t('quoteTextZH') : t('quoteText')}&#34;
-          </blockquote>
-
-          <div className="mb-5">
-            <LocationDetector onLocationChange={undefined} />
-          </div>
-
-          <div className="bg-white rounded-2xl border border-gray-100 p-2 shadow-lg">
-            <div className="grid grid-cols-2">
-              <button className="flex flex-col px-4 py-3 rounded-xl text-left hover:bg-gray-50">
-                <span className="text-[10px] font-medium tracking-widest uppercase text-gray-400 mb-0.5">{t('service')}</span>
-                <span className="text-sm text-gray-800">{t('cleaning')} &amp; {t('personalCare')}</span>
-              </button>
-              <button className="flex flex-col px-4 py-3 rounded-xl text-left hover:bg-gray-50 border-l border-gray-100">
-                <span className="text-[10px] font-medium tracking-widest uppercase text-gray-400 mb-0.5">{t('detectedLocation')}</span>
-                <span className="text-sm text-gray-800 truncate">
-                  {selectedCountry === 'CN' 
-                    ? `${displayLocation.province} ${displayLocation.suburb}`
-                    : `${displayLocation.suburb} ${displayLocation.postcode}`}
-                </span>
-              </button>
-            </div>
-            <div className="border-t border-gray-100 mx-2 my-1" />
-            <div className="flex items-center justify-between px-3 py-1.5">
-              <span className="text-xs text-gray-400">
-                <strong className="text-gray-600">
-                  {language === 'zh' 
-                    ? t('providersCountZH')
-                        .replace('{count}', nearbyProviders.length.toString())
-                        .replace('{location}', displayLocation.suburb)
-                    : t('providersCount')
-                        .replace('{count}', nearbyProviders.length.toString())
-                        .replace('{plural}', nearbyProviders.length !== 1 ? 's' : '')
-                        .replace('{location}', displayLocation.suburb)}
-                </strong>
-              </span>
-              <Link href="/booking"
-                className="bg-[#2D6A5E] text-white px-5 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 hover:bg-[#1A3F38]">
-                {t('bookNow')}
-              </Link>
-            </div>
-          </div>
-
-          <div className="flex gap-4 mt-4 flex-wrap">
-            {[t('backgroundChecked'), t('support24'), '4.9★', selectedCountry === 'AU' ? t('myAgedCare') : t('verified')].map(text => (
-              <div key={text} className="flex items-center gap-1.5 text-xs text-gray-500">
-                <div className="w-4 h-4 rounded-full bg-[#E8F3EE] flex items-center justify-center text-[#2D6A5E] text-[8px] font-bold">✓</div>
-                {text}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-3">
-          <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
-            <div className="flex justify-between items-center mb-3">
-              <div className="text-sm font-medium">
-                {language === 'zh' 
-                  ? t('browseProvidersNearZH').replace('{location}', displayLocation.suburb)
-                  : t('browseProvidersNear').replace('{location}', displayLocation.suburb)}
-              </div>
-              <Link href="/providers" className="text-xs text-[#2D6A5E] font-medium">{t('showProviders')}</Link>
-            </div>
-            {topProviders.length > 0 ? (
-              <div className="space-y-2">
-                {topProviders.map(({ provider: p, distanceKm: d, reasons }) => (
-                  <div key={p.id}
-                    className="flex items-center gap-3 p-2.5 rounded-xl bg-gray-50 hover:bg-[#E8F3EE] cursor-pointer transition-colors">
-                    <div className="w-10 h-10 rounded-full bg-[#E8F3EE] flex items-center justify-center text-sm font-semibold text-[#2D6A5E] flex-shrink-0">
-                      {p.avatarInitials}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-sm font-medium truncate">{p.name}</span>
-                        {p.isChristian && <span className="text-xs">✝️</span>}
-                      </div>
-                      <div className="text-xs text-gray-400">{p.role} · {d.toFixed(1)}km {language === 'zh' ? '远' : 'away'}</div>
-                      <div className="text-xs text-[#4A8C7D]">{reasons[0]}</div>
-                    </div>
-                    <div className="text-xs font-medium text-amber-600">★ {p.rating}</div>
+            
+            {user ? (
+              <div className="relative">
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-50 hover:bg-green-100 transition"
+                >
+                  <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                    {userProfile?.full_name?.charAt(0) || user.email?.charAt(0) || 'U'}
                   </div>
-                ))}
+                  <span className="text-sm font-medium text-gray-700 hidden md:inline">
+                    {userProfile?.full_name?.split(' ')[0] || user.email?.split('@')[0]}
+                  </span>
+                </button>
+                
+                {showUserMenu && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border z-50">
+                    <div className="p-3 border-b">
+                      <p className="font-medium text-gray-900">{userProfile?.full_name || user.email}</p>
+                      <p className="text-xs text-gray-500">{user.email}</p>
+                    </div>
+                    <div className="py-1">
+                      {isProvider ? (
+                        <button
+                          onClick={() => {
+                            setShowUserMenu(false)
+                            router.push('/dashboard/provider')
+                          }}
+                          className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          <Briefcase className="w-4 h-4" />
+                          Provider Dashboard
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            setShowUserMenu(false)
+                            router.push('/dashboard/customer')
+                          }}
+                          className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          <User className="w-4 h-4" />
+                          My Dashboard
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          setShowUserMenu(false)
+                          router.push('/bookings')
+                        }}
+                        className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <Calendar className="w-4 h-4" />
+                        My Bookings
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowUserMenu(false)
+                          router.push('/favorites')
+                        }}
+                        className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <Heart className="w-4 h-4" />
+                        Favorites
+                      </button>
+                      {!isProvider && (
+                        <button
+                          onClick={() => {
+                            setShowUserMenu(false)
+                            setShowProviderReg(true)
+                          }}
+                          className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-green-600 hover:bg-green-50"
+                        >
+                          <Briefcase className="w-4 h-4" />
+                          Become a Provider
+                        </button>
+                      )}
+                      <hr className="my-1" />
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Sign Out
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
-              <div className="text-sm text-gray-400 text-center py-4">
-                {language === 'zh' ? '暂无照护员在 ' + location.postcode + ' — 正在招聘中！' : 'No providers yet in ' + location.postcode + ' — recruiting now!'}
-                <button onClick={() => setModal('provider')}
-                  className="block mx-auto mt-2 text-xs text-[#2D6A5E] font-medium">
-                  {t('customerDescription')}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleOpenAuth('login')}
+                  className="text-gray-600 hover:text-gray-900 px-3 py-1.5 text-sm"
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={() => handleOpenAuth('signup')}
+                  className="px-4 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
+                >
+                  Sign Up
                 </button>
               </div>
             )}
           </div>
+        </div>
+      </header>
 
-          <div className="bg-[#E8F3EE] rounded-2xl p-4 border border-[#C8E3D6]">
-            <div className="flex justify-between items-start mb-2">
-              <div className="text-xs font-medium text-[#1A3F38]">
-                {location.suburb} {location.postcode} {language === 'zh' ? '覆盖范围' : 'coverage'}
-              </div>
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                nearbyProviders.length >= 5
-                  ? 'bg-[#2D6A5E] text-white'
-                  : 'bg-amber-100 text-amber-800'
-              }`}>
-                {nearbyProviders.length >= 5 ? language === 'zh' ? '已上线' : 'Live' : language === 'zh' ? '建设中' : 'Building'}
-              </span>
-            </div>
-            <div className="text-sm text-[#2D6A5E] mb-2">
-              {nearbyProviders.length} {language === 'zh' ? '位照护员' : 'provider' + (nearbyProviders.length !== 1 ? 's' : '')} {language === 'zh' ? '在15km内' : 'within 15km'}
-              {nearbyProviders.length < 5 && ` · ${5 - nearbyProviders.length} ${language === 'zh' ? '即将上线' : 'more to go-live'}`}
-            </div>
-            <div className="h-1.5 bg-[#C8E3D6] rounded-full overflow-hidden">
-              <div className="h-full bg-[#2D6A5E] rounded-full"
-                style={{ width: `${Math.min(100, (nearbyProviders.length / 5) * 100)}%` }} />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <button onClick={() => setModal('customer')}
-              className="flex flex-col items-start p-4 bg-white rounded-2xl border border-gray-100 hover:border-[#2D6A5E] hover:shadow-md transition-all text-left">
-              <span className="text-2xl mb-2">👤</span>
-              <div className="text-sm font-medium mb-1">{t('customer')}</div>
-              <div className="text-xs text-gray-400 leading-relaxed">{t('customerDescription')}</div>
-            </button>
-            <button onClick={() => setModal('provider')}
-              className="flex flex-col items-start p-4 bg-amber-50 rounded-2xl border border-amber-200 hover:border-amber-400 hover:shadow-md transition-all text-left">
-              <span className="text-2xl mb-2">✝️</span>
-              <div className="text-sm font-medium mb-1 text-amber-900">{language === 'zh' ? '成为照护员' : 'Join as provider'}</div>
-              <div className="text-xs text-amber-700 leading-relaxed">{language === 'zh' ? '受欢迎' : 'Christian carers'} {language === 'zh' ? '' : 'prioritised'}</div>
-            </button>
-          </div>
-
-          <div className="space-y-1.5">
-            {[
-              { c:'bg-green-400', msg: language === 'zh' ? `${location.suburb} 中的清洁预订` : `Booking cleaning in ${location.suburb}`, t:'2m', p:true },
-              { c:'bg-blue-400',  msg: language === 'zh' ? '完成医院接送服务' : 'Transport completed',                t:'5m', p:false },
-              { c:'bg-amber-400', msg: language === 'zh' ? '接受附近的新预订' : 'New booking accepted nearby',              t:'8m', p:false },
-            ].map((item, i) => (
-              <div key={i} className="flex items-center gap-2.5 px-3 py-2 bg-white rounded-xl border border-gray-100 text-xs">
-                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${item.c} ${item.p ? 'animate-pulse':''}`} />
-                <span className="flex-1 text-gray-500">{item.msg}</span>
-                <span className="text-gray-300">{item.t}</span>
-              </div>
-            ))}
-          </div>
+      {/* Hero Section */}
+      <section className="bg-gradient-to-r from-green-600 to-blue-600 text-white py-20">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            Quality Care at Your Fingertips
+          </h1>
+          <p className="text-lg md:text-xl mb-8 opacity-90">
+            Connect with trusted care providers in {displayLocation}
+          </p>
+          <button
+            onClick={handleGetStarted}
+            className="px-8 py-3 bg-white text-green-600 rounded-full font-semibold hover:bg-gray-100 transition text-lg"
+          >
+            {user ? 'Go to Dashboard' : 'Get Started'}
+          </button>
         </div>
       </section>
 
-      <div className="border-t border-gray-100" />
-      <section className="max-w-7xl mx-auto px-6 py-10">
-        <h2 className="font-serif text-2xl font-semibold mb-1">Book in seconds</h2>
-        <p className="text-gray-400 text-sm mb-5">
-          {nearbyProviders.length > 0
-            ? `${nearbyProviders.length} care workers available near ${location.suburb}`
-            : 'Select a service to get started'}
-        </p>
-        <div className="grid grid-cols-5 gap-3">
-          {[
-            {ico:'&#127968;',name:'Home Help',    price:'From $35/hr'},
-            {ico:'&#129330;',name:'Personal Care',price:'From $55/hr'},
-            {ico:'&#128663;',name:'Transport',    price:'From $45/hr'},
-            {ico:'&#127842;',name:'Meals',        price:'From $25/meal'},
-            {ico:'&#128155;',name:'Companionship',price:'From $40/hr'},
-          ].map(s => (
-            <Link key={s.name} href="/booking"
-              className="flex flex-col items-center gap-2 p-4 bg-white rounded-2xl border border-gray-100 hover:border-[#2D6A5E] hover:shadow-md transition-all group text-center">
-              <div className="w-12 h-12 rounded-full bg-gray-50 group-hover:bg-[#2D6A5E] flex items-center justify-center text-2xl transition-colors"
-                dangerouslySetInnerHTML={{__html: s.ico}} />
-              <div className="text-sm font-medium">{s.name}</div>
-              <div className="text-xs text-[#2D6A5E] font-medium">{s.price}</div>
-            </Link>
+      {/* Services Section */}
+      <section className="max-w-7xl mx-auto px-4 py-16">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-gray-900">Our Services</h2>
+          <p className="text-gray-500 mt-2">Professional care services tailored to your needs</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {SERVICES_AU.slice(0, 6).map((service) => (
+            <div
+              key={service.id}
+              className="bg-white rounded-2xl shadow-sm hover:shadow-md transition p-6 cursor-pointer"
+              onClick={() => user ? router.push(`/booking?service=${service.id}`) : handleOpenAuth('signup')}
+            >
+              <div className="text-4xl mb-4">
+                {service.category === 'cleaning' && '🧹'}
+                {service.category === 'cooking' && '🍳'}
+                {service.category === 'gardening' && '🌿'}
+                {service.category === 'personal' && '🤝'}
+                {service.category === 'maintenance' && '🔧'}
+              </div>
+              <h3 className="font-semibold text-lg">{service.name}</h3>
+              <p className="text-gray-500 text-sm mt-2 line-clamp-2">{service.description}</p>
+              <div className="mt-4 flex justify-between items-center">
+                <span className="text-green-600 font-bold">
+                  {selectedCountry === 'AU' && '$'}
+                  {selectedCountry === 'CN' && '¥'}
+                  {selectedCountry === 'CA' && '$'}
+                  {service.base_price}
+                </span>
+                <button 
+                  className="px-4 py-2 border border-green-600 text-green-600 rounded-lg hover:bg-green-50 transition text-sm"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    user ? router.push(`/booking?service=${service.id}`) : handleOpenAuth('signup')
+                  }}
+                >
+                  Book Now
+                </button>
+              </div>
+            </div>
           ))}
         </div>
       </section>
 
-      <div className="border-t border-gray-100" />
-      <section className="max-w-7xl mx-auto px-6 py-10">
-        <div className="flex justify-between items-end mb-5">
-          <div>
-            <h2 className="font-serif text-2xl font-semibold">All services</h2>
-            <p className="text-gray-400 text-sm mt-1">GST inclusive · HCP &amp; NDIS · {location.suburb}</p>
-          </div>
-          <Link href="/services" className="text-sm text-[#2D6A5E] font-medium">View all</Link>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {SERVICES_AU.slice(0,4).map(s => (
-            <Link key={s.id} href="/booking"
-              className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md hover:-translate-y-1 transition-all">
-              <div className="h-24 flex items-center justify-center text-4xl bg-gray-50">{s.icon}</div>
-              <div className="p-3">
-                <div className="font-medium text-sm mb-1">{s.name}</div>
-                <div className="text-xs text-gray-400 mb-2 leading-relaxed">{s.description}</div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">${s.basePrice}<span className="text-xs text-gray-400 font-normal">/hr</span></span>
-                  <span className="text-xs text-amber-600 font-medium">&#9733; {s.rating}</span>
+      {/* Top Providers Section */}
+      {topProviders.length > 0 && (
+        <section className="bg-white py-16">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900">Top Rated Providers Near You</h2>
+              <p className="text-gray-500 mt-2">Trusted professionals in your area</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {topProviders.map((provider) => (
+                <div
+                  key={provider.id}
+                  className="border rounded-2xl p-6 hover:shadow-lg transition cursor-pointer"
+                  onClick={() => user ? router.push(`/provider/${provider.id}`) : handleOpenAuth('signup')}
+                >
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-16 h-16 bg-gradient-to-r from-green-400 to-blue-400 rounded-full flex items-center justify-center text-white text-xl font-bold">
+                      {provider.full_name?.charAt(0) || 'P'}
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">{provider.full_name}</h3>
+                      <div className="flex items-center gap-1">
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        <span className="text-sm">{provider.rating}</span>
+                        <span className="text-gray-400 text-sm">
+                          ({provider.total_ratings} reviews)
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 text-gray-400 text-xs mt-1">
+                        <MapPin className="w-3 h-3" />
+                        {provider.city || 'Near you'}
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-gray-500 text-sm line-clamp-2">
+                    {provider.specialties?.slice(0, 3).join(' • ')}
+                  </p>
+                  <button 
+                    className="mt-4 w-full py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      user ? router.push(`/provider/${provider.id}`) : handleOpenAuth('signup')
+                    }}
+                  >
+                    View Profile
+                  </button>
                 </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <section className="bg-[#1A3F38] text-white py-14 mt-4">
-        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center gap-8 flex-wrap">
-          <div>
-            <h2 className="font-serif text-3xl font-semibold mb-2">Begin with love today</h2>
-            <p className="text-white/60 text-sm max-w-md leading-relaxed">
-              Connecting seniors in {location.suburb} with compassionate, vetted care workers.
-            </p>
-            <blockquote className="font-serif italic text-xs text-white/40 border-l-2 border-white/20 pl-3 mt-3">
-              &#34;Whatever you did for one of the least of these, you did for me.&#34; — Matthew 25:40
-            </blockquote>
+              ))}
+            </div>
           </div>
-          <div className="flex flex-col gap-3">
-            <button onClick={() => setModal('customer')}
-              className="px-7 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-medium text-sm">
-              Register for care
-            </button>
-            <button onClick={() => setModal('provider')}
-              className="px-7 py-3 rounded-xl border border-white/20 text-white/70 hover:text-white text-sm text-center">
-              Join as a care provider
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {modal && (
-        <div className="fixed inset-0 bg-black/40 z-[500] flex items-center justify-center p-4"
-          onClick={e => { if (e.target === e.currentTarget) setModal(null) }}>
-          <div className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl">
-            {modal === 'provider'
-              ? <ProviderRegistration onClose={() => setModal(null)} />
-              : <CustomerRegistration  onClose={() => setModal(null)} />
-            }
-          </div>
-        </div>
+        </section>
       )}
-    </main>
+
+      {/* Why Choose Us Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900">Why Choose SilverConnect?</h2>
+            <p className="text-gray-500 mt-2">We make care simple, reliable, and accessible</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Star className="w-8 h-8 text-green-600" />
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Trusted Providers</h3>
+              <p className="text-gray-500 text-sm">All providers are vetted, verified, and rated by customers</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Clock className="w-8 h-8 text-green-600" />
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Flexible Scheduling</h3>
+              <p className="text-gray-500 text-sm">Book services at times that work for you</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Heart className="w-8 h-8 text-green-600" />
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Compassionate Care</h3>
+              <p className="text-gray-500 text-sm">Caregivers who genuinely care about your wellbeing</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section - Become a Provider */}
+      <section className="bg-gray-900 text-white py-16">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold mb-4">Become a Care Provider</h2>
+          <p className="text-lg mb-8 opacity-90">Join our network of trusted care professionals and make a difference</p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={handleProviderApply}
+              className="px-8 py-3 bg-green-600 text-white rounded-full font-semibold hover:bg-green-700 transition"
+            >
+              Apply Now
+            </button>
+            {!user && (
+              <button
+                onClick={() => handleOpenAuth('signup')}
+                className="px-8 py-3 bg-white text-green-600 rounded-full font-semibold hover:bg-gray-100 transition"
+              >
+                Sign Up as Customer
+              </button>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Modals */}
+      {showAuthModal && (
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          mode={authMode}
+          onSwitchMode={(mode) => setAuthMode(mode)}
+          onSignupTypeSelect={handleSignupTypeSelect}
+        />
+      )}
+
+      {showCustomerReg && (
+        <CustomerRegistration
+          isOpen={showCustomerReg}
+          onClose={() => setShowCustomerReg(false)}
+          language={selectedLanguage as 'en' | 'zh'}
+          onSuccess={() => {
+            setShowCustomerReg(false)
+            checkUser()
+          }}
+        />
+      )}
+
+      {showProviderReg && (
+        <ProviderRegistration
+          isOpen={showProviderReg}
+          onClose={() => setShowProviderReg(false)}
+          language={selectedLanguage as 'en' | 'zh'}
+          onSuccess={() => {
+            setShowProviderReg(false)
+            checkUser()
+            router.push('/dashboard/provider')
+          }}
+        />
+      )}
+    </div>
   )
 }

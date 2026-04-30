@@ -1,200 +1,214 @@
-// lib/types.ts
+export interface User {
+  id: string
+  email: string
+  full_name: string
+  phone: string
+  user_type: 'customer' | 'provider'
+  country_code: string
+  city: string
+  address: string
+  postal_code: string
+  latitude: number | null
+  longitude: number | null
+  birth_date: string | null
+  emergency_contact_name: string | null
+  emergency_contact_phone: string | null
+  medical_notes: string | null
+  preferred_language: string
+  profile_image: string | null
+  created_at: string
+}
+
+export interface ServiceProvider {
+  id: string
+  user_id: string
+  full_name: string
+  email: string
+  phone: string
+  country_code: string
+  city: string
+  specialties: string[]
+  bio: string | null
+  years_experience: number
+  certifications: string[]
+  profile_image: string | null
+  rating: number
+  total_ratings: number
+  is_verified: boolean
+  is_christian: boolean
+  stripe_connect_id: string | null
+  created_at: string
+}
+
+export interface Booking {
+  id: string
+  booking_number: string
+  provider_id: string
+  customer_id: string
+  service_id: string
+  booking_date: string
+  start_time: string
+  end_time: string
+  duration_minutes: number
+  address: string
+  special_instructions: string | null
+  total_price: number
+  status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED'
+  payment_status: 'UNPAID' | 'PAID' | 'REFUNDED'
+  created_at: string
+}
+
+export interface AvailabilityWindow {
+  id: string
+  provider_id: string
+  day_of_week: number
+  slot_name: string
+  start_time: string
+  end_time: string
+  break_duration_minutes: number
+  is_available: boolean
+}
+
+export interface Review {
+  id: string
+  booking_id: string
+  rating: number
+  review: string
+  created_at: string
+}
+
+export interface Notification {
+  id: string
+  user_id: string
+  type: string
+  title: string
+  message: string
+  is_read: boolean
+  created_at: string
+}
+
+export interface PaymentTransaction {
+  id: string
+  booking_id: string
+  amount: number
+  currency: string
+  status: string
+  created_at: string
+}
+
+export interface DashboardStats {
+  totalBookings: number
+  completedBookings: number
+  cancelledBookings: number
+  totalEarnings: number
+  averageRating: number
+  responseRate: number
+}
+
+export interface TimeSlot {
+  date: string
+  start_time: string
+  end_time: string
+  is_available: boolean
+}
+
+export interface PricingTier {
+  hours: number
+  multiplier: number
+  description: string
+}
+
+// Funding options for NDIS and other funding sources
+export const FUNDING_OPTIONS = [
+  { id: 'self_funded', name: 'Self Funded', name_zh: '自费' },
+  { id: 'ndis', name: 'NDIS', name_zh: 'NDIS' },
+  { id: 'home_care_package', name: 'Home Care Package', name_zh: '家庭护理套餐' },
+  { id: 'aged_care', name: 'Aged Care', name_zh: '老年护理' },
+  { id: 'private_health', name: 'Private Health Insurance', name_zh: '私人健康保险' },
+  { id: 'myagedcare', name: 'My Aged Care', name_zh: 'My Aged Care' }
+]
 
 // Service categories
-export type ServiceCategory = 
-  | 'cleaning'
-  | 'gardening'
-  | 'personal-care'
-  | 'maintenance'
-  | 'companionship'
-  | 'shopping'
-  | 'transport'
-  | 'nursing'
-  | 'meal-prep'
-  | 'emergency';
+export const SERVICE_CATEGORIES = [
+  { id: 'cleaning', name: 'Cleaning', name_zh: '清洁服务', icon: '🧹' },
+  { id: 'cooking', name: 'Cooking', name_zh: '烹饪服务', icon: '🍳' },
+  { id: 'gardening', name: 'Gardening', name_zh: '园艺服务', icon: '🌿' },
+  { id: 'personal', name: 'Personal Care', name_zh: '个人护理', icon: '🤝' },
+  { id: 'maintenance', name: 'Maintenance', name_zh: '家居维修', icon: '🔧' }
+]
 
-// Funding options for seniors (Australian context)
-export const FUNDING_OPTIONS = [
-  { type: 'HCP', label: 'Home Care Package', description: 'Federal government funding for aged care', monthlySubsidy: 2000 },
-  { type: 'CHSP', label: 'Commonwealth Home Support Programme', description: 'Basic home help services', monthlySubsidy: 800 },
-  { type: 'PRIVATE', label: 'Private Payment', description: 'Self-funded care services', monthlySubsidy: 0 },
-  { type: 'DVA', label: 'Department of Veterans\' Affairs', description: 'Veterans\' care funding', monthlySubsidy: 1500 },
-  { type: 'NDIS', label: 'NDIS (for under 65)', description: 'National Disability Insurance Scheme', monthlySubsidy: 2500 },
-  { type: 'STCA', label: 'Short-Term Restorative Care', description: 'Temporary intensive care', monthlySubsidy: 3000 },
-  { type: 'TRANSITION', label: 'Transition Care Programme', description: 'Hospital to home transition', monthlySubsidy: 2500 }
-] as const;
+// Booking status options
+export const BOOKING_STATUS = {
+  PENDING: 'PENDING',
+  CONFIRMED: 'CONFIRMED',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+  DISPUTED: 'DISPUTED'
+} as const
 
-export type FundingOption = typeof FUNDING_OPTIONS[number]['type'];
+export type BookingStatus = typeof BOOKING_STATUS[keyof typeof BOOKING_STATUS]
 
-// Service interface
-export interface Service {
-  id: string;
-  name: string;
-  category: ServiceCategory;
-  description: string;
-  duration: number; // in minutes
-  basePrice: number;
-  taxRate: number;
-  requiresAssessment: boolean;
-  popularForSeniors: boolean;
-}
+// Payment status options
+export const PAYMENT_STATUS = {
+  UNPAID: 'UNPAID',
+  PAID: 'PAID',
+  REFUNDED: 'REFUNDED',
+  FAILED: 'FAILED'
+} as const
 
-// Booking interface
-export interface Booking {
-  id: string;
-  serviceId: string;
-  seniorId: string;
-  providerId: string;
-  date: string;
-  time: string;
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
-  amount: number;
-  fundingSource: FundingOption;
-  emergencyContact: {
-    name: string;
-    phone: string;
-    relationship: string;
-  };
-  specialInstructions?: string;
-  createdAt: string;
-}
+export type PaymentStatus = typeof PAYMENT_STATUS[keyof typeof PAYMENT_STATUS]
 
-// Senior/User interface
-export interface Senior {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  dateOfBirth: string;
-  postcode: string;
-  fundingPackage?: string;
-  emergencyContact: {
-    name: string;
-    phone: string;
-    relationship: string;
-  };
-  medicalConditions?: string[];
-  preferredLanguage: 'en' | 'zh' | 'fr';
-  createdAt: string;
-}
+// Days of week
+export const DAYS_OF_WEEK = [
+  { value: 0, label: 'Sunday', label_zh: '星期日', short: 'Sun' },
+  { value: 1, label: 'Monday', label_zh: '星期一', short: 'Mon' },
+  { value: 2, label: 'Tuesday', label_zh: '星期二', short: 'Tue' },
+  { value: 3, label: 'Wednesday', label_zh: '星期三', short: 'Wed' },
+  { value: 4, label: 'Thursday', label_zh: '星期四', short: 'Thu' },
+  { value: 5, label: 'Friday', label_zh: '星期五', short: 'Fri' },
+  { value: 6, label: 'Saturday', label_zh: '星期六', short: 'Sat' }
+]
 
-// Provider interface
-export interface Provider {
-  id: string;
-  name: string;
-  abn: string;
-  services: ServiceCategory[];
-  postcodes: string[];
-  rating: number;
-  verified: boolean;
-  languages: string[];
-  phone: string;
-  email: string;
-  avatarInitials: string;
-}
+// Time slots for availability
+export const TIME_SLOTS = [
+  '06:00', '07:00', '08:00', '09:00', '10:00', '11:00',
+  '12:00', '13:00', '14:00', '15:00', '16:00', '17:00',
+  '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'
+]
 
-// Country configuration
-export interface CountryConfig {
-  code: 'AU' | 'CN' | 'CA';
-  name: string;
-  currency: string;
-  currencySymbol: string;
-  taxRate: number;
-  taxName: string;
-  emergencyNumber: string;
-  language: string;
-}
+// Slot names for multiple windows per day
+export const SLOT_NAMES = ['Morning', 'Afternoon', 'Evening', 'Night']
 
-// Location types for Victoria, Australia
-export interface Location {
-  postcode: string;
-  suburb: string;
-  state: string;
-  country: string;
-  lat: number;
-  lng: number;
-}
+// Countries supported
+export const COUNTRIES = [
+  { code: 'AU', name: 'Australia', name_zh: '澳大利亚', currency: 'AUD', symbol: '$', taxRate: 10 },
+  { code: 'CN', name: 'China', name_zh: '中国', currency: 'CNY', symbol: '¥', taxRate: 0 },
+  { code: 'CA', name: 'Canada', name_zh: '加拿大', currency: 'CAD', symbol: '$', taxRate: 13 }
+]
 
-// Assessment required for certain services
-export interface Assessment {
-  id: string;
-  seniorId: string;
-  serviceId: string;
-  date: string;
-  assessor: string;
-  recommendations: string[];
-  approved: boolean;
-  notes: string;
-}
+// Languages supported
+export const LANGUAGES = [
+  { code: 'en', name: 'English', name_zh: '英语' },
+  { code: 'zh', name: '中文', name_zh: '中文' }
+]
 
-// Review/Rating interface
-export interface Review {
-  id: string;
-  bookingId: string;
-  seniorId: string;
-  providerId: string;
-  rating: number;
-  comment: string;
-  date: string;
-  verified: boolean;
-}
+// Certification options for providers
+export const CERTIFICATION_OPTIONS = [
+  'First Aid',
+  'CPR',
+  'NDIS Worker Orientation',
+  'Dementia Care',
+  'Manual Handling',
+  'Food Safety',
+  'Police Check',
+  'Working with Children Check'
+]
 
-// Helper functions
-export function formatCurrency(amount: number, countryCode: 'AU' | 'CN' | 'CA'): string {
-  const symbols = { AU: 'A$', CN: '¥', CA: 'C$' };
-  return `${symbols[countryCode]}${amount.toFixed(2)}`;
-}
-
-export function calculateTax(amount: number, taxRate: number): number {
-  return amount * (taxRate / 100);
-}
-
-export function getTotalWithTax(amount: number, taxRate: number): number {
-  return amount + calculateTax(amount, taxRate);
-}
-
-// Senior-friendly service recommendations based on common needs
-export const SENIOR_SERVICES = {
-  cleaning: {
-    name: 'Home Cleaning',
-    description: 'Light housekeeping, vacuuming, dusting, and bathroom cleaning',
-    seniorFriendly: true
-  },
-  'personal-care': {
-    name: 'Personal Care',
-    description: 'Bathing, dressing, grooming, and toileting assistance',
-    seniorFriendly: true
-  },
-  companionship: {
-    name: 'Social Support',
-    description: 'Friendly visits, conversation, and social activities',
-    seniorFriendly: true
-  },
-  'meal-prep': {
-    name: 'Meal Preparation',
-    description: 'Nutritious meal planning and cooking',
-    seniorFriendly: true
-  },
-  transport: {
-    name: 'Transport',
-    description: 'Medical appointments, shopping, and social outings',
-    seniorFriendly: true
-  }
-};
-
-// Emergency alert levels
-export enum EmergencyLevel {
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
-  CRITICAL = 'critical'
-}
-
-// Notification preferences
-export interface NotificationPreferences {
-  sms: boolean;
-  email: boolean;
-  emergencyAlerts: boolean;
-  appointmentReminders: boolean;
-  familyUpdates: boolean;
-}
+// Experience levels
+export const EXPERIENCE_LEVELS = [
+  { value: '0-1', label: 'Less than 1 year', label_zh: '少于1年' },
+  { value: '1-2', label: '1–2 years', label_zh: '1-2年' },
+  { value: '3-5', label: '3–5 years', label_zh: '3-5年' },
+  { value: '5-10', label: '5–10 years', label_zh: '5-10年' },
+  { value: '10+', label: '10+ years', label_zh: '10年以上' }
+]

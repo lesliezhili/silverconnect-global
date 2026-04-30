@@ -1,143 +1,91 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import { Star, X, ThumbsUp } from 'lucide-react';
-import { Language, translations } from '@/lib/translations';
+import { useState } from 'react'
+import { X, Star } from 'lucide-react'
 
 interface FeedbackModalProps {
-  isOpen: boolean;
-  booking: any;
-  userType: 'customer' | 'provider';
-  user: any;
-  onClose: () => void;
-  onSuccess: () => void;
-  language?: Language;
+  isOpen: boolean
+  onClose: () => void
+  bookingId: string
+  type: 'customer' | 'provider'
+  onSubmit: () => void
 }
 
-export default function FeedbackModal({
-  isOpen,
-  booking,
-  userType,
-  user,
-  onClose,
-  onSuccess,
-  language = 'en',
-}: FeedbackModalProps) {
-  const [rating, setRating] = useState(5);
-  const [hoverRating, setHoverRating] = useState(0);
-  const [review, setReview] = useState('');
-  const [criteriaRatings, setCriteriaRatings] = useState({
-    criteria1: 5, // punctuality or customer prep
-    criteria2: 5, // professionalism or accessibility
-    criteria3: 5, // quality or communication
-  });
-  const [wouldRecommend, setWouldRecommend] = useState(true);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+export default function FeedbackModal({ isOpen, onClose, bookingId, type, onSubmit }: FeedbackModalProps) {
+  const [rating, setRating] = useState(0)
+  const [hoverRating, setHoverRating] = useState(0)
+  const [review, setReview] = useState('')
+  const [punctuality, setPunctuality] = useState(0)
+  const [professionalism, setProfessionalism] = useState(0)
+  const [quality, setQuality] = useState(0)
+  const [submitting, setSubmitting] = useState(false)
 
-  const t = (key: string) => (translations[language] as any)[key] || key;
+  const handleSubmit = async () => {
+    if (rating === 0) {
+      alert('Please provide a rating')
+      return
+    }
 
-  if (!isOpen || !booking || !user) return null;
-
-  const isCustomer = userType === 'customer';
-  const criteria = isCustomer
-    ? [
-        { key: 'criteria1', label: 'Punctuality' },
-        { key: 'criteria2', label: 'Professionalism' },
-        { key: 'criteria3', label: 'Quality of Work' },
-      ]
-    : [
-        { key: 'criteria1', label: 'Customer Preparation' },
-        { key: 'criteria2', label: 'Home Accessibility' },
-        { key: 'criteria3', label: 'Communication' },
-      ];
-
-  async function handleSubmit() {
-    setLoading(true);
-    setError('');
-
+    setSubmitting(true)
     try {
-      if (isCustomer) {
-        // Customer feedback on provider
-        const { error: feedError } = await supabase
-          .from('customer_feedback')
-          .insert({
-            booking_id: booking.id,
-            customer_id: user.id,
-            provider_id: booking.provider_id, // Assuming this field exists
-            rating,
-            review,
-            punctuality_rating: criteriaRatings.criteria1,
-            professionalism_rating: criteriaRatings.criteria2,
-            quality_rating: criteriaRatings.criteria3,
-            would_rebook: wouldRecommend,
-          });
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookingId,
+          rating,
+          review,
+          punctuality,
+          professionalism,
+          quality,
+          type
+        })
+      })
 
-        if (feedError) throw feedError;
+      if (response.ok) {
+        alert('Thank you for your feedback!')
+        onSubmit()
+        onClose()
       } else {
-        // Provider feedback on customer
-        const { error: feedError } = await supabase
-          .from('provider_feedback')
-          .insert({
-            booking_id: booking.id,
-            provider_id: user.id,
-            customer_id: booking.user_id,
-            rating,
-            review,
-            customer_preparation_rating: criteriaRatings.criteria1,
-            accessibility_rating: criteriaRatings.criteria2,
-            communication_rating: criteriaRatings.criteria3,
-            would_service_again: wouldRecommend,
-          });
-
-        if (feedError) throw feedError;
+        alert('Failed to submit feedback')
       }
-
-      onSuccess();
-      onClose();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (error) {
+      alert('Error submitting feedback')
     } finally {
-      setLoading(false);
+      setSubmitting(false)
     }
   }
 
+  if (!isOpen) return null
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg p-8 w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">
-            {isCustomer ? 'Rate Your Experience' : 'Rate Customer Experience'}
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl max-w-md w-full">
+        <div className="flex justify-between items-center p-4 border-b">
+          <h2 className="text-xl font-semibold">
+            {type === 'customer' ? 'Rate Your Experience' : 'Rate the Customer'}
           </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <X className="w-6 h-6" />
+          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-lg">
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Service Info */}
-        <div className="bg-gray-50 p-3 rounded-lg mb-6">
-          <p className="font-semibold text-sm">{isCustomer ? 'Service completed' : 'Booking information'}</p>
-          <p className="text-gray-600 text-xs mt-1">Date: {booking.booking_date}</p>
-        </div>
-
-        <div className="space-y-6">
-          {/* Overall Rating */}
-          <div>
-            <label className="block text-sm font-medium mb-3">Overall Rating</label>
-            <div className="flex justify-center gap-2">
+        <div className="p-4 space-y-4">
+          {/* Rating Stars */}
+          <div className="text-center">
+            <p className="text-sm text-gray-600 mb-2">Overall Rating</p>
+            <div className="flex gap-1 justify-center">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   key={star}
+                  onMouseEnter={() => setHoverRating(star)}
+                  onMouseLeave={() => setHoverRating(0)}
                   onClick={() => setRating(star)}
-                  className="transition-transform hover:scale-110"
+                  className="focus:outline-none"
                 >
                   <Star
                     className={`w-8 h-8 ${
-                      star <= rating
+                      star <= (hoverRating || rating)
                         ? 'fill-yellow-400 text-yellow-400'
                         : 'text-gray-300'
                     }`}
@@ -145,36 +93,24 @@ export default function FeedbackModal({
                 </button>
               ))}
             </div>
-            <p className="text-center text-sm mt-2 text-gray-600">
-              {rating} / 5 stars
-            </p>
           </div>
 
-          {/* Criteria Ratings */}
-          <div className="border-t pt-4">
-            <label className="text-sm font-medium mb-3 block">Detailed Ratings</label>
-            {criteria.map((c) => (
-              <div key={c.key} className="mb-4">
-                <div className="flex justify-between mb-2">
-                  <span className="text-sm">{c.label}</span>
-                  <span className="text-sm font-semibold">{criteriaRatings[c.key as keyof typeof criteriaRatings]}/5</span>
-                </div>
-                <div className="flex gap-1">
+          {/* Detailed Ratings for Customer Feedback */}
+          {type === 'customer' && (
+            <>
+              <div>
+                <label className="block text-sm font-medium mb-1">Punctuality</label>
+                <div className="flex gap-2">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
                       key={star}
-                      onClick={() =>
-                        setCriteriaRatings({
-                          ...criteriaRatings,
-                          [c.key]: star,
-                        })
-                      }
-                      className="flex-1"
+                      onClick={() => setPunctuality(star)}
+                      className="focus:outline-none"
                     >
                       <Star
-                        className={`w-5 h-5 mx-auto ${
-                          star <= criteriaRatings[c.key as keyof typeof criteriaRatings]
-                            ? 'fill-blue-400 text-blue-400'
+                        className={`w-6 h-6 ${
+                          star <= punctuality
+                            ? 'fill-yellow-400 text-yellow-400'
                             : 'text-gray-300'
                         }`}
                       />
@@ -182,61 +118,74 @@ export default function FeedbackModal({
                   ))}
                 </div>
               </div>
-            ))}
-          </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Professionalism</label>
+                <div className="flex gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      onClick={() => setProfessionalism(star)}
+                      className="focus:outline-none"
+                    >
+                      <Star
+                        className={`w-6 h-6 ${
+                          star <= professionalism
+                            ? 'fill-yellow-400 text-yellow-400'
+                            : 'text-gray-300'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Service Quality</label>
+                <div className="flex gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      onClick={() => setQuality(star)}
+                      className="focus:outline-none"
+                    >
+                      <Star
+                        className={`w-6 h-6 ${
+                          star <= quality
+                            ? 'fill-yellow-400 text-yellow-400'
+                            : 'text-gray-300'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Review Text */}
           <div>
-            <label className="text-sm font-medium mb-2 block">Your Review</label>
+            <label className="block text-sm font-medium mb-1">Your Review</label>
             <textarea
               value={review}
               onChange={(e) => setReview(e.target.value)}
-              placeholder="Share your experience..."
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              rows={3}
+              placeholder={type === 'customer' ? 'Share your experience with this provider...' : 'Share your experience with this customer...'}
+              rows={4}
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
+        </div>
 
-          {/* Would Recommend */}
-          <div>
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={wouldRecommend}
-                onChange={(e) => setWouldRecommend(e.target.checked)}
-                className="w-4 h-4"
-              />
-              <span className="text-sm">
-                {isCustomer ? 'I would rebook this provider' : 'I would service this customer again'}
-              </span>
-            </label>
-          </div>
-
-          {error && (
-            <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
-
-          {/* Buttons */}
-          <div className="flex gap-3 pt-4">
-            <button
-              onClick={onClose}
-              className="flex-1 bg-gray-200 text-gray-800 py-2 rounded-lg font-medium hover:bg-gray-300 transition"
-            >
-              Skip
-            </button>
-            <button
-              onClick={handleSubmit}
-              disabled={loading}
-              className="flex-1 bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-400 transition flex items-center justify-center gap-2"
-            >
-              <ThumbsUp className="w-4 h-4" />
-              {loading ? 'Submitting...' : 'Submit Feedback'}
-            </button>
-          </div>
+        <div className="p-4 border-t">
+          <button
+            onClick={handleSubmit}
+            disabled={submitting || rating === 0}
+            className="w-full py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 transition"
+          >
+            {submitting ? 'Submitting...' : 'Submit Feedback'}
+          </button>
         </div>
       </div>
     </div>
-  );
+  )
 }

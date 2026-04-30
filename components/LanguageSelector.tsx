@@ -1,60 +1,59 @@
-'use client';
+'use client'
 
-import { Language } from '@/lib/translations';
+import { useState, useEffect } from 'react'
+import { Globe } from 'lucide-react'
 
-const languageOptions: Record<Language, { name: string; label: string }> = {
-  en: { name: 'English', label: 'EN' },
-  zh: { name: '中文', label: '中文' }
-};
+interface Language {
+  code: string
+  name: string
+  flag: string
+}
 
-export default function LanguageSelector({
-  language,
-  onLanguageChange,
-  compact = false
-}: {
-  language: Language;
-  onLanguageChange: (lang: Language) => void;
-  compact?: boolean;
-}) {
-  // Only support English and Chinese as requested
-  const supportedLanguages: Language[] = ['en', 'zh'];
+const supportedLanguages: Language[] = [
+  { code: 'en', name: 'English', flag: '🇬🇧' },
+  { code: 'zh', name: '中文', flag: '🇨🇳' }
+]
 
-  if (compact) {
-    return (
-      <select
-        value={language}
-        onChange={(e) => onLanguageChange(e.target.value as Language)}
-        className="px-2 py-1 rounded-lg bg-white border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-      >
-        {supportedLanguages.map((code) => {
-          const info = languageOptions[code];
-          return (
-            <option key={code} value={code}>
-              {info.label}
-            </option>
-          );
-        })}
-      </select>
-    );
+interface LanguageSelectorProps {
+  value?: string
+  onChange?: (value: string) => void
+  className?: string
+}
+
+export default function LanguageSelector({ 
+  value = 'en', 
+  onChange, 
+  className = '' 
+}: LanguageSelectorProps) {
+  const [selectedLanguage, setSelectedLanguage] = useState(value)
+
+  useEffect(() => {
+    setSelectedLanguage(value)
+  }, [value])
+
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newValue = e.target.value
+    setSelectedLanguage(newValue)
+    if (onChange) {
+      onChange(newValue)
+    }
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-xs md:text-sm font-medium text-gray-600">Lang:</span>
+    <div className="relative inline-block">
       <select
-        value={language}
-        onChange={(e) => onLanguageChange(e.target.value as Language)}
-        className="px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        value={selectedLanguage}
+        onChange={handleChange}
+        className={`appearance-none bg-white border border-gray-200 rounded-lg px-8 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent cursor-pointer ${className}`}
+        style={{ boxShadow: 'none' }}
       >
-        {supportedLanguages.map((code) => {
-          const info = languageOptions[code];
-          return (
-            <option key={code} value={code}>
-              {info.name}
-            </option>
-          );
-        })}
+        {supportedLanguages.map((lang) => (
+          <option key={lang.code} value={lang.code}>
+            {lang.flag} {lang.name}
+          </option>
+        ))}
       </select>
+      <Globe className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
     </div>
-  );
+  )
 }

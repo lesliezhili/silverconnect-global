@@ -1,23 +1,42 @@
--- SilverConnect Global Database Schema
+-- =====================================================
+-- SILVERCONNECT GLOBAL DATABASE SCHEMA
+-- Complete schema with all columns added before policies
+-- =====================================================
 
--- Countries table
-CREATE TABLE countries (
+-- =====================================================
+-- 1. COUNTRIES TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS countries (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   code TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
   currency_code TEXT NOT NULL,
   currency_symbol TEXT NOT NULL,
   tax_rate DECIMAL(5,2) DEFAULT 0,
-  is_active BOOLEAN DEFAULT true
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT NOW()
 );
 
-INSERT INTO countries (code, name, currency_code, currency_symbol, tax_rate) VALUES
-('AU', 'Australia', 'AUD', '$', 10.00),
-('CN', 'China', 'CNY', '¥', 0.00),
-('CA', 'Canada', 'CAD', '$', 13.00);
+-- Add Chinese name column
+DO $$ 
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'countries' AND column_name = 'name_zh') THEN
+    ALTER TABLE countries ADD COLUMN name_zh TEXT;
+  END IF;
+END $$;
 
--- Services with 3-country pricing
-CREATE TABLE services (
+-- Insert countries
+INSERT INTO countries (code, name, name_zh, currency_code, currency_symbol, tax_rate) VALUES
+('AU', 'Australia', '澳大利亚', 'AUD', '$', 10.00),
+('CN', 'China', '中国', 'CNY', '¥', 0.00),
+('CA', 'Canada', '加拿大', 'CAD', '$', 13.00)
+ON CONFLICT (code) DO NOTHING;
+
+-- =====================================================
+-- 2. SERVICES TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS services (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   category TEXT NOT NULL,
   subcategory TEXT,
@@ -30,8 +49,40 @@ CREATE TABLE services (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Service prices per country
-CREATE TABLE service_prices (
+-- Add Chinese columns
+DO $$ 
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'services' AND column_name = 'name_zh') THEN
+    ALTER TABLE services ADD COLUMN name_zh TEXT;
+  END IF;
+  
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'services' AND column_name = 'description_zh') THEN
+    ALTER TABLE services ADD COLUMN description_zh TEXT;
+  END IF;
+END $$;
+
+-- Insert services
+INSERT INTO services (category, name, name_zh, description, description_zh, duration_minutes) VALUES
+('cleaning', 'Standard Home Cleaning', '标准家庭清洁', 'Complete home cleaning including dusting, vacuuming, mopping all rooms', '完整的家庭清洁，包括除尘、吸尘、拖地', 120),
+('cleaning', 'Deep Cleaning', '深度清洁', 'Thorough deep clean including appliances and windows', '深度清洁，包括电器和窗户', 240),
+('cleaning', 'Window Cleaning', '窗户清洁', 'Professional interior and exterior window cleaning', '专业的室内外窗户清洁', 90),
+('cooking', 'Weekly Meal Prep', '每周备餐', '5 days of healthy, pre-portioned meals', '5天健康分份餐食', 180),
+('cooking', 'Daily Home Cooking', '每日家常烹饪', 'Fresh daily meals prepared in your kitchen', '在您的厨房准备新鲜家常餐食', 60),
+('gardening', 'Lawn Mowing & Edging', '草坪修剪', 'Professional lawn care including mowing and edging', '专业的草坪护理，包括修剪和修边', 60),
+('gardening', 'Complete Garden Tidy', '花园整理', 'Weeding, pruning, leaf removal, and general maintenance', '除草、修剪、清理树叶和一般花园维护', 120),
+('personal', 'Shopping Assistant', '购物助手', 'Grocery shopping, errands, and delivery', '杂货购物、跑腿和送货', 60),
+('personal', 'Companionship Visit', '陪伴探访', 'Social visit, conversation, and wellness check', '社交拜访、交谈和健康检查', 120),
+('personal', 'Transport to Appointments', '交通服务', 'Safe transport to appointments and outings', '安全接送至医疗预约和社交活动', 60),
+('maintenance', 'Handyman Services', '杂工服务', 'Small home repairs: leaks, hanging pictures, assembly', '小型家居维修：修复漏水、挂画、组装家具', 60),
+('maintenance', 'Gutter Cleaning', '排水沟清洁', 'Gutter cleaning and downspout check', '排水沟清洁和落水管检查', 90)
+ON CONFLICT DO NOTHING;
+
+-- =====================================================
+-- 3. SERVICE PRICES TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS service_prices (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   service_id UUID REFERENCES services(id) ON DELETE CASCADE,
   country_code TEXT REFERENCES countries(code),
@@ -41,134 +92,16 @@ CREATE TABLE service_prices (
   UNIQUE(service_id, country_code)
 );
 
--- Insert services with pricing
-INSERT INTO services (category, name, description, duration_minutes) VALUES
--- CLEANING SERVICES
-('cleaning', 'Standard Home Cleaning', 'Complete home cleaning including dusting, vacuuming, mopping all rooms', 120),
-('cleaning', 'Deep Cleaning', 'Thorough 4-hour deep clean including appliances, windows, and hard-to-reach areas', 240),
-('cleaning', 'Window Cleaning', 'Professional interior and exterior window cleaning', 90),
-('cleaning', 'Oven & Fridge Cleaning', 'Deep clean of kitchen appliances interior and exterior', 60),
-('cleaning', 'Carpet Steam Cleaning', 'Professional hot water extraction carpet cleaning per room', 120),
-
--- COOKING SERVICES
-('cooking', 'Weekly Meal Prep', '5 days of healthy, pre-portioned meals with reheating instructions', 180),
-('cooking', 'Daily Home Cooking', 'Fresh daily meals prepared in your kitchen', 60),
-('cooking', 'Special Diet Meals', 'Custom meals for diabetes, low-sodium, gluten-free, or vegetarian diets', 60),
-('cooking', 'Festive Feast Preparation', 'Complete holiday meal preparation for up to 8 guests', 240),
-('cooking', 'Baking Service', 'Fresh bread, cookies, or cakes baked in your home', 90),
-
--- GARDENING SERVICES
-('gardening', 'Lawn Mowing & Edging', 'Professional lawn care including mowing, edging, and blowing', 60),
-('gardening', 'Hedge & Shrub Trimming', 'Precision trimming of hedges, bushes, and ornamental shrubs', 60),
-('gardening', 'Complete Garden Tidy', 'Weeding, pruning, leaf removal, and general garden maintenance', 120),
-('gardening', 'Tree Pruning', 'Safe professional pruning of small to medium trees', 90),
-('gardening', 'Seasonal Planting', 'Flower and plant installation for spring/summer', 120),
-
--- PERSONAL CARE SERVICES
-('personal', 'Shopping Assistant', 'Grocery shopping, errands, and delivery to your home', 60),
-('personal', 'Medication Management', 'Daily medication reminders, pill organization, and tracking', 30),
-('personal', 'Companionship Visit', 'Social visit, conversation, and wellness check', 120),
-('personal', 'Transport to Appointments', 'Safe transport to medical appointments, shopping, or social outings', 60),
-('personal', 'Technology Help', 'Help with smartphones, tablets, computers, and video calls with family', 60),
-
--- HOME MAINTENANCE
-('maintenance', 'Handyman Services', 'Small home repairs: fixing leaks, hanging pictures, assembly', 60),
-('maintenance', 'Air Conditioner Service', 'Filter cleaning, basic maintenance, and efficiency check', 60),
-('maintenance', 'Gutter Cleaning', 'Safe single-story gutter cleaning and downspout check', 90),
-('maintenance', 'Snow Shoveling', 'Driveway and walkway snow removal (Canada only)', 60),
-('maintenance', 'Pressure Washing', 'Driveway, patio, or deck cleaning', 90);
-
--- Add pricing for each country
--- AUSTRALIA (AUD)
-INSERT INTO service_prices (service_id, country_code, base_price, price_with_tax) VALUES
-((SELECT id FROM services WHERE name = 'Standard Home Cleaning'), 'AU', 60, 66),
-((SELECT id FROM services WHERE name = 'Deep Cleaning'), 'AU', 120, 132),
-((SELECT id FROM services WHERE name = 'Window Cleaning'), 'AU', 80, 88),
-((SELECT id FROM services WHERE name = 'Oven & Fridge Cleaning'), 'AU', 45, 49.50),
-((SELECT id FROM services WHERE name = 'Carpet Steam Cleaning'), 'AU', 150, 165),
-((SELECT id FROM services WHERE name = 'Weekly Meal Prep'), 'AU', 85, 93.50),
-((SELECT id FROM services WHERE name = 'Daily Home Cooking'), 'AU', 45, 49.50),
-((SELECT id FROM services WHERE name = 'Special Diet Meals'), 'AU', 55, 60.50),
-((SELECT id FROM services WHERE name = 'Festive Feast Preparation'), 'AU', 180, 198),
-((SELECT id FROM services WHERE name = 'Baking Service'), 'AU', 65, 71.50),
-((SELECT id FROM services WHERE name = 'Lawn Mowing & Edging'), 'AU', 50, 55),
-((SELECT id FROM services WHERE name = 'Hedge & Shrub Trimming'), 'AU', 65, 71.50),
-((SELECT id FROM services WHERE name = 'Complete Garden Tidy'), 'AU', 95, 104.50),
-((SELECT id FROM services WHERE name = 'Tree Pruning'), 'AU', 85, 93.50),
-((SELECT id FROM services WHERE name = 'Seasonal Planting'), 'AU', 75, 82.50),
-((SELECT id FROM services WHERE name = 'Shopping Assistant'), 'AU', 35, 38.50),
-((SELECT id FROM services WHERE name = 'Medication Management'), 'AU', 25, 27.50),
-((SELECT id FROM services WHERE name = 'Companionship Visit'), 'AU', 40, 44),
-((SELECT id FROM services WHERE name = 'Transport to Appointments'), 'AU', 50, 55),
-((SELECT id FROM services WHERE name = 'Technology Help'), 'AU', 40, 44),
-((SELECT id FROM services WHERE name = 'Handyman Services'), 'AU', 70, 77),
-((SELECT id FROM services WHERE name = 'Air Conditioner Service'), 'AU', 60, 66),
-((SELECT id FROM services WHERE name = 'Gutter Cleaning'), 'AU', 80, 88),
-((SELECT id FROM services WHERE name = 'Pressure Washing'), 'AU', 90, 99);
-
--- CHINA (CNY)
-INSERT INTO service_prices (service_id, country_code, base_price, price_with_tax) VALUES
-((SELECT id FROM services WHERE name = 'Standard Home Cleaning'), 'CN', 280, 280),
-((SELECT id FROM services WHERE name = 'Deep Cleaning'), 'CN', 560, 560),
-((SELECT id FROM services WHERE name = 'Window Cleaning'), 'CN', 375, 375),
-((SELECT id FROM services WHERE name = 'Oven & Fridge Cleaning'), 'CN', 210, 210),
-((SELECT id FROM services WHERE name = 'Carpet Steam Cleaning'), 'CN', 700, 700),
-((SELECT id FROM services WHERE name = 'Weekly Meal Prep'), 'CN', 400, 400),
-((SELECT id FROM services WHERE name = 'Daily Home Cooking'), 'CN', 210, 210),
-((SELECT id FROM services WHERE name = 'Special Diet Meals'), 'CN', 258, 258),
-((SELECT id FROM services WHERE name = 'Festive Feast Preparation'), 'CN', 840, 840),
-((SELECT id FROM services WHERE name = 'Baking Service'), 'CN', 304, 304),
-((SELECT id FROM services WHERE name = 'Lawn Mowing & Edging'), 'CN', 235, 235),
-((SELECT id FROM services WHERE name = 'Hedge & Shrub Trimming'), 'CN', 304, 304),
-((SELECT id FROM services WHERE name = 'Complete Garden Tidy'), 'CN', 445, 445),
-((SELECT id FROM services WHERE name = 'Tree Pruning'), 'CN', 398, 398),
-((SELECT id FROM services WHERE name = 'Seasonal Planting'), 'CN', 351, 351),
-((SELECT id FROM services WHERE name = 'Shopping Assistant'), 'CN', 164, 164),
-((SELECT id FROM services WHERE name = 'Medication Management'), 'CN', 117, 117),
-((SELECT id FROM services WHERE name = 'Companionship Visit'), 'CN', 188, 188),
-((SELECT id FROM services WHERE name = 'Transport to Appointments'), 'CN', 235, 235),
-((SELECT id FROM services WHERE name = 'Technology Help'), 'CN', 188, 188),
-((SELECT id FROM services WHERE name = 'Handyman Services'), 'CN', 328, 328),
-((SELECT id FROM services WHERE name = 'Air Conditioner Service'), 'CN', 281, 281),
-((SELECT id FROM services WHERE name = 'Gutter Cleaning'), 'CN', 375, 375),
-((SELECT id FROM services WHERE name = 'Pressure Washing'), 'CN', 422, 422);
-
--- CANADA (CAD)
-INSERT INTO service_prices (service_id, country_code, base_price, price_with_tax) VALUES
-((SELECT id FROM services WHERE name = 'Standard Home Cleaning'), 'CA', 55, 62.15),
-((SELECT id FROM services WHERE name = 'Deep Cleaning'), 'CA', 110, 124.30),
-((SELECT id FROM services WHERE name = 'Window Cleaning'), 'CA', 75, 84.75),
-((SELECT id FROM services WHERE name = 'Oven & Fridge Cleaning'), 'CA', 40, 45.20),
-((SELECT id FROM services WHERE name = 'Carpet Steam Cleaning'), 'CA', 140, 158.20),
-((SELECT id FROM services WHERE name = 'Weekly Meal Prep'), 'CA', 80, 90.40),
-((SELECT id FROM services WHERE name = 'Daily Home Cooking'), 'CA', 42, 47.46),
-((SELECT id FROM services WHERE name = 'Special Diet Meals'), 'CA', 50, 56.50),
-((SELECT id FROM services WHERE name = 'Festive Feast Preparation'), 'CA', 170, 192.10),
-((SELECT id FROM services WHERE name = 'Baking Service'), 'CA', 62, 70.06),
-((SELECT id FROM services WHERE name = 'Lawn Mowing & Edging'), 'CA', 45, 50.85),
-((SELECT id FROM services WHERE name = 'Hedge & Shrub Trimming'), 'CA', 58, 65.54),
-((SELECT id FROM services WHERE name = 'Complete Garden Tidy'), 'CA', 90, 101.70),
-((SELECT id FROM services WHERE name = 'Tree Pruning'), 'CA', 80, 90.40),
-((SELECT id FROM services WHERE name = 'Seasonal Planting'), 'CA', 70, 79.10),
-((SELECT id FROM services WHERE name = 'Shopping Assistant'), 'CA', 32, 36.16),
-((SELECT id FROM services WHERE name = 'Medication Management'), 'CA', 22, 24.86),
-((SELECT id FROM services WHERE name = 'Companionship Visit'), 'CA', 38, 42.94),
-((SELECT id FROM services WHERE name = 'Transport to Appointments'), 'CA', 45, 50.85),
-((SELECT id FROM services WHERE name = 'Technology Help'), 'CA', 38, 42.94),
-((SELECT id FROM services WHERE name = 'Handyman Services'), 'CA', 65, 73.45),
-((SELECT id FROM services WHERE name = 'Air Conditioner Service'), 'CA', 55, 62.15),
-((SELECT id FROM services WHERE name = 'Gutter Cleaning'), 'CA', 72, 81.36),
-((SELECT id FROM services WHERE name = 'Snow Shoveling'), 'CA', 40, 45.20),
-((SELECT id FROM services WHERE name = 'Pressure Washing'), 'CA', 82, 92.66);
-
--- Users table
-CREATE TABLE users (
+-- =====================================================
+-- 4. USERS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email TEXT UNIQUE NOT NULL,
   full_name TEXT NOT NULL,
   phone TEXT,
-  user_type TEXT DEFAULT 'customer', -- 'customer' or 'provider'
-  country_code TEXT REFERENCES countries(code),
+  user_type TEXT DEFAULT 'customer',
+  country_code TEXT,
   city TEXT,
   address TEXT,
   postal_code TEXT,
@@ -183,19 +116,22 @@ CREATE TABLE users (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Service Providers table (for dual feedback)
-CREATE TABLE service_providers (
+-- =====================================================
+-- 5. SERVICE PROVIDERS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS service_providers (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE UNIQUE,
   email TEXT UNIQUE NOT NULL,
   full_name TEXT NOT NULL,
   phone TEXT,
-  country_code TEXT REFERENCES countries(code),
+  country_code TEXT,
   city TEXT,
   address TEXT,
+  postal_code TEXT,
   latitude DECIMAL(10,8),
   longitude DECIMAL(11,8),
-  specialties TEXT[], -- Array of service IDs they provide
+  specialties TEXT[],
   bio TEXT,
   years_experience INTEGER,
   certifications TEXT[],
@@ -203,35 +139,77 @@ CREATE TABLE service_providers (
   rating DECIMAL(3,1) DEFAULT 5.0,
   total_ratings INTEGER DEFAULT 0,
   is_verified BOOLEAN DEFAULT false,
+  is_christian BOOLEAN DEFAULT false,
+  faith_background TEXT,
   verification_date TIMESTAMP,
-  available_hours TEXT, -- JSON format: {"monday": "9am-5pm", ...}
-  stripe_connect_id TEXT, -- Stripe Connect account ID for payouts
+  stripe_connect_id TEXT,
   created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Bookings table
-CREATE TABLE bookings (
+-- =====================================================
+-- 6. PROVIDER AVAILABILITY
+-- =====================================================
+CREATE TABLE IF NOT EXISTS provider_availability (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id),
-  service_id UUID REFERENCES services(id),
+  provider_id UUID REFERENCES service_providers(id) ON DELETE CASCADE,
+  day_of_week INTEGER CHECK (day_of_week >= 0 AND day_of_week <= 6),
+  slot_name TEXT,
+  start_time TIME NOT NULL,
+  end_time TIME NOT NULL,
+  break_duration_minutes INTEGER DEFAULT 15,
+  max_concurrent_bookings INTEGER DEFAULT 1,
+  is_available BOOLEAN DEFAULT true,
+  is_recurring BOOLEAN DEFAULT true,
+  specific_date DATE,
+  created_at TIMESTAMP DEFAULT NOW(),
+  CHECK (start_time < end_time)
+);
+
+-- =====================================================
+-- 7. BOOKINGS TABLE - MAKE SURE customer_id EXISTS
+-- =====================================================
+CREATE TABLE IF NOT EXISTS bookings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  booking_number TEXT UNIQUE NOT NULL,
   provider_id UUID REFERENCES service_providers(id),
-  country_code TEXT REFERENCES countries(code),
+  customer_id UUID REFERENCES users(id),
+  service_id UUID REFERENCES services(id),
+  country_code TEXT,
   booking_date DATE NOT NULL,
-  booking_time TIME NOT NULL,
+  start_time TIME NOT NULL,
+  end_time TIME NOT NULL,
+  duration_minutes INTEGER NOT NULL,
   address TEXT NOT NULL,
   latitude DECIMAL(10,8),
   longitude DECIMAL(11,8),
   special_instructions TEXT,
-  status TEXT DEFAULT 'PENDING', -- PENDING, CONFIRMED, COMPLETED, CANCELLED
-  total_price DECIMAL(10,2),
+  base_price DECIMAL(10,2) NOT NULL,
+  time_multiplier DECIMAL(3,2) DEFAULT 1.0,
+  day_multiplier DECIMAL(3,2) DEFAULT 1.0,
+  travel_fee DECIMAL(10,2) DEFAULT 0,
+  total_price DECIMAL(10,2) NOT NULL,
+  platform_fee_percentage DECIMAL(5,2) DEFAULT 15.0,
+  platform_fee_amount DECIMAL(10,2),
+  provider_payout_amount DECIMAL(10,2),
+  status TEXT DEFAULT 'PENDING',
   payment_status TEXT DEFAULT 'UNPAID',
-  stripe_payment_intent_id TEXT,
-  completed_at TIMESTAMP,
+  payment_intent_id TEXT,
   created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Customer Feedback (customer rates provider and service)
-CREATE TABLE customer_feedback (
+-- Verify customer_id exists
+DO $$ 
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'bookings' AND column_name = 'customer_id') THEN
+    ALTER TABLE bookings ADD COLUMN customer_id UUID REFERENCES users(id);
+  END IF;
+END $$;
+
+-- =====================================================
+-- 8. CUSTOMER FEEDBACK TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS customer_feedback (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   booking_id UUID REFERENCES bookings(id) ON DELETE CASCADE,
   customer_id UUID REFERENCES users(id),
@@ -245,8 +223,10 @@ CREATE TABLE customer_feedback (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Provider Feedback (provider rates customer experience)
-CREATE TABLE provider_feedback (
+-- =====================================================
+-- 9. PROVIDER FEEDBACK TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS provider_feedback (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   booking_id UUID REFERENCES bookings(id) ON DELETE CASCADE,
   provider_id UUID REFERENCES service_providers(id),
@@ -260,190 +240,243 @@ CREATE TABLE provider_feedback (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Provider Pricing (custom rates set by each provider)
-CREATE TABLE provider_pricing (
+-- =====================================================
+-- 10. PROVIDER PRICING TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS provider_pricing (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   provider_id UUID REFERENCES service_providers(id) ON DELETE CASCADE,
   service_id UUID REFERENCES services(id) ON DELETE CASCADE,
   country_code TEXT REFERENCES countries(code),
   custom_price DECIMAL(10,2),
+  custom_weekday_multiplier DECIMAL(3,2),
+  custom_weekend_multiplier DECIMAL(3,2),
   created_at TIMESTAMP DEFAULT NOW(),
   UNIQUE(provider_id, service_id, country_code)
 );
 
--- Provider Availability
-CREATE TABLE provider_availability (
+-- =====================================================
+-- 11. NOTIFICATIONS TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS notifications (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  provider_id UUID REFERENCES service_providers(id) ON DELETE CASCADE,
-  day_of_week INTEGER CHECK (day_of_week >= 0 AND day_of_week <= 6), -- 0=Sunday, 6=Saturday
-  start_time TIME,
-  end_time TIME,
-  is_available BOOLEAN DEFAULT true,
-  created_at TIMESTAMP DEFAULT NOW(),
-  UNIQUE(provider_id, day_of_week)
-);
-
--- Payment Transactions
-CREATE TABLE payment_transactions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  booking_id UUID REFERENCES bookings(id) ON DELETE CASCADE UNIQUE,
-  stripe_payment_intent_id TEXT UNIQUE,
-  amount DECIMAL(10,2),
-  currency TEXT DEFAULT 'USD',
-  status TEXT DEFAULT 'pending', -- pending, succeeded, failed, refunded
-  customer_email TEXT,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
--- Messaging System - Conversations
-CREATE TABLE conversations (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  booking_id UUID REFERENCES bookings(id) ON DELETE CASCADE,
-  customer_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  provider_id UUID REFERENCES service_providers(id) ON DELETE CASCADE,
-  last_message TEXT,
-  last_message_at TIMESTAMP,
-  customer_read_at TIMESTAMP,
-  provider_read_at TIMESTAMP,
-  is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMP DEFAULT NOW(),
-  UNIQUE(booking_id)
-);
-
--- Messages
-CREATE TABLE messages (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  conversation_id UUID REFERENCES conversations(id) ON DELETE CASCADE NOT NULL,
-  sender_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
-  content TEXT NOT NULL,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  type TEXT NOT NULL,
+  title TEXT NOT NULL,
+  message TEXT NOT NULL,
+  data JSONB,
   is_read BOOLEAN DEFAULT false,
   read_at TIMESTAMP,
   created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Booking Status History (for tracking acceptance/rejection)
-CREATE TABLE booking_status_history (
+-- =====================================================
+-- 12. PAYMENT TRANSACTIONS
+-- =====================================================
+CREATE TABLE IF NOT EXISTS payment_transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  booking_id UUID REFERENCES bookings(id) ON DELETE CASCADE,
-  old_status TEXT,
-  new_status TEXT,
-  changed_by UUID REFERENCES users(id),
-  reason TEXT,
+  booking_id UUID REFERENCES bookings(id) ON DELETE CASCADE UNIQUE,
+  stripe_payment_intent_id TEXT UNIQUE,
+  amount DECIMAL(10,2),
+  currency TEXT DEFAULT 'AUD',
+  status TEXT DEFAULT 'pending',
+  customer_email TEXT,
   created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Provider Payouts
-CREATE TABLE provider_payouts (
+-- =====================================================
+-- 13. PROVIDER PAYOUTS
+-- =====================================================
+CREATE TABLE IF NOT EXISTS provider_payouts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   booking_id UUID REFERENCES bookings(id) ON DELETE CASCADE UNIQUE,
   provider_id UUID REFERENCES service_providers(id) ON DELETE CASCADE,
   amount DECIMAL(10,2) NOT NULL,
   platform_fee DECIMAL(10,2) NOT NULL,
   stripe_payout_id TEXT UNIQUE,
-  status TEXT DEFAULT 'pending', -- pending, paid, failed
-  currency TEXT DEFAULT 'USD',
+  status TEXT DEFAULT 'pending',
+  currency TEXT DEFAULT 'AUD',
   processed_at TIMESTAMP,
   created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Disputes and Complaints
-CREATE TABLE disputes (
+-- =====================================================
+-- 14. DISPUTES TABLE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS disputes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   booking_id UUID REFERENCES bookings(id) ON DELETE CASCADE,
   initiated_by UUID REFERENCES users(id),
   reason TEXT NOT NULL,
   description TEXT,
-  status TEXT DEFAULT 'open', -- open, investigating, resolved, closed
+  status TEXT DEFAULT 'open',
   resolution TEXT,
   resolved_by UUID REFERENCES users(id),
   resolved_at TIMESTAMP,
   created_at TIMESTAMP DEFAULT NOW()
 );
 
--- AI Conversations (for analytics and context)
-CREATE TABLE ai_conversations (
+-- =====================================================
+-- 15. KNOWLEDGE BASE
+-- =====================================================
+CREATE TABLE IF NOT EXISTS knowledge_base (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  booking_id UUID REFERENCES bookings(id) ON DELETE CASCADE,
-  user_message TEXT NOT NULL,
-  ai_response TEXT NOT NULL,
-  actions_taken JSONB DEFAULT '[]',
+  category TEXT,
+  question TEXT NOT NULL,
+  question_zh TEXT,
+  answer TEXT NOT NULL,
+  answer_zh TEXT,
+  keywords TEXT[],
+  is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMP DEFAULT NOW()
 );
 
+-- =====================================================
+-- 16. PUBLIC HOLIDAYS
+-- =====================================================
+CREATE TABLE IF NOT EXISTS public_holidays (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  date DATE UNIQUE NOT NULL,
+  name TEXT NOT NULL,
+  name_zh TEXT,
+  is_nationwide BOOLEAN DEFAULT true,
+  states_affected TEXT[],
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- =====================================================
+-- 17. TIME OF DAY PRICING
+-- =====================================================
+CREATE TABLE IF NOT EXISTS time_of_day_pricing (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  country_code TEXT REFERENCES countries(code),
+  time_range_name TEXT,
+  time_range_name_zh TEXT,
+  start_time TIME,
+  end_time TIME,
+  multiplier DECIMAL(3,2) DEFAULT 1.0,
+  created_at TIMESTAMP DEFAULT NOW(),
+  CHECK (start_time < end_time)
+);
+
+-- =====================================================
+-- INDEXES
+-- =====================================================
+CREATE INDEX IF NOT EXISTS idx_provider_availability_provider_day ON provider_availability(provider_id, day_of_week);
+CREATE INDEX IF NOT EXISTS idx_bookings_provider_date ON bookings(provider_id, booking_date);
+CREATE INDEX IF NOT EXISTS idx_bookings_customer_date ON bookings(customer_id, booking_date);
+CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings(status);
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, is_read, created_at);
+CREATE INDEX IF NOT EXISTS idx_service_providers_postal ON service_providers(postal_code);
+CREATE INDEX IF NOT EXISTS idx_service_providers_rating ON service_providers(rating DESC);
+
+-- =====================================================
+-- RLS POLICIES (After all columns exist)
+-- =====================================================
+
 -- Enable RLS
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE services ENABLE ROW LEVEL SECURITY;
 ALTER TABLE service_providers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE provider_availability ENABLE ROW LEVEL SECURITY;
+ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE customer_feedback ENABLE ROW LEVEL SECURITY;
 ALTER TABLE provider_feedback ENABLE ROW LEVEL SECURITY;
-ALTER TABLE provider_pricing ENABLE ROW LEVEL SECURITY;
-ALTER TABLE provider_availability ENABLE ROW LEVEL SECURITY;
-ALTER TABLE payment_transactions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE service_prices ENABLE ROW LEVEL SECURITY;
-ALTER TABLE countries ENABLE ROW LEVEL SECURITY;
-ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
-ALTER TABLE booking_status_history ENABLE ROW LEVEL SECURITY;
-ALTER TABLE provider_payouts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE disputes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE ai_conversations ENABLE ROW LEVEL SECURITY;
 
--- Messaging RLS Policies
-CREATE POLICY "Users can view conversations they're part of" ON conversations FOR SELECT USING (
-  auth.uid() = customer_id OR EXISTS (SELECT 1 FROM service_providers WHERE service_providers.id = conversations.provider_id AND auth.uid() = service_providers.user_id)
-);
+-- USERS POLICIES
+DROP POLICY IF EXISTS "users_insert_policy" ON users;
+DROP POLICY IF EXISTS "users_select_policy" ON users;
+DROP POLICY IF EXISTS "users_update_policy" ON users;
 
-CREATE POLICY "Users can create conversations" ON conversations FOR INSERT WITH CHECK (
-  auth.uid() = customer_id OR EXISTS (SELECT 1 FROM service_providers WHERE service_providers.id = conversations.provider_id AND auth.uid() = service_providers.user_id)
-);
+CREATE POLICY "users_insert_policy" ON users
+  FOR INSERT WITH CHECK (auth.uid() = id);
 
-CREATE POLICY "Users can view messages in their conversations" ON messages FOR SELECT USING (
-  EXISTS (SELECT 1 FROM conversations WHERE conversations.id = messages.conversation_id AND 
-    (auth.uid() = conversations.customer_id OR EXISTS (SELECT 1 FROM service_providers WHERE service_providers.id = conversations.provider_id AND auth.uid() = service_providers.user_id)))
-);
+CREATE POLICY "users_select_policy" ON users
+  FOR SELECT USING (auth.uid() = id);
 
-CREATE POLICY "Users can send messages in their conversations" ON messages FOR INSERT WITH CHECK (
-  auth.uid() = sender_id AND EXISTS (SELECT 1 FROM conversations WHERE conversations.id = messages.conversation_id AND 
-    (auth.uid() = conversations.customer_id OR EXISTS (SELECT 1 FROM service_providers WHERE service_providers.id = conversations.provider_id AND auth.uid() = service_providers.user_id)))
-);
+CREATE POLICY "users_update_policy" ON users
+  FOR UPDATE USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
 
-CREATE POLICY "Anyone can view booking status history" ON booking_status_history FOR SELECT USING (
-  EXISTS (SELECT 1 FROM bookings WHERE bookings.id = booking_status_history.booking_id AND 
-    (auth.uid() = bookings.user_id OR (bookings.provider_id IS NOT NULL AND EXISTS (SELECT 1 FROM service_providers WHERE service_providers.id = bookings.provider_id AND auth.uid() = service_providers.user_id))))
-);
+-- SERVICE PROVIDERS POLICIES
+DROP POLICY IF EXISTS "providers_insert_policy" ON service_providers;
+DROP POLICY IF EXISTS "providers_select_policy" ON service_providers;
+DROP POLICY IF EXISTS "providers_update_policy" ON service_providers;
 
--- Create policies
-CREATE POLICY "Users can view own data" ON users FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "Users can view own bookings" ON bookings FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can create bookings" ON bookings FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Providers can view own bookings" ON bookings FOR SELECT USING (auth.uid() = provider_id);
-CREATE POLICY "Anyone can view services" ON services FOR SELECT USING (true);
-CREATE POLICY "Anyone can view service prices" ON service_prices FOR SELECT USING (true);
-CREATE POLICY "Anyone can view countries" ON countries FOR SELECT USING (true);
-CREATE POLICY "Anyone can view providers" ON service_providers FOR SELECT USING (true);
-CREATE POLICY "Providers can update own profile"
-ON service_providers
-FOR UPDATE
-USING (auth.uid() = user_id)
-WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Anyone can view provider availability" ON provider_availability FOR SELECT USING (true);
-CREATE POLICY "Providers can update own profile"
-ON service_providers
-FOR UPDATE
-USING (auth.uid() = user_id)
-WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Providers can view own pricing" ON provider_pricing FOR SELECT USING (
-  EXISTS (SELECT 1 FROM service_providers WHERE service_providers.id = provider_pricing.provider_id AND auth.uid() = service_providers.user_id)
-);
-CREATE POLICY "Providers can manage own pricing" ON provider_pricing FOR INSERT WITH CHECK (
-  EXISTS (SELECT 1 FROM service_providers WHERE service_providers.id = provider_pricing.provider_id AND auth.uid() = service_providers.user_id)
-);
-CREATE POLICY "Users can view own feedback" ON customer_feedback FOR SELECT USING (auth.uid() = customer_id);
-CREATE POLICY "Users can create own feedback" ON customer_feedback FOR INSERT WITH CHECK (auth.uid() = customer_id);
-CREATE POLICY "Providers can view own feedback" ON provider_feedback FOR SELECT USING (auth.uid() = provider_id);
-CREATE POLICY "Providers can create own feedback" ON provider_feedback FOR INSERT WITH CHECK (auth.uid() = provider_id);
-CREATE POLICY "Users can view own transactions" ON payment_transactions FOR SELECT USING (
-  EXISTS (SELECT 1 FROM bookings WHERE bookings.id = payment_transactions.booking_id AND auth.uid() = bookings.user_id)
-);
+CREATE POLICY "providers_insert_policy" ON service_providers
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "providers_select_policy" ON service_providers
+  FOR SELECT USING (auth.uid() = user_id OR is_verified = true);
+
+CREATE POLICY "providers_update_policy" ON service_providers
+  FOR UPDATE USING (auth.uid() = user_id);
+
+-- PROVIDER AVAILABILITY POLICIES
+DROP POLICY IF EXISTS "availability_select_policy" ON provider_availability;
+DROP POLICY IF EXISTS "availability_manage_policy" ON provider_availability;
+
+CREATE POLICY "availability_select_policy" ON provider_availability
+  FOR SELECT USING (is_available = true);
+
+CREATE POLICY "availability_manage_policy" ON provider_availability
+  FOR ALL USING (auth.uid() IN (SELECT user_id FROM service_providers WHERE id = provider_id));
+
+-- BOOKINGS POLICIES
+DROP POLICY IF EXISTS "bookings_select_policy" ON bookings;
+DROP POLICY IF EXISTS "bookings_insert_policy" ON bookings;
+
+CREATE POLICY "bookings_select_policy" ON bookings
+  FOR SELECT USING (auth.uid() = customer_id OR auth.uid() IN (SELECT user_id FROM service_providers WHERE id = provider_id));
+
+CREATE POLICY "bookings_insert_policy" ON bookings
+  FOR INSERT WITH CHECK (auth.uid() = customer_id);
+
+-- NOTIFICATIONS POLICIES
+DROP POLICY IF EXISTS "notifications_select_policy" ON notifications;
+DROP POLICY IF EXISTS "notifications_update_policy" ON notifications;
+
+CREATE POLICY "notifications_select_policy" ON notifications
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "notifications_update_policy" ON notifications
+  FOR UPDATE USING (auth.uid() = user_id);
+
+-- =====================================================
+-- HELPER FUNCTIONS
+-- =====================================================
+
+CREATE OR REPLACE FUNCTION create_user_profile(
+  p_user_id UUID,
+  p_email TEXT,
+  p_full_name TEXT,
+  p_phone TEXT DEFAULT NULL
+)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  INSERT INTO users (id, email, full_name, phone, user_type, created_at)
+  VALUES (p_user_id, p_email, p_full_name, p_phone, 'customer', NOW())
+  ON CONFLICT (id) DO UPDATE SET
+    email = EXCLUDED.email,
+    full_name = EXCLUDED.full_name,
+    phone = EXCLUDED.phone;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION create_user_profile TO authenticated, anon, service_role;
+
+-- =====================================================
+-- VERIFY
+-- =====================================================
+SELECT relname, relrowsecurity 
+FROM pg_class 
+WHERE relname IN ('users', 'service_providers', 'bookings', 'provider_availability', 'notifications');
+
+-- Show bookings columns to verify customer_id exists
+SELECT column_name, data_type 
+FROM information_schema.columns 
+WHERE table_name = 'bookings' 
+ORDER BY ordinal_position;

@@ -1,218 +1,287 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import { X, Mail, Lock, User, Phone } from 'lucide-react';
-import { translations, Language } from '@/lib/translations';
+import { useState } from 'react'
+import { supabase } from '@/lib/supabase'
+import { X, Mail, Lock, User, Phone, AlertCircle, Eye, EyeOff } from 'lucide-react'
 
 interface AuthModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess: () => void;
-  language?: Language;
+  isOpen: boolean
+  onClose: () => void
+  mode?: 'login' | 'signup'
+  onSwitchMode?: (mode: 'login' | 'signup') => void
+  onSignupTypeSelect?: (type: 'customer' | 'provider') => void
 }
 
-export default function AuthModal({ isOpen, onClose, onSuccess, language = 'en' }: AuthModalProps) {
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const t = (key: string) => (translations[language] as any)[key] || key;
+export default function AuthModal({ 
+  isOpen, 
+  onClose, 
+  mode = 'login', 
+  onSwitchMode,
+  onSignupTypeSelect 
+}: AuthModalProps) {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [fullName, setFullName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+  const [showPassword, setShowPassword] = useState(false)
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
-  async function handleSignIn() {
-    setLoading(true);
-    setError('');
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
 
     try {
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
+      if (!email || !password) {
+        throw new Error('Please enter both email and password')
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
         password,
-      });
+      })
 
-      if (signInError) throw signInError;
-
-      // Get user's location
-      let userLocation = null;
-      try {
-        const position = await new Promise<GeolocationCoordinates>((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(
-            (pos) => resolve(pos.coords),
-            reject,
-            { timeout: 5000, enableHighAccuracy: true }
-          );
-        });
-        userLocation = { latitude: position.latitude, longitude: position.longitude };
-      } catch (locationError) {
-        console.log('Could not get location during sign-in, will use default');
-      }
-
-      // Create/update user profile
-      if (data.user) {
-        const userData: any = {
-          id: data.user.id,
-          email: data.user.email,
-          full_name: fullName || data.user.email?.split('@')[0],
-          phone,
-        };
-
-        if (userLocation) {
-          userData.latitude = userLocation.latitude;
-          userData.longitude = userLocation.longitude;
+      if (error) {
+        if (error.message === 'Invalid login credentials') {
+          throw new Error('Invalid email or password. Please try again or create a new account.')
         }
-
-        await supabase.from('users').upsert(userData);
+        throw error
       }
 
-      onSuccess();
-      onClose();
+      if (data?.user) {
+        onClose()
+        setTimeout(() => {
+          window.location.reload()
+        }, 100)
+      }
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
-  async function handleSignUp() {
-    setLoading(true);
-    setError('');
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+    setSuccess(null)
 
     try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
+      if (!email || !password) {
+        throw new Error('Please enter both email and password')
+      }
+      if (password.length < 6) {
+        throw new Error('Password must be at least 6 characters')
+      }
+      if (!fullName) {
+        throw new Error('Please enter your full name')
+      }
+
+      const normalizedEmail = email.trim().toLowerCase()
+
+      // Sign up
+      const { data, error } = await supabase.auth.signUp({
+        email: normalizedEmail,
         password,
         options: {
           data: {
             full_name: fullName,
-            phone,
-          },
-        },
-      });
+            phone: phone || null,
+          }
+        }
+      })
 
-      if (signUpError) throw signUpError;
+      if (error) throw error
 
-      // Create user profile
-      if (data.user) {
-        await supabase.from('users').insert({
-          id: data.user.id,
-          email: data.user.email,
-          full_name: fullName,
-          phone,
-        });
+      if (data?.user) {
+        // Create user record in database
+        const { error: profileError } = await supabase
+          .from('users')
+          .insert({
+            id: data.user.id,
+            email: normalizedEmail,
+            full_name: fullName,
+            phone: phone || null,
+            user_type: 'customer',
+            created_at: new Date().toISOString()
+          })
+
+        if (profileError) {
+          console.error('Profile creation error:', profileError)
+          // Don't fail the signup if profile creation fails
+        }
+        
+        setSuccess('Account created successfully! You can now sign in.')
+        
+        // Clear form
+        setEmail('')
+        setPassword('')
+        setFullName('')
+        setPhone('')
+        
+        // Switch to login after 2 seconds
+        setTimeout(() => {
+          if (onSwitchMode) {
+            onSwitchMode('login')
+          }
+          setSuccess(null)
+        }, 2000)
       }
-
-      setError('Check your email to confirm your account!');
-      setTimeout(() => {
-        onClose();
-      }, 3000);
     } catch (err: any) {
-      setError(err.message);
+      console.error('Signup error:', err)
+      if (err.message.includes('already registered')) {
+        setError('This email is already registered. Please sign in instead.')
+      } else {
+        setError(err.message || 'Failed to create account. Please try again.')
+      }
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-8 w-full max-w-md">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">
-            {mode === 'signin' ? t('signInMode') : t('signUpMode')}
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl max-w-md w-full">
+        <div className="border-b p-4 flex justify-between items-center">
+          <h2 className="text-xl font-semibold">
+            {mode === 'login' ? 'Welcome Back!' : 'Create Account'}
           </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <X className="w-6 h-6" />
+          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-lg">
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="space-y-4">
-          {mode === 'signup' && (
-            <div>
-              <label className="flex items-center gap-2 text-sm font-medium mb-2">
-                <User className="w-4 h-4" /> {t('fullName')}
-              </label>
-              <input
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder={t('fullName')}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-              />
-            </div>
-          )}
-
-          <div>
-            <label className="flex items-center gap-2 text-sm font-medium mb-2">
-              <Mail className="w-4 h-4" /> {t('email')}
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-            />
-          </div>
-
-          <div>
-            <label className="flex items-center gap-2 text-sm font-medium mb-2">
-              <Lock className="w-4 h-4" /> {t('password')}
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-            />
-          </div>
-
-          {mode === 'signup' && (
-            <div>
-              <label className="flex items-center gap-2 text-sm font-medium mb-2">
-                <Phone className="w-4 h-4" /> {t('phone')}
-              </label>
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+1 (555) 000-0000"
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-              />
-            </div>
-          )}
-
+        <form onSubmit={mode === 'login' ? handleLogin : handleSignUp} className="p-6 space-y-4">
           {error && (
-            <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm">
-              {error}
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+              <p className="text-sm text-red-600">{error}</p>
             </div>
           )}
 
-          <button
-            onClick={mode === 'signin' ? handleSignIn : handleSignUp}
-            disabled={loading}
-            className="w-full bg-green-600 text-white py-2 rounded-lg font-medium hover:bg-green-700 disabled:bg-gray-400 transition"
-          >
-            {loading ? 'Loading...' : mode === 'signin' ? t('signInButton') : t('signUpButton')}
-          </button>
+          {success && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+              <p className="text-sm text-green-700">{success}</p>
+            </div>
+          )}
+
+          {mode === 'signup' && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Full Name *
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Enter your full name"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number (Optional)
+                </label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Enter your phone number"
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email Address *
+            </label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="Enter your email"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Password *
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder={mode === 'signup' ? 'At least 6 characters' : 'Enter your password'}
+                required
+                minLength={mode === 'signup' ? 6 : undefined}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
 
           <button
-            onClick={() => {
-              setMode(mode === 'signin' ? 'signup' : 'signin');
-              setError('');
-            }}
-            className="w-full text-green-600 font-medium hover:underline"
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 transition"
           >
-            {mode === 'signin' ? `${t('noAccount')} ${t('createAccount')}` : `${t('haveAccount')} ${t('signInMode')}`}
+            {loading ? 'Please wait...' : mode === 'login' ? 'Sign In' : 'Create Account'}
           </button>
+        </form>
+
+        <div className="p-6 pt-0 text-center">
+          {mode === 'login' ? (
+            <p className="text-sm text-gray-600">
+              Don't have an account?{' '}
+              <button
+                onClick={() => onSwitchMode?.('signup')}
+                className="text-green-600 hover:underline font-medium"
+              >
+                Sign up
+              </button>
+            </p>
+          ) : (
+            <p className="text-sm text-gray-600">
+              Already have an account?{' '}
+              <button
+                onClick={() => onSwitchMode?.('login')}
+                className="text-green-600 hover:underline font-medium"
+              >
+                Sign in
+              </button>
+            </p>
+          )}
         </div>
       </div>
     </div>
-  );
+  )
 }
