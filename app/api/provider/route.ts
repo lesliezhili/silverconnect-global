@@ -1,31 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+
+function getServerSupabase(accessToken?: string) {
+  const client = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: { persistSession: false, autoRefreshToken: false }
+  })
+  if (accessToken) {
+    client.auth.setAuth(accessToken)
+  }
+  return client
+}
 
 export async function POST(request: NextRequest) {
   try {
-    // Get the current user from the session
-    const { data: { user } } = await supabase.auth.getUser()
-    
+    const authHeader = request.headers.get('authorization')
+    const accessToken = authHeader?.startsWith('Bearer ') ? authHeader.replace('Bearer ', '') : undefined
+    const supabaseServer = getServerSupabase(accessToken)
+
+    const { data: { user } } = await supabaseServer.auth.getUser()
     if (!user) {
       return NextResponse.json({ error: 'Please sign in first' }, { status: 401 })
     }
 
     const body = await request.json()
-    const { 
-      firstName, lastName, phone, postcode, suburb, 
+    const {
+      firstName, lastName, phone, postcode, suburb,
       services, experience, certifications, bio,
       is_christian, faith_background
     } = body
 
-    console.log('=== Upgrading to provider ===')
-    console.log('User ID:', user.id)
-    console.log('User Email:', user.email)
-    console.log('First Name:', firstName)
-    console.log('Last Name:', lastName)
-    console.log('Services:', services)
-
-    // Step 1: Ensure user exists in users table
-    const { data: existingUser, error: checkUserError } = await supabase
+    const { data: existingUser, error: checkUserError } = await supabaseServer
       .from('users')
       .select('id')
       .eq('id', user.id)
@@ -36,8 +43,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!existingUser) {
-      console.log('Creating user record...')
-      const { error: createUserError } = await supabase
+      const { error: createUserError } = await supabaseServer
         .from('users')
         .insert({
           id: user.id,
@@ -55,9 +61,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: createUserError.message }, { status: 500 })
       }
     } else {
-      // Update user type to provider
-      console.log('Updating existing user...')
-      const { error: updateUserError } = await supabase
+      const { error: updateUserError } = await supabaseServer
         .from('users')
         .update({
           user_type: 'provider',
@@ -73,7 +77,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Step 2: Calculate years experience
     let yearsExpValue = 0
     if (experience === '10+') yearsExpValue = 10
     else if (experience === '5-10') yearsExpValue = 7
@@ -81,8 +84,7 @@ export async function POST(request: NextRequest) {
     else if (experience === '1-3') yearsExpValue = 2
     else if (experience === '0-1') yearsExpValue = 0
 
-    // Step 3: Check if provider already exists
-    const { data: existingProvider } = await supabase
+    const { data: existingProvider } = await supabaseServer
       .from('service_providers')
       .select('id')
       .eq('user_id', user.id)
@@ -91,8 +93,7 @@ export async function POST(request: NextRequest) {
     let result
 
     if (existingProvider) {
-      console.log('Updating existing provider...')
-      result = await supabase
+      result = await supabaseServer
         .from('service_providers')
         .update({
           full_name: `${firstName} ${lastName}`,
@@ -111,8 +112,7 @@ export async function POST(request: NextRequest) {
         .select()
         .single()
     } else {
-      console.log('Creating new provider...')
-      result = await supabase
+      result = await supabaseServer
         .from('service_providers')
         .insert({
           user_id: user.id,
@@ -142,10 +142,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: result.error.message }, { status: 500 })
     }
 
-    console.log('Success! Provider profile created/updated. ID:', result.data?.id)
-
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       provider: result.data
     })
   } catch (error: any) {
@@ -155,12 +153,16 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  const { data: { user } } = await supabase.auth.getUser()
+  const authHeader = request.headers.get('authorization')
+  const accessToken = authHeader?.startsWith('Bearer ') ? authHeader.replace('Bearer ', '') : undefined
+  const supabaseServer = getServerSupabase(accessToken)
+
+  const { data: { user } } = await supabaseServer.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { data: provider } = await supabase
+  const { data: provider } = await supabaseServer
     .from('service_providers')
     .select('*')
     .eq('user_id', user.id)
