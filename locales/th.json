@@ -1,0 +1,11 @@
+{
+  "booking.form.title": "จองบริการ",
+  "booking.summary.title": "สรุปการจอง",
+  "booking.summary.price_breakdown": "รายละเอียดราคา",
+  "pricing.explanation.weekend": "มีการเพิ่มค่าบริการช่วงสุดสัปดาห์แล้ว",
+  "pricing.explanation.holiday": "มีการเพิ่มค่าบริการช่วงวันหยุดแล้ว",
+  "booking.modal.confirm": "ยืนยันการจอง",
+  "provider.onboarding.title": "เข้าร่วมในฐานะผู้ให้บริการดูแล",
+  "chat.welcome": "สวัสดี! ฉันคือ SilverConnect AI ผู้ช่วยบริการลูกค้าของคุณ",
+  "chat.emergency.note": "หากต้องการความช่วยเหลือฉุกเฉิน โปรดติดต่อบริการฉุกเฉินในพื้นที่ทันที"
+}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, Calendar, Clock, MapPin, DollarSign } from 'lucide-react'
+import { X } from 'lucide-react'
 
 interface TimeSlot {
   start_time: string
@@ -37,29 +37,37 @@ export default function BookingModal({
   const [specialInstructions, setSpecialInstructions] = useState('')
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const [totalPrice, setTotalPrice] = useState(0)
 
   useEffect(() => {
-    if (isOpen && selectedDate && providerId) {
-      fetchTimeSlots()
+    if (!isOpen || !selectedDate || !providerId) {
+      return
     }
+
+    const loadSlots = async () => {
+      setLoading(true)
+      try {
+        const response = await fetch(`/api/provider/availability?providerId=${providerId}&date=${selectedDate}&duration=60`)
+        const data = await response.json()
+        const slots: TimeSlot[] = data.slots || []
+        setTimeSlots(slots)
+        const grouped = slots.reduce<Record<string, TimeSlot[]>>((acc, slot) => {
+          const key = slot.slot_name || 'Available'
+          if (!acc[key]) acc[key] = []
+          acc[key].push(slot)
+          return acc
+        }, {})
+        setGroupedSlots(grouped)
+      } catch (error) {
+        console.error('Error fetching slots:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadSlots()
   }, [isOpen, selectedDate, providerId])
 
-  const fetchTimeSlots = async () => {
-    setLoading(true)
-    try {
-      const response = await fetch(`/api/provider/availability?providerId=${providerId}&date=${selectedDate}&duration=60`)
-      const data = await response.json()
-      setTimeSlots(data.slots || [])
-      setGroupedSlots(data.grouped_slots || {})
-    } catch (error) {
-      console.error('Error fetching slots:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleBooking = async () => {
+  async function handleBooking() {
     if (!selectedSlot || !selectedDate) return
 
     setSubmitting(true)
@@ -69,12 +77,12 @@ export default function BookingModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           providerId,
-          serviceId,
-          bookingDate: selectedDate,
-          startTime: selectedSlot.start_time,
-          duration: 60,
+          service_type: serviceId,
+          date: selectedDate,
+          start_time: selectedSlot.start_time,
+          duration_minutes: 60,
           address,
-          specialInstructions
+          notes: specialInstructions
         })
       })
 
@@ -86,7 +94,7 @@ export default function BookingModal({
       } else {
         alert(data.error || 'Failed to create booking')
       }
-    } catch (error) {
+    } catch {
       alert('Error creating booking')
     } finally {
       setSubmitting(false)

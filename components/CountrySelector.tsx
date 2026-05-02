@@ -15,8 +15,9 @@ interface Country {
 // Fallback countries data if database fails
 const FALLBACK_COUNTRIES: Country[] = [
   { code: 'AU', name: 'Australia', name_zh: '澳大利亚', flag: '🇦🇺', currency: 'AUD', symbol: '$' },
-  { code: 'CN', name: 'China', name_zh: '中国', flag: '🇨🇳', currency: 'CNY', symbol: '¥' },
-  { code: 'CA', name: 'Canada', name_zh: '加拿大', flag: '🇨🇦', currency: 'CAD', symbol: '$' }
+  { code: 'CA', name: 'Canada', name_zh: '加拿大', flag: '🇨🇦', currency: 'CAD', symbol: '$' },
+  { code: 'US', name: 'United States', name_zh: '美国', flag: '🇺🇸', currency: 'USD', symbol: '$' },
+  { code: 'CN', name: 'China', name_zh: '中国', flag: '🇨🇳', currency: 'CNY', symbol: '¥' }
 ]
 
 interface CountrySelectorProps {
@@ -60,12 +61,15 @@ export default function CountrySelector({ value = 'AU', onChange, className = ''
           if (country.code === 'AU') {
             flag = '🇦🇺'
             name_zh = '澳大利亚'
-          } else if (country.code === 'CN') {
-            flag = '🇨🇳'
-            name_zh = '中国'
           } else if (country.code === 'CA') {
             flag = '🇨🇦'
             name_zh = '加拿大'
+          } else if (country.code === 'US') {
+            flag = '🇺🇸'
+            name_zh = '美国'
+          } else if (country.code === 'CN') {
+            flag = '🇨🇳'
+            name_zh = '中国'
           }
           
           return {

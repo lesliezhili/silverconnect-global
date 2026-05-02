@@ -84,7 +84,7 @@ export default function AuthModal({
 
       const normalizedEmail = email.trim().toLowerCase()
 
-      // Sign up
+      // Sign up - the database trigger will automatically create the user record
       const { data, error } = await supabase.auth.signUp({
         email: normalizedEmail,
         password,
@@ -99,22 +99,8 @@ export default function AuthModal({
       if (error) throw error
 
       if (data?.user) {
-        // Create user record in database
-        const { error: profileError } = await supabase
-          .from('users')
-          .insert({
-            id: data.user.id,
-            email: normalizedEmail,
-            full_name: fullName,
-            phone: phone || null,
-            user_type: 'customer',
-            created_at: new Date().toISOString()
-          })
-
-        if (profileError) {
-          console.error('Profile creation error:', profileError)
-          // Don't fail the signup if profile creation fails
-        }
+        // No need to manually insert user - the database trigger handles it
+        // The trigger will create the user record in the users table automatically
         
         setSuccess('Account created successfully! You can now sign in.')
         

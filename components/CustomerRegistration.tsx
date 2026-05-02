@@ -27,9 +27,13 @@ const SERVICES_NEEDED = [
   'Transport & escort', 'Companionship', 'Meal preparation',
   'Wellness & exercise', 'Garden care', 'Shopping assistance',
 ]
-const LANGUAGES = ['English', 'Mandarin', 'Cantonese', 'Vietnamese', 'Greek', 'Italian', 'Arabic', 'Other']
+interface CustomerRegistrationProps {
+  isOpen: boolean
+  onClose?: () => void
+  onSuccess?: () => void
+}
 
-export default function CustomerRegistration({ onClose }: { onClose?: () => void }) {
+export default function CustomerRegistration({ isOpen, onClose, onSuccess }: CustomerRegistrationProps) {
   const { location } = useLocation()
   const [step, setStep] = useState(1)
   const [submitting, setSubmitting] = useState(false)
@@ -102,6 +106,8 @@ export default function CustomerRegistration({ onClose }: { onClose?: () => void
       setDone(true) // Still show success even if DB fails
     }
   }
+
+  if (!isOpen) return null
 
   if (done) return (
     <div className="text-center py-8 px-4">

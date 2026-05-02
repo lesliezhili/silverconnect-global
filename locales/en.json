@@ -1,0 +1,11 @@
+{
+  "booking.form.title": "Book a Service",
+  "booking.summary.title": "Booking summary",
+  "booking.summary.price_breakdown": "Price breakdown",
+  "pricing.explanation.weekend": "Weekend premium applied",
+  "pricing.explanation.holiday": "Holiday premium applied",
+  "booking.modal.confirm": "Confirm Booking",
+  "provider.onboarding.title": "Join as a Care Provider",
+  "chat.welcome": "Hello! I'm SilverConnect AI, your customer service assistant.",
+  "chat.emergency.note": "If you need urgent support, please contact local emergency services immediately."
+}

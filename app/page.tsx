@@ -6,10 +6,10 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { SERVICES_AU } from '@/lib/services'
 import { useLocation } from '@/components/LocationDetector'
-import { providersNearPostcode, getFeaturedProviders } from '@/lib/matching'
+import { providersNearPostcode } from '@/lib/matching'
 import CountrySelector from '@/components/CountrySelector'
 import LanguageSelector from '@/components/LanguageSelector'
-import { User, LogOut, Settings, Calendar, Heart, Briefcase, Star, MapPin, Clock } from 'lucide-react'
+import { User, LogOut, Calendar, Heart, Briefcase, Star, MapPin, Clock } from 'lucide-react'
 import AuthModal from '@/components/AuthModal'
 import ProviderRegistration from '@/components/ProviderRegistration'
 import CustomerRegistration from '@/components/CustomerRegistration'
@@ -20,7 +20,6 @@ export default function HomePage() {
   const [selectedCountry, setSelectedCountry] = useState('AU')
   const [selectedLanguage, setSelectedLanguage] = useState('en')
   const [nearbyProviders, setNearbyProviders] = useState<any[]>([])
-  const [featuredProviders, setFeaturedProviders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [showProviderReg, setShowProviderReg] = useState(false)
@@ -108,9 +107,6 @@ export default function HomePage() {
         setNearbyProviders(providers || [])
       }
       
-      const featured = await getFeaturedProviders(6)
-      setFeaturedProviders(featured || [])
-      
       setLoading(false)
     }
     
@@ -119,11 +115,16 @@ export default function HomePage() {
 
   const topProviders = nearbyProviders.slice(0, 3)
 
+  const getLocationDisplay = () => {
+    if (location.suburb && location.postcode) {
+      return `${location.suburb} ${location.postcode}`
+    }
+    return 'your area'
+  }
+
   const displayLocation = selectedCountry === 'CN' 
     ? '中国各地区' 
-    : location.suburb && location.postcode 
-      ? `${location.suburb} ${location.postcode}` 
-      : 'your area'
+    : getLocationDisplay()
 
   const handleOpenAuth = (mode: 'login' | 'signup') => {
     setAuthMode(mode)
@@ -301,7 +302,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Services Section */}
+      {/* Services Section - Using div, not button */}
       <section className="max-w-7xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-900">Our Services</h2>
@@ -330,22 +331,22 @@ export default function HomePage() {
                   {selectedCountry === 'CA' && '$'}
                   {service.base_price}
                 </span>
-                <button 
-                  className="px-4 py-2 border border-green-600 text-green-600 rounded-lg hover:bg-green-50 transition text-sm"
+                <span 
+                  className="px-4 py-2 border border-green-600 text-green-600 rounded-lg hover:bg-green-50 transition text-sm inline-block cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation()
                     user ? router.push(`/booking?service=${service.id}`) : handleOpenAuth('signup')
                   }}
                 >
                   Book Now
-                </button>
+                </span>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Top Providers Section */}
+      {/* Top Providers Section - Using div, not button */}
       {topProviders.length > 0 && (
         <section className="bg-white py-16">
           <div className="max-w-7xl mx-auto px-4">
@@ -382,15 +383,15 @@ export default function HomePage() {
                   <p className="text-gray-500 text-sm line-clamp-2">
                     {provider.specialties?.slice(0, 3).join(' • ')}
                   </p>
-                  <button 
-                    className="mt-4 w-full py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                  <span 
+                    className="mt-4 w-full py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-center inline-block cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation()
                       user ? router.push(`/provider/${provider.id}`) : handleOpenAuth('signup')
                     }}
                   >
                     View Profile
-                  </button>
+                  </span>
                 </div>
               ))}
             </div>

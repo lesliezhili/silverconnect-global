@@ -1,0 +1,11 @@
+{
+  "booking.form.title": "서비스 예약",
+  "booking.summary.title": "예약 요약",
+  "booking.summary.price_breakdown": "요금 내역",
+  "pricing.explanation.weekend": "주말 요금이 적용되었습니다",
+  "pricing.explanation.holiday": "공휴일 요금이 적용되었습니다",
+  "booking.modal.confirm": "예약 확인",
+  "provider.onboarding.title": "케어 제공자로 가입",
+  "chat.welcome": "안녕하세요! SilverConnect AI입니다. 도와드릴게요.",
+  "chat.emergency.note": "긴급 지원이 필요하면 즉시 현지 긴급 서비스에 연락하십시오."
+}

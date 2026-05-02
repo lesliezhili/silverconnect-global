@@ -1,0 +1,11 @@
+{
+  "booking.form.title": "サービスを予約する",
+  "booking.summary.title": "予約概要",
+  "booking.summary.price_breakdown": "価格内訳",
+  "pricing.explanation.weekend": "週末料金が適用されました",
+  "pricing.explanation.holiday": "祝日料金が適用されました",
+  "booking.modal.confirm": "予約を確定する",
+  "provider.onboarding.title": "ケアプロバイダーとして参加",
+  "chat.welcome": "こんにちは！SilverConnect AIです。お手伝いします。",
+  "chat.emergency.note": "緊急のサポートが必要な場合は、直ちに現地の緊急サービスに連絡してください。"
+}

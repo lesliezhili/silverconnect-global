@@ -26,7 +26,7 @@ interface PricingInfo {
 interface BookingFormProps {
   providerId?: string;
   service?: string;
-  onComplete?: (booking: any) => void;
+  onComplete?: (booking: { id: string } | Record<string, unknown>) => void;
 }
 
 export default function BookingForm({ providerId, service, onComplete }: BookingFormProps) {
@@ -55,64 +55,65 @@ export default function BookingForm({ providerId, service, onComplete }: Booking
     recurring_weeks: 4,
   });
 
+
   useEffect(() => {
-    loadProviders();
+    const load = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch("/api/provider?available=true");
+        const data = await response.json();
+        if (data.providers) {
+          setProviders(data.providers);
+        }
+      } catch (err) {
+        console.error("Failed to load providers:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
   }, []);
 
   // Fetch pricing when date/time/provider changes
   useEffect(() => {
     if (formData.provider_id && formData.service_type && formData.booking_date && formData.start_time) {
-      fetchPricing();
-    }
-  }, [formData.provider_id, formData.service_type, formData.booking_date, formData.start_time, formData.country_code]);
+      const loadPricing = async () => {
+        setPricingLoading(true);
+        try {
+          const params = new URLSearchParams({
+            service_id: formData.service_type,
+            provider_id: formData.provider_id,
+            country_code: formData.country_code,
+            booking_date: formData.booking_date,
+            booking_time: formData.start_time,
+            duration: formData.duration_hours.toString(),
+          });
 
-  const loadProviders = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch("/api/provider?available=true");
-      const data = await response.json();
-      if (data.providers) {
-        setProviders(data.providers);
-      }
-    } catch (err) {
-      console.error("Failed to load providers:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+          const response = await fetch(`/api/pricing?${params}`);
+          const data = await response.json();
 
-  const fetchPricing = async () => {
-    setPricingLoading(true);
-    try {
-      const params = new URLSearchParams({
-        service_id: formData.service_type,
-        provider_id: formData.provider_id,
-        country_code: formData.country_code,
-        booking_date: formData.booking_date,
-        booking_time: formData.start_time,
-        duration: formData.duration_hours.toString(),
-      });
-      
-      const response = await fetch(`/api/pricing?${params}`);
-      const data = await response.json();
-      
-      if (data.finalPrice !== undefined) {
-        setPricing({
-          basePrice: data.basePrice,
-          dayType: data.dayType,
-          timeSlot: data.timeSlot,
-          dayTypeMultiplier: data.dayTypeMultiplier,
-          finalPrice: data.finalPrice,
-          currency: data.currency || (formData.country_code === 'AU' ? 'AUD' : 'CAD'),
-          available: data.available,
-        });
-      }
-    } catch (err) {
-      console.error("Failed to fetch pricing:", err);
-    } finally {
-      setPricingLoading(false);
+          if (data.finalPrice !== undefined) {
+            setPricing({
+              basePrice: data.basePrice,
+              dayType: data.dayType,
+              timeSlot: data.timeSlot,
+              dayTypeMultiplier: data.dayTypeMultiplier,
+              finalPrice: data.finalPrice,
+              currency: data.currency || (formData.country_code === 'AU' ? 'AUD' : 'CAD'),
+              available: data.available,
+            });
+          }
+        } catch (err) {
+          console.error("Failed to fetch pricing:", err);
+        } finally {
+          setPricingLoading(false);
+        }
+      };
+
+      loadPricing();
     }
-  };
+  }, [formData.provider_id, formData.service_type, formData.booking_date, formData.start_time, formData.duration_hours, formData.country_code]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -135,10 +136,21 @@ export default function BookingForm({ providerId, service, onComplete }: Booking
     setError("");
 
     try {
-      const response = await fetch("/api/booking", {
+      const payload = {
+        providerId: formData.provider_id,
+        service_type: formData.service_type,
+        date: formData.booking_date,
+        start_time: formData.start_time,
+        duration_minutes: formData.duration_hours * 60,
+        country_code: formData.country_code,
+        address: `${formData.address}, ${formData.city}, ${formData.postal_code}`,
+        notes: formData.notes,
+      };
+
+      const response = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
@@ -152,8 +164,12 @@ export default function BookingForm({ providerId, service, onComplete }: Booking
       } else {
         router.push(`/bookings/${data.booking.id}`);
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Failed to create booking");
+      }
     } finally {
       setLoading(false);
     }
@@ -280,6 +296,7 @@ export default function BookingForm({ providerId, service, onComplete }: Booking
               >
                 <option value="AU">Australia (AU)</option>
                 <option value="CA">Canada (CA)</option>
+                <option value="US">United States (US)</option>
               </select>
             </div>
 

@@ -1,0 +1,11 @@
+{
+  "booking.form.title": "預訂服務",
+  "booking.summary.title": "預訂摘要",
+  "booking.summary.price_breakdown": "價格明細",
+  "pricing.explanation.weekend": "已應用週末加價",
+  "pricing.explanation.holiday": "已應用假期加價",
+  "booking.modal.confirm": "確認預訂",
+  "provider.onboarding.title": "加入成為護理提供者",
+  "chat.welcome": "您好！我是 SilverConnect AI，您的客戶服務助手。",
+  "chat.emergency.note": "如果您需要緊急支援，請立即聯繫當地緊急服務。"
+}

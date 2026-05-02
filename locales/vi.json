@@ -1,0 +1,11 @@
+{
+  "booking.form.title": "Đặt dịch vụ",
+  "booking.summary.title": "Tóm tắt đơn đặt",
+  "booking.summary.price_breakdown": "Bảng giá chi tiết",
+  "pricing.explanation.weekend": "Đã áp dụng phụ phí cuối tuần",
+  "pricing.explanation.holiday": "Đã áp dụng phụ phí ngày lễ",
+  "booking.modal.confirm": "Xác nhận đặt chỗ",
+  "provider.onboarding.title": "Tham gia làm nhà cung cấp chăm sóc",
+  "chat.welcome": "Xin chào! Tôi là SilverConnect AI, trợ lý dịch vụ khách hàng của bạn.",
+  "chat.emergency.note": "Nếu bạn cần hỗ trợ khẩn cấp, hãy liên hệ dịch vụ khẩn cấp địa phương ngay lập tức."
+}

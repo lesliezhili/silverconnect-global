@@ -1,182 +1,172 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase, getCurrentUser } from '@/lib/supabase';
-import { calculateServicePrice } from '@/lib/pricing';
-import { checkAvailability } from '@/lib/availability';
+import { supabaseAdmin, getServerUserFromRequest } from '@/lib/supabase';
+import { calculatePricing } from '@/lib/pricing';
+import { getAvailableSlots } from '@/lib/availability';
 
 export async function GET(request: NextRequest) {
-  const user = await getCurrentUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const user = await getServerUserFromRequest(request);
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
-  const { searchParams } = new URL(request.url);
-  const role = searchParams.get('role');
-  const status = searchParams.get('status');
-  const date = searchParams.get('date');
+  const url = new URL(request.url);
+  const role = url.searchParams.get('role') || 'customer';
 
-  let query = supabase
+  let query = supabaseAdmin!
     .from('bookings')
-    .select(`
-      *,
-      provider:provider_id (id, full_name, email, phone, profile_image, rating),
-      service:service_id (id, name, name_zh, description, duration_minutes),
-      customer:customer_id (id, full_name, email, phone)
-    `);
+    .select('*')
+    .order('start_datetime', { ascending: false });
 
   if (role === 'provider') {
-    const { data: provider } = await supabase
+    // Get provider id for user
+    const { data: provider } = await supabaseAdmin!
       .from('service_providers')
       .select('id')
       .eq('user_id', user.id)
       .single();
-    if (provider) query = query.eq('provider_id', provider.id);
-  } else {
-    query = query.eq('customer_id', user.id);
-  }
 
-  if (status) query = query.eq('status', status);
-  if (date) query = query.eq('booking_date', date);
-  
-  query = query.order('booking_date', { ascending: true }).order('start_time', { ascending: true });
+    if (provider) {
+      query = query.eq('provider_id', provider.id);
+    }
+  } else {
+    // Get customer id for user
+    const { data: customer } = await supabaseAdmin!
+      .from('customers')
+      .select('id')
+      .eq('user_id', user.id)
+      .single();
+
+    if (customer) {
+      query = query.eq('customer_id', customer.id);
+    }
+  }
 
   const { data, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ bookings: data });
-}
-
-export async function POST(request: NextRequest) {
-  const user = await getCurrentUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const body = await request.json();
-  const { providerId, serviceId, bookingDate, startTime, duration, address, specialInstructions } = body;
-
-  // Calculate end time
-  const endDateTime = new Date(`${bookingDate}T${startTime}`);
-  endDateTime.setMinutes(endDateTime.getMinutes() + duration);
-  const endTime = endDateTime.toTimeString().slice(0, 5);
-
-  // Check availability
-  const isAvailable = await checkAvailability(providerId, bookingDate, startTime, endTime);
-  if (!isAvailable) {
-    return NextResponse.json({ error: "Time slot no longer available" }, { status: 409 });
-  }
-
-  // Get user profile for country
-  const { data: userProfile } = await supabase
-    .from('users')
-    .select('country_code')
-    .eq('id', user.id)
-    .single();
-
-  // Calculate pricing
-  const pricing = await calculateServicePrice({
-    serviceId,
-    countryCode: userProfile?.country_code || 'AU',
-    providerId,
-    date: bookingDate,
-    startTime,
-    duration
-  });
-
-  // Generate booking number
-  const bookingNumber = `SC-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
-
-  // Create booking
-  const { data: booking, error } = await supabase
-    .from('bookings')
-    .insert({
-      booking_number: bookingNumber,
-      provider_id: providerId,
-      customer_id: user.id,
-      service_id: serviceId,
-      booking_date: bookingDate,
-      start_time: startTime,
-      end_time: endTime,
-      duration_minutes: duration,
-      address,
-      special_instructions: specialInstructions,
-      base_price: pricing.base_price,
-      time_multiplier: pricing.time_multiplier,
-      day_multiplier: pricing.day_multiplier,
-      total_price: pricing.total_price,
-      platform_fee_amount: pricing.platform_fee,
-      provider_payout_amount: pricing.provider_payout,
-      status: 'PENDING',
-      payment_status: 'UNPAID'
-    })
-    .select()
-    .single();
-
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // Create notification for provider
-  await supabase.from('notifications').insert({
-    user_id: booking.provider?.user_id,
-    type: 'new_booking',
-    title: 'New Booking Request',
-    message: `New booking request for ${bookingDate} at ${startTime}`,
-    data: { bookingId: booking.id }
-  });
-
-  return NextResponse.json({ 
-    success: true, 
-    booking, 
-    total_price: pricing.total_price 
-  });
+  return NextResponse.json({ bookings: data });
 }
 
-export async function PATCH(request: NextRequest) {
-  const user = await getCurrentUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export async function POST(request: NextRequest) {
+  const user = await getServerUserFromRequest(request);
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   const body = await request.json();
-  const { bookingId, status, action } = body;
+  const {
+    provider_id,
+    service_type,
+    start_datetime,
+    duration_minutes,
+    country_code,
+  } = body;
 
-  const { data: booking } = await supabase
-    .from('bookings')
-    .select('*, provider:provider_id(user_id), customer:customer_id(user_id)')
-    .eq('id', bookingId)
+  if (!provider_id || !service_type || !start_datetime || !duration_minutes || !country_code) {
+    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+  }
+
+  // Get customer
+  const { data: customer, error: customerError } = await supabaseAdmin!
+    .from('customers')
+    .select('id')
+    .eq('user_id', user.id)
     .single();
 
-  if (!booking) {
-    return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+  if (customerError || !customer) {
+    return NextResponse.json({ error: 'Customer profile not found' }, { status: 404 });
   }
 
-  const isProvider = booking.provider?.user_id === user.id;
-  const isCustomer = booking.customer?.user_id === user.id;
+  // Get provider
+  const { data: provider, error: providerError } = await supabaseAdmin!
+    .from('service_providers')
+    .select('*')
+    .eq('id', provider_id)
+    .single();
 
-  if (!isProvider && !isCustomer) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (providerError || !provider) {
+    return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
   }
 
-  let updateData: any = {};
+  const startDate = new Date(start_datetime);
+  const date = startDate.toISOString().split('T')[0];
+  const startTime = startDate.toTimeString().slice(0, 5);
+  const endDateTime = new Date(startDate.getTime() + duration_minutes * 60000);
+  const endTime = endDateTime.toTimeString().slice(0, 5);
 
-  if (action === 'confirm' && isProvider && booking.status === 'PENDING') {
-    updateData.status = 'CONFIRMED';
-  } else if (action === 'cancel') {
-    updateData.status = 'CANCELLED';
-  } else if (action === 'complete' && isProvider && booking.status === 'CONFIRMED') {
-    updateData.status = 'COMPLETED';
-  } else if (status) {
-    updateData.status = status;
+  // Check availability
+  const availableSlots = await getAvailableSlots(provider_id, date, duration_minutes, country_code);
+  const isAvailable = availableSlots.some(slot => slot.start_time === startTime && slot.end_time === endTime);
+
+  if (!isAvailable) {
+    return NextResponse.json({ error: 'Time slot not available' }, { status: 409 });
   }
 
-  const { error } = await supabase
-    .from('bookings')
-    .update(updateData)
-    .eq('id', bookingId);
+  // Determine if weekend/holiday
+  const dayOfWeek = startDate.getDay();
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  const { data: holiday } = await supabaseAdmin!
+    .from('public_holidays')
+    .select('id')
+    .eq('country_code', country_code)
+    .eq('date', date)
+    .maybeSingle();
 
-  // Send notification
-  await supabase.from('notifications').insert({
-    user_id: isProvider ? booking.customer?.user_id : booking.provider?.user_id,
-    type: 'booking_status_update',
-    title: `Booking ${updateData.status}`,
-    message: `Your booking ${booking.booking_number} has been ${updateData.status}`,
-    data: { bookingId, status: updateData.status }
+  const isHoliday = Boolean(holiday);
+
+  // Get time of day multiplier
+  const hour = startDate.getHours();
+  let timeOfDay: 'morning' | 'afternoon' | 'evening' | 'night';
+  if (hour < 12) timeOfDay = 'morning';
+  else if (hour < 17) timeOfDay = 'afternoon';
+  else if (hour < 21) timeOfDay = 'evening';
+  else timeOfDay = 'night';
+
+  const timeOfDayMultiplier = provider.time_of_day_multipliers[timeOfDay];
+
+  // Calculate pricing
+  const pricing = calculatePricing({
+    country_code: country_code as 'AU' | 'CA' | 'US' | 'CN',
+    service_type,
+    base_rate: provider.base_rate,
+    weekend_loading: provider.weekend_loading,
+    holiday_loading: provider.holiday_loading,
+    time_of_day_multiplier: timeOfDayMultiplier,
+    duration_minutes,
+    platform_fee_rate: 0.1, // Assume 10%
+    currency: provider.country_code === 'AU' ? 'AUD' : provider.country_code === 'CA' ? 'CAD' : provider.country_code === 'US' ? 'USD' : 'CNY',
+    is_weekend: isWeekend,
+    is_holiday: isHoliday,
   });
 
-  return NextResponse.json({ success: true });
+  // Create booking
+  const bookingPayload = {
+    customer_id: customer.id,
+    provider_id,
+    service_type,
+    country_code,
+    start_datetime,
+    duration_minutes,
+    end_datetime: endDateTime.toISOString(),
+    price_customer: pricing.customer_total,
+    payout_provider: pricing.provider_payout,
+    platform_fee: pricing.platform_fee,
+    currency: pricing.breakdown.base > 0 ? 'AUD' : 'USD', // Placeholder
+    status: 'pending',
+  };
+
+  const { data: booking, error: bookingError } = await supabaseAdmin!
+    .from('bookings')
+    .insert(bookingPayload)
+    .select()
+    .single();
+
+  if (bookingError) {
+    return NextResponse.json({ error: bookingError.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ booking, pricing });
 }

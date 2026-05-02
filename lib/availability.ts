@@ -1,174 +1,97 @@
-import { supabase } from './supabase'
+import { supabase } from './supabase';
 
-export interface AvailabilityWindow {
-  id?: string
-  provider_id: string
-  day_of_week: number
-  slot_name: string
-  start_time: string
-  end_time: string
-  break_duration_minutes: number
-  is_available: boolean
+export interface AvailableSlot {
+  start_time: string;
+  end_time: string;
+  is_holiday: boolean;
+  is_weekend: boolean;
 }
 
-export interface TimeSlot {
-  start_time: string
-  end_time: string
-  slot_name: string
-  availability_id: string
-}
-
-export async function getProviderAvailability(providerId: string, date?: string): Promise<AvailabilityWindow[]> {
-  let query = supabase
-    .from('provider_availability')
-    .select('*')
-    .eq('provider_id', providerId)
-    .eq('is_available', true)
-    .order('day_of_week', { ascending: true })
-    .order('start_time', { ascending: true })
-
-  if (date) {
-    const targetDate = new Date(date)
-    const dayOfWeek = targetDate.getDay()
-    query = query.eq('day_of_week', dayOfWeek)
-  }
-
-  const { data, error } = await query
-  if (error) throw error
-  return data || []
-}
-
-export async function getAvailableTimeSlots(
-  providerId: string,
+export async function getAvailableSlots(
+  provider_id: string,
   date: string,
-  serviceDurationMinutes: number = 60
-): Promise<{ slots: TimeSlot[]; grouped_slots: Record<string, TimeSlot[]> }> {
-  const targetDate = new Date(date)
-  const dayOfWeek = targetDate.getDay()
+  duration_minutes: number,
+  country_code: string
+): Promise<AvailableSlot[]> {
+  const targetDate = new Date(date);
+  const dayOfWeek = targetDate.getDay();
+  const is_weekend = dayOfWeek === 0 || dayOfWeek === 6;
 
-  const { data: windows } = await supabase
+  // Check if it's a holiday
+  const { data: holiday, error: holidayError } = await supabase
+    .from('public_holidays')
+    .select('id')
+    .eq('country_code', country_code)
+    .eq('date', date)
+    .maybeSingle();
+
+  if (holidayError) {
+    console.error('Holiday check failed:', holidayError);
+  }
+  const is_holiday = Boolean(holiday);
+
+  // Get provider availability windows
+  const { data: windows, error: windowError } = await supabase
     .from('provider_availability')
     .select('*')
-    .eq('provider_id', providerId)
+    .eq('provider_id', provider_id)
     .eq('day_of_week', dayOfWeek)
-    .eq('is_available', true)
-    .order('start_time', { ascending: true })
+    .eq('is_available', true);
 
-  if (!windows || windows.length === 0) {
-    return { slots: [], grouped_slots: {} }
-  }
+  if (windowError) throw windowError;
+  if (!windows || windows.length === 0) return [];
 
-  const { data: existingBookings } = await supabase
+  // Get existing bookings for the date
+  const { data: bookings, error: bookingError } = await supabase
     .from('bookings')
-    .select('start_time, end_time')
-    .eq('provider_id', providerId)
-    .eq('booking_date', date)
-    .in('status', ['CONFIRMED', 'PENDING'])
+    .select('start_datetime, end_datetime')
+    .eq('provider_id', provider_id)
+    .gte('start_datetime', `${date}T00:00:00`)
+    .lt('start_datetime', `${date}T23:59:59`)
+    .in('status', ['pending', 'confirmed', 'in_progress']);
 
-  const bookedSlots = existingBookings || []
-  const availableSlots: TimeSlot[] = []
+  if (bookingError) throw bookingError;
+
+  // Get provider buffer
+  const { data: provider, error: providerError } = await supabase
+    .from('service_providers')
+    .select('buffer_minutes')
+    .eq('id', provider_id)
+    .single();
+
+  if (providerError) throw providerError;
+  const buffer_minutes = provider?.buffer_minutes || 0;
+
+  const bookedTimes: { start: number; end: number }[] = (bookings || []).map(booking => ({
+    start: new Date(booking.start_datetime).getTime() - buffer_minutes * 60000,
+    end: new Date(booking.end_datetime).getTime() + buffer_minutes * 60000,
+  }));
+
+  const availableSlots: AvailableSlot[] = [];
 
   for (const window of windows) {
-    const breakMinutes = window.break_duration_minutes || 15
-    let currentStart = new Date(`${date}T${window.start_time}`)
-    const windowEnd = new Date(`${date}T${window.end_time}`)
+    const windowStart = new Date(`${date}T${window.start_time}`);
+    const windowEnd = new Date(`${date}T${window.end_time}`);
+    const stepMs = 15 * 60000; // 15 minutes
 
-    while (currentStart.getTime() + (serviceDurationMinutes * 60000) <= windowEnd.getTime()) {
-      const slotEnd = new Date(currentStart.getTime() + (serviceDurationMinutes * 60000))
-      const startTimeStr = currentStart.toTimeString().slice(0, 5)
-      const endTimeStr = slotEnd.toTimeString().slice(0, 5)
+    for (let slotStart = windowStart.getTime(); slotStart + duration_minutes * 60000 <= windowEnd.getTime(); slotStart += stepMs) {
+      const slotEnd = slotStart + duration_minutes * 60000;
 
-      const isAvailable = !bookedSlots.some(booking => {
-        return (startTimeStr < booking.end_time && endTimeStr > booking.start_time)
-      })
+      // Check for conflicts with existing bookings (including buffer)
+      const hasConflict = bookedTimes.some(booking =>
+        slotStart < booking.end && slotEnd > booking.start
+      );
 
-      if (isAvailable) {
+      if (!hasConflict) {
         availableSlots.push({
-          start_time: startTimeStr,
-          end_time: endTimeStr,
-          slot_name: window.slot_name,
-          availability_id: window.id
-        })
-      }
-
-      currentStart = new Date(currentStart.getTime() + (serviceDurationMinutes + breakMinutes) * 60000)
-    }
-  }
-
-  const grouped_slots = availableSlots.reduce((acc, slot) => {
-    const name = slot.slot_name
-    if (!acc[name]) acc[name] = []
-    acc[name].push(slot)
-    return acc
-  }, {} as Record<string, TimeSlot[]>)
-
-  return { slots: availableSlots, grouped_slots }
-}
-
-export async function saveProviderAvailability(
-  providerId: string,
-  availability: Omit<AvailabilityWindow, 'id' | 'provider_id'>[]
-): Promise<boolean> {
-  try {
-    await supabase
-      .from('provider_availability')
-      .delete()
-      .eq('provider_id', providerId)
-
-    if (availability.length > 0) {
-      const { error } = await supabase
-        .from('provider_availability')
-        .insert(availability.map(a => ({ ...a, provider_id: providerId })))
-
-      if (error) throw error
-    }
-    return true
-  } catch (error) {
-    console.error('Error saving availability:', error)
-    return false
-  }
-}
-
-export async function checkAvailability(
-  providerId: string,
-  date: string,
-  startTime: string,
-  endTime: string
-): Promise<boolean> {
-  const targetDate = new Date(date)
-  const dayOfWeek = targetDate.getDay()
-
-  const { data: windows } = await supabase
-    .from('provider_availability')
-    .select('*')
-    .eq('provider_id', providerId)
-    .eq('day_of_week', dayOfWeek)
-    .eq('is_available', true)
-
-  if (!windows || windows.length === 0) return false
-
-  let withinWindow = false
-  for (const window of windows) {
-    if (startTime >= window.start_time && endTime <= window.end_time) {
-      withinWindow = true
-      break
-    }
-  }
-  if (!withinWindow) return false
-
-  const { data: existingBookings } = await supabase
-    .from('bookings')
-    .select('start_time, end_time')
-    .eq('provider_id', providerId)
-    .eq('booking_date', date)
-    .in('status', ['CONFIRMED', 'PENDING'])
-
-  if (existingBookings) {
-    for (const booking of existingBookings) {
-      if (startTime < booking.end_time && endTime > booking.start_time) {
-        return false
+          start_time: new Date(slotStart).toTimeString().slice(0, 5),
+          end_time: new Date(slotEnd).toTimeString().slice(0, 5),
+          is_holiday,
+          is_weekend,
+        });
       }
     }
   }
-  return true
+
+  return availableSlots;
 }

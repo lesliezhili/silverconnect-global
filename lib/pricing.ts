@@ -1,86 +1,106 @@
-import { supabase } from './supabase'
-
-export interface PricingRequest {
-  serviceId: string
-  countryCode: string
-  providerId?: string
-  date?: string
-  startTime?: string
-  duration?: number
+export interface PricingInputs {
+  country_code: 'AU' | 'CA' | 'US' | 'CN';
+  service_type: string;
+  base_rate: number;
+  weekend_loading: number;
+  holiday_loading: number;
+  time_of_day_multiplier: number;
+  duration_minutes: number;
+  platform_fee_rate: number;
+  currency: string;
+  is_weekend: boolean;
+  is_holiday: boolean;
 }
 
-export interface PricingResult {
-  base_price: number
-  price_with_tax: number
-  tax_rate: number
-  currency_symbol: string
-  currency_code: string
-  time_multiplier: number
-  day_multiplier: number
-  total_price: number
-  platform_fee: number
-  provider_payout: number
+export interface PricingBreakdown {
+  base: number;
+  weekend: number;
+  holiday: number;
+  time_of_day: number;
+  tax: number; // placeholder
 }
 
-export async function calculateServicePrice(request: PricingRequest): Promise<PricingResult> {
-  const { serviceId, countryCode, providerId, date, startTime } = request
+export interface PricingOutput {
+  customer_total: number;
+  provider_payout: number;
+  platform_fee: number;
+  breakdown: PricingBreakdown;
+}
 
-  const { data: servicePrice } = await supabase
-    .from('service_prices')
-    .select('*, countries(*)')
-    .eq('service_id', serviceId)
-    .eq('country_code', countryCode)
-    .single()
+const COUNTRY_RULES = {
+  AU: {
+    currency: 'AUD',
+    weekend_multiplier: 1.2,
+    holiday_multiplier: 2.5,
+    time_multipliers: { morning: 1.0, afternoon: 1.0, evening: 1.25, night: 1.5 },
+  },
+  CA: {
+    currency: 'CAD',
+    weekend_multiplier: 1.15,
+    holiday_multiplier: 3.0,
+    time_multipliers: { morning: 1.0, afternoon: 1.0, evening: 1.2, night: 1.4 },
+  },
+  US: {
+    currency: 'USD',
+    weekend_multiplier: 1.15,
+    holiday_multiplier: 2.5,
+    time_multipliers: { morning: 1.0, afternoon: 1.0, evening: 1.2, night: 1.4 },
+  },
+  CN: {
+    currency: 'CNY',
+    weekend_multiplier: 1.1,
+    holiday_multiplier: 3.0,
+    time_multipliers: { morning: 1.0, afternoon: 1.0, evening: 1.1, night: 1.3 },
+  },
+};
 
-  if (!servicePrice) {
-    throw new Error(`Pricing not found for service ${serviceId} in ${countryCode}`)
+export function calculatePricing(inputs: PricingInputs): PricingOutput {
+  const rules = COUNTRY_RULES[inputs.country_code];
+  if (!rules) {
+    throw new Error(`Unsupported country code: ${inputs.country_code}`);
   }
 
-  let finalPrice = servicePrice.base_price
-  let timeMultiplier = 1.0
-  let dayMultiplier = 1.0
+  // Base price
+  const base = inputs.base_rate * inputs.duration_minutes;
 
-  if (providerId) {
-    const { data: providerPricing } = await supabase
-      .from('provider_pricing')
-      .select('custom_price')
-      .eq('provider_id', providerId)
-      .eq('service_id', serviceId)
-      .eq('country_code', countryCode)
-      .single()
+  // Weekend loading
+  const weekend = inputs.is_weekend ? base * (rules.weekend_multiplier - 1) : 0;
 
-    if (providerPricing?.custom_price) {
-      finalPrice = providerPricing.custom_price
-    }
-  }
+  // Holiday loading
+  const holiday = inputs.is_holiday ? base * (rules.holiday_multiplier - 1) : 0;
 
-  if (date && startTime) {
-    const hour = parseInt(startTime.split(':')[0])
-    if (hour >= 21 || hour < 6) timeMultiplier = 1.5
-    else if (hour >= 17 && hour < 21) timeMultiplier = 1.2
-    else if (hour >= 6 && hour < 9) timeMultiplier = 1.1
+  // Time of day multiplier (applied to base + weekend + holiday)
+  const time_of_day = (base + weekend + holiday) * (inputs.time_of_day_multiplier - 1);
 
-    const targetDate = new Date(date)
-    const dayOfWeek = targetDate.getDay()
-    if (dayOfWeek === 0 || dayOfWeek === 6) dayMultiplier = 1.2
-  }
+  // Subtotal before platform fee
+  const subtotal = base + weekend + holiday + time_of_day;
 
-  const subtotal = finalPrice * timeMultiplier * dayMultiplier
-  const taxRate = servicePrice.countries?.tax_rate || 0
-  const totalPrice = subtotal * (1 + taxRate / 100)
-  const platformFee = totalPrice * 0.15
-  const providerPayout = totalPrice - platformFee
+  // Platform fee
+  const platform_fee = subtotal * inputs.platform_fee_rate;
+
+  // Customer total
+  const customer_total = subtotal + platform_fee;
+
+  // Provider payout
+  const provider_payout = subtotal;
+
+  // Tax placeholder (0 for now)
+  const tax = 0;
 
   return {
-    base_price: finalPrice,
-    price_with_tax: servicePrice.price_with_tax,
-    tax_rate: taxRate,
-    currency_symbol: servicePrice.countries?.currency_symbol || '$',
-    currency_code: servicePrice.countries?.currency_code || 'AUD',
-    time_multiplier: timeMultiplier,
-    day_multiplier: dayMultiplier,
-    total_price: totalPrice,
-    platform_fee: platformFee,
-    provider_payout: providerPayout
-  }
+    customer_total,
+    provider_payout,
+    platform_fee,
+    breakdown: {
+      base,
+      weekend,
+      holiday,
+      time_of_day,
+      tax,
+    },
+  };
+}
+
+export function getTimeOfDayMultiplier(country_code: keyof typeof COUNTRY_RULES, time_of_day: 'morning' | 'afternoon' | 'evening' | 'night'): number {
+  return COUNTRY_RULES[country_code].time_multipliers[time_of_day];
 }
