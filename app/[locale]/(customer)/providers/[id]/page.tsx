@@ -1,25 +1,58 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
-import { Star, ShieldCheck, MessageCircle } from "lucide-react";
+import { Star, ShieldCheck, MessageCircle, AlertTriangle } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Link } from "@/i18n/navigation";
 import { ProviderAvatar } from "@/components/domain/ProviderAvatar";
 import { CURRENCY_SYMBOL, TAX_ABBR } from "@/components/domain/country";
 import { getCountry } from "@/components/domain/countryCookie";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 const SLOTS = ["09:00", "11:00", "14:00", "16:00"];
 
 export default async function ProviderDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale, id } = await params;
+  const sp = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations("provider");
+  const tProviders = await getTranslations("providers");
   const country = await getCountry();
   const isZh = locale === "zh";
   const sym = CURRENCY_SYMBOL[country];
   const taxAbbr = TAX_ABBR[country];
+  const state = typeof sp.state === "string" ? sp.state : undefined;
+  const offline = state === "offline";
+  const noReviews = state === "noReviews";
+  const noSlots = state === "noSlots";
+
+  if (state === "loading") {
+    return (
+      <>
+        <Header country={country} back />
+        <main className="mx-auto w-full max-w-content overflow-auto bg-bg-surface px-5 pb-[120px] pt-5">
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-[100px] w-[100px] rounded-full" />
+            <div className="flex-1 space-y-2.5">
+              <Skeleton className="h-6 w-2/3" />
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-4 w-2/5" />
+            </div>
+          </div>
+          <Skeleton className="mt-5 h-28 w-full rounded-md" />
+          <Skeleton className="mt-5 h-5 w-1/3" />
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} className="mt-3 h-16 w-full rounded-md" />
+          ))}
+          <Skeleton className="mt-5 h-48 w-full rounded-md" />
+        </main>
+      </>
+    );
+  }
 
   const services = isZh
     ? [
@@ -45,6 +78,18 @@ export default async function ProviderDetailPage({
     <>
       <Header country={country} back />
       <main className="mx-auto w-full max-w-content overflow-auto bg-bg-surface px-5 pb-[120px] pt-5">
+        {offline && (
+          <div
+            role="alert"
+            className="mb-4 flex items-start gap-2.5 rounded-md border-[1.5px] border-warning bg-warning-soft p-3.5"
+          >
+            <AlertTriangle size={20} className="mt-0.5 shrink-0 text-[#92590A] dark:text-[var(--brand-accent)]" aria-hidden />
+            <div className="text-[#92590A] dark:text-[var(--brand-accent)]">
+              <p className="text-[16px] font-bold">{t("currentlyOffline")}</p>
+              <p className="mt-0.5 text-[14px]">{t("currentlyOfflineHint")}</p>
+            </div>
+          </div>
+        )}
         {/* Header */}
         <header className="flex items-start gap-4">
           <ProviderAvatar size={100} hue={0} initials={isZh ? "李" : "HL"} />
@@ -123,6 +168,19 @@ export default async function ProviderDetailPage({
         {/* 7-day availability */}
         <section className="mt-6">
           <h2 className="mb-2.5 text-[18px] font-bold">{t("available7d")}</h2>
+          {noSlots ? (
+            <div className="rounded-md border border-border bg-bg-base p-6 text-center">
+              <p className="text-[16px] font-semibold text-text-secondary">
+                {tProviders("fullyBooked")}
+              </p>
+              <button
+                type="button"
+                className="mt-3 inline-flex h-12 items-center rounded-md border-[1.5px] border-brand bg-bg-base px-6 text-[15px] font-bold text-brand"
+              >
+                {tProviders("seeNextWeek")}
+              </button>
+            </div>
+          ) : (
           <div className="grid grid-cols-7 gap-1.5">
             {days.map((d, di) => (
               <div key={d} className="flex flex-col items-center gap-1.5">
@@ -150,11 +208,19 @@ export default async function ProviderDetailPage({
               </div>
             ))}
           </div>
+          )}
         </section>
 
         {/* Reviews */}
         <section className="mt-6">
           <h2 className="mb-2.5 text-[18px] font-bold">{t("reviewsTitle")}</h2>
+          {noReviews ? (
+            <div className="rounded-md border border-border bg-bg-base p-6 text-center">
+              <p className="text-[16px] font-semibold text-text-secondary">{t("noReviews")}</p>
+              <p className="mt-1 text-[13px] text-text-tertiary">{t("noReviewsHint")}</p>
+            </div>
+          ) : (
+          <>
           <div className="flex items-start gap-4 rounded-md border border-border bg-bg-base p-3.5">
             <div className="text-[36px] font-extrabold text-text-primary">4.9</div>
             <div className="flex-1">
@@ -187,6 +253,8 @@ export default async function ProviderDetailPage({
               — Sarah W. · {isZh ? "2 周前" : "2 weeks ago"}
             </p>
           </article>
+          </>
+          )}
         </section>
       </main>
 
@@ -199,12 +267,30 @@ export default async function ProviderDetailPage({
         >
           <MessageCircle size={22} aria-hidden />
         </button>
-        <Link
-          href={`/bookings/new?providerId=${id}&step=1`}
-          className="flex h-14 flex-1 items-center justify-center rounded-md bg-brand text-[17px] font-bold text-white hover:bg-brand-hover"
-        >
-          {ctaText}
-        </Link>
+        {offline ? (
+          <button
+            type="button"
+            disabled
+            className="flex h-14 flex-1 items-center justify-center rounded-md bg-bg-surface-2 text-[17px] font-bold text-text-tertiary"
+          >
+            {t("currentlyOfflineCta")}
+          </button>
+        ) : noSlots ? (
+          <button
+            type="button"
+            disabled
+            className="flex h-14 flex-1 items-center justify-center rounded-md bg-bg-surface-2 text-[17px] font-bold text-text-tertiary"
+          >
+            {t("fullyBookedCta")}
+          </button>
+        ) : (
+          <Link
+            href={`/bookings/new?providerId=${id}&step=1`}
+            className="flex h-14 flex-1 items-center justify-center rounded-md bg-brand text-[17px] font-bold text-white hover:bg-brand-hover"
+          >
+            {ctaText}
+          </Link>
+        )}
       </div>
     </>
   );

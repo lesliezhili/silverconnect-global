@@ -9,11 +9,12 @@ import {
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { ChatBubble } from "@/components/domain/ChatBubble";
-import { C9AICompanion } from "@/components/illustrations";
+import { C9AICompanion, S7NetworkError } from "@/components/illustrations";
 import { EMERGENCY_NUMBER } from "@/components/domain/country";
 import { COUNTRY_FLAG } from "@/components/layout/CountrySelector";
 import { cn } from "@/components/ui/cn";
 import { getCountry } from "@/components/domain/countryCookie";
+import { User } from "lucide-react";
 
 export default async function ChatPage({
   params,
@@ -31,6 +32,7 @@ export default async function ChatPage({
   const country = await getCountry();
   const emergency = sp.emergency === "1";
   const num = EMERGENCY_NUMBER[country];
+  const state = typeof sp.state === "string" ? sp.state : undefined;
 
   if (emergency) {
     const subText = isZh
@@ -121,20 +123,115 @@ export default async function ChatPage({
       </header>
 
       {/* Messages */}
-      <div className="flex flex-1 flex-col gap-3 overflow-auto px-4 pb-2 pt-4">
-        <ChatBubble who="ai">
-          {isZh
-            ? "您好王阿姨 👋 我是 SilverConnect 助手，需要什么帮助？"
-            : "Hello Margaret 👋 I'm the SilverConnect assistant, how can I help?"}
-        </ChatBubble>
-        <ChatBubble who="me">
-          {isZh ? "我下次预订是什么时候？" : "When is my next booking?"}
-        </ChatBubble>
-        <ChatBubble who="ai">
-          {isZh
-            ? "您下次预订是 5 月 8 日 周三 14:00 — 李师傅来做 3 小时深度清洁。需要改约吗？"
-            : "Your next booking is Wed 8 May 2:00pm — Helen Li for a 3h deep clean. Want to reschedule?"}
-        </ChatBubble>
+      <div
+        className={cn(
+          "flex flex-1 flex-col gap-3 overflow-auto px-4 pb-2 pt-4",
+          (state === "empty" || state === "escalated" || state === "error") &&
+            "items-center justify-center text-center"
+        )}
+      >
+        {state === "empty" && (
+          <>
+            <C9AICompanion size={120} />
+            <h2 className="mt-1 text-[22px] font-bold">{t("emptyTitle")}</h2>
+            <p className="max-w-[280px] text-[15px] text-text-secondary">
+              {t("emptyHint")}
+            </p>
+            <div className="mt-3 flex w-full flex-col gap-2">
+              {[
+                t("quickViewBookings"),
+                t("quickReschedule"),
+                t("quickPolicy"),
+                t("quickHuman"),
+              ].map((q) => (
+                <button
+                  key={q}
+                  type="button"
+                  className="h-12 rounded-pill border-[1.5px] border-brand bg-brand-soft px-4 text-[15px] font-semibold text-brand"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
+        {state === "streaming" && (
+          <div className="self-start max-w-[320px] text-left">
+            <div className="flex items-end gap-2">
+              <C9AICompanion size={44} />
+              <div className="max-w-[240px] rounded-md border border-border bg-bg-base p-3 text-[15px]">
+                {isZh ? "让我看看您的下次预订…" : "Let me check your next booking…"}
+                <span
+                  aria-hidden
+                  className="sc-skel ml-1 inline-block h-3.5 w-2 align-text-bottom"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {state === "waiting" && (
+          <div className="self-start">
+            <div className="flex items-end gap-2">
+              <C9AICompanion size={44} />
+              <div className="rounded-md border border-border bg-bg-base p-3">
+                <span className="inline-flex gap-1.5">
+                  {[0, 0.2, 0.4].map((d, i) => (
+                    <span
+                      key={i}
+                      aria-hidden
+                      className="inline-block h-1.5 w-1.5 rounded-full bg-text-tertiary"
+                      style={{ animation: `sc-blink 1.2s ${d}s infinite` }}
+                    />
+                  ))}
+                </span>
+              </div>
+            </div>
+            <p className="mt-1 text-[12px] text-text-tertiary">{t("typing")}</p>
+          </div>
+        )}
+
+        {state === "escalated" && (
+          <>
+            <span className="flex h-20 w-20 items-center justify-center rounded-full bg-brand-soft text-brand">
+              <User size={48} aria-hidden />
+            </span>
+            <h2 className="mt-1 text-[21px] font-bold">{t("escalatedTitle")}</h2>
+            <p className="text-[14px] text-text-secondary">{t("escalatedHint")}</p>
+          </>
+        )}
+
+        {state === "error" && (
+          <>
+            <S7NetworkError width={200} height={140} />
+            <h2 className="mt-1 text-[21px] font-bold">{t("errorTitle")}</h2>
+            <Link
+              href="/chat"
+              className="mt-1 inline-flex h-14 items-center rounded-md bg-brand px-7 text-[17px] font-bold text-white"
+            >
+              {t("reconnect")}
+            </Link>
+          </>
+        )}
+
+        {!state && (
+          <>
+            <ChatBubble who="ai">
+              {isZh
+                ? "您好王阿姨 👋 我是 SilverConnect 助手，需要什么帮助？"
+                : "Hello Margaret 👋 I'm the SilverConnect assistant, how can I help?"}
+            </ChatBubble>
+            <ChatBubble who="me">
+              {isZh ? "我下次预订是什么时候？" : "When is my next booking?"}
+            </ChatBubble>
+            <ChatBubble who="ai">
+              {isZh
+                ? "您下次预订是 5 月 8 日 周三 14:00 — 李师傅来做 3 小时深度清洁。需要改约吗？"
+                : "Your next booking is Wed 8 May 2:00pm — Helen Li for a 3h deep clean. Want to reschedule?"}
+            </ChatBubble>
+          </>
+        )}
       </div>
 
       {/* Quick replies */}

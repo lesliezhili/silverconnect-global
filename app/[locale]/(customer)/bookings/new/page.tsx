@@ -4,6 +4,8 @@ import { Link } from "@/i18n/navigation";
 import { BookingProgress } from "@/components/domain/BookingProgress";
 import { CURRENCY_SYMBOL, TAX_ABBR } from "@/components/domain/country";
 import { getCountry } from "@/components/domain/countryCookie";
+import { S3EmptyBookings, S7NetworkError } from "@/components/illustrations";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -31,6 +33,7 @@ export default async function BookingNewPage({
 
   const step = clampStep(typeof sp.step === "string" ? sp.step : undefined);
   const nextStep = (step + 1) as Step;
+  const state = typeof sp.state === "string" ? sp.state : undefined;
   const finalCta =
     step === 4
       ? isZh
@@ -89,7 +92,78 @@ export default async function BookingNewPage({
           </>
         )}
 
-        {step === 2 && (
+        {step === 2 && state === "loading" && (
+          <>
+            <Skeleton className="h-7 w-1/2" />
+            <Skeleton className="mt-5 h-12 w-full rounded-md" />
+            <Skeleton className="mt-5 h-5 w-1/3" />
+            <div className="mt-3 grid grid-cols-7 gap-1.5">
+              {Array.from({ length: 28 }).map((_, i) => (
+                <Skeleton key={i} className="h-9 rounded-sm" />
+              ))}
+            </div>
+          </>
+        )}
+        {step === 2 && state === "noSlot" && (
+          <div className="flex flex-col items-center gap-3 pt-10 text-center">
+            <S3EmptyBookings width={200} height={140} />
+            <h2 className="m-0 text-[21px] font-bold">{t("fullyBookedDay")}</h2>
+            <p className="m-0 text-[15px] text-text-secondary">{t("tryAnother")}</p>
+            <button
+              type="button"
+              className="mt-2 h-14 rounded-md bg-brand px-6 text-[17px] font-bold text-white"
+            >
+              {t("seeOtherTimes")}
+            </button>
+          </div>
+        )}
+        {step === 2 && state === "recurring" && (
+          <>
+            <h1 className="text-[22px] font-bold">{t("recurringTitle")}</h1>
+            <ul className="mt-4 flex flex-col gap-2.5">
+              {[
+                t("recurringWeekly"),
+                t("recurringBiweekly"),
+                t("recurringMonthly"),
+              ].map((l, i) => (
+                <li key={l}>
+                  <label
+                    className={`flex cursor-pointer items-center gap-3 rounded-md border-[1.5px] bg-bg-base p-4 ${
+                      i === 0 ? "border-2 border-brand" : "border-border"
+                    }`}
+                  >
+                    <input type="radio" name="rec" defaultChecked={i === 0} className="sr-only" />
+                    <span
+                      className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 ${
+                        i === 0 ? "border-brand" : "border-border-strong"
+                      }`}
+                      aria-hidden
+                    >
+                      {i === 0 && <span className="h-3 w-3 rounded-full bg-brand" />}
+                    </span>
+                    <span className="text-[17px] font-semibold">{l}</span>
+                  </label>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-5 rounded-md bg-brand-soft px-3.5 py-3 text-[14px] text-brand">
+              {t("recurringDiscount")}
+            </p>
+          </>
+        )}
+        {step === 2 && state === "error" && (
+          <div className="flex flex-col items-center gap-3 pt-10 text-center">
+            <S7NetworkError width={200} height={140} />
+            <h2 className="m-0 text-[21px] font-bold">{t("errorTimes")}</h2>
+            <Link
+              href="/bookings/new?step=2"
+              className="inline-flex h-14 items-center rounded-md bg-brand px-6 text-[17px] font-bold text-white"
+            >
+              {tCommon("retry")}
+            </Link>
+          </div>
+        )}
+        {step === 2 && !state && (
           <>
             <h1 className="text-[22px] font-bold">{t("step2Title")}</h1>
             <p className="mt-2 text-[14px] text-text-secondary">

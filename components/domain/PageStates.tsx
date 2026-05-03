@@ -1,6 +1,7 @@
 import * as React from "react";
 import { S3EmptyBookings, S4EmptyChat, S7NetworkError } from "@/components/illustrations";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { Link } from "@/i18n/navigation";
 
 /**
  * Common page-level states pulled out of the Sprint 1 design canvas
@@ -45,12 +46,12 @@ export function ErrorState({
       <S7NetworkError width={200} height={140} />
       <h2 className="m-0 text-[21px] font-bold text-text-primary">{title}</h2>
       {retryHref && (
-        <a
+        <Link
           href={retryHref}
           className="mt-1 inline-flex h-14 items-center justify-center rounded-md bg-brand px-8 text-[17px] font-bold text-white"
         >
           {retryLabel}
-        </a>
+        </Link>
       )}
     </div>
   );
