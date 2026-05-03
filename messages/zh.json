@@ -261,6 +261,25 @@
     "generic": "我们这边出了点问题，请稍后重试",
     "notFound": "页面未找到"
   },
+  "help": {
+    "title": "帮助与客服",
+    "sub": "快速找答案，或转人工。",
+    "searchPh": "搜索帮助文章…",
+    "searchAria": "搜索帮助文章",
+    "categoryGettingStarted": "新手入门",
+    "categoryBookings": "预订与改约",
+    "categoryPayments": "支付与退款",
+    "categorySafety": "安全与紧急",
+    "categoryAccount": "账号与资料",
+    "popular": "热门文章",
+    "contactCardTitle": "还需要帮助？",
+    "contactCardSub": "我们通常几小时内回复。",
+    "contactCardCta": "转人工",
+    "notFoundTitle": "文章未找到",
+    "notFoundSub": "可能已经移动，请回到帮助首页。",
+    "backToHelp": "返回帮助",
+    "lastUpdated": "最后更新 {date}"
+  },
   "feedback": {
     "title": "请评价此次服务",
     "sub": "您的评价将释放托管款项给 {provider}。",

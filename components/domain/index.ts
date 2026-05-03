@@ -19,4 +19,5 @@ export { ChatBubble } from "./ChatBubble";
 export { EmptyState, ErrorState, LoadingList } from "./PageStates";
 export { AuthCard } from "./AuthCard";
 export { ProfileStub } from "./ProfileStub";
+export { HELP_ARTICLES, findArticle, type HelpArticle } from "./helpArticles";
 export { getSession, SESSION_COOKIE, type Session } from "./sessionCookie";

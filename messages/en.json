@@ -261,6 +261,25 @@
     "generic": "Something went wrong on our side. Please try again.",
     "notFound": "Page not found"
   },
+  "help": {
+    "title": "Help & support",
+    "sub": "Find answers fast or talk to a human.",
+    "searchPh": "Search help articles…",
+    "searchAria": "Search help articles",
+    "categoryGettingStarted": "Getting started",
+    "categoryBookings": "Bookings & rescheduling",
+    "categoryPayments": "Payments & refunds",
+    "categorySafety": "Safety & emergencies",
+    "categoryAccount": "Account & profile",
+    "popular": "Popular articles",
+    "contactCardTitle": "Still need help?",
+    "contactCardSub": "Our team replies within a few hours.",
+    "contactCardCta": "Talk to a human",
+    "notFoundTitle": "Article not found",
+    "notFoundSub": "It may have been moved. Try the help home.",
+    "backToHelp": "Back to help",
+    "lastUpdated": "Last updated {date}"
+  },
   "feedback": {
     "title": "Rate your service",
     "sub": "Your feedback releases the held payment to {provider}.",
