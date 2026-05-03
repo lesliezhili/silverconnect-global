@@ -3,7 +3,7 @@ import { Header } from "@/components/layout/Header";
 import { Link } from "@/i18n/navigation";
 import { BookingProgress } from "@/components/domain/BookingProgress";
 import { CURRENCY_SYMBOL, TAX_ABBR } from "@/components/domain/country";
-import type { CountryCode } from "@/components/layout";
+import { getCountry } from "@/components/domain/countryCookie";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -24,7 +24,7 @@ export default async function BookingNewPage({
   setRequestLocale(locale);
   const t = await getTranslations("booking");
   const tCommon = await getTranslations("common");
-  const country = "AU" as CountryCode;
+  const country = await getCountry();
   const isZh = locale === "zh";
   const sym = CURRENCY_SYMBOL[country];
   const taxAbbr = TAX_ABBR[country];

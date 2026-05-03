@@ -13,7 +13,7 @@ import { C9AICompanion } from "@/components/illustrations";
 import { EMERGENCY_NUMBER } from "@/components/domain/country";
 import { COUNTRY_FLAG } from "@/components/layout/CountrySelector";
 import { cn } from "@/components/ui/cn";
-import type { CountryCode } from "@/components/layout";
+import { getCountry } from "@/components/domain/countryCookie";
 
 export default async function ChatPage({
   params,
@@ -28,7 +28,7 @@ export default async function ChatPage({
   const t = await getTranslations("chat");
   const tEm = await getTranslations("emergency");
   const isZh = locale === "zh";
-  const country = "AU" as CountryCode;
+  const country = await getCountry();
   const emergency = sp.emergency === "1";
   const num = EMERGENCY_NUMBER[country];
 

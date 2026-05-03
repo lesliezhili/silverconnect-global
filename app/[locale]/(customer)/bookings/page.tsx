@@ -5,7 +5,7 @@ import { ProviderAvatar } from "@/components/domain/ProviderAvatar";
 import { BookingStatusBadge } from "@/components/domain/BookingStatusBadge";
 import { CURRENCY_SYMBOL } from "@/components/domain/country";
 import { cn } from "@/components/ui/cn";
-import type { CountryCode } from "@/components/layout";
+import { getCountry } from "@/components/domain/countryCookie";
 
 const TABS = ["upcoming", "past", "recurring"] as const;
 type Tab = (typeof TABS)[number];
@@ -45,7 +45,7 @@ export default async function BookingsListPage({
   setRequestLocale(locale);
   const t = await getTranslations("booking");
   const tStatus = await getTranslations("booking.status");
-  const country = "AU" as CountryCode;
+  const country = await getCountry();
   const sym = CURRENCY_SYMBOL[country];
   const lang: "zh" | "en" = locale === "zh" ? "zh" : "en";
 

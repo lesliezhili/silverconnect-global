@@ -5,7 +5,8 @@ import { ChevronLeft } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
-import { CountryChip, type CountryCode } from "./CountrySelector";
+import { type CountryCode } from "./CountrySelector";
+import { CountrySwitcher } from "./CountrySwitcher";
 import { LanguageChip } from "./LanguageSelector";
 
 export interface HeaderProps {
@@ -52,7 +53,7 @@ export function Header({ back = false, onBack, country = "AU", rightExtra }: Hea
       </div>
       <div className="flex items-center gap-1.5">
         {rightExtra}
-        <CountryChip value={country} locale={locale} />
+        <CountrySwitcher value={country} />
         <LanguageChip locale={locale} />
       </div>
     </header>

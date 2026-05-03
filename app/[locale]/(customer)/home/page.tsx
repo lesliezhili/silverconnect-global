@@ -7,6 +7,7 @@ import { ProviderCard } from "@/components/domain/ProviderCard";
 import { ProviderAvatar } from "@/components/domain/ProviderAvatar";
 import { CURRENCY_SYMBOL } from "@/components/domain/country";
 import type { CountryCode } from "@/components/layout";
+import { getCountry } from "@/components/domain/countryCookie";
 
 interface Cat {
   key: "cleaning" | "cooking" | "garden" | "personalCare" | "repair";
@@ -50,7 +51,7 @@ export default async function CustomerHomePage({
   setRequestLocale(locale);
   const t = await getTranslations("home");
   const tCat = await getTranslations("categories");
-  const country = "AU" as CountryCode; // TODO: persist user preference
+  const country = await getCountry(); // TODO: persist user preference
 
   return (
     <>

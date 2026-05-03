@@ -5,7 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { S5PaymentSuccess } from "@/components/illustrations";
 import { ProviderAvatar } from "@/components/domain/ProviderAvatar";
 import { CURRENCY_SYMBOL } from "@/components/domain/country";
-import type { CountryCode } from "@/components/layout";
+import { getCountry } from "@/components/domain/countryCookie";
 
 export default async function PaymentSuccessPage({
   params,
@@ -15,7 +15,7 @@ export default async function PaymentSuccessPage({
   const { locale, id } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("success");
-  const country = "AU" as CountryCode;
+  const country = await getCountry();
   const isZh = locale === "zh";
   const sym = CURRENCY_SYMBOL[country];
   const total = country === "CN" ? "¥1,560.00" : `${sym}195.00`;

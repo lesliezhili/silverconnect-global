@@ -4,7 +4,7 @@ import { Header } from "@/components/layout/Header";
 import { Link } from "@/i18n/navigation";
 import { ProviderAvatar } from "@/components/domain/ProviderAvatar";
 import { CURRENCY_SYMBOL, TAX_ABBR } from "@/components/domain/country";
-import type { CountryCode } from "@/components/layout";
+import { getCountry } from "@/components/domain/countryCookie";
 
 const SLOTS = ["09:00", "11:00", "14:00", "16:00"];
 
@@ -16,7 +16,7 @@ export default async function ProviderDetailPage({
   const { locale, id } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("provider");
-  const country = "AU" as CountryCode;
+  const country = await getCountry();
   const isZh = locale === "zh";
   const sym = CURRENCY_SYMBOL[country];
   const taxAbbr = TAX_ABBR[country];

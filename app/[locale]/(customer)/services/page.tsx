@@ -10,7 +10,7 @@ import {
   C7FixerBob,
 } from "@/components/illustrations";
 import { fmtPriceRange } from "@/components/domain/country";
-import type { CountryCode } from "@/components/layout";
+import { getCountry } from "@/components/domain/countryCookie";
 
 const CATS = [
   { key: "cleaning", lo: 45, hi: 80, Char: C3HelperMei },
@@ -30,7 +30,7 @@ export default async function ServicesPage({
   const t = await getTranslations("services");
   const tCat = await getTranslations("categories");
   const tTax = await getTranslations("tax.inclLine");
-  const country = "AU" as CountryCode;
+  const country = await getCountry();
   const isZh = locale === "zh";
 
   return (

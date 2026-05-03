@@ -2,7 +2,7 @@ import { setRequestLocale, getTranslations } from "next-intl/server";
 import { Header } from "@/components/layout/Header";
 import { ProviderCard } from "@/components/domain/ProviderCard";
 import { CURRENCY_SYMBOL, TAX_ABBR } from "@/components/domain/country";
-import type { CountryCode } from "@/components/layout";
+import { getCountry } from "@/components/domain/countryCookie";
 
 const FILTER_KEYS = ["rating", "distance", "language", "weekend", "female", "firstAid"] as const;
 
@@ -22,7 +22,7 @@ export default async function ProvidersByCategoryPage({
   setRequestLocale(locale);
   const t = await getTranslations("providers");
   const tCat = await getTranslations("categories");
-  const country = "AU" as CountryCode;
+  const country = await getCountry();
   const isZh = locale === "zh";
   const sym = CURRENCY_SYMBOL[country];
   const taxAbbr = TAX_ABBR[country];

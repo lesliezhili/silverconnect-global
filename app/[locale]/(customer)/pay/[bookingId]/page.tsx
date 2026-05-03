@@ -3,7 +3,7 @@ import { Lock, CreditCard } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Link } from "@/i18n/navigation";
 import { CURRENCY_SYMBOL, TAX_ABBR } from "@/components/domain/country";
-import type { CountryCode } from "@/components/layout";
+import { getCountry } from "@/components/domain/countryCookie";
 
 export default async function PaymentPage({
   params,
@@ -13,7 +13,7 @@ export default async function PaymentPage({
   const { locale, bookingId } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("payment");
-  const country = "AU" as CountryCode;
+  const country = await getCountry();
   const sym = CURRENCY_SYMBOL[country];
   const taxAbbr = TAX_ABBR[country];
   const taxPct = country === "AU" ? "10%" : country === "CN" ? "6%" : "13%";

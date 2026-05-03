@@ -9,7 +9,7 @@ import {
 import { BookingTimeline } from "@/components/domain/BookingTimeline";
 import { CURRENCY_SYMBOL } from "@/components/domain/country";
 import { cn } from "@/components/ui/cn";
-import type { CountryCode } from "@/components/layout";
+import { getCountry } from "@/components/domain/countryCookie";
 
 const VALID_STATUSES: BookingStatus[] = [
   "pending",
@@ -43,7 +43,7 @@ export default async function BookingDetailPage({
   const tStatus = await getTranslations("booking.status");
   const tCta = await getTranslations("booking.cta");
   const tCommon = await getTranslations("common");
-  const country = "AU" as CountryCode;
+  const country = await getCountry();
   const isZh = locale === "zh";
   const sym = CURRENCY_SYMBOL[country];
   const total = country === "CN" ? "¥1,560.00" : `${sym}195.00`;

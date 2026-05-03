@@ -8,4 +8,5 @@ export {
   type CountryCode,
 } from "./CountrySelector";
 export { LanguageSelector, LanguageChip } from "./LanguageSelector";
+export { CountrySwitcher } from "./CountrySwitcher";
 export { LocaleSync } from "./LocaleSync";

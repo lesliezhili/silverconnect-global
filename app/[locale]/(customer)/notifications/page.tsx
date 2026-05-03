@@ -2,7 +2,7 @@ import { setRequestLocale, getTranslations } from "next-intl/server";
 import { Calendar, MessageCircle, Settings } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/components/ui/cn";
-import type { CountryCode } from "@/components/layout";
+import { getCountry } from "@/components/domain/countryCookie";
 
 const TABS = ["all", "bookings", "ai", "system"] as const;
 type Tab = (typeof TABS)[number];
@@ -45,7 +45,7 @@ export default async function NotificationsPage({
   const sp = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations("notifications");
-  const country = "AU" as CountryCode;
+  const country = await getCountry();
   const lang: "zh" | "en" = locale === "zh" ? "zh" : "en";
 
   const rawTab = typeof sp.tab === "string" ? sp.tab : "all";
