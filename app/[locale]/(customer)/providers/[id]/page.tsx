@@ -34,7 +34,7 @@ export default async function ProviderDetailPage({
     return (
       <>
         <Header country={country} back />
-        <main id="main-content" className="mx-auto w-full max-w-content overflow-auto bg-bg-surface px-5 pb-[120px] pt-5">
+        <main id="main-content" className="mx-auto w-full max-w-content overflow-auto bg-bg-surface px-5 pb-[120px] sm:pb-12 pt-5">
           <div className="flex items-center gap-4">
             <Skeleton className="h-[100px] w-[100px] rounded-full" />
             <div className="flex-1 space-y-2.5">
@@ -77,7 +77,7 @@ export default async function ProviderDetailPage({
   return (
     <>
       <Header country={country} back />
-      <main id="main-content" className="mx-auto w-full max-w-content overflow-auto bg-bg-surface px-5 pb-[120px] pt-5">
+      <main id="main-content" className="mx-auto w-full max-w-content overflow-auto bg-bg-surface px-5 pb-[120px] sm:pb-12 pt-5">
         {offline && (
           <div
             role="alert"

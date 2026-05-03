@@ -47,8 +47,7 @@ export function AIFloatButton({
       href="/chat"
       aria-label={emergency ? "SOS" : t("askAI")}
       className={cn(
-        "fixed bottom-[100px] right-5 z-30 flex h-16 w-16 flex-col items-center justify-center gap-0.5 rounded-pill text-white shadow-card-hover",
-        "sm:bottom-6",
+        "fixed bottom-[100px] right-5 z-30 flex h-16 w-16 flex-col items-center justify-center gap-0.5 rounded-pill text-white shadow-card-hover sm:hidden",
         emergency
           ? "bg-danger shadow-[0_8px_24px_rgba(220,38,38,0.5)]"
           : "bg-brand shadow-[0_8px_24px_rgba(31,111,235,0.4)]",

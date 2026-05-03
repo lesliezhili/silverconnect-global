@@ -1,4 +1,5 @@
 export { Header, type HeaderProps } from "./Header";
+export { DesktopNav } from "./DesktopNav";
 export { BottomTabBar } from "./BottomTabBar";
 export { AIFloatButton } from "./AIFloatButton";
 export {

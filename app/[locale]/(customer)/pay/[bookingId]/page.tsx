@@ -54,7 +54,7 @@ export default async function PaymentPage({
   return (
     <>
       <Header country={country} back />
-      <main id="main-content" className="mx-auto w-full max-w-content overflow-auto bg-bg-surface px-5 pb-[120px] pt-5">
+      <main id="main-content" className="mx-auto w-full max-w-content overflow-auto bg-bg-surface px-5 pb-[120px] sm:pb-12 pt-5">
         <h1 className="text-[26px] font-extrabold">{t("title")}</h1>
         <p className="mt-1 flex items-center gap-1.5 text-[14px] text-text-tertiary">
           <Lock size={14} aria-hidden /> {t("secured")}

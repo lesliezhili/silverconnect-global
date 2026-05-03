@@ -7,6 +7,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { type CountryCode } from "./CountrySelector";
 import { CountrySwitcher } from "./CountrySwitcher";
+import { DesktopNav } from "./DesktopNav";
 import { LanguageChip } from "./LanguageSelector";
 
 export interface HeaderProps {
@@ -29,9 +30,9 @@ export function Header({ back = false, onBack, country = "AU", rightExtra }: Hea
   return (
     <header
       role="banner"
-      className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border bg-bg-base px-4"
+      className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border bg-bg-base px-4 sm:h-20 sm:px-8"
     >
-      <div className="flex items-center gap-2">
+      <div className="flex min-w-0 items-center gap-2">
         {back ? (
           <button
             type="button"
@@ -44,12 +45,13 @@ export function Header({ back = false, onBack, country = "AU", rightExtra }: Hea
         ) : (
           <Link
             href="/home"
-            className="text-[20px] font-extrabold tracking-tight text-brand"
+            className="text-[20px] font-extrabold tracking-tight text-brand sm:text-[24px]"
             aria-label="SilverConnect home"
           >
             SilverConnect
           </Link>
         )}
+        <DesktopNav />
       </div>
       <div className="flex items-center gap-1.5">
         {rightExtra}

@@ -66,7 +66,7 @@ export default async function NotificationsPage({
   return (
     <>
       <Header country={country} />
-      <main id="main-content" className="mx-auto w-full max-w-content pb-[120px]">
+      <main id="main-content" className="mx-auto w-full max-w-content pb-[120px] sm:pb-12">
         <nav
           aria-label={tNav("messages")}
           className="flex h-14 items-center justify-between border-b border-border bg-bg-base px-4"

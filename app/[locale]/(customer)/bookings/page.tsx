@@ -63,7 +63,7 @@ export default async function BookingsListPage({
   return (
     <>
       <Header country={country} />
-      <main id="main-content" className="mx-auto w-full max-w-content pb-[120px]">
+      <main id="main-content" className="mx-auto w-full max-w-content pb-[120px] sm:pb-12">
         <nav
           aria-label={tNav("bookings")}
           className="flex border-b border-border bg-bg-base"

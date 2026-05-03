@@ -45,7 +45,7 @@ export default async function BookingNewPage({
     <>
       <Header country={country} back />
       <BookingProgress step={step} />
-      <main id="main-content" className="mx-auto w-full max-w-content overflow-auto bg-bg-surface px-5 pb-[120px] pt-5">
+      <main id="main-content" className="mx-auto w-full max-w-content overflow-auto bg-bg-surface px-5 pb-[120px] sm:pb-12 pt-5">
         {step === 1 && (
           <>
             <h1 className="text-[22px] font-bold">{t("step1Title")}</h1>

@@ -24,7 +24,7 @@ export default async function PaymentSuccessPage({
   return (
     <>
       <Header country={country} />
-      <main id="main-content" className="mx-auto flex w-full max-w-content flex-col items-center bg-bg-surface px-5 pb-[120px] pt-2 text-center">
+      <main id="main-content" className="mx-auto flex w-full max-w-content flex-col items-center bg-bg-surface px-5 pb-[120px] sm:pb-12 pt-2 text-center">
         <div className="mt-2.5">
           <S5PaymentSuccess width={240} height={170} />
         </div>
