@@ -1,0 +1,184 @@
+import { setRequestLocale, getTranslations } from "next-intl/server";
+import { Star, CheckCircle2, Camera } from "lucide-react";
+import { Header } from "@/components/layout/Header";
+import { Link, redirect } from "@/i18n/navigation";
+import { Label } from "@/components/ui/Label";
+import { Button } from "@/components/ui/Button";
+import { ProviderAvatar } from "@/components/domain/ProviderAvatar";
+import { getCountry } from "@/components/domain/countryCookie";
+import { getSession } from "@/components/domain/sessionCookie";
+
+const TAG_KEYS = [
+  "tagPunctual",
+  "tagProfessional",
+  "tagClean",
+  "tagFriendly",
+  "tagFair",
+] as const;
+
+export default async function FeedbackPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string; id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const { locale, id } = await params;
+  const sp = await searchParams;
+  setRequestLocale(locale);
+  const session = await getSession();
+  if (!session.signedIn) redirect({ href: "/auth/login", locale });
+  const country = await getCountry();
+  const t = await getTranslations("feedback");
+  const isZh = locale === "zh";
+  const sent = sp.sent === "1";
+  const providerName = isZh ? "李 师傅" : "Helen Li";
+  const initials = isZh ? "李" : "HL";
+
+  if (sent) {
+    return (
+      <>
+        <Header
+          country={country}
+          back
+          signedIn={session.signedIn}
+          initials={session.initials}
+        />
+        <main
+          id="main-content"
+          className="mx-auto flex w-full max-w-content flex-col items-center gap-3 px-5 pb-[120px] pt-12 text-center sm:pb-12"
+        >
+          <span className="flex h-24 w-24 items-center justify-center rounded-full bg-success-soft text-success">
+            <CheckCircle2 size={56} aria-hidden />
+          </span>
+          <h1 className="text-h1">{t("successTitle")}</h1>
+          <p className="max-w-[320px] text-[16px] text-text-secondary">
+            {t("successHint", { provider: providerName })}
+          </p>
+          <Link
+            href={`/bookings/${id}`}
+            className="mt-2 inline-flex h-14 items-center rounded-md bg-brand px-7 text-[17px] font-bold text-white"
+          >
+            {isZh ? "查看预订" : "View booking"}
+          </Link>
+        </main>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Header
+        country={country}
+        back
+        signedIn={session.signedIn}
+        initials={session.initials}
+      />
+      <main
+        id="main-content"
+        className="mx-auto w-full max-w-content px-5 pb-[120px] pt-6 sm:pb-12"
+      >
+        <h1 className="text-h2">{t("title")}</h1>
+        <p className="mt-1 text-[15px] text-text-secondary">
+          {t("sub", { provider: providerName })}
+        </p>
+
+        <section className="mt-5 flex items-center gap-3 rounded-md border border-border bg-bg-base p-4">
+          <ProviderAvatar size={56} hue={0} initials={initials} />
+          <div>
+            <p className="text-[16px] font-bold">{providerName}</p>
+            <p className="text-[13px] text-text-tertiary">
+              {isZh ? "深度清洁 · 3 小时" : "Deep clean · 3h"}
+            </p>
+          </div>
+        </section>
+
+        <form
+          className="mt-6 flex flex-col gap-6"
+          action={`/api/bookings/${id}/feedback`}
+          method="post"
+        >
+          <fieldset>
+            <legend className="text-[16px] font-bold text-text-primary">
+              {t("rating")}
+            </legend>
+            <div className="mt-3 flex gap-2" role="radiogroup" aria-required="true">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <label
+                  key={n}
+                  className="flex h-16 w-16 cursor-pointer items-center justify-center rounded-md border-[1.5px] border-border-strong bg-bg-base hover:border-brand"
+                >
+                  <input
+                    type="radio"
+                    name="rating"
+                    value={n}
+                    required
+                    className="sr-only"
+                    defaultChecked={n === 5}
+                  />
+                  <Star
+                    size={32}
+                    className={n === 5 ? "fill-[var(--brand-accent)] text-[var(--brand-accent)]" : "text-text-tertiary"}
+                    aria-label={`${n} star${n === 1 ? "" : "s"}`}
+                  />
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend className="text-[16px] font-bold text-text-primary">
+              {t("tags")}
+            </legend>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {TAG_KEYS.map((k) => (
+                <label
+                  key={k}
+                  className="inline-flex cursor-pointer items-center gap-1 rounded-pill border-[1.5px] border-border-strong bg-bg-base px-4 py-2 text-[14px] font-semibold text-text-primary hover:border-brand has-[:checked]:border-brand has-[:checked]:bg-brand-soft has-[:checked]:text-brand"
+                >
+                  <input
+                    type="checkbox"
+                    name="tags"
+                    value={k.replace(/^tag/, "").toLowerCase()}
+                    className="sr-only"
+                  />
+                  {t(k)}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <div>
+            <Label htmlFor="comment">{t("comment")}</Label>
+            <textarea
+              id="comment"
+              name="comment"
+              placeholder={t("commentPh")}
+              rows={4}
+              className="block w-full rounded-md border-[1.5px] border-border-strong bg-bg-base p-3.5 text-[16px] text-text-primary placeholder:text-text-placeholder focus:border-brand focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="photos">{t("photos")}</Label>
+            <input
+              id="photos"
+              name="photos"
+              type="file"
+              accept="image/jpeg,image/png"
+              multiple
+              className="block w-full text-[14px] text-text-secondary file:mr-3 file:inline-flex file:h-12 file:items-center file:rounded-md file:border-[1.5px] file:border-border-strong file:bg-bg-base file:px-4 file:text-[14px] file:font-semibold file:text-text-primary"
+            />
+            <p className="mt-1.5 flex items-center gap-1 text-[13px] text-text-tertiary">
+              <Camera size={14} aria-hidden /> {t("photosHint")}
+            </p>
+          </div>
+
+          <Button type="submit" variant="primary" block size="md">
+            {t("submit")}
+          </Button>
+        </form>
+      </main>
+    </>
+  );
+}
