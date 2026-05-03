@@ -17,3 +17,4 @@ export {
 export { BookingTimeline } from "./BookingTimeline";
 export { ChatBubble } from "./ChatBubble";
 export { EmptyState, ErrorState, LoadingList } from "./PageStates";
+export { AuthCard } from "./AuthCard";
