@@ -1,60 +1,102 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  darkMode: ["class"],
+  darkMode: ["class", '[data-theme="dark"]'],
   content: [
-    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./i18n/**/*.{js,ts}",
   ],
   theme: {
     container: {
       center: true,
-      padding: "2rem",
+      padding: "1rem",
       screens: {
-        "2xl": "1400px",
+        sm: "640px",
+        md: "720px",
+        lg: "720px",
+        xl: "720px",
       },
     },
     extend: {
+      // UI_DESIGN.md §1.1 — token-driven palette
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+        brand: {
+          DEFAULT: "var(--brand-primary)",
+          hover: "var(--brand-primary-hover)",
+          accent: "var(--brand-accent)",
         },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+        success: "var(--success)",
+        warning: "var(--warning)",
+        danger: "var(--danger)",
+        bg: {
+          base: "var(--bg-base)",
+          surface: "var(--bg-surface)",
         },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
+        border: "var(--border)",
+        text: {
+          primary: "var(--text-primary)",
+          secondary: "var(--text-secondary)",
+          placeholder: "var(--text-placeholder)",
+          link: "var(--text-link)",
         },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
+        badge: {
+          pending: {
+            bg: "var(--badge-pending-bg)",
+            fg: "var(--badge-pending-fg)",
+          },
+          confirmed: {
+            bg: "var(--badge-confirmed-bg)",
+            fg: "var(--badge-confirmed-fg)",
+          },
+          inprogress: {
+            bg: "var(--badge-inprogress-bg)",
+            fg: "var(--badge-inprogress-fg)",
+          },
+          completed: {
+            bg: "var(--badge-completed-bg)",
+            fg: "var(--badge-completed-fg)",
+          },
+          cancelled: {
+            bg: "var(--badge-cancelled-bg)",
+            fg: "var(--badge-cancelled-fg)",
+          },
+          refunded: {
+            bg: "var(--badge-refunded-bg)",
+            fg: "var(--badge-refunded-fg)",
+          },
         },
       },
+      // UI_DESIGN.md §1.2 — H1 32 / H2 26 / H3 22 / Body 18 / Small 16
+      fontSize: {
+        small: ["16px", { lineHeight: "1.6" }],
+        body: ["18px", { lineHeight: "1.6" }],
+        h3: ["22px", { lineHeight: "1.5", fontWeight: "700" }],
+        h2: ["26px", { lineHeight: "1.4", fontWeight: "700" }],
+        h1: ["32px", { lineHeight: "1.3", fontWeight: "700" }],
+      },
+      // UI_DESIGN.md §1.3 spacing scale: 4 / 8 / 12 / 16 / 24 / 32 / 48
+      spacing: {
+        "touch-min": "48px", // minimum touch target
+        "touch-btn": "56px", // primary buttons & inputs
+      },
+      minHeight: {
+        touch: "48px",
+        "touch-btn": "56px",
+      },
+      minWidth: {
+        touch: "48px",
+      },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        sm: "var(--radius-sm)",
+        md: "var(--radius-md)",
+        lg: "var(--radius-lg)",
+      },
+      boxShadow: {
+        card: "var(--shadow-card)",
+      },
+      maxWidth: {
+        content: "720px",
       },
       keyframes: {
         "accordion-down": {

@@ -1,0 +1,69 @@
+{
+  "brand": {
+    "name": "SilverConnect"
+  },
+  "common": {
+    "search": "Search",
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "back": "Back",
+    "next": "Next",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "loading": "Loading…",
+    "retry": "Retry",
+    "close": "Close",
+    "askAI": "Ask AI"
+  },
+  "nav": {
+    "home": "Home",
+    "services": "Services",
+    "bookings": "Bookings",
+    "messages": "Messages",
+    "profile": "Profile"
+  },
+  "country": {
+    "AU": "Australia",
+    "CN": "China",
+    "CA": "Canada"
+  },
+  "language": {
+    "en": "English",
+    "zh": "中文"
+  },
+  "home": {
+    "greeting": "Hello, {name} 👋",
+    "prompt": "What do you need help with today?",
+    "searchPlaceholder": "Search services or address",
+    "categoriesTitle": "Choose a service",
+    "fromPrice": "from {price}/h",
+    "recentTitle": "Recently booked",
+    "recommendedTitle": "Recommended providers"
+  },
+  "categories": {
+    "cleaning": "Cleaning",
+    "cooking": "Cooking",
+    "garden": "Garden",
+    "personalCare": "Personal care",
+    "repair": "Repair"
+  },
+  "status": {
+    "pending": "Pending",
+    "confirmed": "Confirmed",
+    "inProgress": "In progress",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+    "refunded": "Refunded"
+  },
+  "errors": {
+    "offline": "Can't reach the network",
+    "generic": "Something went wrong on our side. Please try again.",
+    "notFound": "Page not found"
+  },
+  "dev": {
+    "title": "Component Preview",
+    "subtitle": "Internal preview of design tokens and atoms"
+  }
+}
