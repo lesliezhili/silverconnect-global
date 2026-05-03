@@ -116,8 +116,11 @@ function check(suite, fgKey, bgKey, min, label) {
     console.warn(`  [skip] ${suite.name} :: ${label} (missing token)`);
     return;
   }
-  const bgRgb = toRgb(bgValue, [255, 255, 255]);
-  const fgRgb = toRgb(fgValue, bgRgb ?? [255, 255, 255]);
+  // The page bg under any badge: bg-base. Light = #FFFFFF, Dark = #1E293B.
+  const pageBgRaw = suite.tokens["bg-base"] ?? "#FFFFFF";
+  const pageBg = toRgb(pageBgRaw, [255, 255, 255]) ?? [255, 255, 255];
+  const bgRgb = toRgb(bgValue, pageBg);
+  const fgRgb = toRgb(fgValue, bgRgb ?? pageBg);
   if (!bgRgb || !fgRgb) {
     console.warn(`  [skip] ${suite.name} :: ${label} (unparseable color)`);
     return;
