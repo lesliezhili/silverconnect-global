@@ -2,9 +2,8 @@
 
 import * as React from "react";
 import { ChevronLeft } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
-import type { Locale } from "@/i18n/routing";
 import { type CountryCode } from "./CountrySelector";
 import { CountrySwitcher } from "./CountrySwitcher";
 import { DesktopNav } from "./DesktopNav";
@@ -18,7 +17,6 @@ export interface HeaderProps {
 }
 
 export function Header({ back = false, onBack, country = "AU", rightExtra }: HeaderProps) {
-  const locale = useLocale() as Locale;
   const t = useTranslations("common");
   const router = useRouter();
 
@@ -56,7 +54,7 @@ export function Header({ back = false, onBack, country = "AU", rightExtra }: Hea
       <div className="flex items-center gap-1.5">
         {rightExtra}
         <CountrySwitcher value={country} />
-        <LanguageChip locale={locale} />
+        <LanguageChip />
       </div>
     </header>
   );

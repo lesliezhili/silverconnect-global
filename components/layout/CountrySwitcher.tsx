@@ -41,7 +41,7 @@ export function CountrySwitcher({
       <Dropdown.Trigger
         aria-label={`Country: ${value}`}
         className={cn(
-          "inline-flex h-9 items-center gap-1 rounded-pill border-[1.5px] border-border bg-bg-surface px-2.5 text-[14px] font-semibold text-text-primary",
+          "inline-flex h-12 min-w-touch items-center gap-1 rounded-pill border-[1.5px] border-border bg-bg-surface px-3 text-[14px] font-semibold text-text-primary",
           className
         )}
       >
