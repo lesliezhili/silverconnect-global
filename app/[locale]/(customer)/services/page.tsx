@@ -11,6 +11,7 @@ import {
 } from "@/components/illustrations";
 import { fmtPriceRange } from "@/components/domain/country";
 import { getCountry } from "@/components/domain/countryCookie";
+import { ErrorState, LoadingList } from "@/components/domain/PageStates";
 
 const CATS = [
   { key: "cleaning", lo: 45, hi: 80, Char: C3HelperMei },
@@ -22,16 +23,46 @@ const CATS = [
 
 export default async function ServicesPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale } = await params;
+  const sp = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations("services");
   const tCat = await getTranslations("categories");
   const tTax = await getTranslations("tax.inclLine");
+  const tCommon = await getTranslations("common");
   const country = await getCountry();
   const isZh = locale === "zh";
+  const state = typeof sp.state === "string" ? sp.state : undefined;
+
+  if (state === "loading") {
+    return (
+      <>
+        <Header country={country} />
+        <main className="mx-auto w-full max-w-content pb-[120px] pt-3">
+          <LoadingList rows={5} rowHeight={200} />
+        </main>
+      </>
+    );
+  }
+  if (state === "error") {
+    return (
+      <>
+        <Header country={country} />
+        <main className="mx-auto w-full max-w-content pb-[120px] pt-3">
+          <ErrorState
+            title={t("errorLoad")}
+            retryHref="/services"
+            retryLabel={tCommon("retry")}
+          />
+        </main>
+      </>
+    );
+  }
 
   return (
     <>

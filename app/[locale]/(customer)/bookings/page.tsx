@@ -6,6 +6,11 @@ import { BookingStatusBadge } from "@/components/domain/BookingStatusBadge";
 import { CURRENCY_SYMBOL } from "@/components/domain/country";
 import { cn } from "@/components/ui/cn";
 import { getCountry } from "@/components/domain/countryCookie";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingList,
+} from "@/components/domain/PageStates";
 
 const TABS = ["upcoming", "past", "recurring"] as const;
 type Tab = (typeof TABS)[number];
@@ -45,12 +50,14 @@ export default async function BookingsListPage({
   setRequestLocale(locale);
   const t = await getTranslations("booking");
   const tStatus = await getTranslations("booking.status");
+  const tCommon = await getTranslations("common");
   const country = await getCountry();
   const sym = CURRENCY_SYMBOL[country];
   const lang: "zh" | "en" = locale === "zh" ? "zh" : "en";
 
   const rawTab = typeof sp.tab === "string" ? sp.tab : "upcoming";
   const tab: Tab = (TABS as readonly string[]).includes(rawTab) ? (rawTab as Tab) : "upcoming";
+  const state = typeof sp.state === "string" ? sp.state : undefined;
 
   return (
     <>
@@ -79,6 +86,29 @@ export default async function BookingsListPage({
           })}
         </nav>
 
+        {state === "loading" && <LoadingList rows={3} rowHeight={140} />}
+        {state === "error" && (
+          <ErrorState
+            title={t("errorLoad")}
+            retryHref="/bookings"
+            retryLabel={tCommon("retry")}
+          />
+        )}
+        {state === "empty" && (
+          <EmptyState
+            title={t("noUpcoming")}
+            cta={
+              <Link
+                href="/services"
+                className="inline-flex h-14 items-center justify-center rounded-md bg-brand px-7 text-[17px] font-bold text-white"
+              >
+                {t("bookAClean")}
+              </Link>
+            }
+          />
+        )}
+
+        {!state && (
         <ul className="flex flex-col gap-3 px-5 py-5">
           {tab === "upcoming" &&
             SAMPLE_UPCOMING.map((b) => (
@@ -117,6 +147,7 @@ export default async function BookingsListPage({
             </li>
           )}
         </ul>
+        )}
       </main>
     </>
   );

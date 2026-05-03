@@ -3,6 +3,13 @@ import { Calendar, MessageCircle, Settings } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/components/ui/cn";
 import { getCountry } from "@/components/domain/countryCookie";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingList,
+} from "@/components/domain/PageStates";
+import { S4EmptyChat } from "@/components/illustrations";
+import { Check } from "lucide-react";
 
 const TABS = ["all", "bookings", "ai", "system"] as const;
 type Tab = (typeof TABS)[number];
@@ -50,6 +57,9 @@ export default async function NotificationsPage({
 
   const rawTab = typeof sp.tab === "string" ? sp.tab : "all";
   const tab: Tab = (TABS as readonly string[]).includes(rawTab) ? (rawTab as Tab) : "all";
+  const state =
+    typeof sp.state === "string" ? sp.state : undefined;
+  const tCommon = await getTranslations("common");
 
   return (
     <>
@@ -81,6 +91,26 @@ export default async function NotificationsPage({
           </button>
         </nav>
 
+        {state === "loading" ? (
+          <LoadingList rows={4} rowHeight={70} />
+        ) : state === "empty" ? (
+          <EmptyState illustration={S4EmptyChat} title={t("empty")} />
+        ) : state === "allRead" ? (
+          <div className="flex flex-col items-center justify-center gap-3 px-5 py-12 text-center">
+            <span className="flex h-20 w-20 items-center justify-center rounded-full bg-success-soft text-success">
+              <Check size={48} strokeWidth={3} aria-hidden />
+            </span>
+            <h2 className="m-0 text-[21px] font-bold text-text-primary">
+              {t("allRead")}
+            </h2>
+          </div>
+        ) : state === "error" ? (
+          <ErrorState
+            title={t("errorLoad")}
+            retryHref="/notifications"
+            retryLabel={tCommon("retry")}
+          />
+        ) : (
         <ul className="px-5 py-4">
           {SAMPLE.map((n, i) => (
             <li
@@ -105,6 +135,7 @@ export default async function NotificationsPage({
             </li>
           ))}
         </ul>
+        )}
       </main>
     </>
   );

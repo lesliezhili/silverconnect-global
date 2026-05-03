@@ -6,6 +6,11 @@ import { S1TeaTime } from "@/components/illustrations";
 import { ProviderCard } from "@/components/domain/ProviderCard";
 import { ProviderAvatar } from "@/components/domain/ProviderAvatar";
 import { CURRENCY_SYMBOL } from "@/components/domain/country";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingList,
+} from "@/components/domain/PageStates";
 import type { CountryCode } from "@/components/layout";
 import { getCountry } from "@/components/domain/countryCookie";
 
@@ -44,14 +49,47 @@ function CategoryIcon({ k }: { k: Cat["key"] }) {
 
 export default async function CustomerHomePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale } = await params;
+  const sp = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations("home");
   const tCat = await getTranslations("categories");
-  const country = await getCountry(); // TODO: persist user preference
+  const tCommon = await getTranslations("common");
+  const country = await getCountry();
+  const state = typeof sp.state === "string" ? sp.state : undefined;
+
+  if (state === "loading") {
+    return (
+      <>
+        <Header country={country} />
+        <main className="mx-auto w-full max-w-content pb-[120px]">
+          <LoadingList rows={5} rowHeight={140} />
+        </main>
+      </>
+    );
+  }
+
+  if (state === "error") {
+    return (
+      <>
+        <Header country={country} />
+        <main className="mx-auto flex w-full max-w-content flex-col pb-[120px]">
+          <ErrorState
+            title={t("errorLoad")}
+            retryHref="/home"
+            retryLabel={tCommon("retry")}
+          />
+        </main>
+      </>
+    );
+  }
+
+  const isEmpty = state === "empty";
 
   return (
     <>
@@ -130,6 +168,7 @@ export default async function CustomerHomePage({
         </section>
 
         {/* Recently booked */}
+        {!isEmpty && (
         <section className="pl-5 pt-5">
           <h2 className="text-h3">{t("recentTitle")}</h2>
           <div className="mt-3 flex gap-3 overflow-x-auto pb-1 pr-5">
@@ -156,8 +195,16 @@ export default async function CustomerHomePage({
             ))}
           </div>
         </section>
+        )}
+
+        {isEmpty && (
+          <p className="px-5 pt-3 text-[15px] font-semibold text-brand">
+            {t("welcomeFirst")}
+          </p>
+        )}
 
         {/* Recommended */}
+        {!isEmpty && (
         <section className="px-5 pb-4 pt-3">
           <h2 className="mb-3 text-h3">{t("recommendedTitle")}</h2>
           <ProviderCard
@@ -176,6 +223,12 @@ export default async function CustomerHomePage({
             }}
           />
         </section>
+        )}
+        {isEmpty && (
+          <div className="mt-4 px-5">
+            <EmptyState title={t("noRecent").replace(/^· /, "")} />
+          </div>
+        )}
       </main>
     </>
   );

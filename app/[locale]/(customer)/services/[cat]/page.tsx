@@ -3,6 +3,11 @@ import { Header } from "@/components/layout/Header";
 import { ProviderCard } from "@/components/domain/ProviderCard";
 import { CURRENCY_SYMBOL, TAX_ABBR } from "@/components/domain/country";
 import { getCountry } from "@/components/domain/countryCookie";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingList,
+} from "@/components/domain/PageStates";
 
 const FILTER_KEYS = ["rating", "distance", "language", "weekend", "female", "firstAid"] as const;
 
@@ -15,19 +20,24 @@ const PROVIDERS = [
 
 export default async function ProvidersByCategoryPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; cat: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale, cat } = await params;
+  const sp = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations("providers");
   const tCat = await getTranslations("categories");
+  const tCommon = await getTranslations("common");
   const country = await getCountry();
   const isZh = locale === "zh";
   const sym = CURRENCY_SYMBOL[country];
   const taxAbbr = TAX_ABBR[country];
   const lang: "zh" | "en" = isZh ? "zh" : "en";
   const catName = tCat(cat as Parameters<typeof tCat>[0]);
+  const state = typeof sp.state === "string" ? sp.state : undefined;
 
   return (
     <>
@@ -64,6 +74,18 @@ export default async function ProvidersByCategoryPage({
           </button>
         </div>
 
+        {state === "loading" && <LoadingList rows={4} rowHeight={200} />}
+        {state === "empty" && (
+          <EmptyState title={t("noMatch")} hint={tCommon("retry")} />
+        )}
+        {state === "error" && (
+          <ErrorState
+            title={t("errorLoad")}
+            retryHref={`/services/${cat}`}
+            retryLabel={tCommon("retry")}
+          />
+        )}
+        {!state && (
         <div className="mt-4 flex flex-col gap-3">
           {PROVIDERS.map((p) => (
             <ProviderCard
@@ -84,6 +106,7 @@ export default async function ProvidersByCategoryPage({
             />
           ))}
         </div>
+        )}
       </main>
     </>
   );
