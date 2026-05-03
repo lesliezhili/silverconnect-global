@@ -4,6 +4,7 @@ import * as React from "react";
 import * as Dropdown from "@radix-ui/react-dropdown-menu";
 import { ChevronDown } from "lucide-react";
 import { useTranslations } from "next-intl";
+import type { Locale } from "@/i18n/routing";
 import { cn } from "@/components/ui/cn";
 
 const COUNTRIES = [
@@ -14,6 +15,37 @@ const COUNTRIES = [
 
 export type CountryCode = (typeof COUNTRIES)[number]["code"];
 
+export const COUNTRY_FLAG: Record<CountryCode, string> = {
+  AU: "🇦🇺",
+  CN: "🇨🇳",
+  CA: "🇨🇦",
+};
+
+/** Compact chip used in the mobile header — flag + 2-letter code, no dropdown. */
+export function CountryChip({
+  value,
+  locale: _locale,
+  className,
+}: {
+  value: CountryCode;
+  locale?: Locale;
+  className?: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex h-9 items-center gap-1 rounded-pill border-[1.5px] border-border bg-bg-surface px-2.5 text-[14px] font-semibold text-text-primary",
+        className
+      )}
+      aria-label={`Country: ${value}`}
+    >
+      <span aria-hidden>{COUNTRY_FLAG[value]}</span>
+      <span>{value}</span>
+    </span>
+  );
+}
+
+/** Original full dropdown — retained for places that need to switch country. */
 export function CountrySelector({
   value,
   onChange,

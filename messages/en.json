@@ -1,7 +1,5 @@
 {
-  "brand": {
-    "name": "SilverConnect"
-  },
+  "brand": { "name": "SilverConnect" },
   "common": {
     "search": "Search",
     "signIn": "Sign in",
@@ -15,7 +13,8 @@
     "loading": "Loading…",
     "retry": "Retry",
     "close": "Close",
-    "askAI": "Ask AI"
+    "askAI": "Ask AI",
+    "talkHuman": "Talk to a human"
   },
   "nav": {
     "home": "Home",
@@ -24,30 +23,223 @@
     "messages": "Messages",
     "profile": "Profile"
   },
-  "country": {
-    "AU": "Australia",
-    "CN": "China",
-    "CA": "Canada"
-  },
-  "language": {
-    "en": "English",
-    "zh": "中文"
+  "country": { "AU": "Australia", "CN": "China", "CA": "Canada" },
+  "language": { "en": "English", "zh": "中文" },
+  "tax": {
+    "incl": { "AU": " (incl. GST)", "CN": " (incl. VAT)", "CA": " (incl. HST)" },
+    "inclLine": {
+      "AU": "All prices include GST",
+      "CN": "All prices include VAT",
+      "CA": "All prices include HST"
+    }
   },
   "home": {
     "greeting": "Hello, {name} 👋",
     "prompt": "What do you need help with today?",
-    "searchPlaceholder": "Search services or address",
+    "searchPlaceholder": "🔍 Search services or address",
     "categoriesTitle": "Choose a service",
     "fromPrice": "from {price}/h",
     "recentTitle": "Recently booked",
-    "recommendedTitle": "Recommended providers"
+    "recommendedTitle": "Recommended providers",
+    "bookAgain": "Book again",
+    "welcomeFirst": "Welcome — book your first service →",
+    "noRecent": "· No recent bookings yet",
+    "errorLoad": "Couldn't load services. Try again",
+    "categoriesAll": "All →"
   },
   "categories": {
     "cleaning": "Cleaning",
+    "cleaningDesc": "Regular, deep, whole-home tidy",
     "cooking": "Cooking",
+    "cookingDesc": "Daily meals, nutritionist menus, batch cook",
     "garden": "Garden",
+    "gardenDesc": "Mowing, watering, seasonal tidy",
     "personalCare": "Personal care",
-    "repair": "Repair"
+    "personalCareDesc": "Bathing, mobility help, companionship",
+    "repair": "Repair",
+    "repairDesc": "Small appliance, lights, leaks"
+  },
+  "services": {
+    "title": "Choose a service",
+    "errorLoad": "Couldn't load services"
+  },
+  "providers": {
+    "title": "Cleaning ({country})",
+    "filters": {
+      "rating": "Rating 4.5+",
+      "distance": "Within 5km",
+      "language": "Mandarin",
+      "weekend": "Weekends",
+      "female": "Female",
+      "firstAid": "First-aid"
+    },
+    "sortRecommended": "Sort: Recommended",
+    "noMatch": "No providers match your filters",
+    "adjustFilters": "Adjust filters",
+    "clearFilters": "Clear filters",
+    "errorLoad": "Couldn't load",
+    "fullyBooked": "Fully booked this week",
+    "seeNextWeek": "See next week"
+  },
+  "provider": {
+    "view": "View",
+    "bookNow": "Book now",
+    "favourite": "Favourite",
+    "verified": "Verified",
+    "firstAid": "First aid",
+    "reviews": "{count, plural, =0 {No reviews} =1 {1 review} other {# reviews}}",
+    "bio": "8 years of home-care experience. Patient, detail-oriented, specialised in elderly homes. Background-checked and first-aid certified.",
+    "servicesOffered": "Services offered",
+    "available7d": "Available next 7 days",
+    "reviewsTitle": "Reviews",
+    "noReviews": "No reviews yet",
+    "noReviewsHint": "Be the first to book and review",
+    "currentlyOffline": "This provider is offline",
+    "currentlyOfflineHint": "You can favourite and view their earliest availability",
+    "messageLabel": "Message",
+    "continue": "Continue · {price} incl. {tax}",
+    "currentlyOfflineCta": "Currently offline",
+    "fullyBookedCta": "Fully booked"
+  },
+  "booking": {
+    "steps": {
+      "service": "Service",
+      "time": "Time",
+      "address": "Address",
+      "confirm": "Confirm"
+    },
+    "step1Title": "Choose a service package",
+    "step2Title": "Pick a time",
+    "step3Title": "Pick an address",
+    "step4Title": "Review & pay",
+    "tabsUpcoming": "Upcoming",
+    "tabsPast": "Past",
+    "tabsRecurring": "Recurring",
+    "noUpcoming": "No upcoming bookings",
+    "bookAClean": "Book a clean",
+    "noPast": "No past bookings",
+    "noPastHint": "Completed services will appear here",
+    "noRecurring": "No recurring bookings",
+    "noRecurringHint": "Save 5% with weekly cleans",
+    "errorLoad": "Couldn't load",
+    "fullyBookedDay": "Fully booked",
+    "tryAnother": "Pick another date or another provider",
+    "seeOtherTimes": "See other times",
+    "errorTimes": "Couldn't load times",
+    "recurringTitle": "Set up recurring",
+    "recurringWeekly": "Weekly",
+    "recurringBiweekly": "Bi-weekly",
+    "recurringMonthly": "Monthly",
+    "recurringDiscount": "ℹ️ Save 5% on recurring bookings",
+    "cancelFreeUntil": "Free cancel until 24h before ({hours}h left)",
+    "cantCancelInProgress": "⚠️ In progress — cannot cancel",
+    "statusTimeline": "Status timeline",
+    "timeline": {
+      "booked": "Booked",
+      "confirmed": "Confirmed",
+      "inProgress": "In progress",
+      "completed": "Completed"
+    },
+    "cta": {
+      "pending": "Pay now",
+      "confirmed": "Reschedule",
+      "inProgress": "Contact provider",
+      "awaitingConfirm": "Confirm completion",
+      "completed": "Leave review",
+      "cancelledFull": "See refund details",
+      "cancelledPartial": "See refund details",
+      "refunded": "See refund details"
+    },
+    "status": {
+      "pending": "Awaiting payment",
+      "confirmed": "Confirmed",
+      "inProgress": "In progress",
+      "awaitingConfirm": "Awaiting confirmation",
+      "completed": "Completed",
+      "cancelledFull": "Cancelled · Full refund",
+      "cancelledPartial": "Cancelled · Partial refund",
+      "refunded": "Refunded"
+    }
+  },
+  "payment": {
+    "title": "Payment",
+    "secured": "Securely processed by Stripe",
+    "applePay": "Pay with Apple Pay",
+    "googlePay": "Pay with Google Pay",
+    "orCard": "or card",
+    "card": "Credit / Debit card",
+    "cardNumber": "Card number",
+    "cardName": "Cardholder name",
+    "cvvLabel": "CVV",
+    "expLabel": "MM / YY",
+    "subtotal": "Subtotal",
+    "total": "Total",
+    "payNow": "Pay securely {amount}",
+    "processing": "Processing…",
+    "waitingBank": "Waiting for bank",
+    "declined": "Card declined",
+    "declinedHint": "Try another payment method or contact your bank",
+    "threeDS": "3D Secure verification…",
+    "threeDSHint": "Complete the prompt from your bank",
+    "successTitle": "Payment confirmed",
+    "successAmount": "Charged {amount}",
+    "redirecting": "Redirecting to booking…"
+  },
+  "success": {
+    "title": "Booking confirmed!",
+    "processingTitle": "Confirming with provider…",
+    "providerAccepted": "{name} has accepted",
+    "processingHint": "Usually confirmed within 2 minutes",
+    "addCalendar": "Add to calendar",
+    "downloadIcs": "Download .ics file",
+    "viewBooking": "View booking details"
+  },
+  "notifications": {
+    "tabsAll": "All",
+    "tabsBookings": "Bookings",
+    "tabsAi": "AI",
+    "tabsSystem": "System",
+    "markAllRead": "Mark all read",
+    "empty": "No notifications",
+    "allRead": "All caught up",
+    "errorLoad": "Couldn't load"
+  },
+  "chat": {
+    "title": "SilverConnect Assistant",
+    "online": "Online · Usually replies < 30s",
+    "emptyTitle": "How can I help?",
+    "emptyHint": "Try: \"When is my next booking?\" or \"How do I reschedule?\"",
+    "quickViewBookings": "View bookings",
+    "quickReschedule": "Reschedule",
+    "quickPolicy": "Cancellation policy",
+    "quickHuman": "Talk to a human",
+    "typing": "AI is typing…",
+    "escalatedTitle": "Handed off to human",
+    "escalatedHint": "Mia usually replies within 5 min",
+    "errorTitle": "Connection lost",
+    "reconnect": "Reconnect",
+    "composer": "Type a message…",
+    "attach": "Attach",
+    "voice": "Voice",
+    "send": "Send",
+    "quickReplies": {
+      "reschedule": "Reschedule",
+      "policy": "Cancel policy",
+      "human": "Talk to human",
+      "emergency": "Emergency"
+    }
+  },
+  "emergency": {
+    "title": "Need emergency help?",
+    "sub": {
+      "AU": "Australian Emergency — combined",
+      "CN": "China 120 Medical Emergency",
+      "CA": "Canada 911 Combined Emergency"
+    },
+    "subLine2": { "CN": "Fire 119 / Police 110" },
+    "call": "Call {num} now",
+    "notify": "Notify my emergency contact",
+    "close": "Hold 2s to return"
   },
   "status": {
     "pending": "Pending",
@@ -62,8 +254,5 @@
     "generic": "Something went wrong on our side. Please try again.",
     "notFound": "Page not found"
   },
-  "dev": {
-    "title": "Component Preview",
-    "subtitle": "Internal preview of design tokens and atoms"
-  }
+  "dev": { "title": "Component Preview", "subtitle": "Internal preview of design tokens and atoms" }
 }

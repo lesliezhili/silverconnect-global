@@ -13,6 +13,27 @@ const LABELS: Record<Locale, string> = {
   zh: "中文",
 };
 
+const SHORT: Record<Locale, string> = {
+  en: "EN",
+  zh: "中文",
+};
+
+/** Compact non-interactive chip used in the mobile header (looks-only). */
+export function LanguageChip({ locale, className }: { locale: Locale; className?: string }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex h-9 items-center gap-1 rounded-pill border-[1.5px] border-border bg-bg-surface px-2.5 text-[14px] font-semibold text-text-primary",
+        className
+      )}
+      aria-label={`Language: ${LABELS[locale]}`}
+    >
+      <span aria-hidden>🌐</span>
+      <span>{SHORT[locale]}</span>
+    </span>
+  );
+}
+
 export function LanguageSelector({ className }: { className?: string }) {
   const locale = useLocale() as Locale;
   const router = useRouter();

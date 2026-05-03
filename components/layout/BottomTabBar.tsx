@@ -14,7 +14,7 @@ const TABS = [
   { key: "profile", href: "/profile", Icon: User },
 ] as const;
 
-export function BottomTabBar() {
+export function BottomTabBar({ active }: { active?: (typeof TABS)[number]["key"] }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
 
@@ -22,28 +22,25 @@ export function BottomTabBar() {
     <nav
       role="navigation"
       aria-label="Primary"
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-bg-base sm:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 grid h-[84px] grid-cols-5 border-t border-border bg-bg-base sm:hidden"
     >
-      <ul className="mx-auto flex max-w-content">
-        {TABS.map(({ key, href, Icon }) => {
-          const active = pathname?.startsWith(href);
-          return (
-            <li key={key} className="flex-1">
-              <Link
-                href={href}
-                className={cn(
-                  "flex h-16 flex-col items-center justify-center gap-0.5 text-small",
-                  active ? "text-brand" : "text-text-secondary"
-                )}
-                aria-current={active ? "page" : undefined}
-              >
-                <Icon size={28} aria-hidden />
-                <span>{t(key)}</span>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+      {TABS.map(({ key, href, Icon }) => {
+        const on = active ? key === active : pathname?.startsWith(href);
+        return (
+          <Link
+            key={key}
+            href={href}
+            aria-current={on ? "page" : undefined}
+            className={cn(
+              "flex flex-col items-center justify-center gap-1 px-1 py-2 text-[13px] font-medium",
+              on ? "text-brand" : "text-text-tertiary"
+            )}
+          >
+            <Icon size={26} strokeWidth={on ? 2.5 : 2} aria-hidden />
+            <span>{t(key)}</span>
+          </Link>
+        );
+      })}
     </nav>
   );
 }

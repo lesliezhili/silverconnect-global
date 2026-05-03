@@ -24,19 +24,26 @@ const config: Config = {
         brand: {
           DEFAULT: "var(--brand-primary)",
           hover: "var(--brand-primary-hover)",
+          soft: "var(--brand-primary-soft)",
           accent: "var(--brand-accent)",
+          "accent-soft": "var(--brand-accent-soft)",
         },
-        success: "var(--success)",
-        warning: "var(--warning)",
-        danger: "var(--danger)",
+        success: { DEFAULT: "var(--success)", soft: "var(--success-soft)" },
+        warning: { DEFAULT: "var(--warning)", soft: "var(--warning-soft)" },
+        danger: { DEFAULT: "var(--danger)", soft: "var(--danger-soft)" },
         bg: {
           base: "var(--bg-base)",
           surface: "var(--bg-surface)",
+          "surface-2": "var(--bg-surface-2)",
         },
-        border: "var(--border)",
+        border: {
+          DEFAULT: "var(--border)",
+          strong: "var(--border-strong)",
+        },
         text: {
           primary: "var(--text-primary)",
           secondary: "var(--text-secondary)",
+          tertiary: "var(--text-tertiary)",
           placeholder: "var(--text-placeholder)",
           link: "var(--text-link)",
         },
@@ -91,9 +98,12 @@ const config: Config = {
         sm: "var(--radius-sm)",
         md: "var(--radius-md)",
         lg: "var(--radius-lg)",
+        pill: "var(--radius-pill)",
       },
       boxShadow: {
         card: "var(--shadow-card)",
+        "card-hover": "var(--shadow-card-hover)",
+        popover: "var(--shadow-popover)",
       },
       maxWidth: {
         content: "720px",

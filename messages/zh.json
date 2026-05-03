@@ -1,7 +1,5 @@
 {
-  "brand": {
-    "name": "SilverConnect"
-  },
+  "brand": { "name": "SilverConnect" },
   "common": {
     "search": "搜索",
     "signIn": "登录",
@@ -15,7 +13,8 @@
     "loading": "加载中…",
     "retry": "重试",
     "close": "关闭",
-    "askAI": "问一下"
+    "askAI": "问一下",
+    "talkHuman": "转人工"
   },
   "nav": {
     "home": "首页",
@@ -24,30 +23,223 @@
     "messages": "消息",
     "profile": "我的"
   },
-  "country": {
-    "AU": "Australia",
-    "CN": "中国",
-    "CA": "Canada"
-  },
-  "language": {
-    "en": "English",
-    "zh": "中文"
+  "country": { "AU": "Australia", "CN": "中国", "CA": "Canada" },
+  "language": { "en": "English", "zh": "中文" },
+  "tax": {
+    "incl": { "AU": "（含 GST）", "CN": "（含 VAT）", "CA": "（含 HST）" },
+    "inclLine": {
+      "AU": "所有价格已含 GST",
+      "CN": "所有价格已含 VAT",
+      "CA": "所有价格已含 HST"
+    }
   },
   "home": {
-    "greeting": "你好，{name} 👋",
+    "greeting": "{name} 你好 👋",
     "prompt": "今天需要什么帮助？",
-    "searchPlaceholder": "搜索服务或地址",
+    "searchPlaceholder": "🔍 搜索服务或地址",
     "categoriesTitle": "选择服务类别",
     "fromPrice": "{price}/小时起",
     "recentTitle": "我最近订过",
-    "recommendedTitle": "推荐 Provider"
+    "recommendedTitle": "推荐 Provider",
+    "bookAgain": "再订一次",
+    "welcomeFirst": "欢迎使用 SilverConnect，先订一次试试 →",
+    "noRecent": "· 没有最近订过的记录",
+    "errorLoad": "加载服务时出错，请重试",
+    "categoriesAll": "全部 →"
   },
   "categories": {
     "cleaning": "清洁",
+    "cleaningDesc": "常规清洁、深度清洁、全屋整理",
     "cooking": "烹饪",
+    "cookingDesc": "三餐准备、营养餐、份饭备餐",
     "garden": "园艺",
+    "gardenDesc": "修剪、浇水、季节整理",
     "personalCare": "个人护理",
-    "repair": "维修"
+    "personalCareDesc": "沐浴、协助、陪伴",
+    "repair": "维修",
+    "repairDesc": "小家电、灯具、漏水"
+  },
+  "services": {
+    "title": "选择服务类别",
+    "errorLoad": "无法加载服务列表"
+  },
+  "providers": {
+    "title": "清洁服务（{country}）",
+    "filters": {
+      "rating": "评分 4.5+",
+      "distance": "距离 5km",
+      "language": "中文",
+      "weekend": "周末可用",
+      "female": "女性服务者",
+      "firstAid": "急救资质"
+    },
+    "sortRecommended": "排序：推荐",
+    "noMatch": "没找到符合条件的服务者",
+    "adjustFilters": "调整筛选条件",
+    "clearFilters": "清除筛选",
+    "errorLoad": "加载失败",
+    "fullyBooked": "本周已约满",
+    "seeNextWeek": "查看下周"
+  },
+  "provider": {
+    "view": "查看",
+    "bookNow": "立即预订",
+    "favourite": "收藏",
+    "verified": "已验证",
+    "firstAid": "急救证",
+    "reviews": "{count, plural, =0 {暂无评价} other {# 条评价}}",
+    "bio": "8 年家政经验，细心耐心，擅长老人居家清洁。已通过背景核查与急救认证。",
+    "servicesOffered": "提供的服务",
+    "available7d": "可预订时段（未来 7 天）",
+    "reviewsTitle": "评价",
+    "noReviews": "暂无评价",
+    "noReviewsHint": "成为第一个预订并评价的客户",
+    "currentlyOffline": "该 Provider 暂未上线",
+    "currentlyOfflineHint": "可收藏并查看最近的可预订时段",
+    "messageLabel": "消息",
+    "continue": "下一步 · {price} 含 {tax}",
+    "currentlyOfflineCta": "该服务者暂未上线",
+    "fullyBookedCta": "本周无空"
+  },
+  "booking": {
+    "steps": {
+      "service": "服务",
+      "time": "时间",
+      "address": "地址",
+      "confirm": "确认"
+    },
+    "step1Title": "选择服务包",
+    "step2Title": "选择时间",
+    "step3Title": "选择地址",
+    "step4Title": "确认并支付",
+    "tabsUpcoming": "即将进行",
+    "tabsPast": "历史",
+    "tabsRecurring": "循环",
+    "noUpcoming": "还没有即将进行的预订",
+    "bookAClean": "订一次清洁",
+    "noPast": "暂无历史预订",
+    "noPastHint": "完成的服务会显示在这里",
+    "noRecurring": "还没有循环预订",
+    "noRecurringHint": "设置每周清洁可享 5% 折扣",
+    "errorLoad": "加载失败",
+    "fullyBookedDay": "该日已约满",
+    "tryAnother": "请选择其他日期，或换一位 Provider",
+    "seeOtherTimes": "看其他时间",
+    "errorTimes": "加载失败",
+    "recurringTitle": "设置循环预订",
+    "recurringWeekly": "每周一次",
+    "recurringBiweekly": "每两周一次",
+    "recurringMonthly": "每月一次",
+    "recurringDiscount": "ℹ️ 循环预订享 5% 折扣",
+    "cancelFreeUntil": "24 小时前免费取消（剩余 {hours} 小时）",
+    "cantCancelInProgress": "⚠️ 服务进行中，无法取消",
+    "statusTimeline": "状态时间线",
+    "timeline": {
+      "booked": "已下单",
+      "confirmed": "已确认",
+      "inProgress": "服务进行中",
+      "completed": "已完成"
+    },
+    "cta": {
+      "pending": "立即支付",
+      "confirmed": "改约",
+      "inProgress": "联系 Provider",
+      "awaitingConfirm": "确认完成 · 释放押金",
+      "completed": "写评价",
+      "cancelledFull": "查看退款详情",
+      "cancelledPartial": "查看退款详情",
+      "refunded": "查看退款详情"
+    },
+    "status": {
+      "pending": "等待支付",
+      "confirmed": "已确认",
+      "inProgress": "进行中",
+      "awaitingConfirm": "等待您确认完成",
+      "completed": "已完成",
+      "cancelledFull": "已取消 · 全额退款",
+      "cancelledPartial": "已取消 · 部分退款",
+      "refunded": "已退款"
+    }
+  },
+  "payment": {
+    "title": "支付方式",
+    "secured": "由 Stripe 安全处理",
+    "applePay": "使用 Apple Pay 付款",
+    "googlePay": "使用 Google Pay 付款",
+    "orCard": "或刷卡",
+    "card": "信用卡 / 借记卡",
+    "cardNumber": "卡号",
+    "cardName": "持卡人姓名",
+    "cvvLabel": "CVV",
+    "expLabel": "MM / YY",
+    "subtotal": "小计",
+    "total": "合计",
+    "payNow": "安全支付 {amount}",
+    "processing": "处理中…",
+    "waitingBank": "等待银行确认",
+    "declined": "卡片被拒绝",
+    "declinedHint": "请尝试其他支付方式或联系发卡行",
+    "threeDS": "银行验证中…",
+    "threeDSHint": "请在弹出的银行页面完成验证",
+    "successTitle": "支付成功",
+    "successAmount": "已扣款 {amount}",
+    "redirecting": "正在跳转预订详情…"
+  },
+  "success": {
+    "title": "预订成功！",
+    "processingTitle": "正在确认 Provider…",
+    "providerAccepted": "{name} 已确认接单",
+    "processingHint": "通常 2 分钟内确认",
+    "addCalendar": "加入我的日历",
+    "downloadIcs": "下载 .ics 文件",
+    "viewBooking": "查看预订详情"
+  },
+  "notifications": {
+    "tabsAll": "全部",
+    "tabsBookings": "预订",
+    "tabsAi": "AI",
+    "tabsSystem": "系统",
+    "markAllRead": "全部已读",
+    "empty": "没有通知",
+    "allRead": "已全部读完",
+    "errorLoad": "加载失败"
+  },
+  "chat": {
+    "title": "SilverConnect 助手",
+    "online": "在线 · 通常 30 秒内回复",
+    "emptyTitle": "我能帮您什么？",
+    "emptyHint": "试试问：「下次预订是什么时候？」「怎么改约？」",
+    "quickViewBookings": "查看预订",
+    "quickReschedule": "改约",
+    "quickPolicy": "取消政策",
+    "quickHuman": "联系真人客服",
+    "typing": "AI 正在输入…",
+    "escalatedTitle": "已转接真人客服",
+    "escalatedHint": "Mia 通常 5 分钟内回复",
+    "errorTitle": "连接中断",
+    "reconnect": "重新连接",
+    "composer": "输入消息…",
+    "attach": "附件",
+    "voice": "语音",
+    "send": "发送",
+    "quickReplies": {
+      "reschedule": "改约",
+      "policy": "取消政策",
+      "human": "联系真人客服",
+      "emergency": "紧急帮助"
+    }
+  },
+  "emergency": {
+    "title": "需要紧急帮助？",
+    "sub": {
+      "AU": "澳洲紧急服务 — 综合",
+      "CN": "中国 120 医疗急救",
+      "CA": "加拿大 911 综合紧急"
+    },
+    "subLine2": { "CN": "火警 119 / 报警 110" },
+    "call": "立即拨打 {num}",
+    "notify": "通知紧急联系人",
+    "close": "长按 2 秒返回"
   },
   "status": {
     "pending": "待处理",
@@ -62,8 +254,5 @@
     "generic": "我们这边出了点问题，请稍后重试",
     "notFound": "页面未找到"
   },
-  "dev": {
-    "title": "组件预览",
-    "subtitle": "设计 token 与原子组件内部预览"
-  }
+  "dev": { "title": "组件预览", "subtitle": "设计 token 与原子组件内部预览" }
 }
