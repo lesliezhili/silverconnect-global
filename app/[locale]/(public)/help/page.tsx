@@ -59,7 +59,7 @@ export default async function HelpHubPage({
         </div>
 
         {/* Category grid */}
-        <h2 className="mt-7 text-h3">{t("categoryGettingStarted").split(" ")[0] === "Getting" ? "Categories" : "分类"}</h2>
+        <h2 className="mt-7 text-h3">{t("categories")}</h2>
         <ul className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {CATEGORY_META.map((c) => (
             <li key={c.key}>
