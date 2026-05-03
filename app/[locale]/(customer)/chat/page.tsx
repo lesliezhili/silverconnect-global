@@ -12,6 +12,7 @@ import { ChatBubble } from "@/components/domain/ChatBubble";
 import { C9AICompanion, S7NetworkError } from "@/components/illustrations";
 import { EMERGENCY_NUMBER } from "@/components/domain/country";
 import { COUNTRY_FLAG } from "@/components/layout/CountrySelector";
+import { Header } from "@/components/layout/Header";
 import { cn } from "@/components/ui/cn";
 import { getCountry } from "@/components/domain/countryCookie";
 import { User } from "lucide-react";
@@ -97,7 +98,13 @@ export default async function ChatPage({
     : ["Reschedule", "Cancel policy", "Talk to human", "Emergency"];
 
   return (
-    <main id="main-content" className="flex h-dvh flex-col bg-bg-surface">
+    <>
+      {/* Desktop-only top bar so users have nav off /chat. Mobile uses
+          the chat-specific subheader below for back. */}
+      <div className="hidden sm:block">
+        <Header country={country} />
+      </div>
+      <main id="main-content" className="flex h-dvh flex-col bg-bg-surface sm:h-[calc(100dvh-80px)]">
       {/* Chat header */}
       <header
         role="banner"
@@ -291,5 +298,6 @@ export default async function ChatPage({
         </button>
       </div>
     </main>
+    </>
   );
 }
