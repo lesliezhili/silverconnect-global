@@ -1,6 +1,7 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { Calendar, MapPin, CreditCard, Clock, X } from "lucide-react";
 import { Header } from "@/components/layout/Header";
+import { Link } from "@/i18n/navigation";
 import { ProviderAvatar } from "@/components/domain/ProviderAvatar";
 import {
   BookingStatusBadge,
@@ -103,6 +104,18 @@ export default async function BookingDetailPage({
 
         <h2 className="mb-2.5 mt-5 text-[16px] font-bold">{t("statusTimeline")}</h2>
         <BookingTimeline status={status} />
+
+        {(status === "confirmed" ||
+          status === "inProgress" ||
+          status === "awaitingConfirm" ||
+          status === "completed") && (
+          <Link
+            href={`/bookings/${id}/dispute`}
+            className="mt-5 block text-center text-[15px] font-semibold text-danger underline-offset-4 hover:underline"
+          >
+            {isZh ? "我有问题 → 报告" : "I have a problem → Report"}
+          </Link>
+        )}
       </main>
 
       <div className="sticky bottom-[84px] z-10 flex gap-2 border-t border-border bg-bg-base p-3 sm:bottom-0">
@@ -115,15 +128,41 @@ export default async function BookingDetailPage({
             <X size={22} aria-hidden />
           </button>
         )}
-        <button
-          type="button"
-          className={cn(
-            "flex h-14 flex-1 items-center justify-center rounded-md text-[17px] font-bold text-white",
-            status === "awaitingConfirm" ? "bg-success" : "bg-brand hover:bg-brand-hover"
-          )}
-        >
-          {tCta(status)}
-        </button>
+        {/* Status-specific primary CTA — links where the action goes,
+            falls back to a non-interactive button for statuses not yet
+            wired to a destination. */}
+        {status === "pending" ? (
+          <Link
+            href={`/pay/${id}`}
+            className="flex h-14 flex-1 items-center justify-center rounded-md bg-brand text-[17px] font-bold text-white hover:bg-brand-hover"
+          >
+            {tCta(status)}
+          </Link>
+        ) : status === "awaitingConfirm" ? (
+          <Link
+            href={`/bookings/${id}/feedback`}
+            className="flex h-14 flex-1 items-center justify-center rounded-md bg-success text-[17px] font-bold text-white"
+          >
+            {tCta(status)}
+          </Link>
+        ) : status === "completed" ? (
+          <Link
+            href={`/bookings/${id}/feedback`}
+            className="flex h-14 flex-1 items-center justify-center rounded-md bg-brand text-[17px] font-bold text-white hover:bg-brand-hover"
+          >
+            {tCta(status)}
+          </Link>
+        ) : (
+          <button
+            type="button"
+            className={cn(
+              "flex h-14 flex-1 items-center justify-center rounded-md text-[17px] font-bold text-white",
+              "bg-brand hover:bg-brand-hover"
+            )}
+          >
+            {tCta(status)}
+          </button>
+        )}
       </div>
     </>
   );
