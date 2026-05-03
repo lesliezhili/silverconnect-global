@@ -27,6 +27,7 @@ export function Header({
   rightExtra,
 }: HeaderProps) {
   const t = useTranslations("common");
+  const tNav = useTranslations("nav");
   const router = useRouter();
 
   const handleBack = () => {
@@ -67,7 +68,7 @@ export function Header({
         {signedIn ? (
           <Link
             href="/profile"
-            aria-label={t("profile") /* fallback if not in common */}
+            aria-label={tNav("profile")}
             className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-brand-accent-soft text-[14px] font-bold text-[#92590A] dark:text-[var(--brand-accent)]"
           >
             {initials ?? <User size={22} aria-hidden />}

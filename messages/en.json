@@ -27,8 +27,7 @@
     "bookings": "Bookings",
     "messages": "Messages",
     "profile": "Profile",
-    "primary": "Primary navigation",
-    "profile": "Profile"
+    "primary": "Primary navigation"
   },
   "country": { "AU": "Australia", "CN": "China", "CA": "Canada" },
   "language": { "en": "English", "zh": "中文" },
