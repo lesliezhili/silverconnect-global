@@ -14,7 +14,8 @@
     "retry": "重试",
     "close": "关闭",
     "askAI": "问一下",
-    "talkHuman": "转人工"
+    "talkHuman": "转人工",
+    "skipToContent": "跳到主要内容"
   },
   "nav": {
     "home": "首页",

@@ -63,7 +63,7 @@ export default async function BookingDetailPage({
   return (
     <>
       <Header country={country} back />
-      <main className="mx-auto w-full max-w-content overflow-auto bg-bg-surface px-5 pb-[120px] pt-4">
+      <main id="main-content" className="mx-auto w-full max-w-content overflow-auto bg-bg-surface px-5 pb-[120px] pt-4">
         <div className="mb-4 flex items-center gap-2">
           <BookingStatusBadge status={status}>{tStatus(status)}</BookingStatusBadge>
           <span className="text-[13px] text-text-tertiary">#{id}</span>

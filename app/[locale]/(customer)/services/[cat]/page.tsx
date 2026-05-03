@@ -42,7 +42,7 @@ export default async function ProvidersByCategoryPage({
   return (
     <>
       <Header country={country} back />
-      <main className="mx-auto w-full max-w-content px-5 pb-[120px] pt-3">
+      <main id="main-content" className="mx-auto w-full max-w-content px-5 pb-[120px] pt-3">
         <h1 className="text-h2">
           {isZh ? `${catName}（${country}）` : `${catName} (${country})`}
         </h1>

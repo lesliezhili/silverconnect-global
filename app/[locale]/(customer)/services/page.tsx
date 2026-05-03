@@ -43,7 +43,7 @@ export default async function ServicesPage({
     return (
       <>
         <Header country={country} />
-        <main className="mx-auto w-full max-w-content pb-[120px] pt-3">
+        <main id="main-content" className="mx-auto w-full max-w-content pb-[120px] pt-3">
           <LoadingList rows={5} rowHeight={200} />
         </main>
       </>
@@ -53,7 +53,7 @@ export default async function ServicesPage({
     return (
       <>
         <Header country={country} />
-        <main className="mx-auto w-full max-w-content pb-[120px] pt-3">
+        <main id="main-content" className="mx-auto w-full max-w-content pb-[120px] pt-3">
           <ErrorState
             title={t("errorLoad")}
             retryHref="/services"
@@ -67,7 +67,7 @@ export default async function ServicesPage({
   return (
     <>
       <Header country={country} />
-      <main className="mx-auto w-full max-w-content px-5 pb-[120px] pt-5">
+      <main id="main-content" className="mx-auto w-full max-w-content px-5 pb-[120px] pt-5">
         <h1 className="text-[28px] font-extrabold">{t("title")}</h1>
 
         <div className="mt-4 flex h-12 items-center gap-2 rounded-md border border-border bg-bg-base px-4 text-[15px] text-text-secondary">

@@ -48,6 +48,7 @@ export default async function ChatPage({
       : "Canada 911 Combined Emergency";
     return (
       <main
+        id="main-content"
         className="fixed inset-0 z-[60] flex flex-col items-center justify-center gap-5 bg-[#0F1729] px-8 text-center text-white"
         role="dialog"
         aria-modal="true"
@@ -96,7 +97,7 @@ export default async function ChatPage({
     : ["Reschedule", "Cancel policy", "Talk to human", "Emergency"];
 
   return (
-    <main className="flex h-dvh flex-col bg-bg-surface">
+    <main id="main-content" className="flex h-dvh flex-col bg-bg-surface">
       {/* Chat header */}
       <header
         role="banner"

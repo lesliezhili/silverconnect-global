@@ -14,7 +14,8 @@
     "retry": "Retry",
     "close": "Close",
     "askAI": "Ask AI",
-    "talkHuman": "Talk to a human"
+    "talkHuman": "Talk to a human",
+    "skipToContent": "Skip to main content"
   },
   "nav": {
     "home": "Home",

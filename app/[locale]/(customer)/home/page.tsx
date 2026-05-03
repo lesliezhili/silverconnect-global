@@ -67,7 +67,7 @@ export default async function CustomerHomePage({
     return (
       <>
         <Header country={country} />
-        <main className="mx-auto w-full max-w-content pb-[120px]">
+        <main id="main-content" className="mx-auto w-full max-w-content pb-[120px]">
           <LoadingList rows={5} rowHeight={140} />
         </main>
       </>
@@ -78,7 +78,7 @@ export default async function CustomerHomePage({
     return (
       <>
         <Header country={country} />
-        <main className="mx-auto flex w-full max-w-content flex-col pb-[120px]">
+        <main id="main-content" className="mx-auto flex w-full max-w-content flex-col pb-[120px]">
           <ErrorState
             title={t("errorLoad")}
             retryHref="/home"
@@ -94,7 +94,7 @@ export default async function CustomerHomePage({
   return (
     <>
       <Header country={country} />
-      <main className="mx-auto w-full max-w-content pb-[120px]">
+      <main id="main-content" className="mx-auto w-full max-w-content pb-[120px]">
         {/* Hero */}
         <section className="flex items-start justify-between gap-3 px-5 pb-1 pt-5">
           <div className="min-w-0 flex-1">

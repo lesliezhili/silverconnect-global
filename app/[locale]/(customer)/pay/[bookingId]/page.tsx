@@ -37,7 +37,7 @@ export default async function PaymentPage({
     return (
       <>
         <Header country={country} back />
-        <main className="mx-auto flex w-full max-w-content flex-col items-center justify-center bg-bg-surface px-6 py-16 text-center">
+        <main id="main-content" className="mx-auto flex w-full max-w-content flex-col items-center justify-center bg-bg-surface px-6 py-16 text-center">
           <span className="flex h-24 w-24 items-center justify-center rounded-full bg-success-soft text-success">
             <Check size={56} strokeWidth={3} aria-hidden />
           </span>
@@ -54,7 +54,7 @@ export default async function PaymentPage({
   return (
     <>
       <Header country={country} back />
-      <main className="mx-auto w-full max-w-content overflow-auto bg-bg-surface px-5 pb-[120px] pt-5">
+      <main id="main-content" className="mx-auto w-full max-w-content overflow-auto bg-bg-surface px-5 pb-[120px] pt-5">
         <h1 className="text-[26px] font-extrabold">{t("title")}</h1>
         <p className="mt-1 flex items-center gap-1.5 text-[14px] text-text-tertiary">
           <Lock size={14} aria-hidden /> {t("secured")}
@@ -85,23 +85,34 @@ export default async function PaymentPage({
               <span>{t("card")}</span>
             </legend>
             <input
+              aria-label={t("cardNumber")}
+              autoComplete="cc-number"
+              inputMode="numeric"
               placeholder={t("cardNumber")}
               defaultValue="4242 4242 4242 4242"
               className="block h-12 w-full rounded-sm border-[1.5px] border-border-strong bg-bg-base px-3.5 font-mono text-[16px] text-text-primary"
             />
             <div className="mt-2.5 grid grid-cols-2 gap-2.5">
               <input
+                aria-label={t("expLabel")}
+                autoComplete="cc-exp"
+                inputMode="numeric"
                 placeholder={t("expLabel")}
                 defaultValue="12 / 28"
                 className="block h-12 w-full rounded-sm border-[1.5px] border-border-strong bg-bg-base px-3.5 font-mono text-[16px] text-text-primary"
               />
               <input
+                aria-label={t("cvvLabel")}
+                autoComplete="cc-csc"
+                inputMode="numeric"
                 placeholder={t("cvvLabel")}
                 defaultValue="123"
                 className="block h-12 w-full rounded-sm border-[1.5px] border-border-strong bg-bg-base px-3.5 font-mono text-[16px] text-text-primary"
               />
             </div>
             <input
+              aria-label={t("cardName")}
+              autoComplete="cc-name"
               placeholder={t("cardName")}
               defaultValue="MARGARET WANG"
               className="mt-2.5 block h-12 w-full rounded-sm border-[1.5px] border-border-strong bg-bg-base px-3.5 text-[16px] text-text-primary"

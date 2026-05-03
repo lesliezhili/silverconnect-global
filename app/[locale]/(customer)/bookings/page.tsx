@@ -62,7 +62,7 @@ export default async function BookingsListPage({
   return (
     <>
       <Header country={country} />
-      <main className="mx-auto w-full max-w-content pb-[120px]">
+      <main id="main-content" className="mx-auto w-full max-w-content pb-[120px]">
         <nav
           aria-label="Booking tabs"
           className="flex border-b border-border bg-bg-base"
