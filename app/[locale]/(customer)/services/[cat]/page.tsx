@@ -3,6 +3,7 @@ import { Header } from "@/components/layout/Header";
 import { ProviderCard } from "@/components/domain/ProviderCard";
 import { CURRENCY_SYMBOL, TAX_ABBR } from "@/components/domain/country";
 import { getCountry } from "@/components/domain/countryCookie";
+import { getSession } from "@/components/domain/sessionCookie";
 import {
   EmptyState,
   ErrorState,
@@ -32,6 +33,7 @@ export default async function ProvidersByCategoryPage({
   const tCat = await getTranslations("categories");
   const tCommon = await getTranslations("common");
   const country = await getCountry();
+  const session = await getSession();
   const isZh = locale === "zh";
   const sym = CURRENCY_SYMBOL[country];
   const taxAbbr = TAX_ABBR[country];
@@ -41,7 +43,7 @@ export default async function ProvidersByCategoryPage({
 
   return (
     <>
-      <Header country={country} back />
+      <Header country={country} back signedIn={session.signedIn} initials={session.initials} />
       <main id="main-content" className="mx-auto w-full max-w-content px-5 pb-[120px] sm:pb-12 pt-3">
         <h1 className="text-h2">
           {isZh ? `${catName}（${country}）` : `${catName} (${country})`}

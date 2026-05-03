@@ -27,7 +27,8 @@
     "bookings": "Bookings",
     "messages": "Messages",
     "profile": "Profile",
-    "primary": "Primary navigation"
+    "primary": "Primary navigation",
+    "profile": "Profile"
   },
   "country": { "AU": "Australia", "CN": "China", "CA": "Canada" },
   "language": { "en": "English", "zh": "中文" },
@@ -286,7 +287,27 @@
     "backToLogin": "Back to sign in",
     "errorInvalidCreds": "Email or password didn't match. Try again.",
     "errorEmailTaken": "An account with this email already exists.",
-    "errorGeneric": "Something went wrong. Please try again."
+    "errorGeneric": "Something went wrong. Please try again.",
+    "resetTitle": "Choose a new password",
+    "resetSub": "Pick something you'll remember — at least 8 characters.",
+    "resetCta": "Set new password",
+    "resetSuccess": "Password updated",
+    "resetSuccessHint": "You can sign in with your new password now.",
+    "resetExpired": "Reset link expired",
+    "resetExpiredHint": "Request a new reset email to try again.",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "errorPasswordMismatch": "Passwords don't match.",
+    "verifyTitle": "Verify your email",
+    "verifySub": "We sent a verification link to {email}. Click it to activate your account.",
+    "verifyResend": "Resend verification email",
+    "verifyResent": "Sent again — check your inbox",
+    "verifySuccess": "Email verified",
+    "verifySuccessHint": "Your account is fully active. Welcome aboard.",
+    "verifyExpired": "Verification link expired",
+    "verifyExpiredHint": "Request a new one — it'll arrive within a minute.",
+    "openMailApp": "Open mail app",
+    "continueToHome": "Continue to home"
   },
   "dev": { "title": "Component Preview", "subtitle": "Internal preview of design tokens and atoms" }
 }

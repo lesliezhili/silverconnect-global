@@ -13,6 +13,7 @@ import {
 } from "@/components/domain/PageStates";
 import type { CountryCode } from "@/components/layout";
 import { getCountry } from "@/components/domain/countryCookie";
+import { getSession } from "@/components/domain/sessionCookie";
 
 interface Cat {
   key: "cleaning" | "cooking" | "garden" | "personalCare" | "repair";
@@ -61,12 +62,13 @@ export default async function CustomerHomePage({
   const tCat = await getTranslations("categories");
   const tCommon = await getTranslations("common");
   const country = await getCountry();
+  const session = await getSession();
   const state = typeof sp.state === "string" ? sp.state : undefined;
 
   if (state === "loading") {
     return (
       <>
-        <Header country={country} />
+        <Header country={country} signedIn={session.signedIn} initials={session.initials} />
         <main id="main-content" className="mx-auto w-full max-w-content pb-[120px] sm:pb-12">
           <LoadingList rows={5} rowHeight={140} />
         </main>
@@ -77,7 +79,7 @@ export default async function CustomerHomePage({
   if (state === "error") {
     return (
       <>
-        <Header country={country} />
+        <Header country={country} signedIn={session.signedIn} initials={session.initials} />
         <main id="main-content" className="mx-auto flex w-full max-w-content flex-col pb-[120px] sm:pb-12">
           <ErrorState
             title={t("errorLoad")}
@@ -93,7 +95,7 @@ export default async function CustomerHomePage({
 
   return (
     <>
-      <Header country={country} />
+      <Header country={country} signedIn={session.signedIn} initials={session.initials} />
       <main id="main-content" className="mx-auto w-full max-w-content pb-[120px] sm:pb-12">
         {/* Hero */}
         <section className="flex items-start justify-between gap-3 px-5 pb-1 pt-5">

@@ -5,6 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { ProviderAvatar } from "@/components/domain/ProviderAvatar";
 import { CURRENCY_SYMBOL, TAX_ABBR } from "@/components/domain/country";
 import { getCountry } from "@/components/domain/countryCookie";
+import { getSession } from "@/components/domain/sessionCookie";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 const SLOTS = ["09:00", "11:00", "14:00", "16:00"];
@@ -22,6 +23,7 @@ export default async function ProviderDetailPage({
   const t = await getTranslations("provider");
   const tProviders = await getTranslations("providers");
   const country = await getCountry();
+  const session = await getSession();
   const isZh = locale === "zh";
   const sym = CURRENCY_SYMBOL[country];
   const taxAbbr = TAX_ABBR[country];
@@ -33,7 +35,7 @@ export default async function ProviderDetailPage({
   if (state === "loading") {
     return (
       <>
-        <Header country={country} back />
+        <Header country={country} back signedIn={session.signedIn} initials={session.initials} />
         <main id="main-content" className="mx-auto w-full max-w-content overflow-auto bg-bg-surface px-5 pb-[120px] sm:pb-12 pt-5">
           <div className="flex items-center gap-4">
             <Skeleton className="h-[100px] w-[100px] rounded-full" />
@@ -76,7 +78,7 @@ export default async function ProviderDetailPage({
 
   return (
     <>
-      <Header country={country} back />
+      <Header country={country} back signedIn={session.signedIn} initials={session.initials} />
       <main id="main-content" className="mx-auto w-full max-w-content overflow-auto bg-bg-surface px-5 pb-[120px] sm:pb-12 pt-5">
         {offline && (
           <div

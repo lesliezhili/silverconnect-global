@@ -6,6 +6,7 @@ import { S5PaymentSuccess } from "@/components/illustrations";
 import { ProviderAvatar } from "@/components/domain/ProviderAvatar";
 import { CURRENCY_SYMBOL } from "@/components/domain/country";
 import { getCountry } from "@/components/domain/countryCookie";
+import { getSession } from "@/components/domain/sessionCookie";
 
 export default async function PaymentSuccessPage({
   params,
@@ -16,6 +17,7 @@ export default async function PaymentSuccessPage({
   setRequestLocale(locale);
   const t = await getTranslations("success");
   const country = await getCountry();
+  const session = await getSession();
   const isZh = locale === "zh";
   const sym = CURRENCY_SYMBOL[country];
   const total = country === "CN" ? "¥1,560.00" : `${sym}195.00`;
@@ -23,7 +25,7 @@ export default async function PaymentSuccessPage({
 
   return (
     <>
-      <Header country={country} />
+      <Header country={country} signedIn={session.signedIn} initials={session.initials} />
       <main id="main-content" className="mx-auto flex w-full max-w-content flex-col items-center bg-bg-surface px-5 pb-[120px] sm:pb-12 pt-2 text-center">
         <div className="mt-2.5">
           <S5PaymentSuccess width={240} height={170} />

@@ -15,6 +15,7 @@ import { COUNTRY_FLAG } from "@/components/layout/CountrySelector";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/components/ui/cn";
 import { getCountry } from "@/components/domain/countryCookie";
+import { getSession } from "@/components/domain/sessionCookie";
 import { User } from "lucide-react";
 
 export default async function ChatPage({
@@ -31,6 +32,7 @@ export default async function ChatPage({
   const tEm = await getTranslations("emergency");
   const isZh = locale === "zh";
   const country = await getCountry();
+  const session = await getSession();
   const emergency = sp.emergency === "1";
   const num = EMERGENCY_NUMBER[country];
   const state = typeof sp.state === "string" ? sp.state : undefined;
@@ -102,7 +104,7 @@ export default async function ChatPage({
       {/* Desktop-only top bar so users have nav off /chat. Mobile uses
           the chat-specific subheader below for back. */}
       <div className="hidden sm:block">
-        <Header country={country} />
+        <Header country={country} signedIn={session.signedIn} initials={session.initials} />
       </div>
       <main id="main-content" className="flex h-dvh flex-col bg-bg-surface sm:h-[calc(100dvh-80px)]">
       {/* Chat header */}

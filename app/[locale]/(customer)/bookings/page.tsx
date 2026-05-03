@@ -6,6 +6,7 @@ import { BookingStatusBadge } from "@/components/domain/BookingStatusBadge";
 import { CURRENCY_SYMBOL } from "@/components/domain/country";
 import { cn } from "@/components/ui/cn";
 import { getCountry } from "@/components/domain/countryCookie";
+import { getSession } from "@/components/domain/sessionCookie";
 import {
   EmptyState,
   ErrorState,
@@ -53,6 +54,7 @@ export default async function BookingsListPage({
   const tCommon = await getTranslations("common");
   const tNav = await getTranslations("nav");
   const country = await getCountry();
+  const session = await getSession();
   const sym = CURRENCY_SYMBOL[country];
   const lang: "zh" | "en" = locale === "zh" ? "zh" : "en";
 
@@ -62,7 +64,7 @@ export default async function BookingsListPage({
 
   return (
     <>
-      <Header country={country} />
+      <Header country={country} signedIn={session.signedIn} initials={session.initials} />
       <main id="main-content" className="mx-auto w-full max-w-content pb-[120px] sm:pb-12">
         <nav
           aria-label={tNav("bookings")}

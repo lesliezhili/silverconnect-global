@@ -4,6 +4,7 @@ import { Header } from "@/components/layout/Header";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/components/ui/cn";
 import { getCountry } from "@/components/domain/countryCookie";
+import { getSession } from "@/components/domain/sessionCookie";
 import {
   EmptyState,
   ErrorState,
@@ -55,6 +56,7 @@ export default async function NotificationsPage({
   const t = await getTranslations("notifications");
   const tNav = await getTranslations("nav");
   const country = await getCountry();
+  const session = await getSession();
   const lang: "zh" | "en" = locale === "zh" ? "zh" : "en";
 
   const rawTab = typeof sp.tab === "string" ? sp.tab : "all";
@@ -65,7 +67,7 @@ export default async function NotificationsPage({
 
   return (
     <>
-      <Header country={country} />
+      <Header country={country} signedIn={session.signedIn} initials={session.initials} />
       <main id="main-content" className="mx-auto w-full max-w-content pb-[120px] sm:pb-12">
         <nav
           aria-label={tNav("messages")}

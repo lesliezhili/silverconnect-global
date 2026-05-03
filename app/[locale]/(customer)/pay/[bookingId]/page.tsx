@@ -4,6 +4,7 @@ import { Header } from "@/components/layout/Header";
 import { Link } from "@/i18n/navigation";
 import { CURRENCY_SYMBOL, TAX_ABBR } from "@/components/domain/country";
 import { getCountry } from "@/components/domain/countryCookie";
+import { getSession } from "@/components/domain/sessionCookie";
 import { cn } from "@/components/ui/cn";
 
 type PayState = "default" | "loading" | "threeDS" | "failed" | "success";
@@ -27,6 +28,7 @@ export default async function PaymentPage({
   setRequestLocale(locale);
   const t = await getTranslations("payment");
   const country = await getCountry();
+  const session = await getSession();
   const sym = CURRENCY_SYMBOL[country];
   const taxAbbr = TAX_ABBR[country];
   const taxPct = country === "AU" ? "10%" : country === "CN" ? "6%" : "13%";
@@ -36,7 +38,7 @@ export default async function PaymentPage({
   if (state === "success") {
     return (
       <>
-        <Header country={country} back />
+        <Header country={country} back signedIn={session.signedIn} initials={session.initials} />
         <main id="main-content" className="mx-auto flex w-full max-w-content flex-col items-center justify-center bg-bg-surface px-6 py-16 text-center">
           <span className="flex h-24 w-24 items-center justify-center rounded-full bg-success-soft text-success">
             <Check size={56} strokeWidth={3} aria-hidden />
@@ -53,7 +55,7 @@ export default async function PaymentPage({
 
   return (
     <>
-      <Header country={country} back />
+      <Header country={country} back signedIn={session.signedIn} initials={session.initials} />
       <main id="main-content" className="mx-auto w-full max-w-content overflow-auto bg-bg-surface px-5 pb-[120px] sm:pb-12 pt-5">
         <h1 className="text-[26px] font-extrabold">{t("title")}</h1>
         <p className="mt-1 flex items-center gap-1.5 text-[14px] text-text-tertiary">

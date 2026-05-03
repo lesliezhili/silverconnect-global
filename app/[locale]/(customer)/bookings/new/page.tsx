@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { BookingProgress } from "@/components/domain/BookingProgress";
 import { CURRENCY_SYMBOL, TAX_ABBR } from "@/components/domain/country";
 import { getCountry } from "@/components/domain/countryCookie";
+import { getSession } from "@/components/domain/sessionCookie";
 import { S3EmptyBookings, S7NetworkError } from "@/components/illustrations";
 import { Skeleton } from "@/components/ui/Skeleton";
 
@@ -27,6 +28,7 @@ export default async function BookingNewPage({
   const t = await getTranslations("booking");
   const tCommon = await getTranslations("common");
   const country = await getCountry();
+  const session = await getSession();
   const isZh = locale === "zh";
   const sym = CURRENCY_SYMBOL[country];
   const taxAbbr = TAX_ABBR[country];
@@ -43,7 +45,7 @@ export default async function BookingNewPage({
 
   return (
     <>
-      <Header country={country} back />
+      <Header country={country} back signedIn={session.signedIn} initials={session.initials} />
       <BookingProgress step={step} />
       <main id="main-content" className="mx-auto w-full max-w-content overflow-auto bg-bg-surface px-5 pb-[120px] sm:pb-12 pt-5">
         {step === 1 && (

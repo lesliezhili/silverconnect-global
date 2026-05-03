@@ -10,6 +10,7 @@ import { BookingTimeline } from "@/components/domain/BookingTimeline";
 import { CURRENCY_SYMBOL } from "@/components/domain/country";
 import { cn } from "@/components/ui/cn";
 import { getCountry } from "@/components/domain/countryCookie";
+import { getSession } from "@/components/domain/sessionCookie";
 
 const VALID_STATUSES: BookingStatus[] = [
   "pending",
@@ -44,6 +45,7 @@ export default async function BookingDetailPage({
   const tCta = await getTranslations("booking.cta");
   const tCommon = await getTranslations("common");
   const country = await getCountry();
+  const session = await getSession();
   const isZh = locale === "zh";
   const sym = CURRENCY_SYMBOL[country];
   const total = country === "CN" ? "¥1,560.00" : `${sym}195.00`;
@@ -62,7 +64,7 @@ export default async function BookingDetailPage({
 
   return (
     <>
-      <Header country={country} back />
+      <Header country={country} back signedIn={session.signedIn} initials={session.initials} />
       <main id="main-content" className="mx-auto w-full max-w-content overflow-auto bg-bg-surface px-5 pb-[120px] sm:pb-12 pt-4">
         <div className="mb-4 flex items-center gap-2">
           <BookingStatusBadge status={status}>{tStatus(status)}</BookingStatusBadge>

@@ -286,7 +286,27 @@
     "backToLogin": "返回登录",
     "errorInvalidCreds": "邮箱或密码不正确，请重试。",
     "errorEmailTaken": "该邮箱已被注册。",
-    "errorGeneric": "出错了，请稍后重试。"
+    "errorGeneric": "出错了，请稍后重试。",
+    "resetTitle": "设置新密码",
+    "resetSub": "请选择您能记住的密码 — 至少 8 位。",
+    "resetCta": "设置新密码",
+    "resetSuccess": "密码已更新",
+    "resetSuccessHint": "您可以使用新密码登录了。",
+    "resetExpired": "重置链接已过期",
+    "resetExpiredHint": "请重新申请一封重置邮件。",
+    "newPassword": "新密码",
+    "confirmPassword": "确认新密码",
+    "errorPasswordMismatch": "两次输入的密码不一致。",
+    "verifyTitle": "验证您的邮箱",
+    "verifySub": "我们已向 {email} 发送了验证链接，点击即可激活账号。",
+    "verifyResend": "重新发送验证邮件",
+    "verifyResent": "已重新发送，请查看邮箱",
+    "verifySuccess": "邮箱已验证",
+    "verifySuccessHint": "您的账号已激活，欢迎使用。",
+    "verifyExpired": "验证链接已过期",
+    "verifyExpiredHint": "请重新申请，新链接将在一分钟内寄出。",
+    "openMailApp": "打开邮件应用",
+    "continueToHome": "去首页"
   },
   "dev": { "title": "组件预览", "subtitle": "设计 token 与原子组件内部预览" }
 }

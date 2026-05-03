@@ -11,6 +11,7 @@ import {
 } from "@/components/illustrations";
 import { fmtPriceRange } from "@/components/domain/country";
 import { getCountry } from "@/components/domain/countryCookie";
+import { getSession } from "@/components/domain/sessionCookie";
 import { ErrorState, LoadingList } from "@/components/domain/PageStates";
 
 const CATS = [
@@ -36,13 +37,14 @@ export default async function ServicesPage({
   const tTax = await getTranslations("tax.inclLine");
   const tCommon = await getTranslations("common");
   const country = await getCountry();
+  const session = await getSession();
   const isZh = locale === "zh";
   const state = typeof sp.state === "string" ? sp.state : undefined;
 
   if (state === "loading") {
     return (
       <>
-        <Header country={country} />
+        <Header country={country} signedIn={session.signedIn} initials={session.initials} />
         <main id="main-content" className="mx-auto w-full max-w-content pb-[120px] sm:pb-12 pt-3">
           <LoadingList rows={5} rowHeight={200} />
         </main>
@@ -52,7 +54,7 @@ export default async function ServicesPage({
   if (state === "error") {
     return (
       <>
-        <Header country={country} />
+        <Header country={country} signedIn={session.signedIn} initials={session.initials} />
         <main id="main-content" className="mx-auto w-full max-w-content pb-[120px] sm:pb-12 pt-3">
           <ErrorState
             title={t("errorLoad")}
@@ -66,7 +68,7 @@ export default async function ServicesPage({
 
   return (
     <>
-      <Header country={country} />
+      <Header country={country} signedIn={session.signedIn} initials={session.initials} />
       <main id="main-content" className="mx-auto w-full max-w-content px-5 pb-[120px] sm:pb-12 pt-5">
         <h1 className="text-[28px] font-extrabold">{t("title")}</h1>
 

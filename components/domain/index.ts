@@ -18,3 +18,4 @@ export { BookingTimeline } from "./BookingTimeline";
 export { ChatBubble } from "./ChatBubble";
 export { EmptyState, ErrorState, LoadingList } from "./PageStates";
 export { AuthCard } from "./AuthCard";
+export { getSession, SESSION_COOKIE, type Session } from "./sessionCookie";
