@@ -51,6 +51,7 @@ export default async function BookingsListPage({
   const t = await getTranslations("booking");
   const tStatus = await getTranslations("booking.status");
   const tCommon = await getTranslations("common");
+  const tNav = await getTranslations("nav");
   const country = await getCountry();
   const sym = CURRENCY_SYMBOL[country];
   const lang: "zh" | "en" = locale === "zh" ? "zh" : "en";
@@ -64,7 +65,7 @@ export default async function BookingsListPage({
       <Header country={country} />
       <main id="main-content" className="mx-auto w-full max-w-content pb-[120px]">
         <nav
-          aria-label="Booking tabs"
+          aria-label={tNav("bookings")}
           className="flex border-b border-border bg-bg-base"
         >
           {TABS.map((k) => {
@@ -73,6 +74,7 @@ export default async function BookingsListPage({
               <Link
                 key={k}
                 href={`/bookings?tab=${k}`}
+                aria-current={on ? "page" : undefined}
                 className={cn(
                   "flex h-14 flex-1 items-center justify-center text-[15px] font-medium",
                   on

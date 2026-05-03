@@ -113,7 +113,7 @@ export default async function CustomerHomePage({
           <input
             type="search"
             placeholder={t("searchPlaceholder")}
-            aria-label={t("searchPlaceholder")}
+            aria-label={t("searchAria")}
             className="block h-14 w-full rounded-md border-[1.5px] border-border-strong bg-bg-base px-4 text-[17px] text-text-primary placeholder:text-text-tertiary focus:border-brand focus:outline-none"
           />
         </div>

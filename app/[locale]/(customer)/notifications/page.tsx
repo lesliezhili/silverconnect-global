@@ -1,6 +1,7 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { Calendar, MessageCircle, Settings } from "lucide-react";
 import { Header } from "@/components/layout/Header";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/components/ui/cn";
 import { getCountry } from "@/components/domain/countryCookie";
 import {
@@ -52,6 +53,7 @@ export default async function NotificationsPage({
   const sp = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations("notifications");
+  const tNav = await getTranslations("nav");
   const country = await getCountry();
   const lang: "zh" | "en" = locale === "zh" ? "zh" : "en";
 
@@ -66,7 +68,7 @@ export default async function NotificationsPage({
       <Header country={country} />
       <main id="main-content" className="mx-auto w-full max-w-content pb-[120px]">
         <nav
-          aria-label="Notification tabs"
+          aria-label={tNav("messages")}
           className="flex h-14 items-center justify-between border-b border-border bg-bg-base px-4"
         >
           <div className="flex gap-3">
@@ -74,15 +76,17 @@ export default async function NotificationsPage({
               const on = k === tab;
               const labelKey = `tabs${k.charAt(0).toUpperCase() + k.slice(1)}` as Parameters<typeof t>[0];
               return (
-                <span
+                <Link
                   key={k}
+                  href={`/notifications?tab=${k}`}
+                  aria-current={on ? "page" : undefined}
                   className={cn(
                     "text-[14px]",
                     on ? "font-bold text-brand" : "font-medium text-text-secondary"
                   )}
                 >
                   {t(labelKey)}
-                </span>
+                </Link>
               );
             })}
           </div>

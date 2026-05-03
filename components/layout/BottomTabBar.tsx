@@ -27,7 +27,7 @@ export function BottomTabBar({ active }: { active?: (typeof TABS)[number]["key"]
   return (
     <nav
       role="navigation"
-      aria-label="Primary"
+      aria-label={t("primary")}
       className="fixed inset-x-0 bottom-0 z-30 grid h-[84px] grid-cols-5 border-t border-border bg-bg-base sm:hidden"
     >
       {TABS.map(({ key, href, Icon }) => {

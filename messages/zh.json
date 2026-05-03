@@ -22,7 +22,8 @@
     "services": "服务",
     "bookings": "预订",
     "messages": "消息",
-    "profile": "我的"
+    "profile": "我的",
+    "primary": "主导航"
   },
   "country": { "AU": "Australia", "CN": "中国", "CA": "Canada" },
   "language": { "en": "English", "zh": "中文" },
@@ -38,6 +39,7 @@
     "greeting": "{name} 你好 👋",
     "prompt": "今天需要什么帮助？",
     "searchPlaceholder": "🔍 搜索服务或地址",
+    "searchAria": "搜索服务或地址",
     "categoriesTitle": "选择服务类别",
     "fromPrice": "{price}/小时起",
     "recentTitle": "我最近订过",

@@ -22,7 +22,8 @@
     "services": "Services",
     "bookings": "Bookings",
     "messages": "Messages",
-    "profile": "Profile"
+    "profile": "Profile",
+    "primary": "Primary navigation"
   },
   "country": { "AU": "Australia", "CN": "China", "CA": "Canada" },
   "language": { "en": "English", "zh": "中文" },
@@ -38,6 +39,7 @@
     "greeting": "Hello, {name} 👋",
     "prompt": "What do you need help with today?",
     "searchPlaceholder": "🔍 Search services or address",
+    "searchAria": "Search services or address",
     "categoriesTitle": "Choose a service",
     "fromPrice": "from {price}/h",
     "recentTitle": "Recently booked",
