@@ -283,7 +283,10 @@
     "forgotSent": "请查看邮箱",
     "forgotSentHint": "如果该邮箱存在账号，重置链接已寄出。",
     "termsAgree": "继续即表示您同意我们的服务条款与隐私政策。",
-    "backToLogin": "返回登录"
+    "backToLogin": "返回登录",
+    "errorInvalidCreds": "邮箱或密码不正确，请重试。",
+    "errorEmailTaken": "该邮箱已被注册。",
+    "errorGeneric": "出错了，请稍后重试。"
   },
   "dev": { "title": "组件预览", "subtitle": "设计 token 与原子组件内部预览" }
 }

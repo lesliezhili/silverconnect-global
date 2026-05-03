@@ -7,16 +7,34 @@ import { Label } from "@/components/ui/Label";
 
 export default async function LoginPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale } = await params;
+  const sp = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations("auth");
   const tCommon = await getTranslations("common");
+  const error = typeof sp.error === "string" ? sp.error : undefined;
+  const errorMsg =
+    error === "credentials"
+      ? t("errorInvalidCreds")
+      : error
+      ? t("errorGeneric")
+      : null;
 
   return (
     <AuthCard title={t("loginTitle")} subtitle={t("loginSub")}>
+      {errorMsg && (
+        <div
+          role="alert"
+          className="mb-4 rounded-md border-[1.5px] border-danger bg-danger-soft px-3.5 py-3 text-[14px] font-semibold text-danger"
+        >
+          {errorMsg}
+        </div>
+      )}
       <form className="flex flex-col gap-4" action="/api/auth/login" method="post">
         <div>
           <Label htmlFor="email">{tCommon("email")}</Label>

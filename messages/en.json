@@ -283,7 +283,10 @@
     "forgotSent": "Check your email",
     "forgotSentHint": "If an account exists for this email, a reset link is on its way.",
     "termsAgree": "By continuing, you agree to our Terms and Privacy.",
-    "backToLogin": "Back to sign in"
+    "backToLogin": "Back to sign in",
+    "errorInvalidCreds": "Email or password didn't match. Try again.",
+    "errorEmailTaken": "An account with this email already exists.",
+    "errorGeneric": "Something went wrong. Please try again."
   },
   "dev": { "title": "Component Preview", "subtitle": "Internal preview of design tokens and atoms" }
 }
