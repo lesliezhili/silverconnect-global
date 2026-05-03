@@ -42,6 +42,7 @@ export default async function BookingDetailPage({
   const t = await getTranslations("booking");
   const tStatus = await getTranslations("booking.status");
   const tCta = await getTranslations("booking.cta");
+  const tCommon = await getTranslations("common");
   const country = "AU" as CountryCode;
   const isZh = locale === "zh";
   const sym = CURRENCY_SYMBOL[country];
@@ -106,7 +107,7 @@ export default async function BookingDetailPage({
         {(status === "confirmed" || status === "pending") && (
           <button
             type="button"
-            aria-label={t("cta.cancelledFull")}
+            aria-label={tCommon("cancel")}
             className="inline-flex h-14 w-14 items-center justify-center rounded-md border-[1.5px] border-danger bg-bg-base text-danger"
           >
             <X size={22} aria-hidden />

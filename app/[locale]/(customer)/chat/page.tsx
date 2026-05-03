@@ -10,15 +10,10 @@ import {
 import { Link } from "@/i18n/navigation";
 import { ChatBubble } from "@/components/domain/ChatBubble";
 import { C9AICompanion } from "@/components/illustrations";
-import {
-  EMERGENCY_NUMBER,
-  CURRENCY_SYMBOL as _CURRENCY,
-} from "@/components/domain/country";
+import { EMERGENCY_NUMBER } from "@/components/domain/country";
 import { COUNTRY_FLAG } from "@/components/layout/CountrySelector";
 import { cn } from "@/components/ui/cn";
 import type { CountryCode } from "@/components/layout";
-
-void _CURRENCY;
 
 export default async function ChatPage({
   params,
@@ -51,8 +46,9 @@ export default async function ChatPage({
       : "Canada 911 Combined Emergency";
     return (
       <main
-        className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-5 bg-[#0F1729] px-8 text-center text-white"
+        className="fixed inset-0 z-[60] flex flex-col items-center justify-center gap-5 bg-[#0F1729] px-8 text-center text-white"
         role="dialog"
+        aria-modal="true"
         aria-label={tEm("title")}
       >
         <div
@@ -98,7 +94,7 @@ export default async function ChatPage({
     : ["Reschedule", "Cancel policy", "Talk to human", "Emergency"];
 
   return (
-    <main className="flex h-[calc(100dvh-84px)] flex-col bg-bg-surface sm:h-dvh">
+    <main className="flex h-dvh flex-col bg-bg-surface">
       {/* Chat header */}
       <header
         role="banner"

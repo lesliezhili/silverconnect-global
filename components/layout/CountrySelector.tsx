@@ -24,10 +24,10 @@ export const COUNTRY_FLAG: Record<CountryCode, string> = {
 /** Compact chip used in the mobile header — flag + 2-letter code, no dropdown. */
 export function CountryChip({
   value,
-  locale: _locale,
   className,
 }: {
   value: CountryCode;
+  /** Reserved for future per-locale country labels. */
   locale?: Locale;
   className?: string;
 }) {

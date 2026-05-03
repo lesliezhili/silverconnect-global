@@ -3,8 +3,31 @@
 import * as React from "react";
 import { MessageCircleHeart, AlertTriangle } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/components/ui/cn";
+
+/**
+ * Routes where the floating AI button should be hidden:
+ * - /chat (the chat IS the AI)
+ * - /pay/* and /bookings/[id]/success (sticky payment / success CTAs)
+ * - /providers/[id], /bookings/[id], /bookings/new (sticky CTA bars)
+ * - /dev/* internal preview routes
+ *
+ * Anything else (home, services, services/[cat], bookings list,
+ * notifications, etc.) shows the FAB.
+ */
+const HIDE_PATTERNS: RegExp[] = [
+  /^\/chat(\/|$|\?)/,
+  /^\/pay(\/|$)/,
+  /^\/providers\/[^/]+/,
+  /^\/bookings\/[^/]+/,
+  /^\/bookings\/new(\/|$)/,
+  /^\/dev(\/|$)/,
+];
+
+function shouldHide(pathname: string): boolean {
+  return HIDE_PATTERNS.some((re) => re.test(pathname));
+}
 
 export function AIFloatButton({
   emergency = false,
@@ -14,7 +37,10 @@ export function AIFloatButton({
   className?: string;
 }) {
   const t = useTranslations("common");
+  const pathname = usePathname();
   const Icon = emergency ? AlertTriangle : MessageCircleHeart;
+
+  if (shouldHide(pathname ?? "")) return null;
 
   return (
     <Link

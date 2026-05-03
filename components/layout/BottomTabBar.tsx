@@ -14,9 +14,15 @@ const TABS = [
   { key: "profile", href: "/profile", Icon: User },
 ] as const;
 
+// Hide tab bar on routes that are themselves a full-screen experience
+// or that own a sticky bottom CTA; matches the design's per-screen layout.
+const HIDE_PATTERNS: RegExp[] = [/^\/chat(\/|$|\?)/, /^\/dev(\/|$)/];
+
 export function BottomTabBar({ active }: { active?: (typeof TABS)[number]["key"] }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
+
+  if (pathname && HIDE_PATTERNS.some((re) => re.test(pathname))) return null;
 
   return (
     <nav

@@ -1,5 +1,5 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
-import { Bell, Calendar, MessageCircle, Settings } from "lucide-react";
+import { Calendar, MessageCircle, Settings } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/components/ui/cn";
 import type { CountryCode } from "@/components/layout";
@@ -53,18 +53,7 @@ export default async function NotificationsPage({
 
   return (
     <>
-      <Header
-        country={country}
-        rightExtra={
-          <button
-            type="button"
-            aria-label={t("markAllRead")}
-            className="inline-flex h-10 items-center justify-center text-[13px] font-semibold text-brand"
-          >
-            <Bell size={20} aria-hidden />
-          </button>
-        }
-      />
+      <Header country={country} />
       <main className="mx-auto w-full max-w-content pb-[120px]">
         <nav
           aria-label="Notification tabs"
