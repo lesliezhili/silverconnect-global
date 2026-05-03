@@ -261,6 +261,28 @@
     "generic": "我们这边出了点问题，请稍后重试",
     "notFound": "页面未找到"
   },
+  "profile": {
+    "title": "我的",
+    "memberSince": "{date} 加入",
+    "edit": "编辑资料",
+    "comingSoon": "即将上线",
+    "comingSoonHint": "这个功能正在打磨中，下个迭代上线。",
+    "items": {
+      "addresses": "我的地址",
+      "addressesDesc": "服务者上门的地址",
+      "payment": "支付方式",
+      "paymentDesc": "已绑定的卡 · 默认支付",
+      "emergency": "紧急联系人",
+      "emergencyDesc": "出现紧急情况时我们会联系的人",
+      "favourites": "收藏的 Provider",
+      "favouritesDesc": "快速找到您信任的服务者",
+      "notifications": "通知设置",
+      "notificationsDesc": "邮件、短信、Push 偏好",
+      "help": "帮助与客服",
+      "helpDesc": "常见问题、联系我们、知识库",
+      "signOut": "退出登录"
+    }
+  },
   "auth": {
     "loginTitle": "欢迎回来",
     "loginSub": "安全预订上门服务",

@@ -261,6 +261,28 @@
     "generic": "Something went wrong on our side. Please try again.",
     "notFound": "Page not found"
   },
+  "profile": {
+    "title": "My profile",
+    "memberSince": "Member since {date}",
+    "edit": "Edit profile",
+    "comingSoon": "Coming soon",
+    "comingSoonHint": "We're polishing this section — it'll land in the next sprint.",
+    "items": {
+      "addresses": "My addresses",
+      "addressesDesc": "Where we send the helper",
+      "payment": "Payment methods",
+      "paymentDesc": "Cards on file, default for new bookings",
+      "emergency": "Emergency contacts",
+      "emergencyDesc": "Who we call if something goes wrong",
+      "favourites": "Favourite providers",
+      "favouritesDesc": "Quick access to people you trust",
+      "notifications": "Notification settings",
+      "notificationsDesc": "Email, SMS and push preferences",
+      "help": "Help & support",
+      "helpDesc": "FAQ, contact us, knowledge base",
+      "signOut": "Sign out"
+    }
+  },
   "auth": {
     "loginTitle": "Welcome back",
     "loginSub": "Book trusted home services with confidence",
