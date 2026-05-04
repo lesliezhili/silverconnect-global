@@ -71,11 +71,20 @@ export function AdminShell({
       </header>
 
       <div className="mx-auto flex w-full max-w-[1280px]">
-        {/* Sidebar (desktop) */}
+        {/* Mobile backdrop — click-outside closes the drawer */}
+        {openMobile && (
+          <button
+            type="button"
+            aria-label={t("menuToggle")}
+            onClick={() => setOpenMobile(false)}
+            className="fixed inset-0 top-14 z-20 bg-black/30 sm:hidden"
+          />
+        )}
+        {/* Sidebar */}
         <aside
           aria-label={t("sidebar")}
           className={cn(
-            "fixed inset-y-14 left-0 z-30 w-64 shrink-0 border-r border-border bg-bg-base p-4 sm:sticky sm:top-14 sm:h-[calc(100vh-3.5rem)]",
+            "fixed left-0 top-14 bottom-0 z-30 w-64 shrink-0 overflow-y-auto border-r border-border bg-bg-base p-4 sm:sticky sm:top-14 sm:h-[calc(100vh-3.5rem)]",
             openMobile ? "block" : "hidden sm:block"
           )}
         >

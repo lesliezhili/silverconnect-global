@@ -831,6 +831,11 @@
     "emptyDisputes": "No disputes match the filter.",
     "emptySafety": "No safety events match the filter.",
     "emptyProviders": "No providers match the filter.",
-    "applied": "Applied"
+    "applied": "Applied",
+    "filterApply": "Apply",
+    "refundQueued": "Queued",
+    "refundProcessing": "Processing",
+    "refundDone": "Done",
+    "refundFailed": "Failed"
   }
 }

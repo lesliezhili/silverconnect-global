@@ -97,11 +97,19 @@ export default async function AdminRefundsPage({
                           : "bg-danger-soft text-danger")
                       }
                     >
-                      {r.status}
+                      {t(
+                        r.status === "queued"
+                          ? "refundQueued"
+                          : r.status === "processing"
+                          ? "refundProcessing"
+                          : r.status === "done"
+                          ? "refundDone"
+                          : "refundFailed"
+                      )}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    {r.status === "queued" && (
+                    {r.status === "queued" ? (
                       <form action={processRefund} className="inline">
                         <input type="hidden" name="locale" value={locale} />
                         <input type="hidden" name="id" value={r.id} />
@@ -113,6 +121,8 @@ export default async function AdminRefundsPage({
                           {t("refundProcess")}
                         </button>
                       </form>
+                    ) : (
+                      <span aria-hidden className="text-text-tertiary">—</span>
                     )}
                   </td>
                 </tr>

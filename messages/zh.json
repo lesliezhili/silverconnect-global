@@ -831,6 +831,11 @@
     "emptyDisputes": "没有匹配的争议。",
     "emptySafety": "没有匹配的安全事件。",
     "emptyProviders": "没有匹配的师傅。",
-    "applied": "已提交"
+    "applied": "已提交",
+    "filterApply": "应用",
+    "refundQueued": "排队中",
+    "refundProcessing": "处理中",
+    "refundDone": "已完成",
+    "refundFailed": "失败"
   }
 }

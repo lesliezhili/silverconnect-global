@@ -82,6 +82,7 @@ export default async function AdminDisputesPage({
         }
         statusName={t("filterStatus")}
         countryName={t("filterCountry")}
+        applyLabel={t("filterApply")}
       />
 
       <div className="mt-5 overflow-hidden rounded-lg border border-border bg-bg-base">
@@ -215,6 +216,7 @@ function FilterBar({
   countryLabel,
   statusName,
   countryName,
+  applyLabel,
 }: {
   status: string;
   country: string;
@@ -223,6 +225,7 @@ function FilterBar({
   countryLabel: (v: string) => string;
   statusName: string;
   countryName: string;
+  applyLabel: string;
 }) {
   return (
     <form
@@ -263,7 +266,7 @@ function FilterBar({
         type="submit"
         className="ml-auto inline-flex h-10 items-center rounded-md bg-brand px-4 text-[14px] font-bold text-white"
       >
-        OK
+        {applyLabel}
       </button>
     </form>
   );
