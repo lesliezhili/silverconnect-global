@@ -91,7 +91,8 @@ export default async function CustomerHomePage({
     );
   }
 
-  const isEmpty = state === "empty";
+  const isEmpty = state === "empty" || !session.signedIn;
+  const greetingName = session.name ?? tCommon("guest");
 
   return (
     <>
@@ -101,7 +102,7 @@ export default async function CustomerHomePage({
         <section className="flex items-start justify-between gap-3 px-5 pb-1 pt-5">
           <div className="min-w-0 flex-1">
             <h1 className="text-[30px] font-extrabold leading-tight">
-              {t("greeting", { name: "Margaret" })}
+              {t("greeting", { name: greetingName })}
             </h1>
             <p className="mt-1.5 text-[17px] text-text-secondary">{t("prompt")}</p>
           </div>
@@ -174,7 +175,7 @@ export default async function CustomerHomePage({
         {!isEmpty && (
         <section className="pl-5 pt-5">
           <h2 className="text-h3">{t("recentTitle")}</h2>
-          <div className="mt-3 flex gap-3 overflow-x-auto pb-1 pr-5">
+          <div className="mt-3 flex gap-3 overflow-x-auto scrollbar-hide pb-1 pr-5">
             {[
               { name: locale === "zh" ? "李 师傅" : "Mr Li", svc: locale === "zh" ? "清洁" : "Cleaning", init: locale === "zh" ? "李" : "L", hue: 0 as const },
               { name: locale === "zh" ? "陈 阿姨" : "May Chen", svc: locale === "zh" ? "清洁" : "Cleaning", init: locale === "zh" ? "陈" : "M", hue: 1 as const },

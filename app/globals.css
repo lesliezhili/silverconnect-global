@@ -206,3 +206,8 @@
   50% { opacity: 1; }
 }
 
+@layer utilities {
+  .scrollbar-hide { scrollbar-width: none; }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+}
+

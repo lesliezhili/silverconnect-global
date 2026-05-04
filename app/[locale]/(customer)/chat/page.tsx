@@ -245,7 +245,7 @@ export default async function ChatPage({
       </div>
 
       {/* Quick replies */}
-      <div className="flex gap-2 overflow-x-auto px-4 py-2">
+      <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 py-2">
         {quick.map((q, i) => {
           const danger = i === 3;
           return danger ? (

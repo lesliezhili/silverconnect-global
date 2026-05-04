@@ -106,7 +106,7 @@ export default async function ProviderReviewsPage({
         </section>
 
         {/* Filter */}
-        <nav role="tablist" className="mt-5 flex gap-2 overflow-x-auto">
+        <nav role="tablist" className="mt-5 flex gap-2 overflow-x-auto scrollbar-hide">
           {filters.map((f) => {
             const on = f === filter;
             return (

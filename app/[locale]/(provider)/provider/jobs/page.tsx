@@ -86,7 +86,7 @@ export default async function ProviderJobsPage({
         <nav
           role="tablist"
           aria-label={t("navJobs")}
-          className="mt-4 flex gap-2 overflow-x-auto"
+          className="mt-4 flex gap-2 overflow-x-auto scrollbar-hide"
         >
           {tabs.map((tb) => {
             const on = tb.key === tab;

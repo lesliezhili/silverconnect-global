@@ -58,7 +58,7 @@ export default async function ProvidersByCategoryPage({
             : `${sym}45–80/h (incl. ${taxAbbr})`}
         </p>
 
-        <div className="mt-4 -mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
+        <div className="mt-4 -mx-5 flex gap-2 overflow-x-auto scrollbar-hide px-5 pb-1">
           {FILTER_KEYS.map((k) => (
             <button
               key={k}

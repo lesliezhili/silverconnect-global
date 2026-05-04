@@ -74,7 +74,7 @@ export default async function AdminAnalyticsPage({
         </button>
       </div>
 
-      <nav role="tablist" className="mt-4 flex gap-2 overflow-x-auto">
+      <nav role="tablist" className="mt-4 flex gap-2 overflow-x-auto scrollbar-hide">
         {ranges.map((r) => {
           const on = r.key === range;
           return (
