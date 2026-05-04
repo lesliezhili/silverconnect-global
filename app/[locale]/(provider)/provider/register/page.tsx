@@ -88,10 +88,13 @@ export default async function ProviderRegisterPage({
         </ol>
 
         <form
-          action={step < 5 ? `?step=${nextStep}` : submitRegistration}
+          action={step < 5 ? "" : submitRegistration}
           method={step < 5 ? "get" : undefined}
           className="mt-6 flex flex-col gap-4"
         >
+          {step < 5 && (
+            <input type="hidden" name="step" value={nextStep} />
+          )}
           {step === 5 && (
             <input type="hidden" name="locale" value={locale} />
           )}
