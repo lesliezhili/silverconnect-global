@@ -3,6 +3,7 @@
 import * as React from "react";
 import { AlertTriangle } from "lucide-react";
 import { useTranslations } from "next-intl";
+import * as Sentry from "@sentry/nextjs";
 import { Link } from "@/i18n/navigation";
 
 export default function LocaleErrorBoundary({
@@ -15,6 +16,7 @@ export default function LocaleErrorBoundary({
   const t = useTranslations("error");
 
   React.useEffect(() => {
+    Sentry.captureException(error);
     if (process.env.NODE_ENV !== "production") {
       // eslint-disable-next-line no-console
       console.error("[error.tsx]", error);
