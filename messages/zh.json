@@ -841,7 +841,8 @@
     "navBookings": "订单监控",
     "navPayments": "支付",
     "navAi": "AI",
-    "navSettings": "系统设置"
+    "navSettings": "系统设置",
+    "navReports": "举报"
   },
   "family": {
     "title": "家属共管",
@@ -1031,5 +1032,37 @@
     "retry": "重试",
     "home": "返回首页",
     "contact": "联系客服"
+  },
+  "aReports": {
+    "title": "评价举报队列",
+    "sub": "用户举报的评价等待处理。",
+    "reportedReview": "被举报评价",
+    "reporter": "举报人",
+    "reason": "原因",
+    "reasonSpam": "垃圾",
+    "reasonOffensive": "冒犯性内容",
+    "reasonFalse": "不实",
+    "reasonOther": "其他",
+    "actionKeep": "保留评价",
+    "actionDelete": "删除评价",
+    "actionWarnUser": "警告举报人",
+    "empty": "暂无举报。"
+  },
+  "search": {
+    "title": "搜索",
+    "placeholder": "搜索师傅、服务或帮助文章…",
+    "button": "搜索",
+    "resultsFor": "\"{q}\" 的搜索结果",
+    "noResults": "没有匹配。换些关键词试试。",
+    "sectionProviders": "师傅",
+    "sectionServices": "服务大类",
+    "sectionHelp": "帮助文章",
+    "submitToSearch": "回车搜索"
+  },
+  "error": {
+    "title": "出错了",
+    "sub": "我们这边出了点问题，请重试。",
+    "retry": "重试",
+    "home": "返回首页"
   }
 }

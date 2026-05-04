@@ -111,14 +111,15 @@ export default async function CustomerHomePage({
         </section>
 
         {/* Search */}
-        <div className="px-5 py-3">
+        <form action={`/${locale}/search`} method="get" className="px-5 py-3">
           <input
             type="search"
+            name="q"
             placeholder={t("searchPlaceholder")}
             aria-label={t("searchAria")}
             className="block h-14 w-full rounded-md border-[1.5px] border-border-strong bg-bg-base px-4 text-[17px] text-text-primary placeholder:text-text-tertiary focus:border-brand focus:outline-none"
           />
-        </div>
+        </form>
 
         {/* Categories */}
         <section className="px-5 pt-1">

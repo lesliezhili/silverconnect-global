@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>SilverConnect · Sprint 1 · 14 客户黄金路径屏</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="tokens.css"/>
+<style>
+  html, body { margin: 0; padding: 0; background: #f0eee9; }
+  body { font-family: 'Noto Sans SC', 'Inter', system-ui, sans-serif; }
+  .sc-root { min-height: 100%; }
+  /* Skeleton block */
+  .sc-skel { background: linear-gradient(90deg, var(--bg-surface-2) 25%, var(--bg-surface) 50%, var(--bg-surface-2) 75%); background-size: 200% 100%; animation: sc-skel-shimmer 1.6s linear infinite; }
+  @keyframes sc-skel-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  /* Locked phone-frame inner scroll */
+  .sp1-frame-inner { overflow: hidden; }
+</style>
+</head>
+<body class="sc-light">
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="icons.jsx"></script>
+<script type="text/babel" src="illustrations.jsx"></script>
+<script type="text/babel" src="screens-1.jsx"></script>
+<script type="text/babel" src="screens-2.jsx"></script>
+<script type="text/babel" src="screens-3.jsx"></script>
+<script type="text/babel" src="screens-4.jsx"></script>
+<script type="text/babel" src="sprint1-shell.jsx"></script>
+<script type="text/babel" src="sprint1-extras.jsx"></script>
+<script type="text/babel" src="sprint1-screens.jsx"></script>
+
+<script type="text/babel">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "country": "AU",
+  "fontScale": 18,
+  "showStates": true
+}/*EDITMODE-END*/;
+
+function App() {
+  const [tw, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+  React.useEffect(() => {
+    document.body.style.setProperty('--fs-body', tw.fontScale + 'px');
+  }, [tw.fontScale]);
+
+  // Pair EN+ZH light variants of any screen.
+  // Renders the screen twice in a single artboard side-by-side, each in its own phone frame.
+  const Pair = ({ render, height = 812, theme = 'light', label }) => (
+    <div style={{ display: 'flex', gap: 24, padding: 24, background: theme === 'dark' ? '#0F1729' : '#F1F5F9', minHeight: '100%' }}>
+      {[
+        { lang: 'en', tag: 'EN' },
+        { lang: 'zh', tag: 'ZH' },
+      ].map(({ lang, tag }) => (
+        <div key={lang} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: theme === 'dark' ? '#CBD5E1' : '#475569', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            {label} · {tag} · {theme}
+          </div>
+          <Sp1Phone theme={theme} height={height}>
+            {render({ lang, country: tw.country, theme })}
+          </Sp1Phone>
+        </div>
+      ))}
+    </div>
+  );
+
+  // States composite — one phone per state in a row, single locale (zh by default for density)
+  const States = ({ items, height = 812 }) => (
+    <div style={{ display: 'flex', gap: 16, padding: 24, background: '#F1F5F9', minHeight: '100%', flexWrap: 'wrap' }}>
+      {items.map((it, i) => (
+        <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#475569', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            {it.label}
+          </div>
+          <Sp1Phone theme="light" height={height}>{it.node}</Sp1Phone>
+        </div>
+      ))}
+    </div>
+  );
+
+  return (
+    <>
+      <DesignCanvas>
+        {/* ─────────────────────── COVER ─────────────────────── */}
+        <DCSection id="cover" title="Sprint 1 · 客户黄金路径 14 屏" subtitle="14 screens × EN/ZH light · #14+#29 dark · 状态合稿 · 紧急覆盖 AU/CN/CA">
+          <DCArtboard id="brief" label="Sprint Brief" width={1280} height={760}>
+            <Sp1Cover lang="zh" country={tw.country}/>
+          </DCArtboard>
+          <DCArtboard id="brief-en" label="Sprint Brief · EN" width={1280} height={760}>
+            <Sp1Cover lang="en" country={tw.country}/>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─────────────────────── #7 HOME ─────────────────────── */}
+        <DCSection id="s7-home" title="#7 · /home · 客户首页" subtitle="3 秒内找到「订一次清洁」入口 · S1 hero · 5 大类 · 横滑最近订过">
+          <DCArtboard id="s7-mobile" label="Mobile · EN/ZH 浅色" width={900} height={900}>
+            <Pair label="#7 Home" render={({ lang, country }) =>
+              <Sp1HomeWrap lang={lang} country={country}/>
+            }/>
+          </DCArtboard>
+          <DCArtboard id="s7-desktop" label="Desktop · EN/ZH 浅色 · 1280×800 (720 内容)" width={2640} height={860}>
+            <Sp1DesktopPair label="#7 Home" render={({ lang, country }) =>
+              <Sp1HomeDesktop lang={lang} country={country}/>
+            } country={tw.country}/>
+          </DCArtboard>
+          <DCArtboard id="s7-states" label="States: default / loading / empty (新用户) / error" width={1700} height={900}>
+            <States items={[
+              { label: 'Default',  node: <Sp1HomeWrap lang="zh" country={tw.country}/> },
+              { label: 'Loading',  node: <Sp1HomeLoading lang="zh"/> },
+              { label: 'Empty',    node: <Sp1HomeEmpty lang="zh" country={tw.country}/> },
+              { label: 'Error',    node: <Sp1HomeError lang="zh" country={tw.country}/> },
+            ]}/>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─────────────────────── #8 SERVICES ─────────────────────── */}
+        <DCSection id="s8-services" title="#8 · /services · 服务大类列表" subtitle="国别税信息条 · 5 张大类卡 · 200px · 单列">
+          <DCArtboard id="s8-mobile" label="Mobile · EN/ZH 浅色" width={900} height={900}>
+            <Pair label="#8 Services" render={({ lang, country }) =>
+              <Sp1ServicesWrap lang={lang} country={country}/>
+            }/>
+          </DCArtboard>
+          <DCArtboard id="s8-desktop" label="Desktop · EN/ZH" width={2640} height={900}>
+            <Sp1DesktopPair label="#8 Services" render={({ lang, country }) =>
+              <Sp1ServicesDesktop lang={lang} country={country}/>
+            } country={tw.country}/>
+          </DCArtboard>
+          <DCArtboard id="s8-states" label="States" width={1300} height={900}>
+            <States items={[
+              { label: 'Default', node: <Sp1ServicesWrap lang="zh" country={tw.country}/> },
+              { label: 'Loading', node: <Sp1ServicesLoading lang="zh"/> },
+              { label: 'Error',   node: <Sp1ServicesError lang="zh"/> },
+            ]}/>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─────────────────────── #9 PROVIDERS BY CAT ─────────────────────── */}
+        <DCSection id="s9-providers" title="#9 · /services/[cat] · Provider 列表" subtitle="筛选 chip · 排序 · 卡片整卡可点 · 含税价">
+          <DCArtboard id="s9-mobile" label="Mobile · EN/ZH 浅色" width={900} height={920}>
+            <Pair label="#9 Providers" render={({ lang, country }) =>
+              <Sp1ProvidersWrap lang={lang} country={country}/>
+            }/>
+          </DCArtboard>
+          <DCArtboard id="s9-states" label="States: default / loading / empty / error / 已选筛选" width={2200} height={920}>
+            <States items={[
+              { label: 'Default',  node: <Sp1ProvidersWrap lang="zh" country={tw.country}/> },
+              { label: 'Loading',  node: <Sp1ProvidersLoading lang="zh"/> },
+              { label: 'Empty',    node: <Sp1ProvidersEmpty lang="zh"/> },
+              { label: 'Error',    node: <Sp1ProvidersError lang="zh"/> },
+              { label: 'Filtered', node: <Sp1ProvidersWrap lang="zh" country={tw.country} filtered/> },
+            ]}/>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─────────────────────── #10 PROVIDER DETAIL ─────────────────────── */}
+        <DCSection id="s10-provider" title="#10 · /providers/[id] · Provider 详情" subtitle="资质 · 服务清单单选 · 7 日时段 · 评价分布 · sticky 主 CTA">
+          <DCArtboard id="s10-mobile" label="Mobile · EN/ZH 浅色" width={900} height={1700}>
+            <Pair label="#10 Provider" height={1640} render={({ lang, country }) =>
+              <Sp1ProviderDetail lang={lang} country={country}/>
+            }/>
+          </DCArtboard>
+          <DCArtboard id="s10-states" label="States: default / loading / 无评价 / 无可用 / 已下线" width={2200} height={1700}>
+            <div style={{ display: 'flex', gap: 16, padding: 24, background: '#F1F5F9', minHeight: '100%', flexWrap: 'wrap' }}>
+              {[
+                { label: 'Default',     node: <Sp1ProviderDetail lang="zh" country={tw.country}/> },
+                { label: 'Loading',     node: <Sp1ProviderDetail lang="zh" country={tw.country} loading/> },
+                { label: 'No reviews',  node: <Sp1ProviderDetail lang="zh" country={tw.country} noReviews/> },
+                { label: 'No slots',    node: <Sp1ProviderDetail lang="zh" country={tw.country} noSlots/> },
+                { label: 'Offline',     node: <Sp1ProviderDetail lang="zh" country={tw.country} offline/> },
+              ].map((it, i) => (
+                <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#475569', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{it.label}</div>
+                  <Sp1Phone theme="light" height={1640}>{it.node}</Sp1Phone>
+                </div>
+              ))}
+            </div>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─────────────────────── #12 BOOKING WIZARD S1-S4 ─────────────────────── */}
+        <DCSection id="s12-booking" title="#12 · /bookings/new · 4 步预订向导" subtitle="① 服务  ② 时间  ③ 地址  ④ 确认 · 进度条 + 二次确认 + sticky CTA">
+          <DCArtboard id="s12-s1" label="Step 1 · 选服务包 · EN/ZH" width={900} height={900}>
+            <Pair label="S1 Service" render={({ lang, country }) =>
+              <Sp1BookingWrap lang={lang} step={1} country={country}/>
+            }/>
+          </DCArtboard>
+          <DCArtboard id="s12-s2" label="Step 2 · 选时间 · EN/ZH" width={900} height={900}>
+            <Pair label="S2 Time" render={({ lang, country }) =>
+              <Sp1BookingWrap lang={lang} step={2} country={country}/>
+            }/>
+          </DCArtboard>
+          <DCArtboard id="s12-s3" label="Step 3 · 选地址 · EN/ZH" width={900} height={900}>
+            <Pair label="S3 Address" render={({ lang, country }) =>
+              <Sp1BookingWrap lang={lang} step={3} country={country}/>
+            }/>
+          </DCArtboard>
+          <DCArtboard id="s12-s4" label="Step 4 · 确认 · EN/ZH" width={900} height={900}>
+            <Pair label="S4 Confirm" render={({ lang, country }) =>
+              <Sp1BookingWrap lang={lang} step={4} country={country}/>
+            }/>
+          </DCArtboard>
+          <DCArtboard id="s12-states" label="States · S2 选时间 · loading / no-slot / recurring / error" width={1700} height={900}>
+            <States items={[
+              { label: 'Loading',   node: <Sp1BookingS2State lang="zh" state="loading"/> },
+              { label: 'No slots',  node: <Sp1BookingS2State lang="zh" state="noSlot"/> },
+              { label: 'Recurring', node: <Sp1BookingS2State lang="zh" state="recurring"/> },
+              { label: 'Error',     node: <Sp1BookingS2State lang="zh" state="error"/> },
+            ]}/>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─────────────────────── #13 PAYMENT ─────────────────────── */}
+        <DCSection id="s13-pay" title="#13 · /pay/[bookingId] · 支付页" subtitle="Stripe Elements · Apple/Google Pay · 失败/3DS/成功 4 态">
+          <DCArtboard id="s13-mobile" label="Mobile · EN/ZH 浅色 · 默认（信用卡选中）" width={900} height={900}>
+            <Pair label="#13 Pay" render={({ lang, country }) =>
+              <Sp1Payment lang={lang} country={country}/>
+            }/>
+          </DCArtboard>
+          <DCArtboard id="s13-states" label="States: ApplePay / Loading / 3DS / 失败 / 成功瞬间" width={2200} height={900}>
+            <States items={[
+              { label: 'Apple Pay', node: <Sp1Payment lang="zh" country={tw.country} method="apple"/> },
+              { label: 'Loading',   node: <Sp1Payment lang="zh" country={tw.country} state="loading"/> },
+              { label: '3DS',       node: <Sp1Payment lang="zh" country={tw.country} state="threeDS"/> },
+              { label: 'Failed',    node: <Sp1Payment lang="zh" country={tw.country} state="failed"/> },
+              { label: 'Success',   node: <Sp1Payment lang="zh" country={tw.country} state="success"/> },
+            ]}/>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─────────────────────── #14 PAYMENT SUCCESS · LIGHT + DARK ─────────────────────── */}
+        <DCSection id="s14-success" title="#14 · /bookings/[id]/success · 支付成功" subtitle="必出深色变体 · S5 插画 · 加日历 · ICS 下载">
+          <DCArtboard id="s14-light" label="Mobile · EN/ZH 浅色" width={900} height={900}>
+            <Pair label="#14 Success · Light" theme="light" render={({ lang, country }) =>
+              <Sp1Success lang={lang} country={country}/>
+            }/>
+          </DCArtboard>
+          <DCArtboard id="s14-dark" label="Mobile · EN/ZH 深色（必出）" width={900} height={900}>
+            <Pair label="#14 Success · Dark" theme="dark" render={({ lang, country }) =>
+              <Sp1Success lang={lang} country={country}/>
+            }/>
+          </DCArtboard>
+          <DCArtboard id="s14-states" label="States: default / processing" width={900} height={900}>
+            <States items={[
+              { label: 'Default',    node: <Sp1Success lang="zh" country={tw.country}/> },
+              { label: 'Processing', node: <Sp1Success lang="zh" country={tw.country} processing/> },
+            ]}/>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─────────────────────── #15 BOOKING LIST ─────────────────────── */}
+        <DCSection id="s15-bookings" title="#15 · /bookings · 我的预订列表" subtitle="3 Tabs · 状态徽章 · 改约 / 取消 / 联系">
+          <DCArtboard id="s15-mobile" label="Mobile · EN/ZH 浅色" width={900} height={900}>
+            <Pair label="#15 Bookings" render={({ lang }) =>
+              <Sp1BookingsListWrap lang={lang}/>
+            }/>
+          </DCArtboard>
+          <DCArtboard id="s15-states" label="States: loading / empty 即将进行 / empty 历史 / empty 循环 / error" width={2200} height={900}>
+            <States items={[
+              { label: 'Loading',          node: <Sp1BookingsListState lang="zh" state="loading"/> },
+              { label: 'Empty Upcoming',   node: <Sp1BookingsListState lang="zh" state="emptyUpcoming"/> },
+              { label: 'Empty History',    node: <Sp1BookingsListState lang="zh" state="emptyHistory"/> },
+              { label: 'Empty Recurring',  node: <Sp1BookingsListState lang="zh" state="emptyRecurring"/> },
+              { label: 'Error',            node: <Sp1BookingsListState lang="zh" state="error"/> },
+            ]}/>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─────────────────────── #16 BOOKING DETAIL ─────────────────────── */}
+        <DCSection id="s16-detail" title="#16 · /bookings/[id] · 预订详情" subtitle="状态时间线 · 8 状态条件渲染 · 取消政策动态计算">
+          <DCArtboard id="s16-mobile" label="Mobile · EN/ZH 浅色 · 已确认" width={900} height={1300}>
+            <Pair label="#16 Detail" height={1240} render={({ lang, country }) =>
+              <Sp1BookingDetailWrap lang={lang} country={country} status="confirmed"/>
+            }/>
+          </DCArtboard>
+          <DCArtboard id="s16-states" label="States: 8 种业务状态" width={2860} height={1300}>
+            <div style={{ display: 'flex', gap: 16, padding: 24, background: '#F1F5F9', minHeight: '100%', flexWrap: 'nowrap', overflowX: 'auto' }}>
+              {[
+                { label: 'Awaiting payment', s: 'pending' },
+                { label: 'Confirmed',        s: 'confirmed' },
+                { label: 'In progress',      s: 'inProgress' },
+                { label: 'Awaiting confirm', s: 'awaitingConfirm' },
+                { label: 'Completed',        s: 'completed' },
+                { label: 'Cancelled · full', s: 'cancelledFull' },
+                { label: 'Cancelled · part', s: 'cancelledPartial' },
+                { label: 'Refunded',         s: 'refunded' },
+              ].map((it, i) => (
+                <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#475569', textTransform: 'uppercase' }}>{it.label}</div>
+                  <Sp1Phone theme="light" height={1240}>
+                    <Sp1BookingDetailWrap lang="zh" country={tw.country} status={it.s}/>
+                  </Sp1Phone>
+                </div>
+              ))}
+            </div>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─────────────────────── #28 NOTIFICATIONS ─────────────────────── */}
+        <DCSection id="s28-notif" title="#28 · /notifications · 通知中心" subtitle="4 Tabs · 未读红点 · 全部已读 · 类型分色">
+          <DCArtboard id="s28-mobile" label="Mobile · EN/ZH 浅色" width={900} height={900}>
+            <Pair label="#28 Notifications" render={({ lang }) =>
+              <Sp1NotifWrap lang={lang}/>
+            }/>
+          </DCArtboard>
+          <DCArtboard id="s28-states" label="States: loading / empty / all-read / error" width={1700} height={900}>
+            <States items={[
+              { label: 'Loading',  node: <Sp1NotifState lang="zh" state="loading"/> },
+              { label: 'Empty',    node: <Sp1NotifState lang="zh" state="empty"/> },
+              { label: 'All read', node: <Sp1NotifState lang="zh" state="allRead"/> },
+              { label: 'Error',    node: <Sp1NotifState lang="zh" state="error"/> },
+            ]}/>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─────────────────────── #29 AI CHAT · LIGHT + DARK + EMERGENCY ─────────────────────── */}
+        <DCSection id="s29-chat" title="#29 · /chat · AI 聊天 + 紧急覆盖" subtitle="必出 4 变体 · 紧急覆盖按当前国家自动切号码 (AU 000 / CN 120 / CA 911)">
+          <DCArtboard id="s29-light" label="Mobile · EN/ZH 浅色 · 默认对话" width={900} height={900}>
+            <Pair label="#29 Chat · Light" theme="light" render={({ lang, country }) =>
+              <Sp1ChatWrap lang={lang} country={country}/>
+            }/>
+          </DCArtboard>
+          <DCArtboard id="s29-dark" label="Mobile · EN/ZH 深色 · 默认对话" width={900} height={900}>
+            <Pair label="#29 Chat · Dark" theme="dark" render={({ lang, country }) =>
+              <Sp1ChatWrap lang={lang} country={country}/>
+            }/>
+          </DCArtboard>
+          <DCArtboard id="s29-emergency-au" label="紧急覆盖 · AU 000 · EN/ZH" width={900} height={900}>
+            <Pair label="Emergency · AU" theme="light" render={({ lang }) =>
+              <Sp1ChatWrap lang={lang} country="AU" emergency/>
+            }/>
+          </DCArtboard>
+          <DCArtboard id="s29-emergency-cn" label="紧急覆盖 · CN 120 · EN/ZH" width={900} height={900}>
+            <Pair label="Emergency · CN" theme="light" render={({ lang }) =>
+              <Sp1ChatWrap lang={lang} country="CN" emergency/>
+            }/>
+          </DCArtboard>
+          <DCArtboard id="s29-emergency-ca" label="紧急覆盖 · CA 911 · EN/ZH" width={900} height={900}>
+            <Pair label="Emergency · CA" theme="light" render={({ lang }) =>
+              <Sp1ChatWrap lang={lang} country="CA" emergency/>
+            }/>
+          </DCArtboard>
+          <DCArtboard id="s29-states" label="States: empty / streaming / waiting / human-escalated / error" width={2200} height={900}>
+            <States items={[
+              { label: 'Empty',     node: <Sp1ChatWrap lang="zh" country={tw.country} state="empty"/> },
+              { label: 'Streaming', node: <Sp1ChatWrap lang="zh" country={tw.country} state="streaming"/> },
+              { label: 'Waiting',   node: <Sp1ChatWrap lang="zh" country={tw.country} state="waiting"/> },
+              { label: 'Escalated', node: <Sp1ChatWrap lang="zh" country={tw.country} state="escalated"/> },
+              { label: 'Error',     node: <Sp1ChatWrap lang="zh" country={tw.country} state="error"/> },
+            ]}/>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─────────────────────── BASELINE COMPLIANCE ─────────────────────── */}
+        <DCSection id="baseline" title="基线契约自检" subtitle="5 条出稿铁律 + WCAG AAA + 触控目标 + 字号 + 焦点环">
+          <DCArtboard id="rules" label="5 条铁律 + 9 条无障碍" width={1280} height={760}>
+            <Sp1Compliance lang="zh"/>
+          </DCArtboard>
+        </DCSection>
+      </DesignCanvas>
+
+      <TweaksPanel title="Sprint 1 · Tweaks">
+        <TweakSection title="国家（Header 下沉到所有屏）">
+          <TweakRadio value={tw.country} onChange={v => setTweak('country', v)} options={[
+            { value: 'AU', label: '🇦🇺 AU · A$ · GST · 000' },
+            { value: 'CN', label: '🇨🇳 CN · ¥ · VAT · 120' },
+            { value: 'CA', label: '🇨🇦 CA · C$ · HST · 911' },
+          ]}/>
+        </TweakSection>
+        <TweakSection title="正文字号（基线 18px）">
+          <TweakSlider value={tw.fontScale} onChange={v => setTweak('fontScale', v)} min={16} max={24} step={1} suffix="px"/>
+        </TweakSection>
+      </TweaksPanel>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

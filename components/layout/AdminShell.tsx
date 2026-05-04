@@ -15,6 +15,7 @@ import {
   CreditCard,
   Bot,
   Settings,
+  Flag,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
@@ -30,6 +31,7 @@ const NAV_PRIMARY = [
 ] as const;
 
 const NAV_SECONDARY = [
+  { key: "navReports", href: "/admin/reports", Icon: Flag, exact: false },
   { key: "navCustomers", href: "/admin/customers", Icon: UserCircle, exact: false },
   { key: "navBookings", href: "/admin/bookings", Icon: ShoppingBag, exact: false },
   { key: "navPayments", href: "/admin/payments", Icon: CreditCard, exact: false },

@@ -366,3 +366,34 @@ export const PLATFORM_FEES: Record<"AU" | "CN" | "CA", number> = {
 };
 
 export const EMERGENCY_KEYWORDS = ["emergency", "fell", "chest pain", "ambulance", "急救", "倒下"];
+
+export interface AdminReviewReport {
+  id: string;
+  reviewId: string;
+  reviewBody: string;
+  reviewAuthor: string;
+  reportedBy: string;
+  reason: "spam" | "offensive" | "false" | "other";
+  submittedISO: string;
+}
+
+export const MOCK_REVIEW_REPORTS: AdminReviewReport[] = [
+  {
+    id: "RR-1",
+    reviewId: "R-3",
+    reviewBody: "Good work but arrived 10 minutes late.",
+    reviewAuthor: "Helen Tan",
+    reportedBy: "Wei Tan (provider)",
+    reason: "false",
+    submittedISO: hr(4),
+  },
+  {
+    id: "RR-2",
+    reviewId: "R-99",
+    reviewBody: "[redacted — flagged language]",
+    reviewAuthor: "Anonymous",
+    reportedBy: "Helen Li (provider)",
+    reason: "offensive",
+    submittedISO: hr(20),
+  },
+];

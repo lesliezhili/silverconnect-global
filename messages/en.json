@@ -841,7 +841,8 @@
     "navBookings": "Bookings",
     "navPayments": "Payments",
     "navAi": "AI",
-    "navSettings": "Settings"
+    "navSettings": "Settings",
+    "navReports": "Reports"
   },
   "family": {
     "title": "Family co-management",
@@ -1031,5 +1032,37 @@
     "retry": "Try again",
     "home": "Back home",
     "contact": "Contact support"
+  },
+  "aReports": {
+    "title": "Review report queue",
+    "sub": "User-flagged reviews awaiting moderator decision.",
+    "reportedReview": "Reported review",
+    "reporter": "Reporter",
+    "reason": "Reason",
+    "reasonSpam": "Spam",
+    "reasonOffensive": "Offensive",
+    "reasonFalse": "Inaccurate / false",
+    "reasonOther": "Other",
+    "actionKeep": "Keep review",
+    "actionDelete": "Delete review",
+    "actionWarnUser": "Warn reviewer",
+    "empty": "No reports queued."
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search providers, services, help articles…",
+    "button": "Search",
+    "resultsFor": "Results for {q}",
+    "noResults": "No matches. Try different words.",
+    "sectionProviders": "Providers",
+    "sectionServices": "Services",
+    "sectionHelp": "Help articles",
+    "submitToSearch": "Press enter to search"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "sub": "A glitch on our side. Please retry.",
+    "retry": "Retry",
+    "home": "Back home"
   }
 }

@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>SilverConnect Global · UI 设计稿</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="tokens.css"/>
+<style>
+  html, body { margin: 0; padding: 0; background: #f0eee9; }
+  body { font-family: 'Noto Sans SC', 'Inter', system-ui, sans-serif; }
+  .sc-root { min-height: 100%; }
+  /* Desktop frame */
+  .sc-desktop {
+    width: 1200px; border-radius: 18px; overflow: hidden;
+    background: var(--bg-base); border: 1px solid var(--border);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.18), 0 8px 20px rgba(0,0,0,0.10);
+    display: flex; flex-direction: column;
+  }
+  .sc-desktop-bar {
+    height: 44px; background: var(--bg-surface); display: flex; align-items: center; padding: 0 16px; gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sc-desktop-bar i { width: 12px; height: 12px; border-radius: 999px; display: inline-block; }
+  .sc-desktop-content { flex: 1; min-height: 0; }
+  /* Centered container variant for desktop */
+  .sc-center-720 { max-width: 720px; margin: 0 auto; }
+</style>
+</head>
+<body class="sc-light">
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="icons.jsx"></script>
+<script type="text/babel" src="screens-1.jsx"></script>
+<script type="text/babel" src="screens-2.jsx"></script>
+<script type="text/babel" src="screens-3.jsx"></script>
+<script type="text/babel" src="screens-4.jsx"></script>
+
+<script type="text/babel">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "theme": "dark",
+  "lang": "en",
+  "country": "CA",
+  "fontScale": 18,
+  "highContrast": false
+}/*EDITMODE-END*/;
+
+function App() {
+  const [tw, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const lang = tw.lang;
+
+  // Apply theme + font scale globally
+  React.useEffect(() => {
+    document.body.classList.toggle('sc-dark', tw.theme === 'dark');
+    document.body.classList.toggle('sc-light', tw.theme !== 'dark');
+    document.body.style.setProperty('--fs-body', tw.fontScale + 'px');
+  }, [tw.theme, tw.fontScale]);
+
+  // Two-up: mobile + desktop side-by-side wrapper
+  const TwoUp = ({ children, mobileH = 780, desktopH, desktopChildren, label }) => (
+    <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start' }}>
+      <div className="sc-root">
+        <PhoneFrame height={mobileH}>{children}</PhoneFrame>
+      </div>
+      {desktopChildren && (
+        <div className="sc-root sc-desktop" style={{ height: desktopH || mobileH + 60 }}>
+          <div className="sc-desktop-bar">
+            <i style={{ background: '#ff5f56' }}/><i style={{ background: '#ffbd2e' }}/><i style={{ background: '#27c93f' }}/>
+            <div style={{ flex: 1, textAlign: 'center', fontSize: 13, color: 'var(--text-secondary)', fontWeight: 600 }}>silverconnect.global{label ? ' / ' + label : ''}</div>
+          </div>
+          <div className="sc-desktop-content sc-noscroll" style={{ overflow: 'auto' }}>
+            {desktopChildren}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  // Desktop wrapper: 720px centered single column
+  const Desktop720 = ({ children, bg = 'var(--bg-surface)' }) => (
+    <div style={{ background: bg, minHeight: '100%' }}>
+      <div className="sc-center-720" style={{ padding: '0' }}>
+        {children}
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      <DesignCanvas>
+        <DCSection id="overview" title="SilverConnect Global" subtitle={lang === 'zh' ? '面向 60+ 老年用户的本地服务市场 · 15 屏 UI 设计稿 · 移动 + 桌面' : 'Local-services marketplace for 60+ users · 15 screens · mobile + desktop'}>
+          <DCArtboard id="cover" label={lang === 'zh' ? '系统概览' : 'System overview'} width={1100} height={780}>
+            <div className="sc-root" style={{ padding: 40, background: 'var(--bg-base)', height: '100%', overflow: 'auto' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
+                <Logo size={40}/>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <span className="sc-badge sc-badge-info">v0.1 · {lang === 'zh' ? '设计稿' : 'Design draft'}</span>
+                  <span className="sc-badge sc-badge-success">WCAG 2.1 AA</span>
+                  <span className="sc-badge sc-badge-warning">AU · CN · CA</span>
+                </div>
+              </div>
+              <h1 className="sc-h1" style={{ margin: 0, fontSize: 48, lineHeight: 1.15 }}>{lang === 'zh' ? '为 60+ 设计的安心服务市场' : 'Trusted local services for 60+'}</h1>
+              <p className="sc-body" style={{ marginTop: 12, fontSize: 20, color: 'var(--text-secondary)', maxWidth: 720 }}>
+                {lang === 'zh' ? '大字号 · 高对比 · 单列布局 · 含税透明 · 24 小时 AI 助手 · 紧急一键拨打。本套设计覆盖 客户、Provider、管理员 三端共 15 张关键屏。' : 'Big type. High contrast. One-column layouts. Tax-inclusive prices. 24/7 AI helper. One-tap emergency. Covers Customer, Provider and Admin — 15 key screens.'}
+              </p>
+
+              <div style={{ marginTop: 36, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+                {[
+                  { Icon: IconShield, label: lang === 'zh' ? '托管支付' : 'Escrow', desc: lang === 'zh' ? '服务完成后释放' : 'Held until done', color: 'var(--success)', soft: 'var(--success-soft)' },
+                  { Icon: IconAI, label: 'AI', desc: lang === 'zh' ? '24/7 在线' : '24/7 helper', color: 'var(--brand-primary)', soft: 'var(--brand-primary-soft)' },
+                  { Icon: IconAlert, label: lang === 'zh' ? '紧急' : 'SOS', desc: lang === 'zh' ? '一键 000' : 'Tap-call 000', color: 'var(--danger)', soft: 'var(--danger-soft)' },
+                  { Icon: IconHeart, label: lang === 'zh' ? '验证师傅' : 'Verified', desc: lang === 'zh' ? '资质审核' : 'Background-checked', color: 'var(--brand-accent)', soft: 'var(--brand-accent-soft)' },
+                ].map((c, i) => {
+                  const I = c.Icon;
+                  return (
+                    <div key={i} style={{ padding: 20, borderRadius: 18, background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+                      <div style={{ width: 48, height: 48, borderRadius: 14, background: c.soft, color: c.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><I size={28}/></div>
+                      <div style={{ fontSize: 18, fontWeight: 700, marginTop: 12 }}>{c.label}</div>
+                      <div className="sc-small" style={{ marginTop: 2 }}>{c.desc}</div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Token bar */}
+              <div style={{ marginTop: 32, padding: 20, background: 'var(--bg-surface)', borderRadius: 18, border: '1px solid var(--border)' }}>
+                <div className="sc-tiny" style={{ marginBottom: 12 }}>{lang === 'zh' ? '设计令牌（节选）' : 'Design tokens (excerpt)'}</div>
+                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                  {[
+                    ['#1F6FEB', 'brand-primary'],
+                    ['#F59E0B', 'brand-accent'],
+                    ['#16A34A', 'success'],
+                    ['#DC2626', 'danger'],
+                    ['#0F172A', 'text-primary'],
+                    ['#F8FAFC', 'bg-surface'],
+                  ].map(([c, n]) => (
+                    <div key={n} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 10, background: c, border: '1px solid rgba(0,0,0,0.08)' }}/>
+                      <div>
+                        <div style={{ fontSize: 12, fontWeight: 700, fontFamily: 'monospace' }}>{c}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>{n}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="sc-divider" style={{ margin: '16px 0' }}/>
+                <div style={{ display: 'flex', gap: 24, fontSize: 14, color: 'var(--text-secondary)' }}>
+                  <div>{lang === 'zh' ? '基准字号' : 'Base font'}: <strong style={{ color: 'var(--text-primary)' }}>18px</strong></div>
+                  <div>{lang === 'zh' ? '触控目标' : 'Hit target'}: <strong style={{ color: 'var(--text-primary)' }}>≥ 48×48</strong></div>
+                  <div>{lang === 'zh' ? '主按钮高' : 'Btn height'}: <strong style={{ color: 'var(--text-primary)' }}>56px</strong></div>
+                  <div>{lang === 'zh' ? '内容宽' : 'Max width'}: <strong style={{ color: 'var(--text-primary)' }}>720px</strong></div>
+                </div>
+              </div>
+
+              <div className="sc-tiny" style={{ marginTop: 24, color: 'var(--text-tertiary)' }}>{lang === 'zh' ? '提示：右下角 Tweaks 面板可切换 中/英、明/暗、字号、国家。' : 'Tip: use the Tweaks panel (bottom-right) to flip language/theme/scale/country.'}</div>
+            </div>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ── 1. Home ── */}
+        <DCSection id="home" title={lang === 'zh' ? '01 · 首页' : '01 · Home'} subtitle={lang === 'zh' ? '3 秒内找到「订一次清洁」入口' : '3-second path to "book a clean"'}>
+          <DCArtboard id="home-mobile" label={lang === 'zh' ? '移动端' : 'Mobile'} width={406} height={860}>
+            <PhoneFrame height={860} tabBar={<BottomTab active="home" t={T[lang]}/>}>
+              <HomeScreen lang={lang} country={tw.country}/>
+            </PhoneFrame>
+          </DCArtboard>
+          <DCArtboard id="home-desktop" label={lang === 'zh' ? '桌面端 (720 居中)' : 'Desktop (720 centered)'} width={1080} height={860}>
+            <div className="sc-root sc-desktop" style={{ height: 860, width: 1080 }}>
+              <div className="sc-desktop-bar">
+                <i style={{ background: '#ff5f56' }}/><i style={{ background: '#ffbd2e' }}/><i style={{ background: '#27c93f' }}/>
+                <div style={{ flex: 1, textAlign: 'center', fontSize: 13, color: 'var(--text-secondary)', fontWeight: 600 }}>silverconnect.global</div>
+              </div>
+              <div className="sc-desktop-content sc-noscroll" style={{ overflow: 'auto' }}>
+                <Desktop720><HomeScreen lang={lang} country={tw.country} desktop/></Desktop720>
+              </div>
+            </div>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ── 2. Services ── */}
+        <DCSection id="services" title={lang === 'zh' ? '02 · 服务列表' : '02 · Services'} subtitle={lang === 'zh' ? 'Provider 卡 + 筛选器（含税价格）' : 'Provider cards + filters'}>
+          <DCArtboard id="svc-mobile" label={lang === 'zh' ? '移动端' : 'Mobile'} width={406} height={860}>
+            <PhoneFrame height={860} tabBar={<BottomTab active="services" t={T[lang]}/>}>
+              <ServicesScreen lang={lang}/>
+            </PhoneFrame>
+          </DCArtboard>
+          <DCArtboard id="svc-desktop" label={lang === 'zh' ? '桌面端' : 'Desktop'} width={1080} height={860}>
+            <div className="sc-root sc-desktop" style={{ height: 860, width: 1080 }}>
+              <div className="sc-desktop-bar"><i style={{ background: '#ff5f56' }}/><i style={{ background: '#ffbd2e' }}/><i style={{ background: '#27c93f' }}/><div style={{ flex: 1, textAlign: 'center', fontSize: 13, color: 'var(--text-secondary)', fontWeight: 600 }}>silverconnect.global/services/cleaning</div></div>
+              <div className="sc-desktop-content sc-noscroll" style={{ overflow: 'auto' }}>
+                <Desktop720><ServicesScreen lang={lang} desktop/></Desktop720>
+              </div>
+            </div>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ── 3. Booking flow (interactive) ── */}
+        <DCSection id="booking" title={lang === 'zh' ? '03 · 预订流程（交互）' : '03 · Booking flow (interactive)'} subtitle={lang === 'zh' ? '4 步可点击 · Step1→2→3→4 顺序展示' : 'Tap "Next" to advance through steps'}>
+          <DCArtboard id="book-step1" label="Step 1 · 选服务" width={406} height={860}>
+            <PhoneFrame height={860}><BookingForm lang={lang} step={1}/></PhoneFrame>
+          </DCArtboard>
+          <DCArtboard id="book-step2" label="Step 2 · 选时间 (关键)" width={406} height={860}>
+            <PhoneFrame height={860}><BookingForm lang={lang} step={2}/></PhoneFrame>
+          </DCArtboard>
+          <DCArtboard id="book-step3" label="Step 3 · 选地址" width={406} height={860}>
+            <PhoneFrame height={860}><BookingForm lang={lang} step={3}/></PhoneFrame>
+          </DCArtboard>
+          <DCArtboard id="book-step4" label="Step 4 · 确认+支付 (关键)" width={406} height={860}>
+            <PhoneFrame height={860}><BookingForm lang={lang} step={4}/></PhoneFrame>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ── 4. Booking detail ── */}
+        <DCSection id="bookdet" title={lang === 'zh' ? '04 · 预订详情' : '04 · Booking detail'} subtitle={lang === 'zh' ? '5 节点状态流 · 价格明细 · 操作区按状态切换' : 'Status flow + price breakdown + state-aware actions'}>
+          <DCArtboard id="bd-mobile" label={lang === 'zh' ? '移动端' : 'Mobile'} width={406} height={860}>
+            <PhoneFrame height={860}><BookingDetailScreen lang={lang}/></PhoneFrame>
+          </DCArtboard>
+          <DCArtboard id="bd-desktop" label={lang === 'zh' ? '桌面端' : 'Desktop'} width={1080} height={860}>
+            <div className="sc-root sc-desktop" style={{ height: 860, width: 1080 }}>
+              <div className="sc-desktop-bar"><i style={{ background: '#ff5f56' }}/><i style={{ background: '#ffbd2e' }}/><i style={{ background: '#27c93f' }}/><div style={{ flex: 1, textAlign: 'center', fontSize: 13, color: 'var(--text-secondary)', fontWeight: 600 }}>silverconnect.global/bookings/1284</div></div>
+              <div className="sc-desktop-content sc-noscroll" style={{ overflow: 'auto' }}>
+                <Desktop720><BookingDetailScreen lang={lang}/></Desktop720>
+              </div>
+            </div>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ── 5. My bookings list ── */}
+        <DCSection id="mybook" title={lang === 'zh' ? '05 · 我的预订' : '05 · My bookings'}>
+          <DCArtboard id="mb-mobile" label={lang === 'zh' ? '移动端' : 'Mobile'} width={406} height={860}>
+            <PhoneFrame height={860} tabBar={<BottomTab active="bookings" t={T[lang]}/>}><BookingsScreen lang={lang}/></PhoneFrame>
+          </DCArtboard>
+          <DCArtboard id="mb-desktop" label={lang === 'zh' ? '桌面端' : 'Desktop'} width={1080} height={860}>
+            <div className="sc-root sc-desktop" style={{ height: 860, width: 1080 }}>
+              <div className="sc-desktop-bar"><i style={{ background: '#ff5f56' }}/><i style={{ background: '#ffbd2e' }}/><i style={{ background: '#27c93f' }}/><div style={{ flex: 1, textAlign: 'center', fontSize: 13, color: 'var(--text-secondary)', fontWeight: 600 }}>silverconnect.global/bookings</div></div>
+              <div className="sc-desktop-content sc-noscroll" style={{ overflow: 'auto' }}>
+                <Desktop720><BookingsScreen lang={lang}/></Desktop720>
+              </div>
+            </div>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ── 6. AI Chat ── */}
+        <DCSection id="ai" title={lang === 'zh' ? '06 · AI 客服 + 紧急模式' : '06 · AI chat + Emergency'} subtitle={lang === 'zh' ? '检测到「胸痛/摔倒」等关键词 → 全屏红底紧急卡' : 'Trigger words flip the chat into emergency mode'}>
+          <DCArtboard id="ai-normal" label={lang === 'zh' ? '常态对话（可输入）' : 'Normal (typeable)'} width={406} height={780}>
+            <PhoneFrame height={780} statusBar={false}><AIChat lang={lang}/></PhoneFrame>
+          </DCArtboard>
+          <DCArtboard id="ai-emergency" label={lang === 'zh' ? '紧急模式 §7.4' : 'Emergency §7.4'} width={406} height={780}>
+            <PhoneFrame height={780} statusBar={false}><AIChat lang={lang} emergency/></PhoneFrame>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ── 7. Auth ── */}
+        <DCSection id="auth" title={lang === 'zh' ? '07 · 登录 / 注册' : '07 · Auth'}>
+          <DCArtboard id="auth-mobile" label={lang === 'zh' ? '移动端 · 登录' : 'Mobile · Sign in'} width={406} height={860}>
+            <PhoneFrame height={860}><AuthScreen lang={lang} mode="login"/></PhoneFrame>
+          </DCArtboard>
+          <DCArtboard id="auth-desktop" label={lang === 'zh' ? '桌面端 · 480 居中卡' : 'Desktop · 480 centered'} width={680} height={860}>
+            <div className="sc-root" style={{ background: 'var(--bg-surface)', height: 860, padding: '48px 0', display: 'flex', justifyContent: 'center' }}>
+              <div className="sc-desktop" style={{ width: 480, height: 760, borderRadius: 22 }}>
+                <div className="sc-desktop-content sc-noscroll" style={{ overflow: 'auto' }}>
+                  <AuthScreen lang={lang} mode="login"/>
+                </div>
+              </div>
+            </div>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ── 8. Feedback ── */}
+        <DCSection id="feedback" title={lang === 'zh' ? '08 · 评价' : '08 · Feedback'} subtitle={lang === 'zh' ? '点星可交互；提交后释放托管款' : 'Tap stars; submission releases escrow'}>
+          <DCArtboard id="fb-mobile" label={lang === 'zh' ? '移动端' : 'Mobile'} width={406} height={860}>
+            <PhoneFrame height={860}><FeedbackScreen lang={lang}/></PhoneFrame>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ── 9. Dispute ── */}
+        <DCSection id="dispute" title={lang === 'zh' ? '09 · 争议提交' : '09 · Dispute'}>
+          <DCArtboard id="dis-mobile" label={lang === 'zh' ? '移动端' : 'Mobile'} width={406} height={860}>
+            <PhoneFrame height={860}><DisputeScreen lang={lang}/></PhoneFrame>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ── 10. Provider ── */}
+        <DCSection id="provider" title={lang === 'zh' ? '10 · Provider 端' : '10 · Provider'} subtitle={lang === 'zh' ? '今日任务 + 收入 + 周历可用时段' : 'Today + earnings + week availability'}>
+          <DCArtboard id="prov-home" label={lang === 'zh' ? 'Provider 首页' : 'Provider home'} width={406} height={860}>
+            <PhoneFrame height={860}><ProviderHome lang={lang}/></PhoneFrame>
+          </DCArtboard>
+          <DCArtboard id="prov-avail" label={lang === 'zh' ? '可用时段（点击切换）' : 'Availability (tap to cycle)'} width={406} height={780}>
+            <PhoneFrame height={780}><ProviderAvailability lang={lang}/></PhoneFrame>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ── 11. Notifications ── */}
+        <DCSection id="notif" title={lang === 'zh' ? '11 · 通知中心' : '11 · Notifications'}>
+          <DCArtboard id="notif-mobile" label={lang === 'zh' ? '移动端' : 'Mobile'} width={406} height={780}>
+            <PhoneFrame height={780}><NotificationsScreen lang={lang}/></PhoneFrame>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ── 12. Admin ── */}
+        <DCSection id="admin" title={lang === 'zh' ? '12 · 管理员后台' : '12 · Admin'} subtitle={lang === 'zh' ? '争议详情抽屉 · 桌面优先' : 'Dispute drawer · desktop-first'}>
+          <DCArtboard id="admin-desktop" label={lang === 'zh' ? '管理员争议详情' : 'Admin dispute drawer'} width={1280} height={780}>
+            <div className="sc-root" style={{ width: 1280, height: 780 }}>
+              <AdminDispute lang={lang}/>
+            </div>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ── 13. Empty + Errors ── */}
+        <DCSection id="errors" title={lang === 'zh' ? '13 · 错误与空状态' : '13 · Errors & empty'} subtitle={lang === 'zh' ? '5 种合集：断网 · 接口错 · 空列表 · 支付失败 · 加载中' : 'Offline · API · Empty · Payment fail · Loading'}>
+          <DCArtboard id="err-mobile" label={lang === 'zh' ? '5 种状态' : '5 states'} width={406} height={780}>
+            <PhoneFrame height={780}><EmptyStates lang={lang}/></PhoneFrame>
+          </DCArtboard>
+        </DCSection>
+      </DesignCanvas>
+
+      <TweaksPanel title={lang === 'zh' ? '调试' : 'Tweaks'}>
+        <TweakSection title={lang === 'zh' ? '主题' : 'Theme'}>
+          <TweakRadio
+            value={tw.theme}
+            options={[
+              { value: 'light', label: lang === 'zh' ? '浅色' : 'Light' },
+              { value: 'dark', label: lang === 'zh' ? '深色' : 'Dark' },
+            ]}
+            onChange={v => setTweak('theme', v)}
+          />
+        </TweakSection>
+        <TweakSection title={lang === 'zh' ? '语言' : 'Language'}>
+          <TweakRadio
+            value={tw.lang}
+            options={[
+              { value: 'zh', label: '中文' },
+              { value: 'en', label: 'English' },
+            ]}
+            onChange={v => setTweak('lang', v)}
+          />
+        </TweakSection>
+        <TweakSection title={lang === 'zh' ? '国家' : 'Country'}>
+          <TweakRadio
+            value={tw.country}
+            options={[
+              { value: 'AU', label: '🇦🇺 AU' },
+              { value: 'CN', label: '🇨🇳 CN' },
+              { value: 'CA', label: '🇨🇦 CA' },
+            ]}
+            onChange={v => setTweak('country', v)}
+          />
+        </TweakSection>
+        <TweakSection title={lang === 'zh' ? '字号 (基准)' : 'Font scale (base)'}>
+          <TweakSlider min={16} max={24} step={1} value={tw.fontScale} onChange={v => setTweak('fontScale', v)}/>
+        </TweakSection>
+      </TweaksPanel>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>SilverConnect Global · v2 · 插画版</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="tokens.css"/>
+<style>
+  html, body { margin: 0; padding: 0; background: #f0eee9; }
+  body { font-family: 'Noto Sans SC', 'Inter', system-ui, sans-serif; }
+  .sc-root { min-height: 100%; }
+  .sc-card-soft { background: var(--bg-base); border: 1px solid var(--border); border-radius: 16px; padding: 16px; }
+  .v2-style-swatch { border: 1px solid var(--border); border-radius: 12px; padding: 12px; background: var(--bg-base); }
+</style>
+</head>
+<body class="sc-light">
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="icons.jsx"></script>
+<script type="text/babel" src="screens-1.jsx"></script>
+<script type="text/babel" src="illustrations.jsx"></script>
+<script type="text/babel" src="v2-screens.jsx"></script>
+
+<script type="text/babel">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "theme": "light",
+  "lang": "zh",
+  "country": "AU",
+  "fontScale": 18,
+  "highContrast": false
+}/*EDITMODE-END*/;
+
+function App() {
+  const [tw, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const lang = tw.lang;
+
+  React.useEffect(() => {
+    document.body.classList.toggle('sc-dark', tw.theme === 'dark');
+    document.body.classList.toggle('sc-light', tw.theme !== 'dark');
+    document.body.style.setProperty('--fs-body', tw.fontScale + 'px');
+  }, [tw.theme, tw.fontScale]);
+
+  // Cover artboard
+  const Cover = () => (
+    <div style={{ padding: 40, height: '100%', background: 'var(--bg-base)', overflow: 'auto' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+        <Logo size={36}/>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <span className="sc-badge sc-badge-info">v2 · {lang === 'zh' ? '插画版' : 'Illustrated'}</span>
+          <span className="sc-badge sc-badge-success">{lang === 'zh' ? '手绘线条 + 暖色填充' : 'Hand-drawn line + warm fills'}</span>
+        </div>
+      </div>
+      <h1 style={{ fontSize: 48, fontWeight: 800, margin: 0, lineHeight: 1.1 }}>
+        {lang === 'zh' ? '让产品有体温的关键' : 'What gives the product warmth'}
+      </h1>
+      <p style={{ fontSize: 20, color: 'var(--text-secondary)', marginTop: 12, maxWidth: 760, lineHeight: 1.6 }}>
+        {lang === 'zh'
+          ? '在 v1 的功能骨架上叠加一套统一的「插画系统」: 10 个角色 · 10 个场景 · 5 处微动画。线条 stroke 2.5px 圆头，填充仅暖黄/暖粉/浅蓝/浅绿，深色模式下线条变为 #F1F5F9，填充色保留以保持温度。'
+          : 'Layered onto v1: a unified illustration system. 10 characters, 10 scenes, 5 micro-animations. 2.5px round strokes, fills only from warm yellow / pink / light blue / light green; in dark mode strokes flip to #F1F5F9 while fills stay warm.'}
+      </p>
+
+      {/* Style rules */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginTop: 28 }}>
+        {[
+          { t: lang === 'zh' ? '线条' : 'Stroke', d: lang === 'zh' ? '2.5px 圆头 · 略不规则' : '2.5px · round caps · slight wobble' },
+          { t: lang === 'zh' ? '填充' : 'Fill', d: lang === 'zh' ? '4 色暖系，每图 ≤ 2 色' : '4 warm tones · max 2 per asset' },
+          { t: lang === 'zh' ? '禁用' : 'Avoid', d: lang === 'zh' ? '渐变 · 阴影 · 3D' : 'Gradients · shadows · 3D' },
+          { t: lang === 'zh' ? '面积' : 'Area', d: lang === 'zh' ? '每屏插画 ≤ 25%' : '≤ 25% of screen' },
+        ].map(s => (
+          <div key={s.t} className="v2-style-swatch">
+            <div style={{ fontSize: 14, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '.05em' }}>{s.t}</div>
+            <div style={{ fontSize: 16, marginTop: 6, fontWeight: 600 }}>{s.d}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Color swatches */}
+      <h2 style={{ marginTop: 36, fontSize: 22, fontWeight: 700 }}>{lang === 'zh' ? '4 色暖填充' : '4 warm fills'}</h2>
+      <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
+        {[
+          { c: '#FDE68A', n: lang === 'zh' ? '暖黄 · 阳光毛衣' : 'Yellow · sun, knits' },
+          { c: '#FECACA', n: lang === 'zh' ? '暖粉 · 脸颊围裙' : 'Pink · cheeks, aprons' },
+          { c: '#BFDBFE', n: lang === 'zh' ? '浅蓝 · 衣物窗户' : 'Blue · clothes, windows' },
+          { c: '#BBF7D0', n: lang === 'zh' ? '浅绿 · 植物围巾' : 'Green · plants, scarves' },
+        ].map(s => (
+          <div key={s.c} style={{ flex: 1, padding: 16, borderRadius: 14, background: s.c, border: '1px solid var(--border)' }}>
+            <div style={{ fontFamily: 'monospace', fontSize: 14, color: '#1F2937' }}>{s.c}</div>
+            <div style={{ fontSize: 13, marginTop: 4, color: '#1F2937' }}>{s.n}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Live mini-preview */}
+      <div style={{ marginTop: 32, display: 'flex', gap: 32, alignItems: 'center', padding: 20, background: 'var(--bg-surface)', borderRadius: 18 }}>
+        <S1TeaTime width={260} height={170}/>
+        <div>
+          <div style={{ fontSize: 20, fontWeight: 700 }}>{lang === 'zh' ? '场景 S1 · 茶时光' : 'Scene S1 · Tea time'}</div>
+          <div style={{ color: 'var(--text-secondary)', fontSize: 15, marginTop: 6, maxWidth: 360 }}>
+            {lang === 'zh' ? '热气 SVG path 2.5s 循环上升。窗外阳光暖黄，沙发暖粉。尊重 prefers-reduced-motion。' : 'Steam loops 2.5s upward; sunlight yellow, sofa pink. Respects prefers-reduced-motion.'}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Character library showcase
+  const Characters = () => {
+    const chars = [
+      { C: C1Grandma, id: 'C1', n: lang === 'zh' ? '王阿姨' : 'Margaret', d: lang === 'zh' ? '银发圆脸 · 老花镜' : 'Silver bun · glasses' },
+      { C: C2Grandpa, id: 'C2', n: lang === 'zh' ? '李爷爷' : 'Frank', d: lang === 'zh' ? '棒球帽 · 拐杖' : 'Cap · cane' },
+      { C: C3Helper, id: 'C3', n: lang === 'zh' ? '美姐 · 清洁' : 'May · clean', d: lang === 'zh' ? '马尾 · 围裙' : 'Pony · apron' },
+      { C: C4Cook, id: 'C4', n: lang === 'zh' ? '张师傅 · 烹饪' : 'Chef Zhang', d: lang === 'zh' ? '厨师帽 · 胡子' : 'Toque · mustache' },
+      { C: C5Gardener, id: 'C5', n: lang === 'zh' ? 'Tom · 园艺' : 'Tom · garden', d: lang === 'zh' ? '草帽 · 盆栽' : 'Straw hat · plant' },
+      { C: C6Nurse, id: 'C6', n: lang === 'zh' ? 'Anna · 护理' : 'Anna · care', d: lang === 'zh' ? '听诊器' : 'Stethoscope' },
+      { C: C7Fixer, id: 'C7', n: lang === 'zh' ? 'Bob · 维修' : 'Bob · fix', d: lang === 'zh' ? '工具腰带' : 'Tool belt' },
+      { C: C8Daughter, id: 'C8', n: lang === 'zh' ? '小敏 · 家属' : 'Min · daughter', d: lang === 'zh' ? '视频通话' : 'Video call' },
+      { C: C9AI, id: 'C9', n: lang === 'zh' ? 'AI 小伴' : 'AI Buddy', d: lang === 'zh' ? '机器人 · 单眼' : 'Robot · 1 eye' },
+      { C: C10Admin, id: 'C10', n: lang === 'zh' ? '管理员' : 'Admin', d: lang === 'zh' ? '耳机 · 中性' : 'Headset · neutral' },
+    ];
+    return (
+      <div style={{ padding: 32, background: 'var(--bg-base)', height: '100%', overflow: 'auto' }}>
+        <h1 style={{ fontSize: 32, fontWeight: 800, margin: 0 }}>{lang === 'zh' ? '角色库 · 10 人' : 'Character set · 10'}</h1>
+        <p style={{ color: 'var(--text-secondary)', marginTop: 6 }}>
+          {lang === 'zh' ? '不指定肤色，仅以发型/服饰/道具区分。头身比 1:3，老人略驼背，Provider 站姿挺拔。' : 'No skin tone — distinguished by hair, clothes, props. 1:3 head-to-body. Elders slightly stooped; Providers upright.'}
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16, marginTop: 24 }}>
+          {chars.map(c => {
+            const Ch = c.C;
+            return (
+              <div key={c.id} style={{ padding: 16, borderRadius: 14, border: '1px solid var(--border)', background: 'var(--bg-surface)', textAlign: 'center' }}>
+                <Ch size={96}/>
+                <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 4, fontFamily: 'monospace' }}>{c.id}</div>
+                <div style={{ fontSize: 16, fontWeight: 700, marginTop: 4 }}>{c.n}</div>
+                <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 2 }}>{c.d}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  // Scene library showcase
+  const Scenes = () => (
+    <div style={{ padding: 32, background: 'var(--bg-base)', height: '100%', overflow: 'auto' }}>
+      <h1 style={{ fontSize: 32, fontWeight: 800, margin: 0 }}>{lang === 'zh' ? '场景插画 · 含微动画' : 'Spot scenes · animated'}</h1>
+      <p style={{ color: 'var(--text-secondary)', marginTop: 6 }}>
+        {lang === 'zh' ? '场景插画用于 hero 区、空状态、完成页。1–2 角色 + 道具。' : 'Hero, empty states, success pages. 1–2 characters + props.'}
+      </p>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 18, marginTop: 24 }}>
+        {[
+          { S: S1TeaTime, w: 320, h: 200, n: 'S1 · ' + (lang === 'zh' ? '茶时光（热气循环）' : 'Tea time (steam loop)') },
+          { S: S5PaymentSuccess, w: 320, h: 200, n: 'S5 · ' + (lang === 'zh' ? '支付成功（✓ 描边绘制）' : 'Payment success (check draw)') },
+          { S: S3EmptyBookings, w: 320, h: 200, n: 'S3 · ' + (lang === 'zh' ? '空预订（猫尾巴摆动）' : 'Empty bookings (cat tail wag)') },
+          { S: S4EmptyChat, w: 320, h: 200, n: 'S4 · ' + (lang === 'zh' ? '空聊天（小伴挥手）' : 'Empty chat (AI waves)') },
+          { S: S7Network, w: 320, h: 200, n: 'S7 · ' + (lang === 'zh' ? '断网（天线断了）' : 'No network (broken antenna)') },
+          { S: LoadingDots, w: 200, h: 130, n: lang === 'zh' ? '加载中（小伴跳点）' : 'Loading (bouncing dots)' },
+        ].map((s, i) => {
+          const Sc = s.S;
+          return (
+            <div key={i} style={{ padding: 24, borderRadius: 16, border: '1px solid var(--border)', background: 'var(--bg-surface)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Sc width={s.w} height={s.h}/>
+              <div style={{ fontSize: 15, fontWeight: 600, marginTop: 12, color: 'var(--text-primary)' }}>{s.n}</div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      <DesignCanvas>
+        <DCSection id="system" title={lang === 'zh' ? '插画系统 §1.8' : 'Illustration system §1.8'} subtitle={lang === 'zh' ? 'v2 的灵魂 — 让产品有体温' : "v2's soul — what gives the product warmth"}>
+          <DCArtboard id="cover" label={lang === 'zh' ? '风格基线' : 'Style baseline'} width={1100} height={760}>
+            <Cover/>
+          </DCArtboard>
+          <DCArtboard id="chars" label={lang === 'zh' ? '角色库 C1–C10' : 'Characters C1–C10'} width={1100} height={760}>
+            <Characters/>
+          </DCArtboard>
+          <DCArtboard id="scenes" label={lang === 'zh' ? '场景库 S1–S7' : 'Scenes S1–S7'} width={1100} height={760}>
+            <Scenes/>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="customer" title={lang === 'zh' ? '客户端核心屏 · 移动' : 'Customer · mobile'} subtitle={lang === 'zh' ? '插画系统集成到关键页面' : 'Illustrations integrated into key pages'}>
+          <DCArtboard id="home" label={lang === 'zh' ? '首页 · S1 hero' : 'Home · S1 hero'} width={400} height={780}>
+            <PhoneFrame height={780}><HomeV2 lang={lang} country={tw.country}/></PhoneFrame>
+          </DCArtboard>
+          <DCArtboard id="empty-bk" label={lang === 'zh' ? '空预订 · S3' : 'Empty bookings · S3'} width={400} height={780}>
+            <PhoneFrame height={780}><EmptyBookingsV2 lang={lang}/></PhoneFrame>
+          </DCArtboard>
+          <DCArtboard id="ai-empty" label={lang === 'zh' ? 'AI 空状态 · S4' : 'AI empty · S4'} width={400} height={780}>
+            <PhoneFrame height={780}><AIChatV2 lang={lang} country={tw.country} empty={true}/></PhoneFrame>
+          </DCArtboard>
+          <DCArtboard id="ai-chat" label={lang === 'zh' ? 'AI 聊天 · 头像眨眼' : 'AI chat · blink'} width={400} height={780}>
+            <PhoneFrame height={780}><AIChatV2 lang={lang} country={tw.country}/></PhoneFrame>
+          </DCArtboard>
+          <DCArtboard id="ai-emergency" label={lang === 'zh' ? 'AI 紧急模式' : 'AI emergency'} width={400} height={780}>
+            <PhoneFrame height={780}><AIChatV2 lang={lang} country={tw.country} emergency={true}/></PhoneFrame>
+          </DCArtboard>
+          <DCArtboard id="paid" label={lang === 'zh' ? '支付成功 · S5' : 'Paid · S5'} width={400} height={780}>
+            <PhoneFrame height={780}><PaymentSuccessV2 lang={lang}/></PhoneFrame>
+          </DCArtboard>
+          <DCArtboard id="net-err" label={lang === 'zh' ? '断网 · S7' : 'Offline · S7'} width={400} height={780}>
+            <PhoneFrame height={780}><NetworkErrorV2 lang={lang}/></PhoneFrame>
+          </DCArtboard>
+          <DCArtboard id="loading" label={lang === 'zh' ? '加载中' : 'Loading'} width={400} height={780}>
+            <PhoneFrame height={780}><LoadingV2 lang={lang}/></PhoneFrame>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="provider" title={lang === 'zh' ? 'Provider 端' : 'Provider'} subtitle={lang === 'zh' ? '收入卡 + 今日任务' : 'Earnings + today'}>
+          <DCArtboard id="prov-home" label={lang === 'zh' ? 'Provider 首页' : 'Provider home'} width={400} height={780}>
+            <PhoneFrame height={780}><ProviderHomeV2 lang={lang}/></PhoneFrame>
+          </DCArtboard>
+        </DCSection>
+      </DesignCanvas>
+
+      <TweaksPanel title={lang === 'zh' ? '调整 · v2' : 'Tweaks · v2'}>
+        <TweakSection title={lang === 'zh' ? '主题' : 'Theme'}>
+          <TweakRadio value={tw.theme} onChange={v => setTweak('theme', v)} options={[{ value: 'light', label: lang === 'zh' ? '浅色' : 'Light' }, { value: 'dark', label: lang === 'zh' ? '深色' : 'Dark' }]}/>
+        </TweakSection>
+        <TweakSection title={lang === 'zh' ? '语言' : 'Language'}>
+          <TweakRadio value={tw.lang} onChange={v => setTweak('lang', v)} options={[{ value: 'zh', label: '中文' }, { value: 'en', label: 'English' }]}/>
+        </TweakSection>
+        <TweakSection title={lang === 'zh' ? '国家' : 'Country'}>
+          <TweakRadio value={tw.country} onChange={v => setTweak('country', v)} options={[{ value: 'AU', label: '🇦🇺 AU' }, { value: 'CN', label: '🇨🇳 CN' }, { value: 'US', label: '🇺🇸 US' }, { value: 'CA', label: '🇨🇦 CA' }, { value: 'UZ', label: '🇺🇿 UZ' }]}/>
+        </TweakSection>
+        <TweakSection title={lang === 'zh' ? '正文字号' : 'Body size'}>
+          <TweakSlider value={tw.fontScale} onChange={v => setTweak('fontScale', v)} min={16} max={22} step={1} suffix="px"/>
+        </TweakSection>
+      </TweaksPanel>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
