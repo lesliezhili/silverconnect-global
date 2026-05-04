@@ -69,7 +69,9 @@ export default async function AdminSettingsPage({
         </section>
 
         <section className="rounded-lg border border-border bg-bg-base p-4">
-          <p className="text-[15px] font-bold">{tA("cancelWindow")}</p>
+          <Label htmlFor="cancelHours" className="text-[15px] font-bold">
+            {tA("cancelWindow")}
+          </Label>
           <div className="mt-3">
             <Input
               id="cancelHours"
@@ -84,7 +86,9 @@ export default async function AdminSettingsPage({
         </section>
 
         <section className="rounded-lg border border-border bg-bg-base p-4">
-          <p className="text-[15px] font-bold">{tA("emergencyKw")}</p>
+          <Label htmlFor="kw" className="text-[15px] font-bold">
+            {tA("emergencyKw")}
+          </Label>
           <textarea
             id="kw"
             name="kw"

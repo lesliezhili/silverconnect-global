@@ -104,7 +104,7 @@ export default async function SafetyReportPage({
           <input type="hidden" name="locale" value={locale} />
           <fieldset>
             <legend className="text-[16px] font-bold">{t("severity")}</legend>
-            <ul className="mt-3 flex flex-col gap-2.5" role="radiogroup" aria-required="true">
+            <ul className="mt-3 flex flex-col gap-2.5">
               {SEV_KEYS.map((k) => (
                 <li key={k}>
                   <label className="flex cursor-pointer items-start gap-3 rounded-md border-[1.5px] border-border bg-bg-base p-4 has-[:checked]:border-2 has-[:checked]:border-brand">

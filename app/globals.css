@@ -10,14 +10,16 @@
 @layer base {
   :root {
     /* Brand */
-    --brand-primary: #1F6FEB;
-    --brand-primary-hover: #1858C4;
+    --brand-primary: #1858C4;
+    --brand-primary-hover: #0F47A6;
     --brand-accent: #F59E0B;
 
-    /* Semantic */
-    --success: #16A34A;
-    --warning: #F59E0B;
-    --danger: #DC2626;
+    /* Semantic — calibrated to pass WCAG AA (≥4.5:1) on their *-soft
+       backgrounds. Original Tailwind 500/600 shades fail when paired
+       with light tints, so we use the 700/800 shade family. */
+    --success: #15803D;
+    --warning: #92400E;
+    --danger: #B91C1C;
 
     /* Surfaces */
     --bg-base: #FFFFFF;
@@ -27,8 +29,8 @@
     /* Text */
     --text-primary: #0F172A;
     --text-secondary: #475569;
-    --text-placeholder: #94A3B8;
-    --text-link: #1F6FEB;
+    --text-placeholder: #64748B;
+    --text-link: #1858C4;
 
     /* Status badges — light surface */
     --badge-pending-bg: #FEF3C7;
@@ -93,7 +95,7 @@
       --text-primary: #F1F5F9;
       --text-secondary: #CBD5E1;
       --text-tertiary: #94A3B8;
-      --text-placeholder: #94A3B8;
+      --text-placeholder: #64748B;
       --text-link: #93C5FD;
       --badge-pending-bg: rgba(245, 158, 11, 0.18);
       --badge-pending-fg: #FCD34D;
@@ -127,7 +129,7 @@
     --text-primary: #F1F5F9;
     --text-secondary: #CBD5E1;
     --text-tertiary: #94A3B8;
-    --text-placeholder: #94A3B8;
+    --text-placeholder: #64748B;
     --text-link: #93C5FD;
     --badge-pending-bg: rgba(245, 158, 11, 0.18);
     --badge-pending-fg: #FCD34D;

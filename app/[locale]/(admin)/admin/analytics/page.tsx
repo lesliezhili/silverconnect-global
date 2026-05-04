@@ -108,6 +108,7 @@ export default async function AdminAnalyticsPage({
                 return (
                   <div
                     key={c.country}
+                    role="img"
                     className={`rounded-t-sm ${COUNTRY_COLOR[c.country]}`}
                     style={{ height: `${Math.max(2, h / ANALYTICS_WEEKLY_ORDERS.length)}px` }}
                     aria-label={`${c.country} ${days[i]} ${v}`}

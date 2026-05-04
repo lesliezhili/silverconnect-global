@@ -135,6 +135,7 @@ export default async function ProviderEarningsPage({
               return (
                 <div
                   key={i}
+                  role="img"
                   className={"rounded-t-sm " + (v > 0 ? "bg-brand" : "bg-bg-surface-2")}
                   style={{ height: `${h}px` }}
                   aria-label={`${days[i].toLocaleDateString(locale === "zh" ? "zh-CN" : "en-AU", { month: "short", day: "numeric" })} ${priceCountry(country, v)}`}

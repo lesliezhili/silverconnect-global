@@ -114,7 +114,7 @@ export default async function DisputePage({
             <legend className="text-[16px] font-bold text-text-primary">
               {t("type")}
             </legend>
-            <ul className="mt-3 flex flex-col gap-2.5" role="radiogroup" aria-required="true">
+            <ul className="mt-3 flex flex-col gap-2.5">
               {TYPE_KEYS.map((k) => (
                 <li key={k}>
                   <label className="flex cursor-pointer items-center gap-3 rounded-md border-[1.5px] border-border bg-bg-base p-4 has-[:checked]:border-2 has-[:checked]:border-brand">
@@ -171,7 +171,7 @@ export default async function DisputePage({
             <legend className="text-[16px] font-bold text-text-primary">
               {t("outcome")}
             </legend>
-            <ul className="mt-3 flex flex-col gap-2.5" role="radiogroup">
+            <ul className="mt-3 flex flex-col gap-2.5">
               {OUTCOME_KEYS.map((k) => (
                 <li key={k}>
                   <label className="flex cursor-pointer items-center gap-3 rounded-md border-[1.5px] border-border bg-bg-base p-4 has-[:checked]:border-2 has-[:checked]:border-brand">

@@ -194,7 +194,7 @@ export default async function ProviderJobDetailPage({
             <p className="text-[14px] text-text-secondary">{t("declineHint")}</p>
             <fieldset>
               <legend className="text-[14px] font-bold">{t("declineReason")}</legend>
-              <ul className="mt-2 flex flex-col gap-2" role="radiogroup" aria-required="true">
+              <ul className="mt-2 flex flex-col gap-2">
                 {(["declineReason1", "declineReason2", "declineReason3", "declineReason4"] as const).map(
                   (k) => (
                     <li key={k}>
