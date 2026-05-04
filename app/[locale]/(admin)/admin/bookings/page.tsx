@@ -90,7 +90,7 @@ export default async function AdminBookingsPage({
               </div>
               <span className="tabular-nums text-[13px] font-bold">${b.amount}</span>
               <span className={`inline-flex h-6 items-center rounded-sm px-2 text-[11px] font-bold uppercase tracking-wide ${cls}`}>
-                {t(STATUS_KEYS[b.status])}
+                {tB(STATUS_KEYS[b.status])}
               </span>
               <span className="hidden text-[12px] text-text-tertiary tabular-nums sm:inline">
                 {tB("minutesAgo", { n: min })}
