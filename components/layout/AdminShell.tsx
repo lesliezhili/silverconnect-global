@@ -10,18 +10,31 @@ import {
   BarChart3,
   LogOut,
   Menu,
+  UserCircle,
+  ShoppingBag,
+  CreditCard,
+  Bot,
+  Settings,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/components/ui/cn";
 
-const NAV = [
+const NAV_PRIMARY = [
   { key: "navOverview", href: "/admin", Icon: LayoutDashboard, exact: true },
   { key: "navDisputes", href: "/admin/disputes", Icon: Scale, exact: false },
   { key: "navSafety", href: "/admin/safety", Icon: ShieldAlert, exact: false },
   { key: "navProviders", href: "/admin/providers", Icon: Users, exact: false },
   { key: "navRefunds", href: "/admin/refunds", Icon: RotateCcw, exact: false },
   { key: "navAnalytics", href: "/admin/analytics", Icon: BarChart3, exact: false },
+] as const;
+
+const NAV_SECONDARY = [
+  { key: "navCustomers", href: "/admin/customers", Icon: UserCircle, exact: false },
+  { key: "navBookings", href: "/admin/bookings", Icon: ShoppingBag, exact: false },
+  { key: "navPayments", href: "/admin/payments", Icon: CreditCard, exact: false },
+  { key: "navAi", href: "/admin/ai/conversations", Icon: Bot, exact: false },
+  { key: "navSettings", href: "/admin/settings", Icon: Settings, exact: false },
 ] as const;
 
 export function AdminShell({
@@ -90,7 +103,31 @@ export function AdminShell({
         >
           <nav>
             <ul className="flex flex-col gap-1">
-              {NAV.map(({ key, href, Icon, exact }) => {
+              {NAV_PRIMARY.map(({ key, href, Icon, exact }) => {
+                const on = exact ? pathname === href : pathname?.startsWith(href);
+                return (
+                  <li key={key}>
+                    <Link
+                      href={href}
+                      onClick={() => setOpenMobile(false)}
+                      aria-current={on ? "page" : undefined}
+                      className={cn(
+                        "flex h-11 items-center gap-3 rounded-md px-3 text-[14px] font-semibold",
+                        on
+                          ? "bg-brand-soft text-brand"
+                          : "text-text-primary hover:bg-bg-surface-2"
+                      )}
+                    >
+                      <Icon size={18} aria-hidden />
+                      <span>{t(key)}</span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+            <hr className="my-3 border-border" aria-hidden />
+            <ul className="flex flex-col gap-1">
+              {NAV_SECONDARY.map(({ key, href, Icon, exact }) => {
                 const on = exact ? pathname === href : pathname?.startsWith(href);
                 return (
                   <li key={key}>
