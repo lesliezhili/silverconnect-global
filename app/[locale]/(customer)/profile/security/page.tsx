@@ -1,5 +1,6 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { CheckCircle2, ShieldCheck, Smartphone } from "lucide-react";
+import { redirect as nextRedirect } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { redirect } from "@/i18n/navigation";
 import { Button } from "@/components/ui/Button";
@@ -7,6 +8,19 @@ import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { getCountry } from "@/components/domain/countryCookie";
 import { getSession } from "@/components/domain/sessionCookie";
+
+async function changePassword(formData: FormData) {
+  "use server";
+  const next = String(formData.get("new") ?? "");
+  const confirm = String(formData.get("confirm") ?? "");
+  const locale = String(formData.get("locale") ?? "en");
+  if (next !== confirm) {
+    nextRedirect(`/${locale}/profile/security?error=mismatch`);
+  }
+  // Demo: pretend the password changed. A real impl would hit Supabase
+  // Auth via @/lib/auth and re-issue a session.
+  nextRedirect(`/${locale}/profile/security?saved=1`);
+}
 
 export default async function ProfileSecurityPage({
   params,
@@ -64,11 +78,8 @@ export default async function ProfileSecurityPage({
         {/* Change password */}
         <section className="mt-6">
           <h2 className="text-[18px] font-bold">{t("passwordSection")}</h2>
-          <form
-            action="/api/profile/password"
-            method="post"
-            className="mt-4 flex flex-col gap-4"
-          >
+          <form action={changePassword} className="mt-4 flex flex-col gap-4">
+            <input type="hidden" name="locale" value={locale} />
             <div>
               <Label htmlFor="current">{t("currentPassword")}</Label>
               <Input
@@ -148,18 +159,12 @@ export default async function ProfileSecurityPage({
               </div>
             </li>
           </ul>
-          <form
-            action="/api/auth/logout?everywhere=1"
-            method="post"
-            className="mt-3"
+          <a
+            href={`/${locale}/auth/logout`}
+            className="mt-3 inline-flex h-12 w-full items-center justify-center rounded-md border-[1.5px] border-danger bg-bg-base text-[15px] font-bold text-danger"
           >
-            <button
-              type="submit"
-              className="inline-flex h-12 w-full items-center justify-center rounded-md border-[1.5px] border-danger bg-bg-base text-[15px] font-bold text-danger"
-            >
-              {t("signOutAll")}
-            </button>
-          </form>
+            {t("signOutAll")}
+          </a>
         </section>
       </main>
     </>

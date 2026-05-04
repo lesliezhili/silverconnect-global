@@ -140,8 +140,8 @@ export default async function ProfilePaymentPage({
 
         {adding && (
           <form
-            action="/api/profile/payment"
-            method="post"
+            action="/profile/payment"
+            method="get"
             className="mt-5 flex flex-col gap-4 rounded-lg border-2 border-brand bg-bg-base p-5"
           >
             <h2 className="flex items-center gap-2 text-h3">

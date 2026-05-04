@@ -31,16 +31,21 @@ export function EmergencyOverlay({ country = "AU" }: { country?: CountryCode }) 
   const callRef = React.useRef<HTMLAnchorElement>(null);
 
   React.useEffect(() => {
-    const onHash = () => setOpen(window.location.hash === HASH);
-    onHash();
-    window.addEventListener("hashchange", onHash);
+    const sync = () => setOpen(window.location.hash === HASH);
+    sync();
+    // hashchange fires on both manual edits AND popstate-driven hash
+    // changes, so this single listener covers browser-back too.
+    window.addEventListener("hashchange", sync);
     const onCustom = () => {
-      window.location.hash = HASH;
+      // Push a dedicated history entry so browser-back closes cleanly.
+      if (window.location.hash !== HASH) {
+        history.pushState(null, "", window.location.pathname + window.location.search + HASH);
+      }
       setOpen(true);
     };
     window.addEventListener("sc:sos", onCustom);
     return () => {
-      window.removeEventListener("hashchange", onHash);
+      window.removeEventListener("hashchange", sync);
       window.removeEventListener("sc:sos", onCustom);
     };
   }, []);
@@ -48,11 +53,13 @@ export function EmergencyOverlay({ country = "AU" }: { country?: CountryCode }) 
   const close = React.useCallback(() => {
     if (typeof window === "undefined") return;
     if (window.location.hash === HASH) {
-      // Drop the hash without triggering navigation
-      history.replaceState(null, "", pathname || window.location.pathname);
+      // Pop the SOS history entry — browser back-stack stays clean
+      // and the hashchange listener flips `open` to false naturally.
+      history.back();
+    } else {
+      setOpen(false);
     }
-    setOpen(false);
-  }, [pathname]);
+  }, []);
 
   React.useEffect(() => {
     if (!open) return;
@@ -75,7 +82,12 @@ export function EmergencyOverlay({ country = "AU" }: { country?: CountryCode }) 
         type="button"
         aria-label={t("triggerLabel")}
         onClick={() => {
-          window.location.hash = HASH;
+          // pushState (no hashchange-without-history); the listener +
+          // popstate-driven onhashchange flip `open` true on next tick.
+          if (window.location.hash !== HASH) {
+            history.pushState(null, "", window.location.pathname + window.location.search + HASH);
+          }
+          setOpen(true);
         }}
         className={cn(
           "fixed bottom-[180px] right-5 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-danger text-white shadow-card-hover",

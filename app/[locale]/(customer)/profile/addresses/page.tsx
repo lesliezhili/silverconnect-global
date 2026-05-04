@@ -158,8 +158,8 @@ export default async function AddressesPage({
 
         {adding && (
           <form
-            action="/api/profile/addresses"
-            method="post"
+            action="/profile/addresses"
+            method="get"
             className="mt-5 flex flex-col gap-4 rounded-lg border-2 border-brand bg-bg-base p-5"
           >
             <h2 className="text-h3">{t("addNew")}</h2>

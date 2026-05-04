@@ -104,27 +104,23 @@ export default async function ProfilePage({
           ))}
         </ul>
 
-        {/* Sign out */}
-        <form
-          action="/api/auth/logout"
-          method="post"
-          className="mt-4 overflow-hidden rounded-lg border border-border bg-bg-base"
+        {/* Sign out — links to a server page that deletes the session
+            cookie then redirects to /home, so the demo works without a
+            real /api/auth/logout endpoint. */}
+        <Link
+          href="/auth/logout"
+          className="mt-4 flex min-h-[72px] w-full items-center gap-4 overflow-hidden rounded-lg border border-border bg-bg-base px-4 py-3"
         >
-          <button
-            type="submit"
-            className="flex min-h-[72px] w-full items-center gap-4 px-4 py-3 text-left"
+          <span
+            aria-hidden
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-danger-soft text-danger"
           >
-            <span
-              aria-hidden
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-danger-soft text-danger"
-            >
-              <LogOut size={22} />
-            </span>
-            <span className="flex-1 text-[16px] font-bold text-danger">
-              {tItems("signOut")}
-            </span>
-          </button>
-        </form>
+            <LogOut size={22} />
+          </span>
+          <span className="flex-1 text-[16px] font-bold text-danger">
+            {tItems("signOut")}
+          </span>
+        </Link>
       </main>
     </>
   );
