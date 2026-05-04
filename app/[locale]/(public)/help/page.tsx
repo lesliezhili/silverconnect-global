@@ -24,15 +24,19 @@ const CATEGORY_META = [
 
 export default async function HelpHubPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale } = await params;
+  const sp = await searchParams;
   setRequestLocale(locale);
   const country = await getCountry();
   const session = await getSession();
   const t = await getTranslations("help");
   const lang: "zh" | "en" = locale === "zh" ? "zh" : "en";
+  const q = sp.q;
 
   return (
     <>
@@ -48,15 +52,24 @@ export default async function HelpHubPage({
         <h1 className="text-h1">{t("title")}</h1>
         <p className="mt-1 text-[15px] text-text-secondary">{t("sub")}</p>
 
-        {/* Search */}
-        <div className="mt-5">
+        {/* Search — submits to the locale-prefixed /help with ?q= so
+             pressing Enter actually does something. The future search
+             route reads sp.q. */}
+        <form
+          action={`/${locale}/help`}
+          method="get"
+          className="mt-5"
+          role="search"
+        >
           <input
             type="search"
+            name="q"
             placeholder={t("searchPh")}
             aria-label={t("searchAria")}
+            defaultValue={typeof q === "string" ? q : ""}
             className="block h-14 w-full rounded-md border-[1.5px] border-border-strong bg-bg-base px-4 text-[17px] text-text-primary placeholder:text-text-tertiary focus:border-brand focus:outline-none"
           />
-        </div>
+        </form>
 
         {/* Category grid */}
         <h2 className="mt-7 text-h3">{t("categories")}</h2>

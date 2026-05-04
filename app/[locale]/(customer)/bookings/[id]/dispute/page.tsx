@@ -106,38 +106,24 @@ export default async function DisputePage({
               {t("type")}
             </legend>
             <ul className="mt-3 flex flex-col gap-2.5" role="radiogroup" aria-required="true">
-              {TYPE_KEYS.map((k, i) => {
-                const selected = i === 0;
-                return (
-                  <li key={k}>
-                    <label
-                      className={`flex cursor-pointer items-center gap-3 rounded-md bg-bg-base p-4 ${
-                        selected ? "border-2 border-brand" : "border-[1.5px] border-border"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="type"
-                        value={k.replace(/^type/, "").toLowerCase()}
-                        required
-                        defaultChecked={selected}
-                        className="sr-only"
-                      />
-                      <span
-                        className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 ${
-                          selected ? "border-brand" : "border-border-strong"
-                        }`}
-                        aria-hidden
-                      >
-                        {selected && (
-                          <span className="h-3 w-3 rounded-full bg-brand" />
-                        )}
-                      </span>
-                      <span className="text-[16px] font-semibold">{t(k)}</span>
-                    </label>
-                  </li>
-                );
-              })}
+              {TYPE_KEYS.map((k) => (
+                <li key={k}>
+                  <label className="flex cursor-pointer items-center gap-3 rounded-md border-[1.5px] border-border bg-bg-base p-4 has-[:checked]:border-2 has-[:checked]:border-brand">
+                    <input
+                      type="radio"
+                      name="type"
+                      value={k.replace(/^type/, "").toLowerCase()}
+                      required
+                      className="peer sr-only"
+                    />
+                    <span
+                      className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-border-strong after:hidden after:h-3 after:w-3 after:rounded-full after:bg-brand after:content-[''] peer-checked:border-brand peer-checked:after:block"
+                      aria-hidden
+                    />
+                    <span className="text-[16px] font-semibold">{t(k)}</span>
+                  </label>
+                </li>
+              ))}
             </ul>
           </fieldset>
 
@@ -177,37 +163,23 @@ export default async function DisputePage({
               {t("outcome")}
             </legend>
             <ul className="mt-3 flex flex-col gap-2.5" role="radiogroup">
-              {OUTCOME_KEYS.map((k, i) => {
-                const selected = i === 1;
-                return (
-                  <li key={k}>
-                    <label
-                      className={`flex cursor-pointer items-center gap-3 rounded-md bg-bg-base p-4 ${
-                        selected ? "border-2 border-brand" : "border-[1.5px] border-border"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="outcome"
-                        value={k.replace(/^outcome/, "").toLowerCase()}
-                        defaultChecked={selected}
-                        className="sr-only"
-                      />
-                      <span
-                        className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 ${
-                          selected ? "border-brand" : "border-border-strong"
-                        }`}
-                        aria-hidden
-                      >
-                        {selected && (
-                          <span className="h-3 w-3 rounded-full bg-brand" />
-                        )}
-                      </span>
-                      <span className="text-[16px] font-semibold">{t(k)}</span>
-                    </label>
-                  </li>
-                );
-              })}
+              {OUTCOME_KEYS.map((k) => (
+                <li key={k}>
+                  <label className="flex cursor-pointer items-center gap-3 rounded-md border-[1.5px] border-border bg-bg-base p-4 has-[:checked]:border-2 has-[:checked]:border-brand">
+                    <input
+                      type="radio"
+                      name="outcome"
+                      value={k.replace(/^outcome/, "").toLowerCase()}
+                      className="peer sr-only"
+                    />
+                    <span
+                      className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-border-strong after:hidden after:h-3 after:w-3 after:rounded-full after:bg-brand after:content-[''] peer-checked:border-brand peer-checked:after:block"
+                      aria-hidden
+                    />
+                    <span className="text-[16px] font-semibold">{t(k)}</span>
+                  </label>
+                </li>
+              ))}
             </ul>
           </fieldset>
 

@@ -1,10 +1,11 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
+import { Link, redirect } from "@/i18n/navigation";
 import { CheckCircle2 } from "lucide-react";
 import { AuthCard } from "@/components/domain/AuthCard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
+import { getSession } from "@/components/domain/sessionCookie";
 
 type ResetState = "default" | "success" | "expired";
 
@@ -24,6 +25,8 @@ export default async function ResetPasswordPage({
   const { locale } = await params;
   const sp = await searchParams;
   setRequestLocale(locale);
+  const session = await getSession();
+  if (session.signedIn) redirect({ href: "/home", locale });
   const t = await getTranslations("auth");
   const tCommon = await getTranslations("common");
   const state = parseState(

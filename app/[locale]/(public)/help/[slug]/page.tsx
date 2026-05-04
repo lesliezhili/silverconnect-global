@@ -1,4 +1,5 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import { notFound } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Link } from "@/i18n/navigation";
 import { findArticle, HELP_ARTICLES } from "@/components/domain/helpArticles";
@@ -23,31 +24,10 @@ export default async function HelpArticlePage({
   const article = findArticle(slug);
 
   if (!article) {
-    return (
-      <>
-        <Header
-          country={country}
-          back
-          signedIn={session.signedIn}
-          initials={session.initials}
-        />
-        <main
-          id="main-content"
-          className="mx-auto flex w-full max-w-content flex-col items-center gap-3 px-5 pb-12 pt-12 text-center"
-        >
-          <h1 className="text-h1">{t("notFoundTitle")}</h1>
-          <p className="max-w-[320px] text-[15px] text-text-secondary">
-            {t("notFoundSub")}
-          </p>
-          <Link
-            href="/help"
-            className="mt-2 inline-flex h-14 items-center rounded-md bg-brand px-7 text-[17px] font-bold text-white"
-          >
-            {t("backToHelp")}
-          </Link>
-        </main>
-      </>
-    );
+    // Trigger Next.js's 404 status + the locale's not-found.tsx if any.
+    // The hand-rendered fallback is gone — proper 404 status is more
+    // correct for SEO and back-navigation.
+    notFound();
   }
 
   return (
