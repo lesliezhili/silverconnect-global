@@ -1,5 +1,7 @@
 {
-  "brand": { "name": "SilverConnect" },
+  "brand": {
+    "name": "SilverConnect"
+  },
   "common": {
     "search": "搜索",
     "signIn": "登录",
@@ -19,7 +21,10 @@
     "close": "关闭",
     "askAI": "问一下",
     "talkHuman": "转人工",
-    "skipToContent": "跳到主要内容"
+    "skipToContent": "跳到主要内容",
+    "backToHome": "返回首页",
+    "viewBooking": "查看预订",
+    "backToBooking": "返回预订"
   },
   "nav": {
     "home": "首页",
@@ -29,10 +34,21 @@
     "profile": "我的",
     "primary": "主导航"
   },
-  "country": { "AU": "Australia", "CN": "中国", "CA": "Canada" },
-  "language": { "en": "English", "zh": "中文" },
+  "country": {
+    "AU": "Australia",
+    "CN": "中国",
+    "CA": "Canada"
+  },
+  "language": {
+    "en": "English",
+    "zh": "中文"
+  },
   "tax": {
-    "incl": { "AU": "（含 GST）", "CN": "（含 VAT）", "CA": "（含 HST）" },
+    "incl": {
+      "AU": "（含 GST）",
+      "CN": "（含 VAT）",
+      "CA": "（含 HST）"
+    },
     "inclLine": {
       "AU": "所有价格已含 GST",
       "CN": "所有价格已含 VAT",
@@ -243,7 +259,9 @@
       "CN": "中国 120 医疗急救",
       "CA": "加拿大 911 综合紧急"
     },
-    "subLine2": { "CN": "火警 119 / 报警 110" },
+    "subLine2": {
+      "CN": "火警 119 / 报警 110"
+    },
     "call": "立即拨打 {num}",
     "notify": "通知紧急联系人",
     "close": "长按 2 秒返回"
@@ -329,7 +347,8 @@
     "policeContacted": "我已报警",
     "submit": "提交报告",
     "successTitle": "已收到您的报告",
-    "successHint": "管理员将在 24 小时内审核并联系您。"
+    "successHint": "管理员将在 24 小时内审核并联系您。",
+    "evidenceMediaHint": "照片、视频或录音。"
   },
   "emergencyOverlay": {
     "triggerLabel": "打开紧急覆盖",
@@ -337,7 +356,10 @@
     "title": "需要紧急帮助？",
     "callNow": "立即拨打 {num}",
     "notify": "通知紧急联系人",
-    "close": "长按 2 秒关闭"
+    "close": "长按 2 秒关闭",
+    "subtitleAU": "澳大利亚紧急救援",
+    "subtitleCN": "中国 120 医疗急救",
+    "subtitleCA": "加拿大 911"
   },
   "addresses": {
     "title": "我的地址",
@@ -431,7 +453,8 @@
     "submit": "提交并释放托管",
     "successTitle": "感谢您的反馈",
     "successHint": "已释放托管给 {provider}，下次再约。",
-    "errorRequired": "请先选择星级再提交。"
+    "errorRequired": "请先选择星级再提交。",
+    "mockService": "深度清洁 · 3 小时"
   },
   "dispute": {
     "title": "报告问题",
@@ -528,5 +551,8 @@
     "openMailApp": "打开邮件应用",
     "continueToHome": "去首页"
   },
-  "dev": { "title": "组件预览", "subtitle": "设计 token 与原子组件内部预览" }
+  "dev": {
+    "title": "组件预览",
+    "subtitle": "设计 token 与原子组件内部预览"
+  }
 }

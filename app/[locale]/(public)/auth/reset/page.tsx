@@ -1,4 +1,5 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import { redirect as nextRedirect } from "next/navigation";
 import { Link, redirect } from "@/i18n/navigation";
 import { CheckCircle2 } from "lucide-react";
 import { AuthCard } from "@/components/domain/AuthCard";
@@ -6,6 +7,17 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { getSession } from "@/components/domain/sessionCookie";
+
+async function resetAction(formData: FormData) {
+  "use server";
+  const password = String(formData.get("password") ?? "");
+  const confirm = String(formData.get("confirm") ?? "");
+  const locale = String(formData.get("locale") ?? "en");
+  if (password.length < 8 || password !== confirm) {
+    nextRedirect(`/${locale}/auth/reset?error=mismatch`);
+  }
+  nextRedirect(`/${locale}/auth/reset?sent=1`);
+}
 
 type ResetState = "default" | "success" | "expired";
 
@@ -83,8 +95,9 @@ export default async function ResetPasswordPage({
           {errorMsg}
         </div>
       )}
-      <form className="flex flex-col gap-4" action="/api/auth/reset" method="post">
+      <form className="flex flex-col gap-4" action={resetAction}>
         <input type="hidden" name="token" value={token} />
+        <input type="hidden" name="locale" value={locale} />
         <div>
           <Label htmlFor="password">{t("newPassword")}</Label>
           <Input

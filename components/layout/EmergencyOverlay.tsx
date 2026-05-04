@@ -18,7 +18,6 @@ const HASH = "#sos";
  *    opens the overlay. Dismissing pops the hash.
  * 2. Keyword detection — listens for AI chat keyword events the future
  *    chat client will dispatch via `window.dispatchEvent(new Event("sc:sos"))`.
- *    The chat-emergency=1 route still works as a dedicated page.
  *
  * The overlay is keyboard-trapped (Escape closes), aria-modal, and the
  * call button gets focus on open so a single Tab + Enter dials.
@@ -130,11 +129,7 @@ export function EmergencyOverlay({ country = "AU" }: { country?: CountryCode }) 
         {t("title")}
       </h1>
       <p className="text-[18px] leading-snug text-[#CBD5E1]">
-        {country === "AU"
-          ? "Australian Emergency"
-          : country === "CN"
-          ? "中国 120 医疗急救"
-          : "Canada 911"}
+        {t(`subtitle${country}` as "subtitleAU" | "subtitleCN" | "subtitleCA")}
       </p>
       <a
         ref={callRef}

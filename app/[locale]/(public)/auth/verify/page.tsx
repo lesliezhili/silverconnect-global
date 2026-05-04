@@ -1,8 +1,18 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import { redirect as nextRedirect } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { CheckCircle2, Mail } from "lucide-react";
 import { AuthCard } from "@/components/domain/AuthCard";
 import { Button } from "@/components/ui/Button";
+
+async function resendAction(formData: FormData) {
+  "use server";
+  const email = String(formData.get("email") ?? "");
+  const locale = String(formData.get("locale") ?? "en");
+  nextRedirect(
+    `/${locale}/auth/verify?resent=1&email=${encodeURIComponent(email)}`
+  );
+}
 
 type VerifyState = "pending" | "success" | "expired" | "resent";
 
@@ -54,8 +64,9 @@ export default async function VerifyEmailPage({
   if (state === "expired") {
     return (
       <AuthCard title={t("verifyExpired")} subtitle={t("verifyExpiredHint")}>
-        <form action="/api/auth/verify/resend" method="post" className="flex flex-col gap-3">
+        <form action={resendAction} className="flex flex-col gap-3">
           <input type="hidden" name="email" value={email} />
+          <input type="hidden" name="locale" value={locale} />
           <Button type="submit" variant="primary" block size="md">
             {t("verifyResend")}
           </Button>
@@ -83,8 +94,9 @@ export default async function VerifyEmailPage({
         >
           {t("openMailApp")}
         </a>
-        <form action="/api/auth/verify/resend" method="post">
+        <form action={resendAction}>
           <input type="hidden" name="email" value={email} />
+          <input type="hidden" name="locale" value={locale} />
           <button
             type="submit"
             className="inline-flex h-12 w-full items-center justify-center rounded-md text-[15px] font-semibold text-brand"

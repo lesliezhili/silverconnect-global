@@ -1,4 +1,5 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import { redirect as nextRedirect } from "next/navigation";
 import { CheckCircle2, AlertTriangle, ShieldAlert, Camera } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Link, redirect } from "@/i18n/navigation";
@@ -6,6 +7,12 @@ import { Button } from "@/components/ui/Button";
 import { Label } from "@/components/ui/Label";
 import { getCountry } from "@/components/domain/countryCookie";
 import { getSession } from "@/components/domain/sessionCookie";
+
+async function reportAction(formData: FormData) {
+  "use server";
+  const locale = String(formData.get("locale") ?? "en");
+  nextRedirect(`/${locale}/safety/report?sent=1`);
+}
 
 const SEV_KEYS = ["sevLow", "sevMid", "sevHigh"] as const;
 
@@ -23,6 +30,7 @@ export default async function SafetyReportPage({
   if (!session.signedIn) redirect({ href: "/auth/login", locale });
   const country = await getCountry();
   const t = await getTranslations("safetyReport");
+  const tCommon = await getTranslations("common");
   const sent = sp.sent === "1";
 
   if (sent) {
@@ -49,7 +57,7 @@ export default async function SafetyReportPage({
             href="/home"
             className="mt-2 inline-flex h-14 items-center rounded-md bg-brand px-7 text-[17px] font-bold text-white"
           >
-            {locale === "zh" ? "返回首页" : "Back to home"}
+            {tCommon("backToHome")}
           </Link>
         </main>
       </>
@@ -90,10 +98,10 @@ export default async function SafetyReportPage({
         </div>
 
         <form
-          action="/api/safety/report?sent=1"
-          method="get"
+          action={reportAction}
           className="mt-6 flex flex-col gap-6"
         >
+          <input type="hidden" name="locale" value={locale} />
           <fieldset>
             <legend className="text-[16px] font-bold">{t("severity")}</legend>
             <ul className="mt-3 flex flex-col gap-2.5" role="radiogroup" aria-required="true">
@@ -161,7 +169,7 @@ export default async function SafetyReportPage({
               className="block w-full text-[14px] text-text-secondary file:mr-3 file:inline-flex file:h-12 file:items-center file:rounded-md file:border-[1.5px] file:border-border-strong file:bg-bg-base file:px-4 file:text-[14px] file:font-semibold file:text-text-primary"
             />
             <p className="mt-1.5 flex items-center gap-1 text-[13px] text-text-tertiary">
-              <Camera size={14} aria-hidden /> {locale === "zh" ? "照片、视频或录音。" : "Photos, video or audio."}
+              <Camera size={14} aria-hidden /> {t("evidenceMediaHint")}
             </p>
           </div>
 

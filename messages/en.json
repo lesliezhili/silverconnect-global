@@ -1,5 +1,7 @@
 {
-  "brand": { "name": "SilverConnect" },
+  "brand": {
+    "name": "SilverConnect"
+  },
   "common": {
     "search": "Search",
     "signIn": "Sign in",
@@ -19,7 +21,10 @@
     "close": "Close",
     "askAI": "Ask AI",
     "talkHuman": "Talk to a human",
-    "skipToContent": "Skip to main content"
+    "skipToContent": "Skip to main content",
+    "backToHome": "Back to home",
+    "viewBooking": "View booking",
+    "backToBooking": "Back to booking"
   },
   "nav": {
     "home": "Home",
@@ -29,10 +34,21 @@
     "profile": "Profile",
     "primary": "Primary navigation"
   },
-  "country": { "AU": "Australia", "CN": "China", "CA": "Canada" },
-  "language": { "en": "English", "zh": "中文" },
+  "country": {
+    "AU": "Australia",
+    "CN": "China",
+    "CA": "Canada"
+  },
+  "language": {
+    "en": "English",
+    "zh": "中文"
+  },
   "tax": {
-    "incl": { "AU": " (incl. GST)", "CN": " (incl. VAT)", "CA": " (incl. HST)" },
+    "incl": {
+      "AU": " (incl. GST)",
+      "CN": " (incl. VAT)",
+      "CA": " (incl. HST)"
+    },
     "inclLine": {
       "AU": "All prices include GST",
       "CN": "All prices include VAT",
@@ -243,7 +259,9 @@
       "CN": "China 120 Medical Emergency",
       "CA": "Canada 911 Combined Emergency"
     },
-    "subLine2": { "CN": "Fire 119 / Police 110" },
+    "subLine2": {
+      "CN": "Fire 119 / Police 110"
+    },
     "call": "Call {num} now",
     "notify": "Notify my emergency contact",
     "close": "Hold 2s to return"
@@ -329,7 +347,8 @@
     "policeContacted": "I have contacted the police",
     "submit": "Submit report",
     "successTitle": "Report received",
-    "successHint": "An admin will review within 24 hours and contact you with next steps."
+    "successHint": "An admin will review within 24 hours and contact you with next steps.",
+    "evidenceMediaHint": "Photos, video or audio."
   },
   "emergencyOverlay": {
     "triggerLabel": "Open emergency",
@@ -337,7 +356,10 @@
     "title": "Need emergency help?",
     "callNow": "Call {num} now",
     "notify": "Notify my emergency contact",
-    "close": "Hold 2s to close"
+    "close": "Hold 2s to close",
+    "subtitleAU": "Australian Emergency",
+    "subtitleCN": "China 120 Medical Emergency",
+    "subtitleCA": "Canada 911"
   },
   "addresses": {
     "title": "My addresses",
@@ -431,7 +453,8 @@
     "submit": "Submit & release payment",
     "successTitle": "Thanks for the feedback",
     "successHint": "Payment released to {provider}. See you next time.",
-    "errorRequired": "Please pick a star rating before submitting."
+    "errorRequired": "Please pick a star rating before submitting.",
+    "mockService": "Deep clean · 3h"
   },
   "dispute": {
     "title": "Report a problem",
@@ -528,5 +551,8 @@
     "openMailApp": "Open mail app",
     "continueToHome": "Continue to home"
   },
-  "dev": { "title": "Component Preview", "subtitle": "Internal preview of design tokens and atoms" }
+  "dev": {
+    "title": "Component Preview",
+    "subtitle": "Internal preview of design tokens and atoms"
+  }
 }

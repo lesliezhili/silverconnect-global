@@ -104,9 +104,6 @@ export default async function ProfilePage({
           ))}
         </ul>
 
-        {/* Sign out — links to a server page that deletes the session
-            cookie then redirects to /home, so the demo works without a
-            real /api/auth/logout endpoint. */}
         <Link
           href="/auth/logout"
           className="mt-4 flex min-h-[72px] w-full items-center gap-4 overflow-hidden rounded-lg border border-border bg-bg-base px-4 py-3"

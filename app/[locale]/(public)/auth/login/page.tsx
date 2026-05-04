@@ -1,10 +1,24 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import { redirect as nextRedirect } from "next/navigation";
 import { Link, redirect } from "@/i18n/navigation";
 import { AuthCard } from "@/components/domain/AuthCard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import { getSession } from "@/components/domain/sessionCookie";
+import { getSession, setSession } from "@/components/domain/sessionCookie";
+
+async function loginAction(formData: FormData) {
+  "use server";
+  const email = String(formData.get("email") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
+  const locale = String(formData.get("locale") ?? "en");
+  if (!email.includes("@") || password.length < 8) {
+    nextRedirect(`/${locale}/auth/login?error=credentials`);
+  }
+  const name = email.split("@")[0] || "User";
+  await setSession(name);
+  nextRedirect(`/${locale}/home`);
+}
 
 export default async function LoginPage({
   params,
@@ -38,7 +52,8 @@ export default async function LoginPage({
           {errorMsg}
         </div>
       )}
-      <form className="flex flex-col gap-4" action="/api/auth/login" method="post">
+      <form className="flex flex-col gap-4" action={loginAction}>
+        <input type="hidden" name="locale" value={locale} />
         <div>
           <Label htmlFor="email">{tCommon("email")}</Label>
           <Input

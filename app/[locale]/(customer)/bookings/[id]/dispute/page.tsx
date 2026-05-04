@@ -1,4 +1,5 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import { redirect as nextRedirect } from "next/navigation";
 import { CheckCircle2, AlertTriangle, Camera } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Link, redirect } from "@/i18n/navigation";
@@ -6,6 +7,13 @@ import { Label } from "@/components/ui/Label";
 import { Button } from "@/components/ui/Button";
 import { getCountry } from "@/components/domain/countryCookie";
 import { getSession } from "@/components/domain/sessionCookie";
+
+async function disputeAction(formData: FormData) {
+  "use server";
+  const locale = String(formData.get("locale") ?? "en");
+  const id = String(formData.get("id") ?? "");
+  nextRedirect(`/${locale}/bookings/${id}/dispute?sent=1`);
+}
 
 const TYPE_KEYS = [
   "typeNotShow",
@@ -34,8 +42,8 @@ export default async function DisputePage({
   if (!session.signedIn) redirect({ href: "/auth/login", locale });
   const country = await getCountry();
   const t = await getTranslations("dispute");
+  const tCommon = await getTranslations("common");
   const sent = sp.sent === "1";
-  const isZh = locale === "zh";
   const caseId = `${id.toUpperCase()}-D1`;
 
   if (sent) {
@@ -62,7 +70,7 @@ export default async function DisputePage({
             href={`/bookings/${id}`}
             className="mt-2 inline-flex h-14 items-center rounded-md bg-brand px-7 text-[17px] font-bold text-white"
           >
-            {isZh ? "返回预订" : "Back to booking"}
+            {tCommon("backToBooking")}
           </Link>
         </main>
       </>
@@ -98,9 +106,10 @@ export default async function DisputePage({
 
         <form
           className="mt-6 flex flex-col gap-6"
-          action={`/api/bookings/${id}/dispute`}
-          method="post"
+          action={disputeAction}
         >
+          <input type="hidden" name="locale" value={locale} />
+          <input type="hidden" name="id" value={id} />
           <fieldset>
             <legend className="text-[16px] font-bold text-text-primary">
               {t("type")}
