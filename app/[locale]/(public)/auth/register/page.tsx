@@ -5,7 +5,9 @@ import { AuthCard } from "@/components/domain/AuthCard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import { getSession, setSession } from "@/components/domain/sessionCookie";
+import { getSession } from "@/components/domain/sessionCookie";
+import { issueCode } from "@/components/domain/verifyCode";
+import { sendEmail, buildVerifyEmail } from "@/components/domain/email";
 
 async function registerAction(formData: FormData) {
   "use server";
@@ -15,9 +17,25 @@ async function registerAction(formData: FormData) {
   if (!email.includes("@") || password.length < 8) {
     nextRedirect(`/${locale}/auth/register?error=invalid`);
   }
-  const name = email.split("@")[0] || "User";
-  await setSession(name);
-  nextRedirect(`/${locale}/auth/verify?email=${encodeURIComponent(email)}`);
+  const code = issueCode(email);
+  const { subject, text, html } = buildVerifyEmail(code, locale);
+  const result = await sendEmail({ to: email, subject, text, html });
+  if (!result.ok) {
+    if (process.env.NODE_ENV !== "production") {
+      // eslint-disable-next-line no-console
+      console.warn("[register] sendEmail failed:", result.reason, "code=", code);
+    } else {
+      // eslint-disable-next-line no-console
+      console.error("[register] sendEmail failed:", result.reason);
+    }
+    if (result.reason === "smtp-not-configured") {
+      nextRedirect(`/${locale}/auth/register?error=smtp`);
+    }
+    nextRedirect(`/${locale}/auth/register?error=send`);
+  }
+  nextRedirect(
+    `/${locale}/auth/verify?email=${encodeURIComponent(email)}&sent=1`
+  );
 }
 
 export default async function RegisterPage({
@@ -38,6 +56,10 @@ export default async function RegisterPage({
   const errorMsg =
     error === "taken"
       ? t("errorEmailTaken")
+      : error === "smtp"
+      ? t("errorSmtpUnconfigured")
+      : error === "send"
+      ? t("errorSendFailed")
       : error
       ? t("errorGeneric")
       : null;
