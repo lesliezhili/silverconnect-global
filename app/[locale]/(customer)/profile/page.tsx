@@ -8,6 +8,8 @@ import {
   HelpCircle,
   ChevronRight,
   LogOut,
+  Pencil,
+  ShieldCheck,
 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Link, redirect } from "@/i18n/navigation";
@@ -16,6 +18,8 @@ import { getSession } from "@/components/domain/sessionCookie";
 import { ProviderAvatar } from "@/components/domain/ProviderAvatar";
 
 const ITEMS = [
+  { key: "edit",          href: "/profile/edit",          Icon: Pencil },
+  { key: "security",      href: "/profile/security",      Icon: ShieldCheck },
   { key: "addresses",     href: "/profile/addresses",     Icon: MapPin },
   { key: "payment",       href: "/profile/payment",       Icon: CreditCard },
   { key: "emergency",     href: "/profile/emergency",     Icon: PhoneCall },

@@ -10,4 +10,5 @@ export {
 } from "./CountrySelector";
 export { LanguageSelector, LanguageChip } from "./LanguageSelector";
 export { CountrySwitcher } from "./CountrySwitcher";
+export { EmergencyOverlay } from "./EmergencyOverlay";
 export { LocaleSync } from "./LocaleSync";
