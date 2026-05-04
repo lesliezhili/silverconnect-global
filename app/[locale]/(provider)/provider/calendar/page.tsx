@@ -1,0 +1,159 @@
+import { setRequestLocale, getTranslations } from "next-intl/server";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Header } from "@/components/layout/Header";
+import { Link, redirect } from "@/i18n/navigation";
+import { getCountry } from "@/components/domain/countryCookie";
+import { getSession } from "@/components/domain/sessionCookie";
+import { MOCK_JOBS } from "@/components/domain/providerMock";
+
+type DayKind = "booked" | "available" | "blocked" | "muted";
+
+function parseYM(raw: string | string[] | undefined): { y: number; m: number } {
+  const v = Array.isArray(raw) ? raw[0] : raw;
+  const match = typeof v === "string" ? v.match(/^(\d{4})-(\d{1,2})$/) : null;
+  if (match) return { y: Number(match[1]), m: Number(match[2]) - 1 };
+  const n = new Date();
+  return { y: n.getFullYear(), m: n.getMonth() };
+}
+
+function buildGrid(y: number, m: number): { date: Date; inMonth: boolean }[] {
+  const first = new Date(y, m, 1);
+  const lead = (first.getDay() + 6) % 7; // Monday-first
+  const start = new Date(y, m, 1 - lead);
+  return Array.from({ length: 42 }, (_, i) => {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    return { date: d, inMonth: d.getMonth() === m };
+  });
+}
+
+const BLOCKED_HARDCODED = new Set<string>([
+  // ISO date keys YYYY-MM-DD that we treat as "blocked" for demo (vacation)
+]);
+
+function dayKind(date: Date, jobDates: Set<string>, inMonth: boolean): DayKind {
+  if (!inMonth) return "muted";
+  const k = date.toISOString().slice(0, 10);
+  if (jobDates.has(k)) return "booked";
+  if (BLOCKED_HARDCODED.has(k)) return "blocked";
+  return "available";
+}
+
+export default async function ProviderCalendarPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const { locale } = await params;
+  const sp = await searchParams;
+  setRequestLocale(locale);
+  const session = await getSession();
+  if (!session.signedIn) redirect({ href: "/auth/login", locale });
+  const country = await getCountry();
+  const t = await getTranslations("provider");
+
+  const { y, m } = parseYM(sp.ym);
+  const grid = buildGrid(y, m);
+  const jobDates = new Set(MOCK_JOBS.map((j) => j.startISO.slice(0, 10)));
+
+  const monthLabel = new Date(y, m, 1).toLocaleDateString(
+    locale === "zh" ? "zh-CN" : "en-AU",
+    { year: "numeric", month: "long" }
+  );
+
+  const prev = new Date(y, m - 1, 1);
+  const next = new Date(y, m + 1, 1);
+  const fmtYM = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+
+  const dayKeys = ["weekMon", "weekTue", "weekWed", "weekThu", "weekFri", "weekSat", "weekSun"] as const;
+
+  return (
+    <>
+      <Header
+        country={country}
+        signedIn={session.signedIn}
+        initials={session.initials}
+      />
+      <main
+        id="main-content"
+        className="mx-auto w-full max-w-content px-5 pb-[120px] pt-6 sm:pb-12"
+      >
+        <h1 className="text-h2">{t("calendarTitle")}</h1>
+
+        <div className="mt-4 flex items-center gap-3">
+          <Link
+            href={`?ym=${fmtYM(prev)}`}
+            aria-label={t("calendarPrev")}
+            className="inline-flex h-12 w-12 items-center justify-center rounded-md border-[1.5px] border-border-strong bg-bg-base text-text-primary"
+          >
+            <ChevronLeft size={20} aria-hidden />
+          </Link>
+          <p className="flex-1 text-center text-[18px] font-bold tabular-nums">
+            {monthLabel}
+          </p>
+          <Link
+            href={`?ym=${fmtYM(next)}`}
+            aria-label={t("calendarNext")}
+            className="inline-flex h-12 w-12 items-center justify-center rounded-md border-[1.5px] border-border-strong bg-bg-base text-text-primary"
+          >
+            <ChevronRight size={20} aria-hidden />
+          </Link>
+        </div>
+
+        <div className="mt-4 grid grid-cols-7 gap-1 text-center text-[12px] font-semibold text-text-tertiary">
+          {dayKeys.map((k) => (
+            <div key={k}>{t(k)}</div>
+          ))}
+        </div>
+
+        <div className="mt-1 grid grid-cols-7 gap-1">
+          {grid.map(({ date, inMonth }) => {
+            const k = dayKind(date, jobDates, inMonth);
+            return (
+              <Link
+                key={date.toISOString()}
+                href="/provider/availability"
+                aria-disabled={k === "muted"}
+                className={cellClass(k)}
+              >
+                <span className={k === "muted" ? "text-text-tertiary" : ""}>
+                  {date.getDate()}
+                </span>
+                {k === "booked" && (
+                  <span aria-hidden className="mt-0.5 h-1 w-1 rounded-full bg-brand" />
+                )}
+              </Link>
+            );
+          })}
+        </div>
+
+        <ul className="mt-6 flex flex-wrap gap-4 text-[13px]">
+          <Legend color="bg-brand" label={t("legendBooked")} />
+          <Legend color="bg-success" label={t("legendAvailable")} />
+          <Legend color="bg-text-tertiary" label={t("legendBlocked")} />
+        </ul>
+      </main>
+    </>
+  );
+}
+
+function cellClass(k: DayKind) {
+  const base =
+    "flex h-12 flex-col items-center justify-center rounded-md text-[14px] font-semibold tabular-nums";
+  if (k === "muted") return `${base} bg-bg-base text-text-tertiary`;
+  if (k === "booked") return `${base} bg-brand-soft text-brand`;
+  if (k === "blocked") return `${base} bg-bg-surface-2 text-text-tertiary line-through`;
+  return `${base} bg-bg-base text-text-primary border border-border`;
+}
+
+function Legend({ color, label }: { color: string; label: string }) {
+  return (
+    <li className="flex items-center gap-1.5">
+      <span aria-hidden className={`h-2.5 w-2.5 rounded-full ${color}`} />
+      <span>{label}</span>
+    </li>
+  );
+}
