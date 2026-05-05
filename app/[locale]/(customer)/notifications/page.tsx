@@ -1,7 +1,7 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect as nextRedirect } from "next/navigation";
 import { eq, and, inArray, isNull, desc } from "drizzle-orm";
-import { Calendar, MessageCircle, Settings, Check } from "lucide-react";
+import { Calendar, MessageCircle, Settings } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/components/ui/cn";

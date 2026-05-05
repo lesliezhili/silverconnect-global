@@ -1,6 +1,6 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect as nextRedirect } from "next/navigation";
-import { eq, and, inArray, desc, asc, gte, lt } from "drizzle-orm";
+import { eq, and, inArray, desc, asc, gte } from "drizzle-orm";
 import { Header } from "@/components/layout/Header";
 import { Link } from "@/i18n/navigation";
 import { ProviderAvatar } from "@/components/domain/ProviderAvatar";

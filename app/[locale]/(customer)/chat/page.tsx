@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { ChatBubble } from "@/components/domain/ChatBubble";
-import { C9AICompanion, S7NetworkError } from "@/components/illustrations";
+import { C9AICompanion } from "@/components/illustrations";
 import { EMERGENCY_NUMBER } from "@/components/domain/country";
 import { COUNTRY_FLAG } from "@/components/layout/CountrySelector";
 import { Header } from "@/components/layout/Header";

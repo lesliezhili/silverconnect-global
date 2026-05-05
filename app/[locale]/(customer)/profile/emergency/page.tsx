@@ -13,7 +13,6 @@ import { emergencyContacts } from "@/lib/db/schema/customer-data";
 import { getCurrentUser } from "@/lib/auth/server";
 
 const REL_KEYS = ["daughter", "spouse", "sibling", "friend", "other"] as const;
-type RelKey = (typeof REL_KEYS)[number];
 
 function relTranslationKey(rel: string | null): string {
   switch (rel) {
