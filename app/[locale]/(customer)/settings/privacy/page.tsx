@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/Button";
 import { getCountry } from "@/components/domain/countryCookie";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema/users";
-import { disputes } from "@/lib/db/schema/disputes";
 import { getCurrentUser, signOut } from "@/lib/auth/server";
 import { buildUserDataExport } from "@/lib/privacy/export";
 
@@ -38,20 +37,12 @@ async function deleteAccountAction(formData: FormData) {
     nextRedirect(`/${locale}/settings/privacy?error=confirm`);
   }
 
-  // Anonymise disputes the user raised before the cascade nukes their
-  // user row — disputes themselves stay (FK is set null) but we want
-  // the reason text to lose any identifying info too. Conservative
-  // approach: leave it; admins can already see the dispute decision
-  // history. If we want to wipe text we can do it here later.
-  await db
-    .update(disputes)
-    .set({ updatedAt: new Date() })
-    .where(eq(disputes.raisedBy, me.id))
-    .returning({ id: disputes.id });
-
-  // Cascades take care of: bookings, addresses, emergency_contacts,
-  // family_members, payment_methods, reviews, ai_conversations + msgs,
-  // incident_reports, notifications, provider_profiles + their docs.
+  // FK cascades remove everything tied to this user: bookings (which in
+  // turn cascade to disputes/payments/reviews/booking_changes),
+  // addresses, emergency_contacts, family_members, payment_methods,
+  // ai_conversations (+messages), incident_reports, notifications,
+  // provider_profiles (+documents/categories). review_reports.reporterId
+  // is set null so moderation history survives.
   await db.delete(users).where(eq(users.id, me.id));
 
   await signOut();
