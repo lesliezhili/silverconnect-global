@@ -6,10 +6,9 @@ import { AuthCard } from "@/components/domain/AuthCard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import { getSession } from "@/components/domain/sessionCookie";
 import { issueCode } from "@/components/domain/verifyCode";
 import { sendEmail, buildResetEmail } from "@/components/domain/email";
-import { findUserByEmail } from "@/lib/auth/server";
+import { findUserByEmail, getCurrentUser } from "@/lib/auth/server";
 
 async function forgotAction(formData: FormData) {
   "use server";
@@ -46,8 +45,8 @@ export default async function ForgotPage({
   const { locale } = await params;
   const sp = await searchParams;
   setRequestLocale(locale);
-  const session = await getSession();
-  if (session.signedIn) redirect({ href: "/home", locale });
+  const me = await getCurrentUser();
+  if (me) redirect({ href: "/home", locale });
   const t = await getTranslations("auth");
   const tCommon = await getTranslations("common");
   const error = typeof sp.error === "string" ? sp.error : undefined;

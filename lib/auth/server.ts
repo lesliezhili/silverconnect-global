@@ -36,14 +36,18 @@ export interface CurrentUser {
   initials: string;
 }
 
+/**
+ * Read-only — safe to call from Server Components and Server Actions.
+ * If the cookie points at a deleted/missing user we just return null;
+ * cookies can only be mutated in actions/route handlers, so a stale
+ * cookie is cleared the next time the user hits a write path
+ * (`signOut`, login redirect, etc.) rather than here.
+ */
 export async function getCurrentUser(): Promise<CurrentUser | null> {
   const session = await getAuthSession();
   if (!session.userId) return null;
   const u = await findUserById(session.userId);
-  if (!u || u.deletedAt) {
-    session.destroy();
-    return null;
-  }
+  if (!u || u.deletedAt) return null;
   return {
     id: u.id,
     email: u.email,

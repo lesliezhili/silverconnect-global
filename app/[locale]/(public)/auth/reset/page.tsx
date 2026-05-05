@@ -7,11 +7,10 @@ import { AuthCard } from "@/components/domain/AuthCard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import { getSession } from "@/components/domain/sessionCookie";
 import { consumeCode } from "@/components/domain/verifyCode";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema/users";
-import { findUserByEmail } from "@/lib/auth/server";
+import { findUserByEmail, getCurrentUser } from "@/lib/auth/server";
 import { hashPassword } from "@/lib/auth/password";
 
 async function resetAction(formData: FormData) {
@@ -67,8 +66,8 @@ export default async function ResetPasswordPage({
   const { locale } = await params;
   const sp = await searchParams;
   setRequestLocale(locale);
-  const session = await getSession();
-  if (session.signedIn) redirect({ href: "/home", locale });
+  const me = await getCurrentUser();
+  if (me) redirect({ href: "/home", locale });
   const t = await getTranslations("auth");
   const tCommon = await getTranslations("common");
   const state = parseState(

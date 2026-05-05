@@ -1,44 +1,82 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import { redirect as nextRedirect } from "next/navigation";
+import { eq, and } from "drizzle-orm";
 import { MapPin, Plus, Pencil, Trash2 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
-import { redirect } from "@/i18n/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { getCountry } from "@/components/domain/countryCookie";
-import { getSession } from "@/components/domain/sessionCookie";
 import { EmptyState } from "@/components/domain/PageStates";
+import { db } from "@/lib/db";
+import { addresses } from "@/lib/db/schema/customer-data";
+import { getCurrentUser } from "@/lib/auth/server";
 
-interface Address {
-  id: string;
-  label: string;
-  street: string;
-  suburb: string;
-  state: string;
-  postcode: string;
-  isDefault: boolean;
+type CountryCode = "AU" | "CN" | "CA";
+
+async function addAddressAction(formData: FormData) {
+  "use server";
+  const locale = String(formData.get("locale") ?? "en");
+  const me = await getCurrentUser();
+  if (!me) nextRedirect(`/${locale}/auth/login`);
+  const country = String(formData.get("country") ?? "AU") as CountryCode;
+  const label = String(formData.get("label") ?? "").trim() || null;
+  const line1 = String(formData.get("street") ?? "").trim();
+  const city = String(formData.get("suburb") ?? "").trim();
+  const state = String(formData.get("state") ?? "").trim() || null;
+  const postcode = String(formData.get("postcode") ?? "").trim() || null;
+  if (!line1 || !city) {
+    nextRedirect(`/${locale}/profile/addresses?add=1&error=required`);
+  }
+  const existingCount = await db
+    .select({ id: addresses.id })
+    .from(addresses)
+    .where(eq(addresses.userId, me.id));
+  await db.insert(addresses).values({
+    userId: me.id,
+    label,
+    line1,
+    city,
+    state,
+    postcode,
+    country,
+    isDefault: existingCount.length === 0,
+  });
+  nextRedirect(`/${locale}/profile/addresses`);
 }
 
-const SAMPLE: Address[] = [
-  {
-    id: "a1",
-    label: "labelHome",
-    street: "12 Park Ave",
-    suburb: "Sydney",
-    state: "NSW",
-    postcode: "2000",
-    isDefault: true,
-  },
-  {
-    id: "a2",
-    label: "labelMum",
-    street: "8 Mill St",
-    suburb: "Sydney",
-    state: "NSW",
-    postcode: "2000",
-    isDefault: false,
-  },
-];
+async function deleteAddressAction(formData: FormData) {
+  "use server";
+  const locale = String(formData.get("locale") ?? "en");
+  const id = String(formData.get("id") ?? "");
+  const me = await getCurrentUser();
+  if (!me) nextRedirect(`/${locale}/auth/login`);
+  if (!id) nextRedirect(`/${locale}/profile/addresses`);
+  await db
+    .delete(addresses)
+    .where(and(eq(addresses.id, id), eq(addresses.userId, me.id)));
+  nextRedirect(`/${locale}/profile/addresses`);
+}
+
+async function setDefaultAddressAction(formData: FormData) {
+  "use server";
+  const locale = String(formData.get("locale") ?? "en");
+  const id = String(formData.get("id") ?? "");
+  const me = await getCurrentUser();
+  if (!me) nextRedirect(`/${locale}/auth/login`);
+  if (!id) nextRedirect(`/${locale}/profile/addresses`);
+  await db.transaction(async (tx) => {
+    await tx
+      .update(addresses)
+      .set({ isDefault: false, updatedAt: new Date() })
+      .where(eq(addresses.userId, me.id));
+    await tx
+      .update(addresses)
+      .set({ isDefault: true, updatedAt: new Date() })
+      .where(and(eq(addresses.id, id), eq(addresses.userId, me.id)));
+  });
+  nextRedirect(`/${locale}/profile/addresses`);
+}
 
 export default async function AddressesPage({
   params,
@@ -50,22 +88,27 @@ export default async function AddressesPage({
   const { locale } = await params;
   const sp = await searchParams;
   setRequestLocale(locale);
-  const session = await getSession();
-  if (!session.signedIn) redirect({ href: "/auth/login", locale });
+  const me = await getCurrentUser();
+  if (!me) nextRedirect(`/${locale}/auth/login`);
   const country = await getCountry();
   const t = await getTranslations("addresses");
   const tCommon = await getTranslations("common");
   const adding = sp.add === "1";
-  const empty = sp.state === "empty";
-  const items = empty ? [] : SAMPLE;
+  const error = typeof sp.error === "string" ? sp.error : undefined;
+
+  const items = await db
+    .select()
+    .from(addresses)
+    .where(eq(addresses.userId, me.id))
+    .orderBy(addresses.createdAt);
 
   return (
     <>
       <Header
         country={country}
         back
-        signedIn={session.signedIn}
-        initials={session.initials}
+        signedIn={true}
+        initials={me.initials}
       />
       <main
         id="main-content"
@@ -106,7 +149,7 @@ export default async function AddressesPage({
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="text-[16px] font-bold">
-                        {t(a.label as Parameters<typeof t>[0])}
+                        {a.label || t("labelHome")}
                       </p>
                       {a.isDefault && (
                         <span className="inline-flex h-6 items-center rounded-sm bg-success-soft px-2 text-[12px] font-semibold text-success">
@@ -115,32 +158,44 @@ export default async function AddressesPage({
                       )}
                     </div>
                     <p className="mt-1 text-[14px] text-text-secondary">
-                      {a.street}, {a.suburb} {a.state} {a.postcode}
+                      {a.line1}, {a.city}
+                      {a.state ? ` ${a.state}` : ""}
+                      {a.postcode ? ` ${a.postcode}` : ""}
                     </p>
                   </div>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <button
                     type="button"
-                    className="inline-flex h-10 items-center gap-1.5 rounded-sm border-[1.5px] border-border-strong bg-bg-base px-3 text-[14px] font-semibold text-text-primary"
+                    className="inline-flex h-10 items-center gap-1.5 rounded-sm border-[1.5px] border-border-strong bg-bg-base px-3 text-[14px] font-semibold text-text-primary opacity-50"
+                    disabled
+                    title="Edit not yet wired"
                   >
                     <Pencil size={14} aria-hidden /> {t("edit")}
                   </button>
                   {!a.isDefault && (
-                    <button
-                      type="button"
-                      className="inline-flex h-10 items-center rounded-sm border-[1.5px] border-border-strong bg-bg-base px-3 text-[14px] font-semibold text-text-primary"
-                    >
-                      {t("setDefault")}
-                    </button>
+                    <form action={setDefaultAddressAction}>
+                      <input type="hidden" name="locale" value={locale} />
+                      <input type="hidden" name="id" value={a.id} />
+                      <button
+                        type="submit"
+                        className="inline-flex h-10 items-center rounded-sm border-[1.5px] border-border-strong bg-bg-base px-3 text-[14px] font-semibold text-text-primary"
+                      >
+                        {t("setDefault")}
+                      </button>
+                    </form>
                   )}
-                  <button
-                    type="button"
-                    aria-label={t("delete")}
-                    className="ml-auto inline-flex h-10 w-10 items-center justify-center rounded-sm border-[1.5px] border-danger bg-bg-base text-danger"
-                  >
-                    <Trash2 size={16} aria-hidden />
-                  </button>
+                  <form action={deleteAddressAction} className="ml-auto">
+                    <input type="hidden" name="locale" value={locale} />
+                    <input type="hidden" name="id" value={a.id} />
+                    <button
+                      type="submit"
+                      aria-label={t("delete")}
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-sm border-[1.5px] border-danger bg-bg-base text-danger"
+                    >
+                      <Trash2 size={16} aria-hidden />
+                    </button>
+                  </form>
                 </div>
               </li>
             ))}
@@ -158,14 +213,23 @@ export default async function AddressesPage({
 
         {adding && (
           <form
-            action="/profile/addresses"
-            method="get"
+            action={addAddressAction}
             className="mt-5 flex flex-col gap-4 rounded-lg border-2 border-brand bg-bg-base p-5"
           >
+            <input type="hidden" name="locale" value={locale} />
+            <input type="hidden" name="country" value={country} />
             <h2 className="text-h3">{t("addNew")}</h2>
+            {error === "required" && (
+              <div
+                role="alert"
+                className="rounded-md border-[1.5px] border-danger bg-danger-soft px-3.5 py-2 text-[14px] font-semibold text-danger"
+              >
+                {t("emptyHint")}
+              </div>
+            )}
             <div>
               <Label htmlFor="label">{t("label")}</Label>
-              <Input id="label" name="label" defaultValue={t("labelHome")} required />
+              <Input id="label" name="label" defaultValue={t("labelHome")} />
             </div>
             <div>
               <Label htmlFor="street">{t("addressLine")}</Label>
@@ -178,12 +242,12 @@ export default async function AddressesPage({
               </div>
               <div>
                 <Label htmlFor="state">{t("state")}</Label>
-                <Input id="state" name="state" autoComplete="address-level1" required />
+                <Input id="state" name="state" autoComplete="address-level1" />
               </div>
             </div>
             <div>
               <Label htmlFor="postcode">{t("postcode")}</Label>
-              <Input id="postcode" name="postcode" autoComplete="postal-code" inputMode="numeric" required />
+              <Input id="postcode" name="postcode" autoComplete="postal-code" inputMode="numeric" />
             </div>
             <Button type="submit" variant="primary" block size="md">
               {tCommon("save")}
