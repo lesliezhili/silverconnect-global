@@ -3,6 +3,7 @@ import { getMessages, getTranslations, setRequestLocale } from "next-intl/server
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { LocaleSync } from "@/components/layout/LocaleSync";
+import { AskAIButton } from "@/components/domain/AskAIButton";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -33,6 +34,7 @@ export default async function LocaleLayout({
         {t("skipToContent")}
       </a>
       {children}
+      <AskAIButton locale={locale} label={t("askAI")} />
     </NextIntlClientProvider>
   );
 }

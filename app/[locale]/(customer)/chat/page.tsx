@@ -146,6 +146,11 @@ export default async function ChatPage({
   const me = await getCurrentUser();
   const emergency = sp.emergency === "1";
   const num = EMERGENCY_NUMBER[country];
+  const fromRaw = typeof sp.from === "string" ? sp.from : null;
+  const backHref =
+    fromRaw && fromRaw.startsWith("/") && !fromRaw.startsWith("//")
+      ? fromRaw
+      : "/home";
 
   if (emergency) {
     const subText = isZh
@@ -228,7 +233,7 @@ export default async function ChatPage({
           className="flex h-16 shrink-0 items-center gap-2 border-b border-border bg-bg-base pl-1 pr-3"
         >
           <Link
-            href="/home"
+            href={backHref}
             aria-label={isZh ? "返回" : "Back"}
             className="inline-flex h-12 w-12 items-center justify-center rounded-md text-text-primary hover:bg-bg-surface-2"
           >
