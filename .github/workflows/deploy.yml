@@ -1,0 +1,69 @@
+name: Deploy to Vercel
+
+# Manual trigger only.
+#
+# Auto-deploy on push to main is intentionally disabled until the
+# pre-existing TypeScript errors in app/api/** legacy Supabase routes
+# are cleaned up (Phase 2 / 3 work). Once those are removed or
+# rewritten, switch the trigger to:
+#
+#   on:
+#     push:
+#       branches: [main]
+#
+# Required GitHub repo secrets (Settings → Secrets and variables → Actions):
+#   VERCEL_TOKEN       — Personal token from vercel.com/account/tokens
+#   VERCEL_ORG_ID      — `vercel link` output / Vercel project Settings → General
+#   VERCEL_PROJECT_ID  — same place
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Deploy target"
+        required: true
+        default: "preview"
+        type: choice
+        options:
+          - preview
+          - production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: npm
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel environment
+        run: |
+          vercel pull --yes \
+            --environment=${{ inputs.target == 'production' && 'production' || 'preview' }} \
+            --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build
+        run: |
+          if [ "${{ inputs.target }}" = "production" ]; then
+            vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+          else
+            vercel build --token=${{ secrets.VERCEL_TOKEN }}
+          fi
+
+      - name: Deploy
+        run: |
+          if [ "${{ inputs.target }}" = "production" ]; then
+            vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+          else
+            vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+          fi

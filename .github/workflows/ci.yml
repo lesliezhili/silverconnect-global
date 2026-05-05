@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  schema-and-lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # Validates the Drizzle TS schema compiles into valid SQL. No DB
+      # connection — generate is offline. Placeholder DATABASE_URL just
+      # satisfies the env-variable assertion in drizzle.config.ts.
+      - name: Drizzle schema generate
+        env:
+          DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci
+        run: npx drizzle-kit generate --name=ci-check
+
+      # Lint runs as informational. The repo currently has 3 pre-existing
+      # eslint errors in legacy app/api/** Supabase routes that are
+      # scheduled for replacement in Phase 2/3. Once those routes are
+      # rewritten, drop `continue-on-error` so lint becomes a hard gate.
+      - name: Lint (informational)
+        run: npm run lint
+        continue-on-error: true
+
+  # Phase 1 DB smoke test placeholder.
+  #
+  # To enable: create a separate Supabase project (or any throwaway
+  # Postgres) for CI, push the schema there, then add the connection
+  # string as a repo secret named SUPABASE_TEST_DB_URL. Replace this
+  # placeholder job with one that runs `npx tsx scripts/smoke-phase1.ts`
+  # against that secret. Avoid pointing it at the dev project so CI
+  # doesn't churn shared data.

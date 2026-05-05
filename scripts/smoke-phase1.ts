@@ -41,7 +41,6 @@ const TEST_PASSWORD = "SmokeTest123";
 
 function check(label: string, ok: boolean, extra?: string) {
   const tag = ok ? "✅" : "❌";
-  // eslint-disable-next-line no-console
   console.log(`${tag} ${label}${extra ? ` — ${extra}` : ""}`);
   if (!ok) process.exitCode = 1;
 }
@@ -282,7 +281,6 @@ async function main() {
     orphanAvails.length === 0,
   );
 
-  // eslint-disable-next-line no-console
   console.log(
     "\nDone. Exit code:",
     process.exitCode ?? 0,
@@ -293,7 +291,6 @@ async function main() {
 }
 
 main().catch(async (e) => {
-  // eslint-disable-next-line no-console
   console.error("FATAL:", e);
   await client.end();
   process.exit(1);
