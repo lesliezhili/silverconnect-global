@@ -1,55 +1,73 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
-import { CreditCard, Plus, Trash2, Lock } from "lucide-react";
+import { redirect as nextRedirect } from "next/navigation";
+import { eq, and } from "drizzle-orm";
+import { CreditCard, Trash2, Lock } from "lucide-react";
 import { Header } from "@/components/layout/Header";
-import { redirect } from "@/i18n/navigation";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Label } from "@/components/ui/Label";
 import { getCountry } from "@/components/domain/countryCookie";
-import { getSession } from "@/components/domain/sessionCookie";
 import { EmptyState } from "@/components/domain/PageStates";
+import { db } from "@/lib/db";
+import { paymentMethods } from "@/lib/db/schema/customer-data";
+import { getCurrentUser } from "@/lib/auth/server";
 
-interface Card {
-  id: string;
-  brand: "Visa" | "Mastercard" | "Amex";
-  last4: string;
-  expMonth: number;
-  expYear: number;
-  isDefault: boolean;
+async function deleteCardAction(formData: FormData) {
+  "use server";
+  const locale = String(formData.get("locale") ?? "en");
+  const id = String(formData.get("id") ?? "");
+  const me = await getCurrentUser();
+  if (!me) nextRedirect(`/${locale}/auth/login`);
+  if (!id) nextRedirect(`/${locale}/profile/payment`);
+  await db
+    .delete(paymentMethods)
+    .where(and(eq(paymentMethods.id, id), eq(paymentMethods.userId, me.id)));
+  nextRedirect(`/${locale}/profile/payment`);
 }
 
-const SAMPLE: Card[] = [
-  { id: "c1", brand: "Visa", last4: "4242", expMonth: 12, expYear: 2028, isDefault: true },
-  { id: "c2", brand: "Mastercard", last4: "5555", expMonth: 6, expYear: 2027, isDefault: false },
-];
+async function setDefaultCardAction(formData: FormData) {
+  "use server";
+  const locale = String(formData.get("locale") ?? "en");
+  const id = String(formData.get("id") ?? "");
+  const me = await getCurrentUser();
+  if (!me) nextRedirect(`/${locale}/auth/login`);
+  if (!id) nextRedirect(`/${locale}/profile/payment`);
+  await db.transaction(async (tx) => {
+    await tx
+      .update(paymentMethods)
+      .set({ isDefault: false, updatedAt: new Date() })
+      .where(eq(paymentMethods.userId, me.id));
+    await tx
+      .update(paymentMethods)
+      .set({ isDefault: true, updatedAt: new Date() })
+      .where(and(eq(paymentMethods.id, id), eq(paymentMethods.userId, me.id)));
+  });
+  nextRedirect(`/${locale}/profile/payment`);
+}
 
 export default async function ProfilePaymentPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ locale: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale } = await params;
-  const sp = await searchParams;
   setRequestLocale(locale);
-  const session = await getSession();
-  if (!session.signedIn) redirect({ href: "/auth/login", locale });
+  const me = await getCurrentUser();
+  if (!me) nextRedirect(`/${locale}/auth/login`);
   const country = await getCountry();
   const t = await getTranslations("paymentMethods");
-  const tCommon = await getTranslations("common");
-  const tPay = await getTranslations("payment");
-  const adding = sp.add === "1";
-  const empty = sp.state === "empty";
-  const items = empty ? [] : SAMPLE;
+
+  const items = await db
+    .select()
+    .from(paymentMethods)
+    .where(eq(paymentMethods.userId, me.id))
+    .orderBy(paymentMethods.createdAt);
 
   return (
     <>
       <Header
         country={country}
         back
-        signedIn={session.signedIn}
-        initials={session.initials}
+        signedIn={true}
+        initials={me.initials}
       />
       <main
         id="main-content"
@@ -69,12 +87,14 @@ export default async function ProfilePaymentPage({
               title={t("empty")}
               hint={t("emptyHint")}
               cta={
-                <a
-                  href="?add=1"
-                  className="inline-flex h-14 items-center justify-center rounded-md bg-brand px-7 text-[17px] font-bold text-white"
+                <button
+                  type="button"
+                  disabled
+                  title="Card add flow ships with Stripe wiring"
+                  className="inline-flex h-14 items-center justify-center rounded-md bg-brand px-7 text-[17px] font-bold text-white opacity-60"
                 >
                   {t("addCard")}
-                </a>
+                </button>
               }
             />
           </div>
@@ -89,12 +109,12 @@ export default async function ProfilePaymentPage({
                   aria-hidden
                   className="flex h-10 w-14 shrink-0 items-center justify-center rounded-sm bg-text-primary text-[12px] font-bold text-bg-base"
                 >
-                  {c.brand === "Visa" ? "VISA" : c.brand === "Mastercard" ? "MC" : "AMEX"}
+                  {(c.brand ?? "CARD").toUpperCase().slice(0, 4)}
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-[16px] font-bold tabular-nums">
-                      {t("endingIn", { last4: c.last4 })}
+                      {t("endingIn", { last4: c.last4 ?? "????" })}
                     </p>
                     {c.isDefault && (
                       <span className="inline-flex h-6 items-center rounded-sm bg-success-soft px-2 text-[12px] font-semibold text-success">
@@ -102,88 +122,51 @@ export default async function ProfilePaymentPage({
                       </span>
                     )}
                   </div>
-                  <p className="mt-0.5 text-[13px] text-text-secondary tabular-nums">
-                    {t("expires", {
-                      month: String(c.expMonth).padStart(2, "0"),
-                      year: c.expYear,
-                    })}
-                  </p>
+                  {c.expMonth !== null && c.expYear !== null && (
+                    <p className="mt-0.5 text-[13px] text-text-secondary tabular-nums">
+                      {t("expires", {
+                        month: String(c.expMonth).padStart(2, "0"),
+                        year: c.expYear,
+                      })}
+                    </p>
+                  )}
                 </div>
                 {!c.isDefault && (
-                  <button
-                    type="button"
-                    className="inline-flex h-10 items-center rounded-sm border-[1.5px] border-border-strong bg-bg-base px-3 text-[14px] font-semibold text-text-primary"
-                  >
-                    {t("setDefault")}
-                  </button>
+                  <form action={setDefaultCardAction}>
+                    <input type="hidden" name="locale" value={locale} />
+                    <input type="hidden" name="id" value={c.id} />
+                    <button
+                      type="submit"
+                      className="inline-flex h-10 items-center rounded-sm border-[1.5px] border-border-strong bg-bg-base px-3 text-[14px] font-semibold text-text-primary"
+                    >
+                      {t("setDefault")}
+                    </button>
+                  </form>
                 )}
-                <button
-                  type="button"
-                  aria-label={t("delete")}
-                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border-[1.5px] border-danger bg-bg-base text-danger"
-                >
-                  <Trash2 size={16} aria-hidden />
-                </button>
+                <form action={deleteCardAction}>
+                  <input type="hidden" name="locale" value={locale} />
+                  <input type="hidden" name="id" value={c.id} />
+                  <button
+                    type="submit"
+                    aria-label={t("delete")}
+                    className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border-[1.5px] border-danger bg-bg-base text-danger"
+                  >
+                    <Trash2 size={16} aria-hidden />
+                  </button>
+                </form>
               </li>
             ))}
           </ul>
         )}
 
-        {!adding && items.length > 0 && (
-          <a
-            href="?add=1"
-            className="mt-4 inline-flex h-14 w-full items-center justify-center gap-2 rounded-md border-2 border-dashed border-border-strong text-[16px] font-semibold text-brand"
-          >
-            <Plus size={20} aria-hidden /> {t("addCard")}
-          </a>
-        )}
-
-        {adding && (
-          <form
-            action="/profile/payment"
-            method="get"
-            className="mt-5 flex flex-col gap-4 rounded-lg border-2 border-brand bg-bg-base p-5"
-          >
-            <h2 className="flex items-center gap-2 text-h3">
-              <CreditCard size={22} className="text-brand" aria-hidden />
-              {t("addCard")}
-            </h2>
-            <div>
-              <Label htmlFor="cardNumber">{tPay("cardNumber")}</Label>
-              <Input
-                id="cardNumber"
-                name="cardNumber"
-                autoComplete="cc-number"
-                inputMode="numeric"
-                placeholder="4242 4242 4242 4242"
-                required
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label htmlFor="exp">{tPay("expLabel")}</Label>
-                <Input
-                  id="exp"
-                  name="exp"
-                  autoComplete="cc-exp"
-                  inputMode="numeric"
-                  placeholder="MM / YY"
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="cvv">{tPay("cvvLabel")}</Label>
-                <Input id="cvv" name="cvv" autoComplete="cc-csc" inputMode="numeric" required />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="name">{tPay("cardName")}</Label>
-              <Input id="name" name="name" autoComplete="cc-name" required />
-            </div>
-            <Button type="submit" variant="primary" block size="md">
-              {tCommon("save")}
-            </Button>
-          </form>
+        {/* Add-card form intentionally removed for Wave 1.
+            Real card capture must go through Stripe Elements / SetupIntent
+            so we never touch raw PAN. Wired in the Stripe-integration phase. */}
+        {items.length > 0 && (
+          <p className="mt-4 rounded-md border border-border bg-bg-surface-2 px-3.5 py-3 text-[13px] text-text-tertiary">
+            {/* English-side note; localise once Stripe is wired. */}
+            Adding new cards is wired together with Stripe — coming soon.
+          </p>
         )}
       </main>
     </>
