@@ -4,12 +4,23 @@ import { getIronSession, type SessionOptions } from "iron-session";
 
 export type Role = "customer" | "provider" | "admin";
 
+export interface BookingDraft {
+  serviceId?: string;
+  providerId?: string;
+  addressId?: string;
+  /** ISO 8601 timestamp. */
+  scheduledAt?: string;
+  notes?: string;
+}
+
 export interface AuthSession {
   userId?: string;
   email?: string;
   name?: string;
   initials?: string;
   role?: Role;
+  /** Multi-step new-booking wizard scratch space; cleared on finalize. */
+  bookingDraft?: BookingDraft;
 }
 
 const secret = process.env.SESSION_SECRET;
