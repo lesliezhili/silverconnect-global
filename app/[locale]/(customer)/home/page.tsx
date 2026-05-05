@@ -1,5 +1,5 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
-import { eq, and, desc, sql, inArray } from "drizzle-orm";
+import { eq, and, desc, sql } from "drizzle-orm";
 import { Header } from "@/components/layout/Header";
 import { Link } from "@/i18n/navigation";
 import { S1TeaTime } from "@/components/illustrations";

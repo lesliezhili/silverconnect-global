@@ -1,16 +1,31 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect as nextRedirect } from "next/navigation";
+import { eq } from "drizzle-orm";
 import { CheckCircle2 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
-import { redirect } from "@/i18n/navigation";
 import { Button } from "@/components/ui/Button";
 import { getCountry } from "@/components/domain/countryCookie";
-import { getSession } from "@/components/domain/sessionCookie";
+import { db } from "@/lib/db";
+import {
+  providerProfiles,
+  providerAvailability,
+} from "@/lib/db/schema/providers";
+import { getCurrentUser } from "@/lib/auth/server";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 const SLOTS = ["morning", "afternoon", "evening"] as const;
+type Slot = (typeof SLOTS)[number];
 
-const DAY_KEYS: Record<(typeof DAYS)[number], "weekMon" | "weekTue" | "weekWed" | "weekThu" | "weekFri" | "weekSat" | "weekSun"> = {
+const DAY_KEYS: Record<
+  (typeof DAYS)[number],
+  | "weekMon"
+  | "weekTue"
+  | "weekWed"
+  | "weekThu"
+  | "weekFri"
+  | "weekSat"
+  | "weekSun"
+> = {
   Mon: "weekMon",
   Tue: "weekTue",
   Wed: "weekWed",
@@ -19,33 +34,70 @@ const DAY_KEYS: Record<(typeof DAYS)[number], "weekMon" | "weekTue" | "weekWed" 
   Sat: "weekSat",
   Sun: "weekSun",
 };
+function dayIndex(label: (typeof DAYS)[number]): number {
+  return DAYS.indexOf(label) + 1; // ISO Mon=1..Sun=7
+}
 
-async function saveAvailability(formData: FormData) {
+async function ensureProviderId(userId: string): Promise<string | null> {
+  const [p] = await db
+    .select({ id: providerProfiles.id })
+    .from(providerProfiles)
+    .where(eq(providerProfiles.userId, userId))
+    .limit(1);
+  return p?.id ?? null;
+}
+
+async function saveAvailabilityAction(formData: FormData) {
   "use server";
   const locale = String(formData.get("locale") ?? "en");
+  const me = await getCurrentUser();
+  if (!me) nextRedirect(`/${locale}/auth/login`);
+  if (me.role !== "provider") nextRedirect(`/${locale}/home`);
+  const providerId = await ensureProviderId(me.id);
+  if (!providerId) nextRedirect(`/${locale}/provider/register`);
+
+  const rows: { providerId: string; dayOfWeek: number; slot: Slot }[] = [];
+  for (const d of DAYS) {
+    const slots = formData
+      .getAll(`avail_${d}`)
+      .map(String)
+      .filter((s): s is Slot => SLOTS.includes(s as Slot));
+    for (const s of slots) {
+      rows.push({ providerId, dayOfWeek: dayIndex(d), slot: s });
+    }
+  }
+
+  await db.transaction(async (tx) => {
+    await tx
+      .delete(providerAvailability)
+      .where(eq(providerAvailability.providerId, providerId));
+    if (rows.length > 0) {
+      await tx.insert(providerAvailability).values(rows);
+    }
+  });
+
   nextRedirect(`/${locale}/provider/availability?saved=1`);
 }
 
-async function applyTemplate(formData: FormData) {
+async function applyTemplateAction(formData: FormData) {
   "use server";
   const locale = String(formData.get("locale") ?? "en");
   const tpl = String(formData.get("tpl") ?? "");
   nextRedirect(`/${locale}/provider/availability?tpl=${tpl}`);
 }
 
-interface DefaultsArg {
-  tpl?: string;
-}
-
-function defaultChecked(day: (typeof DAYS)[number], slot: (typeof SLOTS)[number], { tpl }: DefaultsArg): boolean {
+function templateChecked(
+  day: (typeof DAYS)[number],
+  slot: Slot,
+  tpl: string | undefined,
+): boolean {
   if (tpl === "mwf") {
     return (day === "Mon" || day === "Wed" || day === "Fri") && slot === "morning";
   }
   if (tpl === "weekday") {
     return day !== "Sat" && day !== "Sun" && slot === "afternoon";
   }
-  // Default: every weekday morning + afternoon
-  return day !== "Sat" && day !== "Sun" && (slot === "morning" || slot === "afternoon");
+  return false;
 }
 
 export default async function ProviderAvailabilityPage({
@@ -58,28 +110,46 @@ export default async function ProviderAvailabilityPage({
   const { locale } = await params;
   const sp = await searchParams;
   setRequestLocale(locale);
-  const session = await getSession();
-  if (!session.signedIn) redirect({ href: "/auth/login", locale });
+  const me = await getCurrentUser();
+  if (!me) nextRedirect(`/${locale}/auth/login`);
+  if (me.role !== "provider") nextRedirect(`/${locale}/home`);
   const country = await getCountry();
   const t = await getTranslations("provider");
   const tCommon = await getTranslations("common");
   const saved = sp.saved === "1";
   const tpl = typeof sp.tpl === "string" ? sp.tpl : undefined;
 
+  const providerId = await ensureProviderId(me.id);
+  if (!providerId) nextRedirect(`/${locale}/provider/register`);
+
+  // Existing rows
+  const existing = await db
+    .select({
+      dayOfWeek: providerAvailability.dayOfWeek,
+      slot: providerAvailability.slot,
+    })
+    .from(providerAvailability)
+    .where(eq(providerAvailability.providerId, providerId));
+  const existingSet = new Set(
+    existing.map((r) => `${r.dayOfWeek}|${r.slot}`),
+  );
+
+  function isChecked(day: (typeof DAYS)[number], slot: Slot): boolean {
+    if (tpl) return templateChecked(day, slot, tpl);
+    return existingSet.has(`${dayIndex(day)}|${slot}`);
+  }
+
   return (
     <>
-      <Header
-        country={country}
-        back
-        signedIn={session.signedIn}
-        initials={session.initials}
-      />
+      <Header country={country} back signedIn={true} initials={me.initials} />
       <main
         id="main-content"
         className="mx-auto w-full max-w-content px-5 pb-[120px] pt-6 sm:pb-12"
       >
         <h1 className="text-h2">{t("availabilityTitle")}</h1>
-        <p className="mt-1 text-[15px] text-text-secondary">{t("availabilityHint")}</p>
+        <p className="mt-1 text-[15px] text-text-secondary">
+          {t("availabilityHint")}
+        </p>
 
         {saved && (
           <div
@@ -90,7 +160,6 @@ export default async function ProviderAvailabilityPage({
           </div>
         )}
 
-        {/* Templates */}
         <section className="mt-5 rounded-lg border border-border bg-bg-base p-4">
           <p className="text-[14px] font-bold">{t("availabilityApply")}</p>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -105,10 +174,17 @@ export default async function ProviderAvailabilityPage({
               label={t("availabilityTemplateWeekday")}
             />
           </div>
+          {tpl && (
+            <p className="mt-3 text-[12px] text-text-tertiary">
+              Template previewed — hit Save to apply.
+            </p>
+          )}
         </section>
 
-        {/* Grid */}
-        <form action={saveAvailability} className="mt-5 flex flex-col gap-3">
+        <form
+          action={saveAvailabilityAction}
+          className="mt-5 flex flex-col gap-3"
+        >
           <input type="hidden" name="locale" value={locale} />
           {DAYS.map((d) => (
             <div
@@ -126,7 +202,7 @@ export default async function ProviderAvailabilityPage({
                       type="checkbox"
                       name={`avail_${d}`}
                       value={s}
-                      defaultChecked={defaultChecked(d, s, { tpl })}
+                      defaultChecked={isChecked(d, s)}
                       className="sr-only"
                     />
                     {t(s)}
@@ -155,7 +231,7 @@ function TemplateForm({
   label: string;
 }) {
   return (
-    <form action={applyTemplate}>
+    <form action={applyTemplateAction}>
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="tpl" value={tpl} />
       <button
