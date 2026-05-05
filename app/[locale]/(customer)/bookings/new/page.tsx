@@ -325,11 +325,12 @@ export default async function BookingNewPage({
           .limit(50)
       : [];
 
-    const minDateTime = new Date(Date.now() + 60 * 60 * 1000)
-      .toISOString()
-      .slice(0, 16);
-    const defaultDateTime =
-      draft.scheduledAt?.slice(0, 16) ?? minDateTime;
+    // Default the picker to whatever's in the draft. The "must be at
+    // least 1h from now" rule is enforced in saveStep2, not in the input
+    // attributes — computing min={Date.now()} at render time trips the
+    // react-compiler purity rule and there's no working suppression for
+    // that rule in our ESLint config.
+    const defaultDateTime = draft.scheduledAt?.slice(0, 16) ?? "";
 
     return (
       <Wizard step={step} country={country} initials={me.initials}>
@@ -401,7 +402,6 @@ export default async function BookingNewPage({
                 id="scheduledAt"
                 name="scheduledAt"
                 type="datetime-local"
-                min={minDateTime}
                 defaultValue={defaultDateTime}
                 required
                 className="mt-1.5 block h-touch-btn w-full rounded-md border-[1.5px] border-border bg-bg-base px-4 text-body text-text-primary focus:border-brand focus:outline-none"
