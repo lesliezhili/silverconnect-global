@@ -9,8 +9,9 @@ import { Button } from "@/components/ui/Button";
 import { getCountry } from "@/components/domain/countryCookie";
 import { db } from "@/lib/db";
 import { bookings, bookingChanges } from "@/lib/db/schema/bookings";
-import { disputes } from "@/lib/db/schema/disputes";
+import { disputes, disputeEvidence } from "@/lib/db/schema/disputes";
 import { getCurrentUser } from "@/lib/auth/server";
+import { saveUpload } from "@/lib/upload/local";
 
 const TYPE_KEYS = [
   "typeNotShow",
@@ -58,12 +59,41 @@ async function disputeAction(formData: FormData) {
             : "Other";
   const fullReason = `${reason}\n\n${describe}\n\nRequested outcome: ${outcome || "—"}`;
 
-  await db.transaction(async (tx) => {
-    await tx.insert(disputes).values({
-      bookingId: b.id,
-      raisedBy: me.id,
-      reason: fullReason,
-    });
+  // Persist any uploaded evidence files first so we can fail fast on bad
+  // mime / size before mutating the dispute row.
+  const files = formData
+    .getAll("evidence")
+    .filter((v): v is File => v instanceof File && v.size > 0);
+  const savedUrls: string[] = [];
+  for (const f of files) {
+    const r = await saveUpload(f, `dispute/${b.id}`);
+    if ("error" in r) {
+      nextRedirect(
+        `/${locale}/bookings/${id}/dispute?error=${r.error}`,
+      );
+    }
+    savedUrls.push(r.url);
+  }
+
+  const newDisputeId = await db.transaction(async (tx) => {
+    const [inserted] = await tx
+      .insert(disputes)
+      .values({
+        bookingId: b.id,
+        raisedBy: me.id,
+        reason: fullReason,
+      })
+      .returning({ id: disputes.id });
+    if (savedUrls.length) {
+      await tx.insert(disputeEvidence).values(
+        savedUrls.map((url) => ({
+          disputeId: inserted.id,
+          uploadedBy: me.id,
+          kind: "image" as const,
+          fileUrl: url,
+        })),
+      );
+    }
     if (b.status !== "disputed") {
       await tx
         .update(bookings)
@@ -78,8 +108,10 @@ async function disputeAction(formData: FormData) {
         note: `Customer dispute: ${reason}`,
       });
     }
+    return inserted.id;
   });
 
+  void newDisputeId;
   nextRedirect(`/${locale}/bookings/${id}/dispute?sent=1`);
 }
 
@@ -190,8 +222,22 @@ export default async function DisputePage({
             {t("describeHint")}
           </div>
         )}
+        {(error === "tooLarge" || error === "badType") && (
+          <div
+            role="alert"
+            className="mt-3 rounded-md border-[1.5px] border-danger bg-danger-soft px-3.5 py-3 text-[14px] font-semibold text-danger"
+          >
+            {error === "tooLarge"
+              ? "One of the evidence files is too large (max 10 MB)"
+              : "One of the evidence files has an unsupported format"}
+          </div>
+        )}
 
-        <form className="mt-6 flex flex-col gap-6" action={disputeAction}>
+        <form
+          className="mt-6 flex flex-col gap-6"
+          action={disputeAction}
+          encType="multipart/form-data"
+        >
           <input type="hidden" name="locale" value={locale} />
           <input type="hidden" name="id" value={id} />
           <fieldset>
@@ -246,14 +292,13 @@ export default async function DisputePage({
               id="evidence"
               name="evidence"
               type="file"
-              accept="image/*,video/*,audio/*"
+              accept="image/jpeg,image/png,image/webp,image/heic,application/pdf"
               multiple
-              disabled
-              title="Evidence upload ships with file storage"
-              className="block w-full text-[14px] text-text-secondary opacity-50 file:mr-3 file:inline-flex file:h-12 file:items-center file:rounded-md file:border-[1.5px] file:border-border-strong file:bg-bg-base file:px-4 file:text-[14px] file:font-semibold file:text-text-primary"
+              className="block w-full text-[14px] text-text-secondary file:mr-3 file:inline-flex file:h-12 file:items-center file:rounded-md file:border-[1.5px] file:border-border-strong file:bg-bg-base file:px-4 file:text-[14px] file:font-semibold file:text-text-primary"
             />
             <p className="mt-1.5 flex items-center gap-1 text-[13px] text-text-tertiary">
-              <Camera size={14} aria-hidden /> {t("evidenceHint")}
+              <Camera size={14} aria-hidden /> {t("evidenceHint")} · JPG / PNG /
+              WebP / HEIC / PDF · max 10MB each
             </p>
           </div>
 
