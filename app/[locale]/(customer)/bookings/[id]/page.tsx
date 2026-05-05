@@ -1,63 +1,183 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import { redirect as nextRedirect, notFound } from "next/navigation";
+import { eq, and } from "drizzle-orm";
 import { Calendar, MapPin, CreditCard, Clock, X } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Link } from "@/i18n/navigation";
 import { ProviderAvatar } from "@/components/domain/ProviderAvatar";
 import {
   BookingStatusBadge,
-  type BookingStatus,
+  type BookingStatus as BadgeStatus,
 } from "@/components/domain/BookingStatusBadge";
 import { BookingTimeline } from "@/components/domain/BookingTimeline";
 import { CURRENCY_SYMBOL } from "@/components/domain/country";
 import { cn } from "@/components/ui/cn";
 import { getCountry } from "@/components/domain/countryCookie";
-import { getSession } from "@/components/domain/sessionCookie";
+import { db } from "@/lib/db";
+import { bookings, bookingChanges } from "@/lib/db/schema/bookings";
+import { providerProfiles } from "@/lib/db/schema/providers";
+import { users } from "@/lib/db/schema/users";
+import { addresses } from "@/lib/db/schema/customer-data";
+import { services } from "@/lib/db/schema/services";
+import { getCurrentUser } from "@/lib/auth/server";
 
-const VALID_STATUSES: BookingStatus[] = [
-  "pending",
-  "confirmed",
-  "inProgress",
-  "awaitingConfirm",
-  "completed",
-  "cancelledFull",
-  "cancelledPartial",
-  "refunded",
-];
+type DbStatus =
+  | "pending"
+  | "confirmed"
+  | "in_progress"
+  | "completed"
+  | "cancelled"
+  | "disputed"
+  | "released";
 
-function parseStatus(raw: string | undefined): BookingStatus {
-  if (raw && (VALID_STATUSES as string[]).includes(raw)) {
-    return raw as BookingStatus;
+function badgeStatus(s: DbStatus): BadgeStatus {
+  switch (s) {
+    case "pending":      return "pending";
+    case "confirmed":    return "confirmed";
+    case "in_progress":  return "inProgress";
+    case "completed":    return "completed";
+    case "released":     return "completed";
+    case "cancelled":    return "cancelledFull";
+    case "disputed":     return "cancelledPartial";
   }
-  return "confirmed";
+}
+
+function statusKey(s: DbStatus): string {
+  switch (s) {
+    case "pending":      return "pending";
+    case "confirmed":    return "confirmed";
+    case "in_progress":  return "inProgress";
+    case "completed":    return "completed";
+    case "released":     return "completed";
+    case "cancelled":    return "cancelledFull";
+    case "disputed":     return "cancelledPartial";
+  }
+}
+
+function initialsOf(name: string | null, fallback: string): string {
+  const src = (name || fallback).trim();
+  const parts = src.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return (src.slice(0, 2) || "?").toUpperCase();
+}
+
+async function cancelBookingAction(formData: FormData) {
+  "use server";
+  const locale = String(formData.get("locale") ?? "en");
+  const id = String(formData.get("id") ?? "");
+  const me = await getCurrentUser();
+  if (!me) nextRedirect(`/${locale}/auth/login`);
+  if (!id) nextRedirect(`/${locale}/bookings`);
+  const [row] = await db
+    .select({ id: bookings.id, status: bookings.status })
+    .from(bookings)
+    .where(and(eq(bookings.id, id), eq(bookings.customerId, me.id)))
+    .limit(1);
+  if (!row) nextRedirect(`/${locale}/bookings`);
+  const cancellable: DbStatus[] = ["pending", "confirmed"];
+  if (!(cancellable as string[]).includes(row.status)) {
+    nextRedirect(`/${locale}/bookings/${id}?error=not_cancellable`);
+  }
+  await db.transaction(async (tx) => {
+    await tx
+      .update(bookings)
+      .set({
+        status: "cancelled",
+        cancelledAt: new Date(),
+        cancelReason: "customer",
+        updatedAt: new Date(),
+      })
+      .where(eq(bookings.id, id));
+    await tx.insert(bookingChanges).values({
+      bookingId: id,
+      type: "cancel",
+      fromStatus: row.status as DbStatus,
+      toStatus: "cancelled",
+      actorId: me.id,
+      note: "Customer cancellation",
+    });
+  });
+  nextRedirect(`/${locale}/bookings`);
 }
 
 export default async function BookingDetailPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale, id } = await params;
-  const sp = await searchParams;
   setRequestLocale(locale);
+  const me = await getCurrentUser();
+  if (!me) nextRedirect(`/${locale}/auth/login`);
   const t = await getTranslations("booking");
   const tStatus = await getTranslations("booking.status");
   const tCta = await getTranslations("booking.cta");
   const tCommon = await getTranslations("common");
   const country = await getCountry();
-  const session = await getSession();
   const isZh = locale === "zh";
   const sym = CURRENCY_SYMBOL[country];
-  const total = country === "CN" ? "¥1,560.00" : `${sym}195.00`;
-  const status = parseStatus(typeof sp.status === "string" ? sp.status : undefined);
+
+  const [row] = await db
+    .select({
+      id: bookings.id,
+      scheduledAt: bookings.scheduledAt,
+      durationMin: bookings.durationMin,
+      status: bookings.status,
+      totalPrice: bookings.totalPrice,
+      currency: bookings.currency,
+      providerName: users.name,
+      providerEmail: users.email,
+      addressLine1: addresses.line1,
+      addressCity: addresses.city,
+      addressState: addresses.state,
+      addressPostcode: addresses.postcode,
+      serviceCode: services.code,
+      serviceCategory: services.categoryCode,
+    })
+    .from(bookings)
+    .leftJoin(providerProfiles, eq(providerProfiles.id, bookings.providerId))
+    .leftJoin(users, eq(users.id, providerProfiles.userId))
+    .leftJoin(addresses, eq(addresses.id, bookings.addressId))
+    .leftJoin(services, eq(services.id, bookings.serviceId))
+    .where(and(eq(bookings.id, id), eq(bookings.customerId, me.id)))
+    .limit(1);
+
+  if (!row) notFound();
+
+  const status = row.status as DbStatus;
+  const badge = badgeStatus(status);
+  const dispName =
+    row.providerName || (row.providerEmail?.split("@")[0] ?? "—");
+
+  const whenLabel = row.scheduledAt.toLocaleString(
+    isZh ? "zh-CN" : "en-AU",
+    {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    },
+  );
+  const addressStr = [
+    row.addressLine1,
+    row.addressCity,
+    row.addressState,
+    row.addressPostcode,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const cancellable: DbStatus[] = ["pending", "confirmed"];
+  const showCancel = (cancellable as string[]).includes(status);
 
   const cancelBar =
     status === "confirmed" ? (
       <p className="flex items-center gap-2 rounded-md bg-brand-soft px-3.5 py-3 text-[14px] text-brand">
         <Clock size={16} aria-hidden /> {t("cancelFreeUntil", { hours: 47 })}
       </p>
-    ) : status === "inProgress" || status === "awaitingConfirm" ? (
+    ) : status === "in_progress" ? (
       <p className="rounded-md bg-warning-soft px-3.5 py-3 text-[14px] text-[#92590A]">
         {t("cantCancelInProgress")}
       </p>
@@ -65,49 +185,77 @@ export default async function BookingDetailPage({
 
   return (
     <>
-      <Header country={country} back signedIn={session.signedIn} initials={session.initials} />
-      <main id="main-content" className="mx-auto w-full max-w-content overflow-auto bg-bg-surface px-5 pb-[120px] sm:pb-12 pt-4">
+      <Header country={country} back signedIn={true} initials={me.initials} />
+      <main
+        id="main-content"
+        className="mx-auto w-full max-w-content overflow-auto bg-bg-surface px-5 pb-[120px] sm:pb-12 pt-4"
+      >
         <div className="mb-4 flex items-center gap-2">
-          <BookingStatusBadge status={status}>{tStatus(status)}</BookingStatusBadge>
-          <span className="text-[13px] text-text-tertiary">#{id}</span>
+          <BookingStatusBadge status={badge}>
+            {tStatus(statusKey(status) as Parameters<typeof tStatus>[0])}
+          </BookingStatusBadge>
+          <span className="text-[13px] text-text-tertiary">
+            #{row.id.slice(0, 8)}
+          </span>
         </div>
 
         {cancelBar}
 
         <section className="mt-4 rounded-lg border border-border bg-bg-base p-4">
           <div className="flex items-center gap-3">
-            <ProviderAvatar size={56} hue={0} initials={isZh ? "李" : "HL"} />
+            <ProviderAvatar
+              size={56}
+              hue={0}
+              initials={initialsOf(row.providerName, row.providerEmail ?? "?")}
+            />
             <div className="flex-1">
-              <p className="text-[17px] font-bold">{isZh ? "李 师傅 (Helen Li)" : "Helen Li"}</p>
+              <p className="text-[17px] font-bold">{dispName}</p>
               <p className="text-[13px] text-text-tertiary">
-                {isZh ? "深度清洁 · 3 小时" : "Deep clean · 3h"}
+                {row.serviceCode || row.serviceCategory || "—"} ·{" "}
+                {Math.round(row.durationMin / 60 * 10) / 10}h
               </p>
             </div>
           </div>
           <ul className="mt-3 flex flex-col gap-2">
             <li className="flex items-center gap-2.5">
-              <Calendar size={18} className="shrink-0 text-text-tertiary" aria-hidden />
+              <Calendar
+                size={18}
+                className="shrink-0 text-text-tertiary"
+                aria-hidden
+              />
+              <span className="text-[15px]">{whenLabel}</span>
+            </li>
+            {addressStr && (
+              <li className="flex items-center gap-2.5">
+                <MapPin
+                  size={18}
+                  className="shrink-0 text-text-tertiary"
+                  aria-hidden
+                />
+                <span className="text-[15px]">{addressStr}</span>
+              </li>
+            )}
+            <li className="flex items-center gap-2.5">
+              <CreditCard
+                size={18}
+                className="shrink-0 text-text-tertiary"
+                aria-hidden
+              />
               <span className="text-[15px]">
-                {isZh ? "5 月 8 日 周三 · 14:00" : "Wed 8 May · 2:00pm"}
+                {sym}
+                {Number(row.totalPrice).toFixed(2)} {row.currency}
               </span>
-            </li>
-            <li className="flex items-center gap-2.5">
-              <MapPin size={18} className="shrink-0 text-text-tertiary" aria-hidden />
-              <span className="text-[15px]">12 Park Ave, Sydney NSW 2000</span>
-            </li>
-            <li className="flex items-center gap-2.5">
-              <CreditCard size={18} className="shrink-0 text-text-tertiary" aria-hidden />
-              <span className="text-[15px]">{total}</span>
             </li>
           </ul>
         </section>
 
-        <h2 className="mb-2.5 mt-5 text-[16px] font-bold">{t("statusTimeline")}</h2>
-        <BookingTimeline status={status} />
+        <h2 className="mb-2.5 mt-5 text-[16px] font-bold">
+          {t("statusTimeline")}
+        </h2>
+        <BookingTimeline status={badge} />
 
         {(status === "confirmed" ||
-          status === "inProgress" ||
-          status === "awaitingConfirm" ||
+          status === "in_progress" ||
           status === "completed") && (
           <Link
             href={`/bookings/${id}/dispute`}
@@ -119,48 +267,43 @@ export default async function BookingDetailPage({
       </main>
 
       <div className="sticky bottom-[84px] z-10 flex gap-2 border-t border-border bg-bg-base p-3 sm:bottom-0">
-        {(status === "confirmed" || status === "pending") && (
-          <button
-            type="button"
-            aria-label={tCommon("cancel")}
-            className="inline-flex h-14 w-14 items-center justify-center rounded-md border-[1.5px] border-danger bg-bg-base text-danger"
-          >
-            <X size={22} aria-hidden />
-          </button>
+        {showCancel && (
+          <form action={cancelBookingAction}>
+            <input type="hidden" name="locale" value={locale} />
+            <input type="hidden" name="id" value={id} />
+            <button
+              type="submit"
+              aria-label={tCommon("cancel")}
+              className="inline-flex h-14 w-14 items-center justify-center rounded-md border-[1.5px] border-danger bg-bg-base text-danger"
+            >
+              <X size={22} aria-hidden />
+            </button>
+          </form>
         )}
-        {/* Status-specific primary CTA — links where the action goes,
-            falls back to a non-interactive button for statuses not yet
-            wired to a destination. */}
         {status === "pending" ? (
           <Link
             href={`/pay/${id}`}
             className="flex h-14 flex-1 items-center justify-center rounded-md bg-brand text-[17px] font-bold text-white hover:bg-brand-hover"
           >
-            {tCta(status)}
-          </Link>
-        ) : status === "awaitingConfirm" ? (
-          <Link
-            href={`/bookings/${id}/feedback`}
-            className="flex h-14 flex-1 items-center justify-center rounded-md bg-success text-[17px] font-bold text-white"
-          >
-            {tCta(status)}
+            {tCta(statusKey(status) as Parameters<typeof tCta>[0])}
           </Link>
         ) : status === "completed" ? (
           <Link
             href={`/bookings/${id}/feedback`}
             className="flex h-14 flex-1 items-center justify-center rounded-md bg-brand text-[17px] font-bold text-white hover:bg-brand-hover"
           >
-            {tCta(status)}
+            {tCta(statusKey(status) as Parameters<typeof tCta>[0])}
           </Link>
         ) : (
           <button
             type="button"
+            disabled
             className={cn(
               "flex h-14 flex-1 items-center justify-center rounded-md text-[17px] font-bold text-white",
-              "bg-brand hover:bg-brand-hover"
+              "bg-brand opacity-60",
             )}
           >
-            {tCta(status)}
+            {tCta(statusKey(status) as Parameters<typeof tCta>[0])}
           </button>
         )}
       </div>

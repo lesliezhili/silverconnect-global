@@ -1,16 +1,68 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import {
+  eq,
+  and,
+  inArray,
+  lt,
+  desc,
+  type SQL,
+} from "drizzle-orm";
 import { AlertTriangle } from "lucide-react";
 import { Link, redirect } from "@/i18n/navigation";
 import { AdminShell } from "@/components/layout/AdminShell";
 import { getAdmin } from "@/components/domain/adminCookie";
-import { MOCK_BOOKINGS_FEED, type AdminBookingStatus } from "@/components/domain/adminMock";
+import { db } from "@/lib/db";
+import { bookings } from "@/lib/db/schema/bookings";
+import { providerProfiles } from "@/lib/db/schema/providers";
+import { users } from "@/lib/db/schema/users";
 
-const STATUS_KEYS: Record<AdminBookingStatus, "statusUnconfirmed" | "statusInEscrow" | "statusReleased" | "statusRescheduled"> = {
-  unconfirmed: "statusUnconfirmed",
-  inEscrow: "statusInEscrow",
-  released: "statusReleased",
-  rescheduled: "statusRescheduled",
+type DbStatus =
+  | "pending"
+  | "confirmed"
+  | "in_progress"
+  | "completed"
+  | "cancelled"
+  | "disputed"
+  | "released";
+
+type AdminFilter = "all" | "stuck" | "escrow" | "released" | "cancelled";
+
+const ESCROW_STATUSES: DbStatus[] = ["confirmed", "in_progress"];
+const RELEASED_STATUSES: DbStatus[] = ["completed", "released"];
+
+const FILTER_LABELS: Record<AdminFilter, string> = {
+  all: "All",
+  stuck: "Stuck > 24h",
+  escrow: "In escrow",
+  released: "Released",
+  cancelled: "Cancelled",
 };
+
+const FILTER_BADGE: Record<DbStatus, string> = {
+  pending: "bg-warning-soft text-warning",
+  confirmed: "bg-brand-soft text-brand",
+  in_progress: "bg-brand-soft text-brand",
+  completed: "bg-success-soft text-success",
+  released: "bg-success-soft text-success",
+  cancelled: "bg-bg-surface-2 text-text-secondary",
+  disputed: "bg-danger-soft text-danger",
+};
+
+function buildWhere(filter: AdminFilter): SQL | undefined {
+  if (filter === "stuck") {
+    const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    return and(
+      eq(bookings.status, "pending"),
+      lt(bookings.createdAt, dayAgo),
+    );
+  }
+  if (filter === "escrow")
+    return inArray(bookings.status, ESCROW_STATUSES);
+  if (filter === "released")
+    return inArray(bookings.status, RELEASED_STATUSES);
+  if (filter === "cancelled") return eq(bookings.status, "cancelled");
+  return undefined;
+}
 
 export default async function AdminBookingsPage({
   params,
@@ -27,16 +79,57 @@ export default async function AdminBookingsPage({
   const t = await getTranslations("admin");
   const tB = await getTranslations("aBookings");
 
-  const filter = typeof sp.filter === "string" ? sp.filter : "all";
-  const items = MOCK_BOOKINGS_FEED.filter((b) =>
-    filter === "all" ? true : b.flag === filter
+  const rawFilter = typeof sp.filter === "string" ? sp.filter : "all";
+  const filter: AdminFilter = (
+    ["all", "stuck", "escrow", "released", "cancelled"] as const
+  ).includes(rawFilter as AdminFilter)
+    ? (rawFilter as AdminFilter)
+    : "all";
+
+  const where = buildWhere(filter);
+
+  const rows = await db
+    .select({
+      id: bookings.id,
+      status: bookings.status,
+      createdAt: bookings.createdAt,
+      scheduledAt: bookings.scheduledAt,
+      totalPrice: bookings.totalPrice,
+      currency: bookings.currency,
+      customerId: bookings.customerId,
+      providerUserId: providerProfiles.userId,
+    })
+    .from(bookings)
+    .leftJoin(providerProfiles, eq(providerProfiles.id, bookings.providerId))
+    .where(where)
+    .orderBy(desc(bookings.createdAt))
+    .limit(100);
+
+  // Batch-fetch user display names for both customers and providers.
+  const userIds = Array.from(
+    new Set(
+      [
+        ...rows.map((r) => r.customerId),
+        ...rows.map((r) => r.providerUserId).filter(Boolean),
+      ] as string[],
+    ),
+  );
+  const userRows = userIds.length
+    ? await db
+        .select({ id: users.id, name: users.name, email: users.email })
+        .from(users)
+        .where(inArray(users.id, userIds))
+    : [];
+  const userMap = new Map(
+    userRows.map((u) => [u.id, u.name || u.email.split("@")[0]]),
   );
 
-  const filters = [
+  const filters: { key: AdminFilter; label: string }[] = [
     { key: "all", label: t("filterAll") },
     { key: "stuck", label: tB("filterStuck") },
     { key: "escrow", label: tB("filterEscrow") },
-    { key: "rescheduled", label: tB("filterRescheduled") },
+    { key: "released", label: FILTER_LABELS.released },
+    { key: "cancelled", label: FILTER_LABELS.cancelled },
   ];
 
   return (
@@ -55,7 +148,9 @@ export default async function AdminBookingsPage({
               aria-selected={on}
               className={
                 "inline-flex h-9 items-center rounded-pill border-[1.5px] px-3 text-[13px] font-semibold " +
-                (on ? "border-brand bg-brand-soft text-brand" : "border-border-strong bg-bg-base text-text-primary")
+                (on
+                  ? "border-brand bg-brand-soft text-brand"
+                  : "border-border-strong bg-bg-base text-text-primary")
               }
             >
               {f.label}
@@ -64,33 +159,53 @@ export default async function AdminBookingsPage({
         })}
       </nav>
 
-      <ul className="mt-5 flex flex-col gap-2">
-        {items.map((b) => {
-          const min = Math.max(0, Math.round((Date.now() - +new Date(b.createdISO)) / 60000));
-          const cls =
-            b.status === "unconfirmed"
-              ? "bg-warning-soft text-warning"
-              : b.status === "inEscrow"
-              ? "bg-brand-soft text-brand"
-              : b.status === "released"
-              ? "bg-success-soft text-success"
-              : "bg-bg-surface-2 text-text-secondary";
+      <p className="mt-3 text-[12px] text-text-tertiary tabular-nums">
+        {rows.length} row{rows.length === 1 ? "" : "s"}
+      </p>
+
+      <ul className="mt-3 flex flex-col gap-2">
+        {rows.map((b) => {
+          const nowMs = Date.now();
+          const min = Math.max(
+            0,
+            Math.round((nowMs - b.createdAt.getTime()) / 60000),
+          );
+          const status = b.status as DbStatus;
+          const stuck =
+            status === "pending" && nowMs - b.createdAt.getTime() > 24 * 60 * 60 * 1000;
           return (
-            <li key={b.id} className="flex items-center gap-3 rounded-lg border border-border bg-bg-base p-3">
-              {b.flag && (
-                <span aria-hidden className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-warning-soft text-warning">
+            <li
+              key={b.id}
+              className="flex items-center gap-3 rounded-lg border border-border bg-bg-base p-3"
+            >
+              {stuck && (
+                <span
+                  aria-hidden
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-warning-soft text-warning"
+                >
                   <AlertTriangle size={16} />
                 </span>
               )}
               <div className="min-w-0 flex-1">
-                <p className="text-[14px] font-bold tabular-nums">{b.id}</p>
+                <p className="text-[14px] font-bold tabular-nums">
+                  #{b.id.slice(0, 8)}
+                </p>
                 <p className="mt-0.5 text-[12px] text-text-secondary">
-                  {b.customerName} → {b.providerName}
+                  {userMap.get(b.customerId) ?? "—"}
+                  {" → "}
+                  {(b.providerUserId && userMap.get(b.providerUserId)) || "—"}
                 </p>
               </div>
-              <span className="tabular-nums text-[13px] font-bold">${b.amount}</span>
-              <span className={`inline-flex h-6 items-center rounded-sm px-2 text-[11px] font-bold uppercase tracking-wide ${cls}`}>
-                {tB(STATUS_KEYS[b.status])}
+              <span className="tabular-nums text-[13px] font-bold">
+                {b.currency} {Number(b.totalPrice).toFixed(0)}
+              </span>
+              <span
+                className={
+                  "inline-flex h-6 items-center rounded-sm px-2 text-[11px] font-bold uppercase tracking-wide " +
+                  FILTER_BADGE[status]
+                }
+              >
+                {status}
               </span>
               <span className="hidden text-[12px] text-text-tertiary tabular-nums sm:inline">
                 {tB("minutesAgo", { n: min })}

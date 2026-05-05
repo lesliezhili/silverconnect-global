@@ -1,32 +1,32 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import { redirect as nextRedirect } from "next/navigation";
+import { eq, and, gte, lt, asc } from "drizzle-orm";
 import { ChevronRight, DollarSign } from "lucide-react";
 import { Header } from "@/components/layout/Header";
-import { Link, redirect } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
 import { getCountry } from "@/components/domain/countryCookie";
-import { getSession } from "@/components/domain/sessionCookie";
 import { ProviderAvatar } from "@/components/domain/ProviderAvatar";
-import {
-  MOCK_JOBS,
-  jobTotal,
-  priceCountry,
-  type ProviderJob,
-} from "@/components/domain/providerMock";
+import { priceCountry } from "@/components/domain/providerMock";
+import { db } from "@/lib/db";
+import { bookings } from "@/lib/db/schema/bookings";
+import { providerProfiles } from "@/lib/db/schema/providers";
+import { users } from "@/lib/db/schema/users";
+import { services } from "@/lib/db/schema/services";
+import { wallets } from "@/lib/db/schema/payments";
+import { getCurrentUser } from "@/lib/auth/server";
 
-function formatTime(iso: string, locale: string) {
-  return new Date(iso).toLocaleTimeString(locale === "zh" ? "zh-CN" : "en-AU", {
+function formatTime(d: Date, locale: string) {
+  return d.toLocaleTimeString(locale === "zh" ? "zh-CN" : "en-AU", {
     hour: "2-digit",
     minute: "2-digit",
   });
 }
 
-function isToday(iso: string) {
-  const d = new Date(iso);
-  const n = new Date();
-  return (
-    d.getFullYear() === n.getFullYear() &&
-    d.getMonth() === n.getMonth() &&
-    d.getDate() === n.getDate()
-  );
+function initialsOf(name: string | null, fallback: string): string {
+  const src = (name || fallback).trim();
+  const parts = src.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return (src.slice(0, 2) || "?").toUpperCase();
 }
 
 export default async function ProviderWorkbenchPage({
@@ -36,30 +36,76 @@ export default async function ProviderWorkbenchPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const session = await getSession();
-  if (!session.signedIn) redirect({ href: "/auth/login", locale });
+  const me = await getCurrentUser();
+  if (!me) nextRedirect(`/${locale}/auth/login`);
+  if (me.role !== "provider") nextRedirect(`/${locale}/home`);
   const country = await getCountry();
   const t = await getTranslations("provider");
-  const tService = await getTranslations("categories");
+  const tCategories = await getTranslations("categories");
 
-  const todayJobs = MOCK_JOBS.filter((j) => isToday(j.startISO)).slice(0, 3);
-  const heldEarnings = MOCK_JOBS.filter(
-    (j) => j.status === "completed" || j.status === "inProgress"
-  ).reduce((s, j) => s + jobTotal(j), 0);
-  const paidEarnings = 320;
+  const [profile] = await db
+    .select({ id: providerProfiles.id })
+    .from(providerProfiles)
+    .where(eq(providerProfiles.userId, me.id))
+    .limit(1);
+  if (!profile) nextRedirect(`/${locale}/provider/register`);
+
+  // Today window: midnight to midnight in server time. Good-enough for MVP.
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+  const endOfDay = new Date(startOfDay);
+  endOfDay.setDate(endOfDay.getDate() + 1);
+
+  const todayJobs = await db
+    .select({
+      id: bookings.id,
+      scheduledAt: bookings.scheduledAt,
+      status: bookings.status,
+      totalPrice: bookings.totalPrice,
+      customerName: users.name,
+      customerEmail: users.email,
+      serviceCode: services.code,
+      serviceCategory: services.categoryCode,
+    })
+    .from(bookings)
+    .leftJoin(users, eq(users.id, bookings.customerId))
+    .leftJoin(services, eq(services.id, bookings.serviceId))
+    .where(
+      and(
+        eq(bookings.providerId, profile.id),
+        gte(bookings.scheduledAt, startOfDay),
+        lt(bookings.scheduledAt, endOfDay),
+      ),
+    )
+    .orderBy(asc(bookings.scheduledAt))
+    .limit(10);
+
+  const [wallet] = await db
+    .select({
+      balancePending: wallets.balancePending,
+      balanceAvailable: wallets.balanceAvailable,
+    })
+    .from(wallets)
+    .where(eq(wallets.providerId, profile.id))
+    .limit(1);
+
+  const heldEarnings = wallet ? Number(wallet.balancePending) : 0;
+  const paidEarnings = wallet ? Number(wallet.balanceAvailable) : 0;
 
   return (
     <>
       <Header
         country={country}
-        signedIn={session.signedIn}
-        initials={session.initials}
+        signedIn={true}
+        initials={me.initials}
       />
       <main
         id="main-content"
         className="mx-auto w-full max-w-content px-5 pb-[120px] pt-6 sm:pb-12"
       >
-        <h1 className="text-h2">{t("greeting", { name: session.name ?? "" })}</h1>
+        <h1 className="text-h2">
+          {t("greeting", { name: me.name ?? me.email.split("@")[0] })}
+        </h1>
         <p className="mt-1 text-[14px] text-text-tertiary">
           {new Date().toLocaleDateString(locale === "zh" ? "zh-CN" : "en-AU", {
             weekday: "long",
@@ -68,7 +114,6 @@ export default async function ProviderWorkbenchPage({
           })}
         </p>
 
-        {/* Earnings card */}
         <Link
           href="/provider/earnings"
           className="mt-5 flex items-center gap-4 rounded-lg border border-border bg-bg-base p-4"
@@ -80,9 +125,7 @@ export default async function ProviderWorkbenchPage({
             <DollarSign size={22} />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-[14px] text-text-tertiary">
-              {t("weekEarnings")}
-            </p>
+            <p className="text-[14px] text-text-tertiary">{t("weekEarnings")}</p>
             <p className="mt-0.5 text-[24px] font-extrabold tabular-nums">
               {priceCountry(country, heldEarnings + paidEarnings)}
             </p>
@@ -105,7 +148,6 @@ export default async function ProviderWorkbenchPage({
           />
         </Link>
 
-        {/* Today's jobs */}
         <section className="mt-8">
           <div className="flex items-baseline justify-between">
             <h2 className="text-[18px] font-bold">{t("todayJobs")}</h2>
@@ -123,68 +165,71 @@ export default async function ProviderWorkbenchPage({
             </div>
           ) : (
             <ul className="mt-3 flex flex-col gap-3">
-              {todayJobs.map((j) => (
-                <JobRow
-                  key={j.id}
-                  j={j}
-                  locale={locale}
-                  service={tService(j.serviceKey)}
-                  status={t(
-                    `status${j.status.charAt(0).toUpperCase()}${j.status.slice(1)}` as Parameters<typeof t>[0]
-                  )}
-                  totalLabel={priceCountry(country, jobTotal(j))}
-                />
-              ))}
+              {todayJobs.map((j) => {
+                const dispName =
+                  j.customerName ||
+                  (j.customerEmail?.split("@")[0] ?? "—");
+                const initials = initialsOf(
+                  j.customerName,
+                  j.customerEmail ?? "?",
+                );
+                const serviceLabel = j.serviceCategory
+                  ? tCategories(
+                      j.serviceCategory as Parameters<typeof tCategories>[0],
+                    )
+                  : (j.serviceCode ?? "—");
+                const statusKey =
+                  `status${j.status
+                    .charAt(0)
+                    .toUpperCase()}${j.status.slice(1).replace(/_./g, (m) => m.charAt(1).toUpperCase())}`;
+                return (
+                  <li key={j.id}>
+                    <Link
+                      href={`/provider/jobs/${j.id}`}
+                      className="flex items-center gap-3 rounded-lg border border-border bg-bg-base p-4"
+                    >
+                      <ProviderAvatar
+                        size={48}
+                        hue={2}
+                        initials={initials}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-baseline gap-x-2">
+                          <p className="text-[15px] font-bold tabular-nums">
+                            {formatTime(j.scheduledAt, locale)}
+                          </p>
+                          <p className="text-[15px] font-semibold">
+                            {dispName}
+                          </p>
+                        </div>
+                        <p className="mt-0.5 text-[13px] text-text-secondary">
+                          {serviceLabel}
+                        </p>
+                        <p className="mt-0.5 text-[13px] font-semibold text-text-tertiary">
+                          <span className="tabular-nums">
+                            {priceCountry(country, Number(j.totalPrice))}
+                          </span>
+                          <span className="mx-2">·</span>
+                          <span>
+                            {t.has(statusKey as Parameters<typeof t>[0])
+                              ? t(statusKey as Parameters<typeof t>[0])
+                              : j.status}
+                          </span>
+                        </p>
+                      </div>
+                      <ChevronRight
+                        size={20}
+                        className="shrink-0 text-text-tertiary"
+                        aria-hidden
+                      />
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </section>
       </main>
     </>
-  );
-}
-
-function JobRow({
-  j,
-  locale,
-  service,
-  status,
-  totalLabel,
-}: {
-  j: ProviderJob;
-  locale: string;
-  service: string;
-  status: string;
-  totalLabel: string;
-}) {
-  return (
-    <li>
-      <Link
-        href={`/provider/jobs/${j.id}`}
-        className="flex items-center gap-3 rounded-lg border border-border bg-bg-base p-4"
-      >
-        <ProviderAvatar size={48} hue={2} initials={j.customerInitials} />
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-baseline gap-x-2">
-            <p className="text-[15px] font-bold tabular-nums">
-              {formatTime(j.startISO, locale)}
-            </p>
-            <p className="text-[15px] font-semibold">{j.customerName}</p>
-          </div>
-          <p className="mt-0.5 text-[13px] text-text-secondary">
-            {service} · {j.addressLine}
-          </p>
-          <p className="mt-0.5 text-[13px] font-semibold text-text-tertiary">
-            <span className="tabular-nums">{totalLabel}</span>
-            <span className="mx-2">·</span>
-            <span>{status}</span>
-          </p>
-        </div>
-        <ChevronRight
-          size={20}
-          className="shrink-0 text-text-tertiary"
-          aria-hidden
-        />
-      </Link>
-    </li>
   );
 }

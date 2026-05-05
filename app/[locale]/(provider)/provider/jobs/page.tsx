@@ -1,43 +1,58 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
-import { ChevronRight, MapPin } from "lucide-react";
+import { redirect as nextRedirect } from "next/navigation";
+import {
+  eq,
+  and,
+  inArray,
+  gte,
+  lt,
+  asc,
+  desc,
+  type SQL,
+} from "drizzle-orm";
+import { ChevronRight, MapPin, ListChecks } from "lucide-react";
 import { Header } from "@/components/layout/Header";
-import { Link, redirect } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
 import { getCountry } from "@/components/domain/countryCookie";
-import { getSession } from "@/components/domain/sessionCookie";
 import { ProviderAvatar } from "@/components/domain/ProviderAvatar";
 import { EmptyState } from "@/components/domain/PageStates";
-import {
-  MOCK_JOBS,
-  jobTotal,
-  priceCountry,
-  type ProviderJob,
-} from "@/components/domain/providerMock";
-import { ListChecks } from "lucide-react";
+import { priceCountry } from "@/components/domain/providerMock";
+import { db } from "@/lib/db";
+import { bookings } from "@/lib/db/schema/bookings";
+import { providerProfiles } from "@/lib/db/schema/providers";
+import { users } from "@/lib/db/schema/users";
+import { addresses } from "@/lib/db/schema/customer-data";
+import { services } from "@/lib/db/schema/services";
+import { getCurrentUser } from "@/lib/auth/server";
 
 type Tab = "today" | "week" | "history";
 
-function isToday(d: Date) {
-  const n = new Date();
-  return (
-    d.getFullYear() === n.getFullYear() &&
-    d.getMonth() === n.getMonth() &&
-    d.getDate() === n.getDate()
-  );
-}
-function withinNext7Days(d: Date) {
-  const n = new Date();
-  const inSevenDays = new Date(n);
-  inSevenDays.setDate(n.getDate() + 7);
-  return d >= n && d <= inSevenDays;
-}
+type DbStatus =
+  | "pending"
+  | "confirmed"
+  | "in_progress"
+  | "completed"
+  | "cancelled"
+  | "disputed"
+  | "released";
 
-function filterJobs(tab: Tab): ProviderJob[] {
-  return MOCK_JOBS.filter((j) => {
-    const d = new Date(j.startISO);
-    if (tab === "today") return isToday(d);
-    if (tab === "week") return withinNext7Days(d) && !isToday(d);
-    return j.status === "completed" || j.status === "cancelled" || d < new Date();
-  }).sort((a, b) => +new Date(a.startISO) - +new Date(b.startISO));
+const ACTIVE_STATUSES: DbStatus[] = [
+  "pending",
+  "confirmed",
+  "in_progress",
+];
+const PAST_STATUSES: DbStatus[] = [
+  "completed",
+  "cancelled",
+  "released",
+  "disputed",
+];
+
+function initialsOf(name: string | null, fallback: string): string {
+  const src = (name || fallback).trim();
+  const parts = src.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return (src.slice(0, 2) || "?").toUpperCase();
 }
 
 export default async function ProviderJobsPage({
@@ -50,31 +65,96 @@ export default async function ProviderJobsPage({
   const { locale } = await params;
   const sp = await searchParams;
   setRequestLocale(locale);
-  const session = await getSession();
-  if (!session.signedIn) redirect({ href: "/auth/login", locale });
+  const me = await getCurrentUser();
+  if (!me) nextRedirect(`/${locale}/auth/login`);
+  if (me.role !== "provider") nextRedirect(`/${locale}/home`);
   const country = await getCountry();
   const t = await getTranslations("provider");
-  const tService = await getTranslations("categories");
+  const tCategories = await getTranslations("categories");
+
+  const [profile] = await db
+    .select({ id: providerProfiles.id })
+    .from(providerProfiles)
+    .where(eq(providerProfiles.userId, me.id))
+    .limit(1);
+  if (!profile) nextRedirect(`/${locale}/provider/register`);
 
   const rawTab = Array.isArray(sp.tab) ? sp.tab[0] : sp.tab;
   const tab: Tab =
     rawTab === "week" || rawTab === "history" ? rawTab : "today";
 
-  const jobs = filterJobs(tab);
+  // Build filter for tab
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+  const endOfDay = new Date(startOfDay);
+  endOfDay.setDate(endOfDay.getDate() + 1);
+  const endOfWeek = new Date(startOfDay);
+  endOfWeek.setDate(endOfWeek.getDate() + 7);
+
+  let where: SQL;
+  let order: SQL;
+  if (tab === "today") {
+    where = and(
+      eq(bookings.providerId, profile.id),
+      inArray(bookings.status, ACTIVE_STATUSES),
+      gte(bookings.scheduledAt, startOfDay),
+      lt(bookings.scheduledAt, endOfDay),
+    )!;
+    order = asc(bookings.scheduledAt);
+  } else if (tab === "week") {
+    where = and(
+      eq(bookings.providerId, profile.id),
+      inArray(bookings.status, ACTIVE_STATUSES),
+      gte(bookings.scheduledAt, endOfDay),
+      lt(bookings.scheduledAt, endOfWeek),
+    )!;
+    order = asc(bookings.scheduledAt);
+  } else {
+    where = and(
+      eq(bookings.providerId, profile.id),
+      inArray(bookings.status, PAST_STATUSES),
+    )!;
+    order = desc(bookings.scheduledAt);
+  }
+
+  const jobs = await db
+    .select({
+      id: bookings.id,
+      scheduledAt: bookings.scheduledAt,
+      status: bookings.status,
+      totalPrice: bookings.totalPrice,
+      customerName: users.name,
+      customerEmail: users.email,
+      addressLine1: addresses.line1,
+      addressCity: addresses.city,
+      serviceCategory: services.categoryCode,
+    })
+    .from(bookings)
+    .leftJoin(users, eq(users.id, bookings.customerId))
+    .leftJoin(addresses, eq(addresses.id, bookings.addressId))
+    .leftJoin(services, eq(services.id, bookings.serviceId))
+    .where(where)
+    .orderBy(order)
+    .limit(50);
+
   const tabs: { key: Tab; label: string }[] = [
     { key: "today", label: t("jobsTabToday") },
     { key: "week", label: t("jobsTabWeek") },
     { key: "history", label: t("jobsTabHistory") },
   ];
   const emptyKey =
-    tab === "today" ? "jobsEmptyToday" : tab === "week" ? "jobsEmptyWeek" : "jobsEmptyHistory";
+    tab === "today"
+      ? "jobsEmptyToday"
+      : tab === "week"
+        ? "jobsEmptyWeek"
+        : "jobsEmptyHistory";
 
   return (
     <>
       <Header
         country={country}
-        signedIn={session.signedIn}
-        initials={session.initials}
+        signedIn={true}
+        initials={me.initials}
       />
       <main
         id="main-content"
@@ -82,7 +162,6 @@ export default async function ProviderJobsPage({
       >
         <h1 className="text-h2">{t("navJobs")}</h1>
 
-        {/* Tabs */}
         <nav
           role="tablist"
           aria-label={t("navJobs")}
@@ -113,89 +192,72 @@ export default async function ProviderJobsPage({
           <div className="mt-8">
             <EmptyState
               illustration={ListChecks as never}
-              title={t(emptyKey)}
+              title={t(emptyKey as Parameters<typeof t>[0])}
               hint={t("availabilityHint")}
             />
           </div>
         ) : (
           <ul className="mt-5 flex flex-col gap-3">
-            {jobs.map((j) => (
-              <JobCard
-                key={j.id}
-                j={j}
-                locale={locale}
-                service={tService(j.serviceKey)}
-                status={t(
-                  `status${j.status.charAt(0).toUpperCase()}${j.status.slice(1)}` as Parameters<typeof t>[0]
-                )}
-                kmLabel={t("distanceKm", { km: j.distanceKm.toFixed(1) })}
-                totalLabel={priceCountry(country, jobTotal(j))}
-              />
-            ))}
+            {jobs.map((j) => {
+              const dispName =
+                j.customerName || (j.customerEmail?.split("@")[0] ?? "—");
+              const initials = initialsOf(
+                j.customerName,
+                j.customerEmail ?? "?",
+              );
+              const dateLabel = j.scheduledAt.toLocaleDateString(
+                locale === "zh" ? "zh-CN" : "en-AU",
+                { weekday: "short", month: "short", day: "numeric" },
+              );
+              const timeLabel = j.scheduledAt.toLocaleTimeString(
+                locale === "zh" ? "zh-CN" : "en-AU",
+                { hour: "2-digit", minute: "2-digit" },
+              );
+              const serviceLabel = j.serviceCategory
+                ? tCategories(
+                    j.serviceCategory as Parameters<typeof tCategories>[0],
+                  )
+                : "—";
+              const addressStr =
+                [j.addressLine1, j.addressCity].filter(Boolean).join(", ") || "—";
+              return (
+                <li key={j.id}>
+                  <Link
+                    href={`/provider/jobs/${j.id}`}
+                    className="flex items-start gap-3 rounded-lg border border-border bg-bg-base p-4"
+                  >
+                    <ProviderAvatar size={48} hue={2} initials={initials} />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary tabular-nums">
+                        {dateLabel} · {timeLabel}
+                      </p>
+                      <p className="mt-0.5 text-[16px] font-bold">{dispName}</p>
+                      <p className="mt-0.5 text-[14px] text-text-secondary">
+                        {serviceLabel}
+                      </p>
+                      <p className="mt-1 flex items-center gap-1 text-[13px] text-text-tertiary">
+                        <MapPin size={14} aria-hidden />
+                        <span className="truncate">{addressStr}</span>
+                      </p>
+                      <p className="mt-1 text-[14px] font-semibold tabular-nums">
+                        {priceCountry(country, Number(j.totalPrice))}
+                        <span className="ml-2 font-normal text-text-tertiary">
+                          · {j.status}
+                        </span>
+                      </p>
+                    </div>
+                    <ChevronRight
+                      size={20}
+                      className="mt-2 shrink-0 text-text-tertiary"
+                      aria-hidden
+                    />
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         )}
       </main>
     </>
-  );
-}
-
-function JobCard({
-  j,
-  locale,
-  service,
-  status,
-  kmLabel,
-  totalLabel,
-}: {
-  j: ProviderJob;
-  locale: string;
-  service: string;
-  status: string;
-  kmLabel: string;
-  totalLabel: string;
-}) {
-  const d = new Date(j.startISO);
-  const dateLabel = d.toLocaleDateString(locale === "zh" ? "zh-CN" : "en-AU", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
-  const timeLabel = d.toLocaleTimeString(locale === "zh" ? "zh-CN" : "en-AU", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-  return (
-    <li>
-      <Link
-        href={`/provider/jobs/${j.id}`}
-        className="flex items-start gap-3 rounded-lg border border-border bg-bg-base p-4"
-      >
-        <ProviderAvatar size={48} hue={2} initials={j.customerInitials} />
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-baseline gap-x-2">
-            <p className="text-[13px] font-semibold uppercase tracking-wide text-text-tertiary tabular-nums">
-              {dateLabel} · {timeLabel}
-            </p>
-          </div>
-          <p className="mt-0.5 text-[16px] font-bold">{j.customerName}</p>
-          <p className="mt-0.5 text-[14px] text-text-secondary">{service}</p>
-          <p className="mt-1 flex items-center gap-1 text-[13px] text-text-tertiary">
-            <MapPin size={14} aria-hidden />
-            <span className="truncate">{j.addressLine}</span>
-            <span className="mx-1">·</span>
-            <span className="tabular-nums">{kmLabel}</span>
-          </p>
-          <p className="mt-1 text-[14px] font-semibold tabular-nums">
-            {totalLabel}
-            <span className="ml-2 font-normal text-text-tertiary">· {status}</span>
-          </p>
-        </div>
-        <ChevronRight
-          size={20}
-          className="mt-2 shrink-0 text-text-tertiary"
-          aria-hidden
-        />
-      </Link>
-    </li>
   );
 }
