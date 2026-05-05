@@ -268,7 +268,9 @@
     "mapPlaceholder": "地图预览",
     "calendarPrev": "上一个月",
     "calendarNext": "下一个月",
-    "reviewStars": "{n} 星"
+    "reviewStars": "{n} 星",
+    "errorAllRequired": "请填写所有必填项。",
+    "errorPickCategory": "请至少选择一个服务类别。"
   },
   "booking": {
     "steps": {
@@ -705,7 +707,9 @@
     "errorCodeThrottled": "错误次数过多，请重新获取验证码。",
     "errorCodeFormat": "验证码必须为 6 位数字。",
     "errorSmtpUnconfigured": "邮件功能尚未配置，请联系客服。",
-    "errorSendFailed": "邮件发送失败，请重试。"
+    "errorSendFailed": "邮件发送失败，请重试。",
+    "errorEmailInvalid": "请输入有效的邮箱地址。",
+    "errorCodeExpired": "验证码已过期，请重新申请。"
   },
   "dev": {
     "title": "组件预览",

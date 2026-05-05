@@ -5,18 +5,38 @@ import { AuthCard } from "@/components/domain/AuthCard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import { getSession, setSession } from "@/components/domain/sessionCookie";
+import { getSession } from "@/components/domain/sessionCookie";
+import { findUserByEmail, signInUser } from "@/lib/auth/server";
+import { verifyPassword } from "@/lib/auth/password";
 
 async function loginAction(formData: FormData) {
   "use server";
-  const email = String(formData.get("email") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
   const locale = String(formData.get("locale") ?? "en");
   if (!email.includes("@") || password.length < 8) {
     nextRedirect(`/${locale}/auth/login?error=credentials`);
   }
-  const name = email.split("@")[0] || "User";
-  await setSession(name);
+  const user = await findUserByEmail(email);
+  if (!user || user.deletedAt) {
+    nextRedirect(`/${locale}/auth/login?error=credentials`);
+  }
+  const ok = await verifyPassword(password, user.passwordHash);
+  if (!ok) {
+    nextRedirect(`/${locale}/auth/login?error=credentials`);
+  }
+  if (!user.emailVerifiedAt) {
+    nextRedirect(
+      `/${locale}/auth/verify?email=${encodeURIComponent(user.email)}&error=missing`,
+    );
+  }
+  await signInUser(user);
+  if (user.role === "provider") {
+    nextRedirect(`/${locale}/provider`);
+  }
+  if (user.role === "admin") {
+    nextRedirect(`/${locale}/admin`);
+  }
   nextRedirect(`/${locale}/home`);
 }
 

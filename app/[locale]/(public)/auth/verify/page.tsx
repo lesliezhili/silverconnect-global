@@ -1,56 +1,72 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect as nextRedirect } from "next/navigation";
+import { eq, sql } from "drizzle-orm";
 import { Link } from "@/i18n/navigation";
 import { CheckCircle2, Mail } from "lucide-react";
 import { AuthCard } from "@/components/domain/AuthCard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import { setSession } from "@/components/domain/sessionCookie";
 import { issueCode, consumeCode } from "@/components/domain/verifyCode";
 import { sendEmail, buildVerifyEmail } from "@/components/domain/email";
+import { db } from "@/lib/db";
+import { users } from "@/lib/db/schema/users";
+import { findUserByEmail, signInUser } from "@/lib/auth/server";
 
 async function resendAction(formData: FormData) {
   "use server";
-  const email = String(formData.get("email") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const locale = String(formData.get("locale") ?? "en");
   if (!email.includes("@")) {
     nextRedirect(`/${locale}/auth/register`);
   }
-  const code = issueCode(email);
+  const user = await findUserByEmail(email);
+  if (!user) nextRedirect(`/${locale}/auth/register`);
+  const code = await issueCode(email, "email_verify");
   const { subject, text, html } = buildVerifyEmail(code, locale);
   const result = await sendEmail({ to: email, subject, text, html });
   if (!result.ok) {
     // eslint-disable-next-line no-console
     console.error("[resend] sendEmail failed:", result.reason);
     nextRedirect(
-      `/${locale}/auth/verify?email=${encodeURIComponent(email)}&error=send`
+      `/${locale}/auth/verify?email=${encodeURIComponent(email)}&error=send`,
     );
   }
   nextRedirect(
-    `/${locale}/auth/verify?email=${encodeURIComponent(email)}&resent=1`
+    `/${locale}/auth/verify?email=${encodeURIComponent(email)}&resent=1`,
   );
 }
 
 async function verifyCodeAction(formData: FormData) {
   "use server";
-  const email = String(formData.get("email") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const code = String(formData.get("code") ?? "").trim();
   const locale = String(formData.get("locale") ?? "en");
   if (!email.includes("@") || !/^\d{6}$/.test(code)) {
     nextRedirect(
-      `/${locale}/auth/verify?email=${encodeURIComponent(email)}&error=format`
+      `/${locale}/auth/verify?email=${encodeURIComponent(email)}&error=format`,
     );
   }
-  const result = consumeCode(email, code);
+  const result = await consumeCode(email, code, "email_verify");
   if (!result.ok) {
     nextRedirect(
-      `/${locale}/auth/verify?email=${encodeURIComponent(email)}&error=${result.reason}`
+      `/${locale}/auth/verify?email=${encodeURIComponent(email)}&error=${result.reason}`,
     );
   }
-  // Hand the user a session so they land authenticated.
-  const name = email.split("@")[0] || "User";
-  await setSession(name);
+  const user = await findUserByEmail(email);
+  if (!user) {
+    nextRedirect(`/${locale}/auth/register`);
+  }
+  await db
+    .update(users)
+    .set({ emailVerifiedAt: new Date(), updatedAt: new Date() })
+    .where(eq(users.id, user.id));
+  await signInUser({
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+  });
   nextRedirect(`/${locale}/auth/verify?state=success`);
 }
 

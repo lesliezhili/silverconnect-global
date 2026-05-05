@@ -1,5 +1,6 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect as nextRedirect } from "next/navigation";
+import { eq, and, inArray } from "drizzle-orm";
 import { Upload, MapPin, Check } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Link } from "@/i18n/navigation";
@@ -7,8 +8,16 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { getCountry } from "@/components/domain/countryCookie";
-import { getSession } from "@/components/domain/sessionCookie";
+import { db } from "@/lib/db";
+import { users } from "@/lib/db/schema/users";
+import {
+  providerProfiles,
+  providerCategories,
+  providerAvailability,
+} from "@/lib/db/schema/providers";
+import { getCurrentUser, signInUser } from "@/lib/auth/server";
 
+const TOTAL_STEPS = 5;
 const STEPS = [1, 2, 3, 4, 5] as const;
 const TITLE_KEYS = [
   "registerStep1",
@@ -18,15 +27,236 @@ const TITLE_KEYS = [
   "registerStep5",
 ] as const;
 
-async function submitRegistration(formData: FormData) {
+const CATEGORY_KEYS = [
+  "cleaning",
+  "cooking",
+  "garden",
+  "personalCare",
+  "repair",
+] as const;
+type CategoryKey = (typeof CATEGORY_KEYS)[number];
+
+const SLOT_KEYS = ["morning", "afternoon", "evening"] as const;
+type SlotKey = (typeof SLOT_KEYS)[number];
+
+const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
+const DAY_KEYS = {
+  Mon: "weekMon",
+  Tue: "weekTue",
+  Wed: "weekWed",
+  Thu: "weekThu",
+  Fri: "weekFri",
+  Sat: "weekSat",
+  Sun: "weekSun",
+} as const;
+function dayIndex(label: (typeof DAY_LABELS)[number]): number {
+  return DAY_LABELS.indexOf(label) + 1; // ISO: Mon=1..Sun=7
+}
+
+async function ensureDraft(userId: string) {
+  const rows = await db
+    .select()
+    .from(providerProfiles)
+    .where(eq(providerProfiles.userId, userId))
+    .limit(1);
+  if (rows[0]) return rows[0];
+  const [created] = await db
+    .insert(providerProfiles)
+    .values({ userId, onboardingStatus: "pending" })
+    .returning();
+  return created!;
+}
+
+async function requireSignedInUser(locale: string) {
+  const user = await getCurrentUser();
+  if (!user) {
+    nextRedirect(`/${locale}/auth/login`);
+  }
+  return user;
+}
+
+async function saveStep1(formData: FormData) {
   "use server";
   const locale = String(formData.get("locale") ?? "en");
+  const me = await requireSignedInUser(locale);
+  const name = String(formData.get("name") ?? "").trim();
+  const phone = String(formData.get("phone") ?? "").trim();
+  const address = String(formData.get("address") ?? "").trim();
+  const bio = String(formData.get("bio") ?? "").trim();
+  if (!name || !phone || !address) {
+    nextRedirect(`/${locale}/provider/register?step=1&error=required`);
+  }
+  await db
+    .update(users)
+    .set({ name, phone, updatedAt: new Date() })
+    .where(eq(users.id, me.id));
+  const draft = await ensureDraft(me.id);
+  await db
+    .update(providerProfiles)
+    .set({ addressLine: address, bio: bio || null, updatedAt: new Date() })
+    .where(eq(providerProfiles.id, draft.id));
+  nextRedirect(`/${locale}/provider/register?step=2`);
+}
+
+async function saveStep2(formData: FormData) {
+  "use server";
+  const locale = String(formData.get("locale") ?? "en");
+  await requireSignedInUser(locale);
+  // Document file storage is deferred to a later phase (no Supabase
+  // Storage bucket wired). Provider keeps moving through the wizard;
+  // they can re-upload from /provider/compliance once Storage is live.
+  nextRedirect(`/${locale}/provider/register?step=3`);
+}
+
+async function saveStep3(formData: FormData) {
+  "use server";
+  const locale = String(formData.get("locale") ?? "en");
+  const me = await requireSignedInUser(locale);
+  const radiusRaw = Number(formData.get("radius") ?? 0);
+  const radius =
+    Number.isFinite(radiusRaw) && radiusRaw > 0 && radiusRaw <= 50
+      ? Math.round(radiusRaw)
+      : 10;
+  const categories = formData
+    .getAll("categories")
+    .map(String)
+    .filter((c): c is CategoryKey => CATEGORY_KEYS.includes(c as CategoryKey));
+  if (categories.length === 0) {
+    nextRedirect(`/${locale}/provider/register?step=3&error=noCategory`);
+  }
+  const draft = await ensureDraft(me.id);
+  await db
+    .update(providerProfiles)
+    .set({ serviceRadiusKm: radius, updatedAt: new Date() })
+    .where(eq(providerProfiles.id, draft.id));
+  await db
+    .delete(providerCategories)
+    .where(eq(providerCategories.providerId, draft.id));
+  if (categories.length > 0) {
+    await db
+      .insert(providerCategories)
+      .values(categories.map((c) => ({ providerId: draft.id, category: c })));
+  }
+  nextRedirect(`/${locale}/provider/register?step=4`);
+}
+
+async function saveStep4(formData: FormData) {
+  "use server";
+  const locale = String(formData.get("locale") ?? "en");
+  const me = await requireSignedInUser(locale);
+  const draft = await ensureDraft(me.id);
+
+  type Row = { providerId: string; dayOfWeek: number; slot: SlotKey };
+  const rows: Row[] = [];
+  for (const day of DAY_LABELS) {
+    const slots = formData
+      .getAll(`avail_${day}`)
+      .map(String)
+      .filter((s): s is SlotKey => SLOT_KEYS.includes(s as SlotKey));
+    for (const slot of slots) {
+      rows.push({ providerId: draft.id, dayOfWeek: dayIndex(day), slot });
+    }
+  }
+
+  await db
+    .delete(providerAvailability)
+    .where(eq(providerAvailability.providerId, draft.id));
+  if (rows.length > 0) {
+    await db.insert(providerAvailability).values(rows);
+  }
+  nextRedirect(`/${locale}/provider/register?step=5`);
+}
+
+async function finishWizard(formData: FormData) {
+  "use server";
+  const locale = String(formData.get("locale") ?? "en");
+  const me = await requireSignedInUser(locale);
+  const draft = await ensureDraft(me.id);
+
+  await db
+    .update(providerProfiles)
+    .set({
+      onboardingStatus: "docs_review",
+      submittedAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .where(eq(providerProfiles.id, draft.id));
+  await db
+    .update(users)
+    .set({ role: "provider", updatedAt: new Date() })
+    .where(eq(users.id, me.id));
+  // Re-issue session with provider role so /provider/* unlocks immediately.
+  await signInUser({
+    id: me.id,
+    email: me.email,
+    name: me.name,
+    role: "provider",
+  });
   nextRedirect(`/${locale}/provider/onboarding-status`);
+}
+
+interface DraftSnapshot {
+  bio: string;
+  addressLine: string;
+  serviceRadiusKm: number;
+  categories: Set<CategoryKey>;
+  availability: Set<string>; // `${day}|${slot}`
+  name: string;
+  phone: string;
+}
+
+async function loadDraft(userId: string): Promise<DraftSnapshot> {
+  const [u] = await db
+    .select({ name: users.name, phone: users.phone })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  const draftRow = await db
+    .select()
+    .from(providerProfiles)
+    .where(eq(providerProfiles.userId, userId))
+    .limit(1);
+  const draft = draftRow[0];
+  if (!draft) {
+    return {
+      bio: "",
+      addressLine: "",
+      serviceRadiusKm: 10,
+      categories: new Set(),
+      availability: new Set(),
+      name: u?.name ?? "",
+      phone: u?.phone ?? "",
+    };
+  }
+  const [cats, avails] = await Promise.all([
+    db
+      .select({ category: providerCategories.category })
+      .from(providerCategories)
+      .where(eq(providerCategories.providerId, draft.id)),
+    db
+      .select({
+        dayOfWeek: providerAvailability.dayOfWeek,
+        slot: providerAvailability.slot,
+      })
+      .from(providerAvailability)
+      .where(eq(providerAvailability.providerId, draft.id)),
+  ]);
+  return {
+    bio: draft.bio ?? "",
+    addressLine: draft.addressLine ?? "",
+    serviceRadiusKm: draft.serviceRadiusKm,
+    categories: new Set(cats.map((r) => r.category as CategoryKey)),
+    availability: new Set(
+      avails.map((a) => `${a.dayOfWeek}|${a.slot}`),
+    ),
+    name: u?.name ?? "",
+    phone: u?.phone ?? "",
+  };
 }
 
 function parseStep(raw: string | string[] | undefined): number {
   const n = Number(Array.isArray(raw) ? raw[0] : raw);
-  return Number.isFinite(n) && n >= 1 && n <= 5 ? n : 1;
+  return Number.isFinite(n) && n >= 1 && n <= TOTAL_STEPS ? n : 1;
 }
 
 export default async function ProviderRegisterPage({
@@ -39,23 +269,44 @@ export default async function ProviderRegisterPage({
   const { locale } = await params;
   const sp = await searchParams;
   setRequestLocale(locale);
-  const session = await getSession();
+  const me = await getCurrentUser();
+  if (!me) {
+    nextRedirect(`/${locale}/auth/login`);
+  }
   const country = await getCountry();
   const t = await getTranslations("provider");
   const tCommon = await getTranslations("common");
   const tCategories = await getTranslations("categories");
   const step = parseStep(sp.step);
+  const error = typeof sp.error === "string" ? sp.error : undefined;
+  const errorMsg =
+    error === "required"
+      ? t("errorAllRequired")
+      : error === "noCategory"
+      ? t("errorPickCategory")
+      : null;
+
+  const draft = await loadDraft(me.id);
 
   const prevHref = step > 1 ? `?step=${step - 1}` : "/home";
-  const nextStep = step + 1;
+  const action =
+    step === 1
+      ? saveStep1
+      : step === 2
+      ? saveStep2
+      : step === 3
+      ? saveStep3
+      : step === 4
+      ? saveStep4
+      : finishWizard;
 
   return (
     <>
       <Header
         country={country}
         back
-        signedIn={session.signedIn}
-        initials={session.initials}
+        signedIn={true}
+        initials={me.initials}
       />
       <main
         id="main-content"
@@ -66,7 +317,6 @@ export default async function ProviderRegisterPage({
           {t("registerStep", { n: step })} · {t(TITLE_KEYS[step - 1])}
         </p>
 
-        {/* Step indicator */}
         <ol
           aria-label={t("registerStep", { n: step })}
           className="mt-4 flex gap-2"
@@ -87,21 +337,28 @@ export default async function ProviderRegisterPage({
           ))}
         </ol>
 
-        <form
-          action={step < 5 ? "" : submitRegistration}
-          method={step < 5 ? "get" : undefined}
-          className="mt-6 flex flex-col gap-4"
-        >
-          {step < 5 && (
-            <input type="hidden" name="step" value={nextStep} />
-          )}
-          {step === 5 && (
-            <input type="hidden" name="locale" value={locale} />
-          )}
-          {step === 1 && <Step1 t={t} />}
+        {errorMsg && (
+          <div
+            role="alert"
+            className="mt-4 rounded-md border-[1.5px] border-danger bg-danger-soft px-3.5 py-3 text-[14px] font-semibold text-danger"
+          >
+            {errorMsg}
+          </div>
+        )}
+
+        <form action={action} className="mt-6 flex flex-col gap-4">
+          <input type="hidden" name="locale" value={locale} />
+          {step === 1 && <Step1 t={t} draft={draft} />}
           {step === 2 && <Step2 t={t} country={country} />}
-          {step === 3 && <Step3 t={t} tCategories={tCategories} country={country} />}
-          {step === 4 && <Step4 t={t} />}
+          {step === 3 && (
+            <Step3
+              t={t}
+              tCategories={tCategories}
+              country={country}
+              draft={draft}
+            />
+          )}
+          {step === 4 && <Step4 t={t} draft={draft} />}
           {step === 5 && <Step5 t={t} />}
 
           <div className="mt-4 flex items-center gap-3">
@@ -113,7 +370,7 @@ export default async function ProviderRegisterPage({
             </Link>
             <div className="flex-1" />
             <Button type="submit" variant="primary" size="md">
-              {step < 5 ? t("registerNext") : t("registerSubmit")}
+              {step < TOTAL_STEPS ? t("registerNext") : t("registerSubmit")}
             </Button>
           </div>
         </form>
@@ -124,20 +381,39 @@ export default async function ProviderRegisterPage({
 
 type T = Awaited<ReturnType<typeof getTranslations<"provider">>>;
 
-function Step1({ t }: { t: T }) {
+function Step1({ t, draft }: { t: T; draft: DraftSnapshot }) {
   return (
     <>
       <div>
         <Label htmlFor="name">{t("rName")}</Label>
-        <Input id="name" name="name" autoComplete="name" required />
+        <Input
+          id="name"
+          name="name"
+          autoComplete="name"
+          defaultValue={draft.name}
+          required
+        />
       </div>
       <div>
         <Label htmlFor="phone">{t("rPhone")}</Label>
-        <Input id="phone" name="phone" type="tel" autoComplete="tel" required />
+        <Input
+          id="phone"
+          name="phone"
+          type="tel"
+          autoComplete="tel"
+          defaultValue={draft.phone}
+          required
+        />
       </div>
       <div>
         <Label htmlFor="address">{t("rAddress")}</Label>
-        <Input id="address" name="address" autoComplete="street-address" required />
+        <Input
+          id="address"
+          name="address"
+          autoComplete="street-address"
+          defaultValue={draft.addressLine}
+          required
+        />
       </div>
       <div>
         <Label htmlFor="bio">{t("rBio")}</Label>
@@ -145,6 +421,7 @@ function Step1({ t }: { t: T }) {
           id="bio"
           name="bio"
           rows={3}
+          defaultValue={draft.bio}
           aria-describedby="bio-hint"
           className="block w-full rounded-md border-[1.5px] border-border-strong bg-bg-base p-3.5 text-[16px] text-text-primary focus:border-brand focus:outline-none"
         />
@@ -201,13 +478,17 @@ function Step3({
   t,
   tCategories,
   country,
+  draft,
 }: {
   t: T;
   tCategories: Awaited<ReturnType<typeof getTranslations<"categories">>>;
   country: string;
+  draft: DraftSnapshot;
 }) {
-  const cats = ["cleaning", "cooking", "garden", "personalCare", "repair"] as const;
-  const defaultRadius = country === "CN" ? "10" : "15";
+  const cats: readonly CategoryKey[] = CATEGORY_KEYS;
+  const defaultRadius = String(
+    draft.serviceRadiusKm || (country === "CN" ? 10 : 15),
+  );
   return (
     <>
       <div className="rounded-lg border border-border bg-bg-base p-4">
@@ -242,7 +523,13 @@ function Step3({
               key={c}
               className="inline-flex cursor-pointer items-center gap-1 rounded-pill border-[1.5px] border-border-strong bg-bg-base px-4 py-2 text-[14px] font-semibold text-text-primary has-[:checked]:border-brand has-[:checked]:bg-brand-soft has-[:checked]:text-brand"
             >
-              <input type="checkbox" name="categories" value={c} className="sr-only" />
+              <input
+                type="checkbox"
+                name="categories"
+                value={c}
+                defaultChecked={draft.categories.has(c)}
+                className="sr-only"
+              />
               {tCategories(c)}
             </label>
           ))}
@@ -252,51 +539,39 @@ function Step3({
   );
 }
 
-function Step4({ t }: { t: T }) {
-  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
-  const dayKeys = {
-    Mon: "weekMon",
-    Tue: "weekTue",
-    Wed: "weekWed",
-    Thu: "weekThu",
-    Fri: "weekFri",
-    Sat: "weekSat",
-    Sun: "weekSun",
-  } as const;
-  const slots = [
-    { key: "morning" as const, defaultOn: true },
-    { key: "afternoon" as const, defaultOn: true },
-    { key: "evening" as const, defaultOn: false },
-  ];
+function Step4({ t, draft }: { t: T; draft: DraftSnapshot }) {
   return (
     <>
       <p className="text-[14px] text-text-secondary">{t("availabilityHint")}</p>
       <ul className="mt-2 flex flex-col gap-2">
-        {days.map((d) => (
-          <li
-            key={d}
-            className="grid grid-cols-[60px_1fr] items-center gap-3 rounded-lg border border-border bg-bg-base p-3"
-          >
-            <span className="text-[15px] font-bold">{t(dayKeys[d])}</span>
-            <div className="grid grid-cols-3 gap-2">
-              {slots.map((s) => (
-                <label
-                  key={s.key}
-                  className="inline-flex cursor-pointer items-center justify-center rounded-sm border-[1.5px] border-border-strong bg-bg-base px-2 py-2 text-[13px] font-semibold text-text-primary has-[:checked]:border-brand has-[:checked]:bg-brand-soft has-[:checked]:text-brand"
-                >
-                  <input
-                    type="checkbox"
-                    name={`avail_${d}`}
-                    value={s.key}
-                    defaultChecked={s.defaultOn && d !== "Sat" && d !== "Sun"}
-                    className="sr-only"
-                  />
-                  {t(s.key)}
-                </label>
-              ))}
-            </div>
-          </li>
-        ))}
+        {DAY_LABELS.map((d) => {
+          const dIdx = dayIndex(d);
+          return (
+            <li
+              key={d}
+              className="grid grid-cols-[60px_1fr] items-center gap-3 rounded-lg border border-border bg-bg-base p-3"
+            >
+              <span className="text-[15px] font-bold">{t(DAY_KEYS[d])}</span>
+              <div className="grid grid-cols-3 gap-2">
+                {SLOT_KEYS.map((s) => (
+                  <label
+                    key={s}
+                    className="inline-flex cursor-pointer items-center justify-center rounded-sm border-[1.5px] border-border-strong bg-bg-base px-2 py-2 text-[13px] font-semibold text-text-primary has-[:checked]:border-brand has-[:checked]:bg-brand-soft has-[:checked]:text-brand"
+                  >
+                    <input
+                      type="checkbox"
+                      name={`avail_${d}`}
+                      value={s}
+                      defaultChecked={draft.availability.has(`${dIdx}|${s}`)}
+                      className="sr-only"
+                    />
+                    {t(s)}
+                  </label>
+                ))}
+              </div>
+            </li>
+          );
+        })}
       </ul>
     </>
   );

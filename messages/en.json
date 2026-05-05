@@ -268,7 +268,9 @@
     "mapPlaceholder": "Map preview",
     "calendarPrev": "Previous month",
     "calendarNext": "Next month",
-    "reviewStars": "{n} stars"
+    "reviewStars": "{n} stars",
+    "errorAllRequired": "Please fill in all required fields.",
+    "errorPickCategory": "Please select at least one service category."
   },
   "booking": {
     "steps": {
@@ -705,7 +707,9 @@
     "errorCodeThrottled": "Too many wrong attempts. Resend a new code.",
     "errorCodeFormat": "Code must be exactly 6 digits.",
     "errorSmtpUnconfigured": "Email is not configured yet. Please contact support.",
-    "errorSendFailed": "Could not send the code. Please try again."
+    "errorSendFailed": "Could not send the code. Please try again.",
+    "errorEmailInvalid": "Please enter a valid email address.",
+    "errorCodeExpired": "Code expired. Request a new one."
   },
   "dev": {
     "title": "Component Preview",

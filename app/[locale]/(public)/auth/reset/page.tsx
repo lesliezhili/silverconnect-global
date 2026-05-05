@@ -1,5 +1,6 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect as nextRedirect } from "next/navigation";
+import { eq } from "drizzle-orm";
 import { Link, redirect } from "@/i18n/navigation";
 import { CheckCircle2 } from "lucide-react";
 import { AuthCard } from "@/components/domain/AuthCard";
@@ -7,15 +8,44 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { getSession } from "@/components/domain/sessionCookie";
+import { consumeCode } from "@/components/domain/verifyCode";
+import { db } from "@/lib/db";
+import { users } from "@/lib/db/schema/users";
+import { findUserByEmail } from "@/lib/auth/server";
+import { hashPassword } from "@/lib/auth/password";
 
 async function resetAction(formData: FormData) {
   "use server";
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const code = String(formData.get("code") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   const confirm = String(formData.get("confirm") ?? "");
   const locale = String(formData.get("locale") ?? "en");
   if (password.length < 8 || password !== confirm) {
-    nextRedirect(`/${locale}/auth/reset?error=mismatch`);
+    nextRedirect(
+      `/${locale}/auth/reset?email=${encodeURIComponent(email)}&error=mismatch`,
+    );
   }
+  if (!email.includes("@") || !/^\d{6}$/.test(code)) {
+    nextRedirect(
+      `/${locale}/auth/reset?email=${encodeURIComponent(email)}&error=format`,
+    );
+  }
+  const verify = await consumeCode(email, code, "password_reset");
+  if (!verify.ok) {
+    nextRedirect(
+      `/${locale}/auth/reset?email=${encodeURIComponent(email)}&error=${verify.reason}`,
+    );
+  }
+  const user = await findUserByEmail(email);
+  if (!user) {
+    nextRedirect(`/${locale}/auth/forgot?error=invalid`);
+  }
+  const passwordHash = await hashPassword(password);
+  await db
+    .update(users)
+    .set({ passwordHash, updatedAt: new Date() })
+    .where(eq(users.id, user.id));
   nextRedirect(`/${locale}/auth/reset?sent=1`);
 }
 
@@ -43,20 +73,30 @@ export default async function ResetPasswordPage({
   const tCommon = await getTranslations("common");
   const state = parseState(
     typeof sp.state === "string" ? sp.state : undefined,
-    typeof sp.sent === "string" ? sp.sent : undefined
+    typeof sp.sent === "string" ? sp.sent : undefined,
   );
   const error = typeof sp.error === "string" ? sp.error : undefined;
   const errorMsg =
     error === "mismatch"
       ? t("errorPasswordMismatch")
+      : error === "format"
+      ? t("errorCodeFormat")
+      : error === "wrong"
+      ? t("errorCodeWrong")
+      : error === "missing"
+      ? t("errorCodeMissing")
+      : error === "expired"
+      ? t("errorCodeExpired")
+      : error === "throttled"
+      ? t("errorCodeThrottled")
       : error
       ? t("errorGeneric")
       : null;
-  const token = typeof sp.token === "string" ? sp.token : "";
-  const effectiveState: ResetState =
-    state === "default" && !token ? "expired" : state;
+  const email =
+    typeof sp.email === "string" && sp.email.includes("@") ? sp.email : "";
+  const justSentNotice = sp.sent === "1" && state !== "success";
 
-  if (effectiveState === "success") {
+  if (state === "success") {
     return (
       <AuthCard title={t("resetSuccess")} subtitle={t("resetSuccessHint")}>
         <div className="flex flex-col items-center gap-4 py-2 text-center">
@@ -74,7 +114,7 @@ export default async function ResetPasswordPage({
     );
   }
 
-  if (effectiveState === "expired") {
+  if (state === "expired") {
     return (
       <AuthCard title={t("resetExpired")} subtitle={t("resetExpiredHint")}>
         <Link
@@ -89,6 +129,14 @@ export default async function ResetPasswordPage({
 
   return (
     <AuthCard title={t("resetTitle")} subtitle={t("resetSub")}>
+      {justSentNotice && !errorMsg && (
+        <div
+          role="status"
+          className="mb-4 rounded-md border-[1.5px] border-success bg-success-soft px-3.5 py-3 text-[14px] font-semibold text-success"
+        >
+          {t("forgotSentHint")}
+        </div>
+      )}
       {errorMsg && (
         <div
           role="alert"
@@ -98,8 +146,32 @@ export default async function ResetPasswordPage({
         </div>
       )}
       <form className="flex flex-col gap-4" action={resetAction}>
-        <input type="hidden" name="token" value={token} />
         <input type="hidden" name="locale" value={locale} />
+        <div>
+          <Label htmlFor="email">{tCommon("email")}</Label>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            defaultValue={email}
+            required
+          />
+        </div>
+        <div>
+          <Label htmlFor="code">{t("verifyCodeLabel")}</Label>
+          <Input
+            id="code"
+            name="code"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            pattern="\d{6}"
+            maxLength={6}
+            required
+            className="tabular-nums tracking-[6px] text-center text-[20px]"
+          />
+        </div>
         <div>
           <Label htmlFor="password">{t("newPassword")}</Label>
           <Input

@@ -108,3 +108,30 @@ export function buildVerifyEmail(
 </div>`;
   return { subject, text, html };
 }
+
+export function buildResetEmail(
+  code: string,
+  locale: string,
+): { subject: string; text: string; html: string } {
+  const isZh = locale === "zh";
+  const subject = isZh
+    ? `SilverConnect 重置密码：${code}`
+    : `SilverConnect password reset code: ${code}`;
+  const text = isZh
+    ? `您的 SilverConnect 密码重置码是 ${code}。10 分钟内有效。如果不是您本人请求，请忽略此邮件。`
+    : `Your SilverConnect password reset code is ${code}. It expires in 10 minutes. Ignore this email if you didn't request it.`;
+  const html = isZh
+    ? `<div style="font-family:system-ui,Helvetica,Arial,sans-serif;line-height:1.6">
+<h2 style="margin:0 0 12px">SilverConnect 密码重置</h2>
+<p>您的密码重置码是：</p>
+<p style="font-size:28px;font-weight:bold;letter-spacing:6px;background:#FEEBC8;color:#9C4221;padding:12px 16px;border-radius:6px;display:inline-block;font-family:ui-monospace,monospace">${code}</p>
+<p>10 分钟内有效。如果不是您本人请求，请忽略此邮件。</p>
+</div>`
+    : `<div style="font-family:system-ui,Helvetica,Arial,sans-serif;line-height:1.6">
+<h2 style="margin:0 0 12px">Password reset code</h2>
+<p>Use this code to reset your SilverConnect password:</p>
+<p style="font-size:28px;font-weight:bold;letter-spacing:6px;background:#FEEBC8;color:#9C4221;padding:12px 16px;border-radius:6px;display:inline-block;font-family:ui-monospace,monospace">${code}</p>
+<p>The code expires in 10 minutes. Ignore this email if you didn't request it.</p>
+</div>`;
+  return { subject, text, html };
+}

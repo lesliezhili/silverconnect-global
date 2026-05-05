@@ -1,5 +1,6 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect as nextRedirect } from "next/navigation";
+import { eq } from "drizzle-orm";
 import { Link, redirect } from "@/i18n/navigation";
 import { AuthCard } from "@/components/domain/AuthCard";
 import { Button } from "@/components/ui/Button";
@@ -8,16 +9,40 @@ import { Label } from "@/components/ui/Label";
 import { getSession } from "@/components/domain/sessionCookie";
 import { issueCode } from "@/components/domain/verifyCode";
 import { sendEmail, buildVerifyEmail } from "@/components/domain/email";
+import { db } from "@/lib/db";
+import { users } from "@/lib/db/schema/users";
+import { findUserByEmail } from "@/lib/auth/server";
+import { hashPassword } from "@/lib/auth/password";
 
 async function registerAction(formData: FormData) {
   "use server";
-  const email = String(formData.get("email") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
   const locale = String(formData.get("locale") ?? "en");
   if (!email.includes("@") || password.length < 8) {
     nextRedirect(`/${locale}/auth/register?error=invalid`);
   }
-  const code = issueCode(email);
+
+  const existing = await findUserByEmail(email);
+  if (existing && existing.emailVerifiedAt) {
+    nextRedirect(`/${locale}/auth/register?error=taken`);
+  }
+
+  const passwordHash = await hashPassword(password);
+  if (existing) {
+    await db
+      .update(users)
+      .set({ passwordHash, updatedAt: new Date() })
+      .where(eq(users.id, existing.id));
+  } else {
+    await db.insert(users).values({
+      email,
+      passwordHash,
+      role: "customer",
+    });
+  }
+
+  const code = await issueCode(email, "email_verify");
   const { subject, text, html } = buildVerifyEmail(code, locale);
   const result = await sendEmail({ to: email, subject, text, html });
   if (!result.ok) {
@@ -34,7 +59,7 @@ async function registerAction(formData: FormData) {
     nextRedirect(`/${locale}/auth/register?error=send`);
   }
   nextRedirect(
-    `/${locale}/auth/verify?email=${encodeURIComponent(email)}&sent=1`
+    `/${locale}/auth/verify?email=${encodeURIComponent(email)}&sent=1`,
   );
 }
 
