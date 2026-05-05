@@ -49,3 +49,41 @@ export const badgeKindEnum = pgEnum("badge_kind", [
   "five_year",
   "first_aid_certified",
 ]);
+
+export const bookingStatusEnum = pgEnum("booking_status", [
+  "pending",
+  "confirmed",
+  "in_progress",
+  "completed",
+  "cancelled",
+  "disputed",
+  "released",
+]);
+
+export const paymentStatusEnum = pgEnum("payment_status", [
+  "pending",
+  "authorized",
+  "captured",
+  "refunded",
+  "failed",
+]);
+
+export const recurrenceFreqEnum = pgEnum("recurrence_freq", [
+  "weekly",
+  "biweekly",
+  "monthly",
+]);
+
+export const payoutStatusEnum = pgEnum("payout_status", [
+  "pending",
+  "paid",
+  "failed",
+]);
+
+export const bookingChangeTypeEnum = pgEnum("booking_change_type", [
+  "created",
+  "status_change",
+  "reschedule",
+  "cancel",
+  "refund",
+]);

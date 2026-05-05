@@ -8,6 +8,13 @@
       "when": 1777949914527,
       "tag": "0000_plain_zaran",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1777956977188,
+      "tag": "0001_phase2-services-bookings-payments",
+      "breakpoints": true
     }
   ]
 }
