@@ -1,8 +1,9 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect as nextRedirect } from "next/navigation";
 import { eq, and } from "drizzle-orm";
-import { CreditCard, Trash2, Lock } from "lucide-react";
+import { CreditCard, Plus, Trash2, Lock } from "lucide-react";
 import { Header } from "@/components/layout/Header";
+import { Link } from "@/i18n/navigation";
 import { getCountry } from "@/components/domain/countryCookie";
 import { EmptyState } from "@/components/domain/PageStates";
 import { db } from "@/lib/db";
@@ -87,14 +88,12 @@ export default async function ProfilePaymentPage({
               title={t("empty")}
               hint={t("emptyHint")}
               cta={
-                <button
-                  type="button"
-                  disabled
-                  title="Card add flow ships with Stripe wiring"
-                  className="inline-flex h-14 items-center justify-center rounded-md bg-brand px-7 text-[17px] font-bold text-white opacity-60"
+                <Link
+                  href="/profile/payment/new"
+                  className="inline-flex h-14 items-center justify-center rounded-md bg-brand px-7 text-[17px] font-bold text-white"
                 >
                   {t("addCard")}
-                </button>
+                </Link>
               }
             />
           </div>
@@ -159,14 +158,13 @@ export default async function ProfilePaymentPage({
           </ul>
         )}
 
-        {/* Add-card form intentionally removed for Wave 1.
-            Real card capture must go through Stripe Elements / SetupIntent
-            so we never touch raw PAN. Wired in the Stripe-integration phase. */}
         {items.length > 0 && (
-          <p className="mt-4 rounded-md border border-border bg-bg-surface-2 px-3.5 py-3 text-[13px] text-text-tertiary">
-            {/* English-side note; localise once Stripe is wired. */}
-            Adding new cards is wired together with Stripe — coming soon.
-          </p>
+          <Link
+            href="/profile/payment/new"
+            className="mt-4 inline-flex h-14 w-full items-center justify-center gap-2 rounded-md border-2 border-dashed border-border-strong text-[16px] font-semibold text-brand"
+          >
+            <Plus size={20} aria-hidden /> {t("addCard")}
+          </Link>
         )}
       </main>
     </>

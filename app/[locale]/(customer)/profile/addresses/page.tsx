@@ -3,47 +3,12 @@ import { redirect as nextRedirect } from "next/navigation";
 import { eq, and } from "drizzle-orm";
 import { MapPin, Plus, Pencil, Trash2 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Label } from "@/components/ui/Label";
+import { Link } from "@/i18n/navigation";
 import { getCountry } from "@/components/domain/countryCookie";
 import { EmptyState } from "@/components/domain/PageStates";
 import { db } from "@/lib/db";
 import { addresses } from "@/lib/db/schema/customer-data";
 import { getCurrentUser } from "@/lib/auth/server";
-
-type CountryCode = "AU" | "CN" | "CA";
-
-async function addAddressAction(formData: FormData) {
-  "use server";
-  const locale = String(formData.get("locale") ?? "en");
-  const me = await getCurrentUser();
-  if (!me) nextRedirect(`/${locale}/auth/login`);
-  const country = String(formData.get("country") ?? "AU") as CountryCode;
-  const label = String(formData.get("label") ?? "").trim() || null;
-  const line1 = String(formData.get("street") ?? "").trim();
-  const city = String(formData.get("suburb") ?? "").trim();
-  const state = String(formData.get("state") ?? "").trim() || null;
-  const postcode = String(formData.get("postcode") ?? "").trim() || null;
-  if (!line1 || !city) {
-    nextRedirect(`/${locale}/profile/addresses?add=1&error=required`);
-  }
-  const existingCount = await db
-    .select({ id: addresses.id })
-    .from(addresses)
-    .where(eq(addresses.userId, me.id));
-  await db.insert(addresses).values({
-    userId: me.id,
-    label,
-    line1,
-    city,
-    state,
-    postcode,
-    country,
-    isDefault: existingCount.length === 0,
-  });
-  nextRedirect(`/${locale}/profile/addresses`);
-}
 
 async function deleteAddressAction(formData: FormData) {
   "use server";
@@ -86,15 +51,12 @@ export default async function AddressesPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale } = await params;
-  const sp = await searchParams;
+  await searchParams;
   setRequestLocale(locale);
   const me = await getCurrentUser();
   if (!me) nextRedirect(`/${locale}/auth/login`);
   const country = await getCountry();
   const t = await getTranslations("addresses");
-  const tCommon = await getTranslations("common");
-  const adding = sp.add === "1";
-  const error = typeof sp.error === "string" ? sp.error : undefined;
 
   const items = await db
     .select()
@@ -123,12 +85,12 @@ export default async function AddressesPage({
               title={t("empty")}
               hint={t("emptyHint")}
               cta={
-                <a
-                  href="?add=1"
+                <Link
+                  href="/profile/addresses/new"
                   className="inline-flex h-14 items-center justify-center rounded-md bg-brand px-7 text-[17px] font-bold text-white"
                 >
                   {t("addNew")}
-                </a>
+                </Link>
               }
             />
           </div>
@@ -202,57 +164,13 @@ export default async function AddressesPage({
           </ul>
         )}
 
-        {!adding && items.length > 0 && (
-          <a
-            href="?add=1"
+        {items.length > 0 && (
+          <Link
+            href="/profile/addresses/new"
             className="mt-4 inline-flex h-14 w-full items-center justify-center gap-2 rounded-md border-2 border-dashed border-border-strong text-[16px] font-semibold text-brand"
           >
             <Plus size={20} aria-hidden /> {t("addNew")}
-          </a>
-        )}
-
-        {adding && (
-          <form
-            action={addAddressAction}
-            className="mt-5 flex flex-col gap-4 rounded-lg border-2 border-brand bg-bg-base p-5"
-          >
-            <input type="hidden" name="locale" value={locale} />
-            <input type="hidden" name="country" value={country} />
-            <h2 className="text-h3">{t("addNew")}</h2>
-            {error === "required" && (
-              <div
-                role="alert"
-                className="rounded-md border-[1.5px] border-danger bg-danger-soft px-3.5 py-2 text-[14px] font-semibold text-danger"
-              >
-                {t("emptyHint")}
-              </div>
-            )}
-            <div>
-              <Label htmlFor="label">{t("label")}</Label>
-              <Input id="label" name="label" defaultValue={t("labelHome")} />
-            </div>
-            <div>
-              <Label htmlFor="street">{t("addressLine")}</Label>
-              <Input id="street" name="street" autoComplete="street-address" required />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label htmlFor="suburb">{t("suburb")}</Label>
-                <Input id="suburb" name="suburb" autoComplete="address-level2" required />
-              </div>
-              <div>
-                <Label htmlFor="state">{t("state")}</Label>
-                <Input id="state" name="state" autoComplete="address-level1" />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="postcode">{t("postcode")}</Label>
-              <Input id="postcode" name="postcode" autoComplete="postal-code" inputMode="numeric" />
-            </div>
-            <Button type="submit" variant="primary" block size="md">
-              {tCommon("save")}
-            </Button>
-          </form>
+          </Link>
         )}
       </main>
     </>
