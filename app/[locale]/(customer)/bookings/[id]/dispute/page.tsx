@@ -1,19 +1,16 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
-import { redirect as nextRedirect } from "next/navigation";
+import { redirect as nextRedirect, notFound } from "next/navigation";
+import { eq, and, sql } from "drizzle-orm";
 import { CheckCircle2, AlertTriangle, Camera } from "lucide-react";
 import { Header } from "@/components/layout/Header";
-import { Link, redirect } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
 import { Label } from "@/components/ui/Label";
 import { Button } from "@/components/ui/Button";
 import { getCountry } from "@/components/domain/countryCookie";
-import { getSession } from "@/components/domain/sessionCookie";
-
-async function disputeAction(formData: FormData) {
-  "use server";
-  const locale = String(formData.get("locale") ?? "en");
-  const id = String(formData.get("id") ?? "");
-  nextRedirect(`/${locale}/bookings/${id}/dispute?sent=1`);
-}
+import { db } from "@/lib/db";
+import { bookings, bookingChanges } from "@/lib/db/schema/bookings";
+import { disputes } from "@/lib/db/schema/disputes";
+import { getCurrentUser } from "@/lib/auth/server";
 
 const TYPE_KEYS = [
   "typeNotShow",
@@ -28,6 +25,64 @@ const OUTCOME_KEYS = [
   "outcomeFull",
 ] as const;
 
+async function disputeAction(formData: FormData) {
+  "use server";
+  const locale = String(formData.get("locale") ?? "en");
+  const id = String(formData.get("id") ?? "");
+  const type = String(formData.get("type") ?? "").trim();
+  const describe = String(formData.get("describe") ?? "").trim();
+  const outcome = String(formData.get("outcome") ?? "").trim();
+  const me = await getCurrentUser();
+  if (!me) nextRedirect(`/${locale}/auth/login`);
+  if (!id) nextRedirect(`/${locale}/bookings`);
+  if (describe.length < 20) {
+    nextRedirect(`/${locale}/bookings/${id}/dispute?error=tooShort`);
+  }
+
+  const [b] = await db
+    .select({ id: bookings.id, status: bookings.status })
+    .from(bookings)
+    .where(and(eq(bookings.id, id), eq(bookings.customerId, me.id)))
+    .limit(1);
+  if (!b) nextRedirect(`/${locale}/bookings`);
+
+  const reason =
+    type === "notshow"
+      ? "Provider did not show up"
+      : type === "incomplete"
+        ? "Service was incomplete"
+        : type === "damage"
+          ? "Damage or breakage"
+          : type === "other"
+            ? "Other"
+            : "Other";
+  const fullReason = `${reason}\n\n${describe}\n\nRequested outcome: ${outcome || "—"}`;
+
+  await db.transaction(async (tx) => {
+    await tx.insert(disputes).values({
+      bookingId: b.id,
+      raisedBy: me.id,
+      reason: fullReason,
+    });
+    if (b.status !== "disputed") {
+      await tx
+        .update(bookings)
+        .set({ status: "disputed", updatedAt: new Date() })
+        .where(eq(bookings.id, b.id));
+      await tx.insert(bookingChanges).values({
+        bookingId: b.id,
+        type: "status_change",
+        fromStatus: b.status as never,
+        toStatus: "disputed",
+        actorId: me.id,
+        note: `Customer dispute: ${reason}`,
+      });
+    }
+  });
+
+  nextRedirect(`/${locale}/bookings/${id}/dispute?sent=1`);
+}
+
 export default async function DisputePage({
   params,
   searchParams,
@@ -38,22 +93,40 @@ export default async function DisputePage({
   const { locale, id } = await params;
   const sp = await searchParams;
   setRequestLocale(locale);
-  const session = await getSession();
-  if (!session.signedIn) redirect({ href: "/auth/login", locale });
+  const me = await getCurrentUser();
+  if (!me) nextRedirect(`/${locale}/auth/login`);
   const country = await getCountry();
   const t = await getTranslations("dispute");
   const tCommon = await getTranslations("common");
   const sent = sp.sent === "1";
-  const caseId = `${id.toUpperCase()}-D1`;
+  const error = typeof sp.error === "string" ? sp.error : undefined;
 
-  if (sent) {
+  // Confirm booking ownership.
+  const [b] = await db
+    .select({ id: bookings.id })
+    .from(bookings)
+    .where(and(eq(bookings.id, id), eq(bookings.customerId, me.id)))
+    .limit(1);
+  if (!b) notFound();
+
+  // Pull the latest dispute on this booking (if any).
+  const [latest] = await db
+    .select({ id: disputes.id, status: disputes.status })
+    .from(disputes)
+    .where(eq(disputes.bookingId, id))
+    .orderBy(sql`${disputes.createdAt} desc`)
+    .limit(1);
+
+  const caseId = latest ? `D-${latest.id.slice(0, 8)}` : `D-${id.slice(0, 8)}`;
+
+  if (sent || latest) {
     return (
       <>
         <Header
           country={country}
           back
-          signedIn={session.signedIn}
-          initials={session.initials}
+          signedIn={true}
+          initials={me.initials}
         />
         <main
           id="main-content"
@@ -66,6 +139,11 @@ export default async function DisputePage({
           <p className="max-w-[340px] text-[16px] text-text-secondary">
             {t("successHint", { id: caseId })}
           </p>
+          {latest && (
+            <p className="text-[14px] text-text-tertiary">
+              {locale === "zh" ? "状态" : "Status"}: {latest.status}
+            </p>
+          )}
           <Link
             href={`/bookings/${id}`}
             className="mt-2 inline-flex h-14 items-center rounded-md bg-brand px-7 text-[17px] font-bold text-white"
@@ -82,8 +160,8 @@ export default async function DisputePage({
       <Header
         country={country}
         back
-        signedIn={session.signedIn}
-        initials={session.initials}
+        signedIn={true}
+        initials={me.initials}
       />
       <main
         id="main-content"
@@ -104,10 +182,16 @@ export default async function DisputePage({
           </div>
         </div>
 
-        <form
-          className="mt-6 flex flex-col gap-6"
-          action={disputeAction}
-        >
+        {error === "tooShort" && (
+          <div
+            role="alert"
+            className="mt-3 rounded-md border-[1.5px] border-danger bg-danger-soft px-3.5 py-3 text-[14px] font-semibold text-danger"
+          >
+            {t("describeHint")}
+          </div>
+        )}
+
+        <form className="mt-6 flex flex-col gap-6" action={disputeAction}>
           <input type="hidden" name="locale" value={locale} />
           <input type="hidden" name="id" value={id} />
           <fieldset>
@@ -143,11 +227,15 @@ export default async function DisputePage({
               name="describe"
               required
               minLength={20}
+              maxLength={2000}
               rows={5}
               aria-describedby="describe-hint"
               className="block w-full rounded-md border-[1.5px] border-border-strong bg-bg-base p-3.5 text-[16px] text-text-primary placeholder:text-text-placeholder focus:border-brand focus:outline-none"
             />
-            <p id="describe-hint" className="mt-1.5 text-[13px] text-text-tertiary">
+            <p
+              id="describe-hint"
+              className="mt-1.5 text-[13px] text-text-tertiary"
+            >
               {t("describeHint")}
             </p>
           </div>
@@ -160,7 +248,9 @@ export default async function DisputePage({
               type="file"
               accept="image/*,video/*,audio/*"
               multiple
-              className="block w-full text-[14px] text-text-secondary file:mr-3 file:inline-flex file:h-12 file:items-center file:rounded-md file:border-[1.5px] file:border-border-strong file:bg-bg-base file:px-4 file:text-[14px] file:font-semibold file:text-text-primary"
+              disabled
+              title="Evidence upload ships with file storage"
+              className="block w-full text-[14px] text-text-secondary opacity-50 file:mr-3 file:inline-flex file:h-12 file:items-center file:rounded-md file:border-[1.5px] file:border-border-strong file:bg-bg-base file:px-4 file:text-[14px] file:font-semibold file:text-text-primary"
             />
             <p className="mt-1.5 flex items-center gap-1 text-[13px] text-text-tertiary">
               <Camera size={14} aria-hidden /> {t("evidenceHint")}

@@ -1,20 +1,20 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
-import { redirect as nextRedirect } from "next/navigation";
+import { redirect as nextRedirect, notFound } from "next/navigation";
+import { eq, and } from "drizzle-orm";
 import { Star, CheckCircle2, Camera } from "lucide-react";
 import { Header } from "@/components/layout/Header";
-import { Link, redirect } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
 import { Label } from "@/components/ui/Label";
 import { Button } from "@/components/ui/Button";
 import { ProviderAvatar } from "@/components/domain/ProviderAvatar";
 import { getCountry } from "@/components/domain/countryCookie";
-import { getSession } from "@/components/domain/sessionCookie";
-
-async function feedbackAction(formData: FormData) {
-  "use server";
-  const locale = String(formData.get("locale") ?? "en");
-  const id = String(formData.get("id") ?? "");
-  nextRedirect(`/${locale}/bookings/${id}/feedback?sent=1`);
-}
+import { db } from "@/lib/db";
+import { bookings } from "@/lib/db/schema/bookings";
+import { providerProfiles } from "@/lib/db/schema/providers";
+import { users } from "@/lib/db/schema/users";
+import { services } from "@/lib/db/schema/services";
+import { reviews } from "@/lib/db/schema/reviews";
+import { getCurrentUser } from "@/lib/auth/server";
 
 const TAG_KEYS = [
   "tagPunctual",
@@ -23,6 +23,67 @@ const TAG_KEYS = [
   "tagFriendly",
   "tagFair",
 ] as const;
+
+function initialsOf(name: string | null, fallback: string): string {
+  const src = (name || fallback).trim();
+  const parts = src.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return (src.slice(0, 2) || "?").toUpperCase();
+}
+
+async function feedbackAction(formData: FormData) {
+  "use server";
+  const locale = String(formData.get("locale") ?? "en");
+  const id = String(formData.get("id") ?? "");
+  const ratingRaw = Number(formData.get("rating") ?? 0);
+  const comment = String(formData.get("comment") ?? "").trim();
+  const me = await getCurrentUser();
+  if (!me) nextRedirect(`/${locale}/auth/login`);
+  if (!id) nextRedirect(`/${locale}/bookings`);
+  if (!Number.isFinite(ratingRaw) || ratingRaw < 1 || ratingRaw > 5) {
+    nextRedirect(`/${locale}/bookings/${id}/feedback?error=rating`);
+  }
+
+  // Confirm booking belongs to this customer + has reached a state that
+  // allows review (completed/released).
+  const [b] = await db
+    .select({
+      id: bookings.id,
+      status: bookings.status,
+      providerId: bookings.providerId,
+    })
+    .from(bookings)
+    .where(and(eq(bookings.id, id), eq(bookings.customerId, me.id)))
+    .limit(1);
+  if (!b) nextRedirect(`/${locale}/bookings`);
+  if (b.status !== "completed" && b.status !== "released") {
+    nextRedirect(`/${locale}/bookings/${id}/feedback?error=not_completed`);
+  }
+  if (!b.providerId) {
+    nextRedirect(`/${locale}/bookings/${id}/feedback?error=no_provider`);
+  }
+
+  try {
+    await db.insert(reviews).values({
+      bookingId: b.id,
+      customerId: me.id,
+      providerId: b.providerId,
+      rating: Math.round(ratingRaw),
+      comment: comment || null,
+    });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    // Unique on booking_id — duplicate submit lands here.
+    if (msg.includes("reviews_booking_uq")) {
+      nextRedirect(`/${locale}/bookings/${id}/feedback?error=duplicate`);
+    }
+    // eslint-disable-next-line no-console
+    console.error("[feedback] insert failed:", msg);
+    nextRedirect(`/${locale}/bookings/${id}/feedback?error=server`);
+  }
+
+  nextRedirect(`/${locale}/bookings/${id}/feedback?sent=1`);
+}
 
 export default async function FeedbackPage({
   params,
@@ -34,24 +95,55 @@ export default async function FeedbackPage({
   const { locale, id } = await params;
   const sp = await searchParams;
   setRequestLocale(locale);
-  const session = await getSession();
-  if (!session.signedIn) redirect({ href: "/auth/login", locale });
+  const me = await getCurrentUser();
+  if (!me) nextRedirect(`/${locale}/auth/login`);
   const country = await getCountry();
   const t = await getTranslations("feedback");
   const tCommon = await getTranslations("common");
-  const isZh = locale === "zh";
   const sent = sp.sent === "1";
-  const providerName = isZh ? "李 师傅" : "Helen Li";
-  const initials = isZh ? "李" : "HL";
+  const error = typeof sp.error === "string" ? sp.error : undefined;
 
-  if (sent) {
+  const [row] = await db
+    .select({
+      id: bookings.id,
+      status: bookings.status,
+      providerName: users.name,
+      providerEmail: users.email,
+      serviceCategory: services.categoryCode,
+    })
+    .from(bookings)
+    .leftJoin(providerProfiles, eq(providerProfiles.id, bookings.providerId))
+    .leftJoin(users, eq(users.id, providerProfiles.userId))
+    .leftJoin(services, eq(services.id, bookings.serviceId))
+    .where(and(eq(bookings.id, id), eq(bookings.customerId, me.id)))
+    .limit(1);
+
+  if (!row) notFound();
+
+  const providerName =
+    row.providerName || (row.providerEmail?.split("@")[0] ?? "—");
+  const initials = initialsOf(row.providerName, row.providerEmail ?? "?");
+  const tCategories = await getTranslations("categories");
+  const serviceLabel = row.serviceCategory
+    ? tCategories(row.serviceCategory as Parameters<typeof tCategories>[0])
+    : t("mockService");
+
+  // If a review already exists for this booking, show success without
+  // letting the user submit a duplicate.
+  const [existing] = await db
+    .select({ id: reviews.id, rating: reviews.rating })
+    .from(reviews)
+    .where(eq(reviews.bookingId, id))
+    .limit(1);
+
+  if (sent || existing) {
     return (
       <>
         <Header
           country={country}
           back
-          signedIn={session.signedIn}
-          initials={session.initials}
+          signedIn={true}
+          initials={me.initials}
         />
         <main
           id="main-content"
@@ -64,6 +156,12 @@ export default async function FeedbackPage({
           <p className="max-w-[320px] text-[16px] text-text-secondary">
             {t("successHint", { provider: providerName })}
           </p>
+          {existing && (
+            <p className="text-[14px] text-text-tertiary">
+              {existing.rating}★ ·{" "}
+              {locale === "zh" ? "已提交" : "submitted"}
+            </p>
+          )}
           <Link
             href={`/bookings/${id}`}
             className="mt-2 inline-flex h-14 items-center rounded-md bg-brand px-7 text-[17px] font-bold text-white"
@@ -75,13 +173,24 @@ export default async function FeedbackPage({
     );
   }
 
+  const errorMsg =
+    error === "rating"
+      ? "Pick a rating (1-5)."
+      : error === "not_completed"
+        ? "You can only review a completed booking."
+        : error === "duplicate"
+          ? "You've already reviewed this booking."
+          : error === "server"
+            ? "Something went wrong. Please retry."
+            : null;
+
   return (
     <>
       <Header
         country={country}
         back
-        signedIn={session.signedIn}
-        initials={session.initials}
+        signedIn={true}
+        initials={me.initials}
       />
       <main
         id="main-content"
@@ -92,41 +201,51 @@ export default async function FeedbackPage({
           {t("sub", { provider: providerName })}
         </p>
 
+        {errorMsg && (
+          <div
+            role="alert"
+            className="mt-3 rounded-md border-[1.5px] border-danger bg-danger-soft px-3.5 py-3 text-[14px] font-semibold text-danger"
+          >
+            {errorMsg}
+          </div>
+        )}
+
         <section className="mt-5 flex items-center gap-3 rounded-md border border-border bg-bg-base p-4">
           <ProviderAvatar size={56} hue={0} initials={initials} />
           <div>
             <p className="text-[16px] font-bold">{providerName}</p>
-            <p className="text-[13px] text-text-tertiary">{t("mockService")}</p>
+            <p className="text-[13px] text-text-tertiary">{serviceLabel}</p>
           </div>
         </section>
 
-        <form
-          className="mt-6 flex flex-col gap-6"
-          action={feedbackAction}
-        >
+        <form className="mt-6 flex flex-col gap-6" action={feedbackAction}>
           <input type="hidden" name="locale" value={locale} />
           <input type="hidden" name="id" value={id} />
           <fieldset>
             <legend className="text-[16px] font-bold text-text-primary">
               {t("rating")}
             </legend>
-            <div className="mt-3 flex gap-2" role="radiogroup" aria-required="true">
+            <div
+              className="mt-3 flex gap-2"
+              role="radiogroup"
+              aria-required="true"
+            >
               {[1, 2, 3, 4, 5].map((n) => (
                 <label
                   key={n}
-                  className="flex h-16 w-16 cursor-pointer items-center justify-center rounded-md border-[1.5px] border-border-strong bg-bg-base hover:border-brand"
+                  className="flex h-16 w-16 cursor-pointer items-center justify-center rounded-md border-[1.5px] border-border-strong bg-bg-base hover:border-brand has-[:checked]:border-brand has-[:checked]:bg-brand-soft"
                 >
                   <input
                     type="radio"
                     name="rating"
                     value={n}
                     required
-                    className="sr-only"
+                    className="peer sr-only"
                     defaultChecked={n === 5}
                   />
                   <Star
                     size={32}
-                    className={n === 5 ? "fill-[var(--brand-accent)] text-[var(--brand-accent)]" : "text-text-tertiary"}
+                    className="text-text-tertiary peer-checked:fill-[var(--brand-accent)] peer-checked:text-[var(--brand-accent)]"
                     aria-label={`${n} star${n === 1 ? "" : "s"}`}
                   />
                 </label>
@@ -138,6 +257,10 @@ export default async function FeedbackPage({
             <legend className="text-[16px] font-bold text-text-primary">
               {t("tags")}
             </legend>
+            <p className="mt-1 text-[12px] text-text-tertiary">
+              {/* Tag pills render but submission is currently dropped — schema
+                  has no tags column yet. Shipped with reviews as visual hint. */}
+            </p>
             <div className="mt-3 flex flex-wrap gap-2">
               {TAG_KEYS.map((k) => (
                 <label
@@ -163,6 +286,7 @@ export default async function FeedbackPage({
               name="comment"
               placeholder={t("commentPh")}
               rows={4}
+              maxLength={2000}
               className="block w-full rounded-md border-[1.5px] border-border-strong bg-bg-base p-3.5 text-[16px] text-text-primary placeholder:text-text-placeholder focus:border-brand focus:outline-none"
             />
           </div>
@@ -175,7 +299,9 @@ export default async function FeedbackPage({
               type="file"
               accept="image/jpeg,image/png"
               multiple
-              className="block w-full text-[14px] text-text-secondary file:mr-3 file:inline-flex file:h-12 file:items-center file:rounded-md file:border-[1.5px] file:border-border-strong file:bg-bg-base file:px-4 file:text-[14px] file:font-semibold file:text-text-primary"
+              disabled
+              title="Photo upload ships with file storage"
+              className="block w-full text-[14px] text-text-secondary opacity-50 file:mr-3 file:inline-flex file:h-12 file:items-center file:rounded-md file:border-[1.5px] file:border-border-strong file:bg-bg-base file:px-4 file:text-[14px] file:font-semibold file:text-text-primary"
             />
             <p className="mt-1.5 flex items-center gap-1 text-[13px] text-text-tertiary">
               <Camera size={14} aria-hidden /> {t("photosHint")}
