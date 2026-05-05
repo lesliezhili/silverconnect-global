@@ -39,14 +39,35 @@ import { bookings } from "../lib/db/schema/bookings";
 import { reviews } from "../lib/db/schema/reviews";
 import { disputes } from "../lib/db/schema/disputes";
 
-const MARY = `mary.e2e.${Date.now()}@example.com`;
-const HELEN = `helen.e2e.${Date.now()}@example.com`;
+// Fixed emails (not timestamp-suffixed) so visual-regression baselines
+// stay deterministic. beforeAll wipes them on each run.
+const MARY = "mary.e2e@example.com";
+const HELEN = "helen.e2e@example.com";
 const ADMIN_EMAIL = "admin.e2e@example.com";
 const PASSWORD = "Test1234!";
 
 // All tests share state — provider onboarding has to land before
 // customer sees them in /services.
 test.describe.configure({ mode: "serial" });
+
+// Hide the Next.js dev-mode "Build Activity Indicator" / error-overlay
+// triggers — they're injected at runtime and flake visual snapshots.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    const style = document.createElement("style");
+    style.textContent = `
+      [data-nextjs-toast],
+      [data-nextjs-dialog-overlay],
+      [data-nextjs-build-indicator],
+      nextjs-portal,
+      [aria-label*="issue" i] {
+        display: none !important;
+        visibility: hidden !important;
+      }
+    `;
+    (document.head || document.documentElement).appendChild(style);
+  });
+});
 
 test.beforeAll(async () => {
   await deleteTestUsers([MARY, HELEN]);
@@ -108,10 +129,22 @@ test("provider signup + email verify (UI)", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: /create your account/i }),
   ).toBeVisible();
+  await expect(page).toHaveScreenshot("01-register-empty.png", {
+    fullPage: true,
+    animations: "disabled",
+  });
 
   await page.getByLabel(/email/i).fill(HELEN);
   await page.getByLabel(/^password/i).fill(PASSWORD);
   await page.getByRole("button", { name: /create account/i }).click();
+
+  // We arrive on /auth/verify with the email visible. Snapshot before
+  // typing the code so dynamic content is contained.
+  await page.waitForURL(/\/auth\/verify/);
+  await expect(page).toHaveScreenshot("02-verify-blank.png", {
+    fullPage: true,
+    animations: "disabled",
+  });
 
   await fillVerifyCode(page, HELEN);
 
@@ -213,6 +246,10 @@ test("customer profile page renders address link (UI)", async ({ page }) => {
   await expect(
     page.getByRole("link", { name: /my addresses|我的地址/i }).first(),
   ).toBeVisible();
+  await expect(page).toHaveScreenshot("03-profile.png", {
+    fullPage: true,
+    animations: "disabled",
+  });
 });
 
 test("customer adds address via /profile/addresses/new (UI)", async ({
@@ -220,14 +257,23 @@ test("customer adds address via /profile/addresses/new (UI)", async ({
 }) => {
   await signIn(page, MARY, PASSWORD);
   await page.goto("/en/profile/addresses/new");
-  await page.getByLabel(/address|street/i).fill("12 Smith St");
-  await page.getByLabel(/suburb|city/i).fill("Sydney");
-  await page.getByLabel(/state/i).fill("NSW");
-  await page.getByLabel(/postcode|postal/i).fill("2000");
+  await expect(page).toHaveScreenshot("04-address-new-empty.png", {
+    fullPage: true,
+    animations: "disabled",
+  });
+
+  await page.getByLabel(/^street address$/i).fill("12 Smith St");
+  await page.getByLabel(/^suburb \/ city$/i).fill("Sydney");
+  await page.getByLabel(/^state \/ province$/i).fill("NSW");
+  await page.getByLabel(/^postcode$/i).fill("2000");
   await page.getByRole("button", { name: /save/i }).click();
 
   await expect(page).toHaveURL(/\/profile\/addresses(\?|$)/);
   await expect(page.getByText(/12 Smith St/)).toBeVisible();
+  await expect(page).toHaveScreenshot("05-address-list-after-add.png", {
+    fullPage: true,
+    animations: "disabled",
+  });
 
   // First address should be default.
   const [u] = await db
@@ -251,13 +297,17 @@ test("AskAI floating button visible on /home, hidden on /chat", async ({
 }) => {
   await page.goto("/en/home");
   await expect(page.getByRole("link", { name: /ask ai/i })).toBeVisible();
+  await expect(page).toHaveScreenshot("06-home-with-askai.png", {
+    fullPage: true,
+    animations: "disabled",
+  });
   await page.goto("/en/chat");
   await expect(page.getByRole("link", { name: /ask ai/i })).toHaveCount(0);
 });
 
 test("customer browses /services/cleaning and sees Helen", async ({ page }) => {
   await page.goto("/en/services/cleaning");
-  // Helen Li or 'helen.e2e.' fallback
+  // Helen Li or 'helen.e2e' fallback
   const helenName =
     (await db
       .select({ name: users.name })
@@ -265,6 +315,10 @@ test("customer browses /services/cleaning and sees Helen", async ({ page }) => {
       .where(eq(users.email, HELEN))
       .limit(1))[0].name ?? HELEN.split("@")[0];
   await expect(page.getByText(helenName).first()).toBeVisible();
+  await expect(page).toHaveScreenshot("07-services-cleaning.png", {
+    fullPage: true,
+    animations: "disabled",
+  });
 });
 
 // ────────────────────────────────────────────────────────────────────
@@ -355,6 +409,10 @@ test("UI: data export click writes JSON snapshot + shows download link", async (
 }) => {
   await signIn(page, MARY, PASSWORD);
   await page.goto("/en/settings/privacy");
+  await expect(page).toHaveScreenshot("08-privacy-before-export.png", {
+    fullPage: true,
+    animations: "disabled",
+  });
 
   // Click the form submit inside the "Download" section.
   const exportButton = page.locator(
@@ -371,6 +429,12 @@ test("UI: data export click writes JSON snapshot + shows download link", async (
   await expect(
     page.getByRole("link", { name: /download json archive/i }),
   ).toBeVisible();
+  // The download link's href contains a fresh UUID per run; mask it.
+  await expect(page).toHaveScreenshot("09-privacy-after-export.png", {
+    fullPage: true,
+    animations: "disabled",
+    mask: [page.getByRole("link", { name: /download json archive/i })],
+  });
   void exportButton;
 });
 
