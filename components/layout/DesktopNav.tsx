@@ -20,7 +20,7 @@ export function DesktopNav() {
   return (
     <nav
       aria-label={t("primary")}
-      className="ml-6 hidden gap-1 sm:flex"
+      className="ml-6 hidden gap-1 lg:flex"
     >
       {ITEMS.map((it) => {
         const active = it.match.test(pathname);

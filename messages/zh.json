@@ -24,7 +24,8 @@
     "skipToContent": "跳到主要内容",
     "backToHome": "返回首页",
     "viewBooking": "查看预订",
-    "backToBooking": "返回预订"
+    "backToBooking": "返回预订",
+    "guest": "访客"
   },
   "nav": {
     "home": "首页",
@@ -63,7 +64,7 @@
     "categoriesTitle": "选择服务类别",
     "fromPrice": "{price}/小时起",
     "recentTitle": "我最近订过",
-    "recommendedTitle": "推荐 Provider",
+    "recommendedTitle": "推荐服务方",
     "bookAgain": "再订一次",
     "welcomeFirst": "欢迎使用 SilverConnect，先订一次试试 →",
     "noRecent": "· 没有最近订过的记录",
@@ -422,7 +423,8 @@
   "errors": {
     "offline": "连不上网",
     "generic": "我们这边出了点问题，请稍后重试",
-    "notFound": "页面未找到"
+    "notFound": "页面未找到",
+    "notFoundHint": "找不到您要访问的页面。可能已被移动，或链接不正确。"
   },
   "help": {
     "title": "帮助与客服",

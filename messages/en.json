@@ -24,7 +24,8 @@
     "skipToContent": "Skip to main content",
     "backToHome": "Back to home",
     "viewBooking": "View booking",
-    "backToBooking": "Back to booking"
+    "backToBooking": "Back to booking",
+    "guest": "Guest"
   },
   "nav": {
     "home": "Home",
@@ -422,7 +423,8 @@
   "errors": {
     "offline": "Can't reach the network",
     "generic": "Something went wrong on our side. Please try again.",
-    "notFound": "Page not found"
+    "notFound": "Page not found",
+    "notFoundHint": "We couldn't find the page you're looking for. It may have been moved or the link is incorrect."
   },
   "help": {
     "title": "Help & support",

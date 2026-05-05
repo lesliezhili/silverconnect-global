@@ -18,7 +18,7 @@ export default async function NotFound() {
       <S3EmptyBookings width={220} height={150} />
       <h1 className="text-h1">{t("notFound")}</h1>
       <p className="max-w-[320px] text-[15px] text-text-secondary">
-        {t("generic")}
+        {t("notFoundHint")}
       </p>
       <Link
         href="/home"

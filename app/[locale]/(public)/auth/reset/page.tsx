@@ -53,8 +53,10 @@ export default async function ResetPasswordPage({
       ? t("errorGeneric")
       : null;
   const token = typeof sp.token === "string" ? sp.token : "";
+  const effectiveState: ResetState =
+    state === "default" && !token ? "expired" : state;
 
-  if (state === "success") {
+  if (effectiveState === "success") {
     return (
       <AuthCard title={t("resetSuccess")} subtitle={t("resetSuccessHint")}>
         <div className="flex flex-col items-center gap-4 py-2 text-center">
@@ -72,7 +74,7 @@ export default async function ResetPasswordPage({
     );
   }
 
-  if (state === "expired") {
+  if (effectiveState === "expired") {
     return (
       <AuthCard title={t("resetExpired")} subtitle={t("resetExpiredHint")}>
         <Link

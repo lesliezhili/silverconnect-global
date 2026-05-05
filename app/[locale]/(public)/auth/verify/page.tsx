@@ -84,10 +84,12 @@ export default async function VerifyEmailPage({
     typeof sp.resent === "string" ? sp.resent : undefined,
     err,
   );
-  const email =
-    typeof sp.email === "string" && sp.email.length > 0
-      ? sp.email
-      : "your@email.com";
+  const emailParam =
+    typeof sp.email === "string" && sp.email.length > 0 ? sp.email : null;
+  if (!emailParam && sp.state !== "success") {
+    nextRedirect(`/${locale}/auth/register`);
+  }
+  const email = emailParam ?? "";
   const errorMsg =
     err === "wrong"
       ? t("errorCodeWrong")

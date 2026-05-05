@@ -1,4 +1,5 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardTitle, CardBody } from "@/components/ui/Card";
@@ -29,6 +30,9 @@ export default async function DevComponentsPage({
 }: {
   params: Promise<{ locale: string }>;
 }) {
+  if (process.env.NODE_ENV !== "development") {
+    notFound();
+  }
   const { locale } = await params;
   setRequestLocale(locale);
   const tDev = await getTranslations("dev");

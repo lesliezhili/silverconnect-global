@@ -1,5 +1,4 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
-import { ChevronRight } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Link } from "@/i18n/navigation";
 import { S1TeaTime } from "@/components/illustrations";
@@ -126,7 +125,7 @@ export default async function CustomerHomePage({
         <section className="px-5 pt-1">
           <h2 className="my-3 text-h3">{t("categoriesTitle")}</h2>
           <div className="grid grid-cols-2 gap-3">
-            {CATS.slice(0, 4).map((c) => (
+            {CATS.map((c) => (
               <Link
                 key={c.key}
                 href={`/services/${c.key}`}
@@ -148,26 +147,6 @@ export default async function CustomerHomePage({
                 </span>
               </Link>
             ))}
-            <Link
-              href="/services/repair"
-              className="col-span-2 flex h-40 items-center gap-4 rounded-lg border border-border bg-bg-base p-4 shadow-card"
-            >
-              <span
-                className="flex h-14 w-14 items-center justify-center rounded-md"
-                style={{ background: CATS[4].iconBg, color: CATS[4].iconFg }}
-              >
-                <CategoryIcon k="repair" />
-              </span>
-              <span className="flex-1">
-                <span className="block text-[18px] font-bold text-text-primary">
-                  {tCat("repair")}
-                </span>
-                <span className="mt-0.5 block text-[14px] text-text-secondary">
-                  {pricePerHour(country, CATS[4].basePrice, locale)}
-                </span>
-              </span>
-              <ChevronRight size={24} className="text-text-tertiary" aria-hidden />
-            </Link>
           </div>
         </section>
 
