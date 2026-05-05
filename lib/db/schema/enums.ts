@@ -87,3 +87,69 @@ export const bookingChangeTypeEnum = pgEnum("booking_change_type", [
   "cancel",
   "refund",
 ]);
+
+export const reviewStatusEnum = pgEnum("review_status", [
+  "published",
+  "hidden",
+  "reported",
+  "removed",
+]);
+
+export const reviewReportReasonEnum = pgEnum("review_report_reason", [
+  "spam",
+  "abusive",
+  "false",
+  "off_topic",
+  "other",
+]);
+
+export const disputeStatusEnum = pgEnum("dispute_status", [
+  "open",
+  "evidence_needed",
+  "decided",
+  "closed",
+]);
+
+export const disputeResolutionEnum = pgEnum("dispute_resolution", [
+  "refund_full",
+  "refund_partial",
+  "denied",
+  "withdrawn",
+]);
+
+export const safetySeverityEnum = pgEnum("safety_severity", [
+  "low",
+  "medium",
+  "high",
+  "critical",
+]);
+
+export const safetyStatusEnum = pgEnum("safety_status", [
+  "open",
+  "acknowledged",
+  "resolved",
+  "dismissed",
+]);
+
+export const notificationKindEnum = pgEnum("notification_kind", [
+  "booking_update",
+  "payment",
+  "dispute",
+  "safety",
+  "review",
+  "system",
+  "marketing",
+]);
+
+export const notificationChannelEnum = pgEnum("notification_channel", [
+  "in_app",
+  "push",
+  "email",
+  "sms",
+]);
+
+export const aiMessageRoleEnum = pgEnum("ai_message_role", [
+  "user",
+  "assistant",
+  "system",
+]);

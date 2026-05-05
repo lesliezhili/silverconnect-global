@@ -15,6 +15,20 @@
       "when": 1777956977188,
       "tag": "0001_phase2-services-bookings-payments",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1777958889824,
+      "tag": "0002_phase3-reviews-disputes-safety-notifications-ai-admin",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1777959070098,
+      "tag": "0003_phase3-fixup-nullable-fks",
+      "breakpoints": true
     }
   ]
 }
