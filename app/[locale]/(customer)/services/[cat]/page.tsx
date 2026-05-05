@@ -1,113 +1,216 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import { notFound } from "next/navigation";
+import { eq, and, desc, sql } from "drizzle-orm";
 import { Header } from "@/components/layout/Header";
 import { ProviderCard } from "@/components/domain/ProviderCard";
 import { CURRENCY_SYMBOL, TAX_ABBR } from "@/components/domain/country";
 import { getCountry } from "@/components/domain/countryCookie";
 import { getSession } from "@/components/domain/sessionCookie";
+import { EmptyState } from "@/components/domain/PageStates";
+import { db } from "@/lib/db";
 import {
-  EmptyState,
-  ErrorState,
-  LoadingList,
-} from "@/components/domain/PageStates";
+  serviceCategories,
+  services,
+  servicePrices,
+} from "@/lib/db/schema/services";
+import {
+  providerProfiles,
+  providerCategories,
+} from "@/lib/db/schema/providers";
+import { users } from "@/lib/db/schema/users";
+import { reviews } from "@/lib/db/schema/reviews";
 
-const FILTER_KEYS = ["rating", "distance", "language", "weekend", "female", "firstAid"] as const;
+type CatKey = "cleaning" | "cooking" | "garden" | "personalCare" | "repair";
 
-const PROVIDERS = [
-  { id: "p1", name: { zh: "李 师傅", en: "Helen Li" }, initials: { zh: "李", en: "HL" }, rating: 4.9, reviews: 132, distanceKm: "2.1", pricePerHour: 55, hue: 0 as const },
-  { id: "p2", name: { zh: "陈 阿姨", en: "May Chen" }, initials: { zh: "陈", en: "MC" }, rating: 4.8, reviews: 98, distanceKm: "3.5", pricePerHour: 60, hue: 1 as const },
-  { id: "p3", name: { zh: "王 师傅", en: "Tom Wang" }, initials: { zh: "王", en: "TW" }, rating: 5.0, reviews: 215, distanceKm: "4.2", pricePerHour: 65, hue: 2 as const },
-  { id: "p4", name: { zh: "林 阿姨", en: "Jane Lin" }, initials: { zh: "林", en: "JL" }, rating: 4.7, reviews: 67, distanceKm: "4.8", pricePerHour: 52, hue: 3 as const },
-];
+// Filter pills are visual placeholders for now — wiring them through to
+// the SQL query is a Wave 7 polish (needs language fields on
+// provider_profiles + a real distance metric).
+const FILTER_KEYS = [
+  "rating",
+  "distance",
+  "language",
+  "weekend",
+  "female",
+  "firstAid",
+] as const;
+
+function initialsOf(name: string | null, fallback: string): string {
+  const src = (name || fallback).trim();
+  const parts = src.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return (src.slice(0, 2) || "?").toUpperCase();
+}
 
 export default async function ProvidersByCategoryPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ locale: string; cat: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale, cat } = await params;
-  const sp = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations("providers");
   const tCat = await getTranslations("categories");
-  const tCommon = await getTranslations("common");
   const country = await getCountry();
   const session = await getSession();
   const isZh = locale === "zh";
   const sym = CURRENCY_SYMBOL[country];
   const taxAbbr = TAX_ABBR[country];
-  const lang: "zh" | "en" = isZh ? "zh" : "en";
-  const catName = tCat(cat as Parameters<typeof tCat>[0]);
-  const state = typeof sp.state === "string" ? sp.state : undefined;
+
+  // Validate category exists.
+  const [validCat] = await db
+    .select({ code: serviceCategories.code })
+    .from(serviceCategories)
+    .where(
+      and(
+        eq(serviceCategories.code, cat),
+        eq(serviceCategories.enabled, true),
+      ),
+    )
+    .limit(1);
+  if (!validCat) notFound();
+
+  const catName = tCat(cat as CatKey);
+
+  // Hourly price window for this category.
+  const priceRows = await db
+    .select({
+      basePrice: servicePrices.basePrice,
+      durationMin: services.durationMin,
+    })
+    .from(services)
+    .innerJoin(
+      servicePrices,
+      and(
+        eq(servicePrices.serviceId, services.id),
+        eq(servicePrices.country, country),
+      ),
+    )
+    .where(
+      and(
+        eq(services.enabled, true),
+        eq(services.categoryCode, cat),
+      ),
+    );
+  let lo = Number.POSITIVE_INFINITY;
+  let hi = 0;
+  for (const r of priceRows) {
+    const hr = (Number(r.basePrice) * 60) / Math.max(1, r.durationMin);
+    lo = Math.min(lo, hr);
+    hi = Math.max(hi, hr);
+  }
+  const hourlyLabel = Number.isFinite(lo)
+    ? `${sym}${Math.round(lo)}–${Math.round(hi)}`
+    : null;
+
+  // Approved providers offering this category, with rating + count.
+  const provs = await db
+    .select({
+      id: providerProfiles.id,
+      userId: providerProfiles.userId,
+      name: users.name,
+      email: users.email,
+      ratingAvg: sql<number>`coalesce(avg(${reviews.rating}), 0)::float`,
+      ratingCount: sql<number>`count(${reviews.id})::int`,
+    })
+    .from(providerProfiles)
+    .innerJoin(
+      providerCategories,
+      eq(providerCategories.providerId, providerProfiles.id),
+    )
+    .leftJoin(users, eq(users.id, providerProfiles.userId))
+    .leftJoin(
+      reviews,
+      and(
+        eq(reviews.providerId, providerProfiles.id),
+        eq(reviews.status, "published"),
+      ),
+    )
+    .where(
+      and(
+        eq(providerProfiles.onboardingStatus, "approved"),
+        eq(providerCategories.category, cat as never),
+      ),
+    )
+    .groupBy(providerProfiles.id, users.name, users.email)
+    .orderBy(
+      desc(sql`avg(${reviews.rating})`),
+      desc(sql`count(${reviews.id})`),
+    )
+    .limit(50);
+
+  // Cheapest hourly per provider (we use the category-level lo for now).
+  const cheapestHourly = Number.isFinite(lo) ? Math.round(lo) : 0;
 
   return (
     <>
-      <Header country={country} back signedIn={session.signedIn} initials={session.initials} />
-      <main id="main-content" className="mx-auto w-full max-w-content px-5 pb-[120px] sm:pb-12 pt-3">
+      <Header
+        country={country}
+        back
+        signedIn={session.signedIn}
+        initials={session.initials}
+      />
+      <main
+        id="main-content"
+        className="mx-auto w-full max-w-content px-5 pb-[120px] pt-3 sm:pb-12"
+      >
         <h1 className="text-h2">
           {isZh ? `${catName}（${country}）` : `${catName} (${country})`}
         </h1>
-        <p className="mt-1 text-[14px] text-text-secondary">
-          {country === "CN"
-            ? isZh
-              ? `¥360–640/小时（含 ${taxAbbr}）`
-              : `¥360–640/h (incl. ${taxAbbr})`
-            : isZh
-            ? `${sym}45–80/小时（含 ${taxAbbr}）`
-            : `${sym}45–80/h (incl. ${taxAbbr})`}
-        </p>
+        {hourlyLabel && (
+          <p className="mt-1 text-[14px] text-text-secondary">
+            {isZh
+              ? `${hourlyLabel}/小时（含 ${taxAbbr}）`
+              : `${hourlyLabel}/h (incl. ${taxAbbr})`}
+          </p>
+        )}
 
         <div className="mt-4 -mx-5 flex gap-2 overflow-x-auto scrollbar-hide px-5 pb-1">
           {FILTER_KEYS.map((k) => (
             <button
               key={k}
               type="button"
-              className="inline-flex h-12 shrink-0 items-center rounded-pill border-[1.5px] border-border-strong bg-bg-base px-4 text-[15px] font-semibold text-text-primary"
+              disabled
+              title="Filter wiring is a Wave 7 polish"
+              className="inline-flex h-12 shrink-0 items-center rounded-pill border-[1.5px] border-border-strong bg-bg-base px-4 text-[15px] font-semibold text-text-primary opacity-60"
             >
               {t(`filters.${k}` as Parameters<typeof t>[0])}
             </button>
           ))}
           <button
             type="button"
-            className="inline-flex h-12 shrink-0 items-center rounded-pill border-[1.5px] border-border-strong bg-bg-base px-3.5 text-[15px] font-semibold text-text-primary"
+            disabled
+            className="inline-flex h-12 shrink-0 items-center rounded-pill border-[1.5px] border-border-strong bg-bg-base px-3.5 text-[15px] font-semibold text-text-primary opacity-60"
           >
             {t("sortRecommended")} ▾
           </button>
         </div>
 
-        {state === "loading" && <LoadingList rows={4} rowHeight={200} />}
-        {state === "empty" && (
-          <EmptyState title={t("noMatch")} hint={tCommon("retry")} />
-        )}
-        {state === "error" && (
-          <ErrorState
-            title={t("errorLoad")}
-            retryHref={`/services/${cat}`}
-            retryLabel={tCommon("retry")}
-          />
-        )}
-        {!state && (
-        <div className="mt-4 flex flex-col gap-3">
-          {PROVIDERS.map((p) => (
-            <ProviderCard
-              key={p.id}
-              country={country}
-              provider={{
-                id: p.id,
-                name: p.name[lang],
-                initials: p.initials[lang],
-                hue: p.hue,
-                rating: p.rating,
-                reviews: p.reviews,
-                distanceKm: p.distanceKm,
-                pricePerHour: p.pricePerHour,
-                verified: true,
-                firstAid: true,
-              }}
-            />
-          ))}
-        </div>
+        {provs.length === 0 ? (
+          <div className="mt-6">
+            <EmptyState title={t("noMatch")} />
+          </div>
+        ) : (
+          <div className="mt-4 flex flex-col gap-3">
+            {provs.map((p, i) => (
+              <ProviderCard
+                key={p.id}
+                country={country}
+                provider={{
+                  id: p.id,
+                  name: p.name || (p.email?.split("@")[0] ?? "Provider"),
+                  initials: initialsOf(p.name, p.email ?? "?"),
+                  hue: (i % 4) as 0 | 1 | 2 | 3,
+                  rating: Number(p.ratingAvg) || 0,
+                  reviews: Number(p.ratingCount) || 0,
+                  distanceKm: "—",
+                  pricePerHour: cheapestHourly,
+                  verified: true,
+                  firstAid: false,
+                }}
+              />
+            ))}
+          </div>
         )}
       </main>
     </>
