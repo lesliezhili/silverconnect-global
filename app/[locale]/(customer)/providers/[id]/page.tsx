@@ -1,271 +1,369 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
-import { Star, ShieldCheck, MessageCircle, AlertTriangle } from "lucide-react";
+import { notFound } from "next/navigation";
+import { eq, and, desc, sql, inArray } from "drizzle-orm";
+import { Star, ShieldCheck, MessageCircle } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Link } from "@/i18n/navigation";
 import { ProviderAvatar } from "@/components/domain/ProviderAvatar";
 import { CURRENCY_SYMBOL, TAX_ABBR } from "@/components/domain/country";
 import { getCountry } from "@/components/domain/countryCookie";
 import { getSession } from "@/components/domain/sessionCookie";
-import { Skeleton } from "@/components/ui/Skeleton";
+import { db } from "@/lib/db";
+import {
+  providerProfiles,
+  providerCategories,
+  providerBadges,
+} from "@/lib/db/schema/providers";
+import { users } from "@/lib/db/schema/users";
+import { services, servicePrices } from "@/lib/db/schema/services";
+import { reviews } from "@/lib/db/schema/reviews";
 
-const SLOTS = ["09:00", "11:00", "14:00", "16:00"];
+function initialsOf(name: string | null, fallback: string): string {
+  const src = (name || fallback).trim();
+  const parts = src.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return (src.slice(0, 2) || "?").toUpperCase();
+}
 
 export default async function ProviderDetailPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale, id } = await params;
-  const sp = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations("provider");
-  const tProviders = await getTranslations("providers");
+  const tCategories = await getTranslations("categories");
   const country = await getCountry();
   const session = await getSession();
   const isZh = locale === "zh";
   const sym = CURRENCY_SYMBOL[country];
   const taxAbbr = TAX_ABBR[country];
-  const state = typeof sp.state === "string" ? sp.state : undefined;
-  const offline = state === "offline";
-  const noReviews = state === "noReviews";
-  const noSlots = state === "noSlots";
 
-  if (state === "loading") {
-    return (
-      <>
-        <Header country={country} back signedIn={session.signedIn} initials={session.initials} />
-        <main id="main-content" className="mx-auto w-full max-w-content overflow-auto bg-bg-surface px-5 pb-[120px] sm:pb-12 pt-5">
-          <div className="flex items-center gap-4">
-            <Skeleton className="h-[100px] w-[100px] rounded-full" />
-            <div className="flex-1 space-y-2.5">
-              <Skeleton className="h-6 w-2/3" />
-              <Skeleton className="h-4 w-1/2" />
-              <Skeleton className="h-4 w-2/5" />
-            </div>
-          </div>
-          <Skeleton className="mt-5 h-28 w-full rounded-md" />
-          <Skeleton className="mt-5 h-5 w-1/3" />
-          {[0, 1, 2].map((i) => (
-            <Skeleton key={i} className="mt-3 h-16 w-full rounded-md" />
-          ))}
-          <Skeleton className="mt-5 h-48 w-full rounded-md" />
-        </main>
-      </>
+  const [profile] = await db
+    .select({
+      id: providerProfiles.id,
+      bio: providerProfiles.bio,
+      addressLine: providerProfiles.addressLine,
+      onboardingStatus: providerProfiles.onboardingStatus,
+      providerName: users.name,
+      providerEmail: users.email,
+    })
+    .from(providerProfiles)
+    .leftJoin(users, eq(users.id, providerProfiles.userId))
+    .where(eq(providerProfiles.id, id))
+    .limit(1);
+  if (!profile) notFound();
+  const offline = profile.onboardingStatus !== "approved";
+
+  // Provider's offered service categories.
+  const cats = await db
+    .select({ category: providerCategories.category })
+    .from(providerCategories)
+    .where(eq(providerCategories.providerId, id));
+  const categoryCodes = cats.map((c) => c.category);
+
+  // Service variants in those categories with this country's price.
+  const servicesOffered = categoryCodes.length
+    ? await db
+        .select({
+          id: services.id,
+          code: services.code,
+          category: services.categoryCode,
+          durationMin: services.durationMin,
+          basePrice: servicePrices.basePrice,
+          currency: servicePrices.currency,
+        })
+        .from(services)
+        .leftJoin(
+          servicePrices,
+          and(
+            eq(servicePrices.serviceId, services.id),
+            eq(servicePrices.country, country),
+          ),
+        )
+        .where(
+          and(
+            eq(services.enabled, true),
+            inArray(services.categoryCode, categoryCodes),
+          ),
+        )
+        .orderBy(services.categoryCode, services.sortOrder)
+    : [];
+
+  // Badges
+  const badges = await db
+    .select({ kind: providerBadges.kind })
+    .from(providerBadges)
+    .where(eq(providerBadges.providerId, id))
+    .limit(10);
+
+  // Review aggregate + recent.
+  const [agg] = await db
+    .select({
+      n: sql<number>`count(*)::int`,
+      avg: sql<number>`coalesce(avg(${reviews.rating}), 0)::float`,
+    })
+    .from(reviews)
+    .where(
+      and(eq(reviews.providerId, id), eq(reviews.status, "published")),
     );
-  }
+  const reviewCount = agg?.n ?? 0;
+  const avgRating = agg?.avg ?? 0;
 
-  const services = isZh
-    ? [
-        { n: "基础清洁 2 小时", d: "客厅 + 厨房 + 1 卫", p: 110 },
-        { n: "深度清洁 3 小时", d: "全屋 + 玻璃 + 油烟机", p: 195 },
-        { n: "换季大扫除 4 小时", d: "全屋整理 + 收纳", p: 280 },
-      ]
-    : [
-        { n: "Basic clean · 2h", d: "Living + kitchen + 1 bath", p: 110 },
-        { n: "Deep clean · 3h", d: "Whole home + windows + range", p: 195 },
-        { n: "Seasonal · 4h", d: "Whole home + organising", p: 280 },
-      ];
-  const days = isZh
-    ? ["今", "周二", "周三", "周四", "周五", "周六", "周日"]
-    : ["Today", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  // Histogram (1..5)
+  const histRows = await db
+    .select({
+      rating: reviews.rating,
+      n: sql<number>`count(*)::int`,
+    })
+    .from(reviews)
+    .where(
+      and(eq(reviews.providerId, id), eq(reviews.status, "published")),
+    )
+    .groupBy(reviews.rating);
+  const histMap = new Map<number, number>(
+    histRows.map((r) => [r.rating, r.n]),
+  );
+  const histTotal = reviewCount || 1;
 
-  const totalPrice = country === "CN" ? "¥1,560" : `${sym}195.00`;
+  const recent = await db
+    .select({
+      id: reviews.id,
+      rating: reviews.rating,
+      comment: reviews.comment,
+      createdAt: reviews.createdAt,
+      customerId: reviews.customerId,
+    })
+    .from(reviews)
+    .where(
+      and(eq(reviews.providerId, id), eq(reviews.status, "published")),
+    )
+    .orderBy(desc(reviews.createdAt))
+    .limit(5);
+  const customerIds = Array.from(
+    new Set(recent.map((r) => r.customerId)),
+  );
+  const customerRows = customerIds.length
+    ? await db
+        .select({ id: users.id, name: users.name, email: users.email })
+        .from(users)
+        .where(inArray(users.id, customerIds))
+    : [];
+  const customerMap = new Map(
+    customerRows.map((u) => [u.id, u.name || u.email.split("@")[0]]),
+  );
+
+  const dispName =
+    profile.providerName ||
+    (profile.providerEmail?.split("@")[0] ?? "Provider");
+  const initials = initialsOf(profile.providerName, profile.providerEmail ?? "?");
+
+  // Pick a default service (cheapest) for the CTA price hint.
+  const defaultSvc = servicesOffered.find((s) => s.basePrice) ?? servicesOffered[0];
+  const defaultBase = defaultSvc?.basePrice ? Number(defaultSvc.basePrice) : 0;
+  const ctaPriceLabel = defaultBase
+    ? `${sym}${defaultBase.toFixed(0)}`
+    : sym;
   const ctaText = isZh
-    ? `下一步 · ${totalPrice} 含 ${taxAbbr}`
-    : `Continue · ${totalPrice} incl. ${taxAbbr}`;
+    ? `下一步 · 起 ${ctaPriceLabel} 含 ${taxAbbr}`
+    : `Continue · from ${ctaPriceLabel} incl. ${taxAbbr}`;
 
   return (
     <>
-      <Header country={country} back signedIn={session.signedIn} initials={session.initials} />
-      <main id="main-content" className="mx-auto w-full max-w-content overflow-auto bg-bg-surface px-5 pb-[120px] sm:pb-12 pt-5">
+      <Header
+        country={country}
+        back
+        signedIn={session.signedIn}
+        initials={session.initials}
+      />
+      <main
+        id="main-content"
+        className="mx-auto w-full max-w-content overflow-auto bg-bg-surface px-5 pb-[120px] pt-5 sm:pb-12"
+      >
         {offline && (
           <div
             role="alert"
             className="mb-4 flex items-start gap-2.5 rounded-md border-[1.5px] border-warning bg-warning-soft p-3.5"
           >
-            <AlertTriangle size={20} className="mt-0.5 shrink-0 text-[#92590A] dark:text-[var(--brand-accent)]" aria-hidden />
-            <div className="text-[#92590A] dark:text-[var(--brand-accent)]">
-              <p className="text-[16px] font-bold">{t("currentlyOffline")}</p>
-              <p className="mt-0.5 text-[14px]">{t("currentlyOfflineHint")}</p>
-            </div>
+            <p className="text-[#92590A] dark:text-[var(--brand-accent)] text-[14px] font-semibold">
+              {t("currentlyOffline")}
+            </p>
           </div>
         )}
-        {/* Header */}
         <header className="flex items-start gap-4">
-          <ProviderAvatar size={100} hue={0} initials={isZh ? "李" : "HL"} />
+          <ProviderAvatar size={100} hue={0} initials={initials} />
           <div className="min-w-0 flex-1">
             <h1 className="text-[24px] font-extrabold text-text-primary">
-              {isZh ? "李 师傅 (Helen Li)" : "Helen Li"}
+              {dispName}
             </h1>
             <p className="mt-1.5 flex items-center gap-1.5">
-              <Star size={18} className="text-[var(--brand-accent)]" aria-hidden />
-              <span className="font-bold">4.9</span>
+              <Star
+                size={18}
+                className="text-[var(--brand-accent)]"
+                aria-hidden
+              />
+              <span className="font-bold tabular-nums">
+                {reviewCount > 0 ? avgRating.toFixed(1) : "—"}
+              </span>
               <span className="text-[14px] text-text-tertiary">
-                (132 {t("reviews", { count: 132 }).replace(/^132 /, "")})
+                ({reviewCount} {t("reviews", { count: reviewCount }).replace(/^\d+\s*/, "")})
               </span>
             </p>
             <ul className="mt-2 flex flex-wrap gap-1.5">
-              <li>
-                <span className="inline-flex h-7 items-center gap-1 rounded-sm bg-success-soft px-2 text-[14px] font-semibold text-success">
-                  <ShieldCheck size={14} aria-hidden /> {t("verified")}
-                </span>
-              </li>
-              <li>
-                <span className="inline-flex h-7 items-center rounded-sm bg-brand-soft px-2 text-[14px] font-semibold text-brand">
-                  {t("firstAid")}
-                </span>
-              </li>
-              <li>
-                <span className="inline-flex h-7 items-center rounded-sm bg-brand-soft px-2 text-[14px] font-semibold text-brand">
-                  {isZh ? "中文" : "Mandarin"}
-                </span>
-              </li>
+              {profile.onboardingStatus === "approved" && (
+                <li>
+                  <span className="inline-flex h-7 items-center gap-1 rounded-sm bg-success-soft px-2 text-[14px] font-semibold text-success">
+                    <ShieldCheck size={14} aria-hidden /> {t("verified")}
+                  </span>
+                </li>
+              )}
+              {badges.slice(0, 3).map((b) => (
+                <li key={b.kind}>
+                  <span className="inline-flex h-7 items-center rounded-sm bg-brand-soft px-2 text-[14px] font-semibold text-brand">
+                    {b.kind}
+                  </span>
+                </li>
+              ))}
+              {categoryCodes.slice(0, 3).map((c) => (
+                <li key={c}>
+                  <span className="inline-flex h-7 items-center rounded-sm bg-bg-surface-2 px-2 text-[13px] font-semibold text-text-secondary">
+                    {tCategories(c as Parameters<typeof tCategories>[0])}
+                  </span>
+                </li>
+              ))}
             </ul>
           </div>
         </header>
 
-        {/* Bio */}
-        <section className="mt-4 rounded-md border border-border bg-bg-base p-3.5">
-          <p className="text-[15px] leading-relaxed text-text-secondary">{t("bio")}</p>
-        </section>
+        {profile.bio && (
+          <section className="mt-4 rounded-md border border-border bg-bg-base p-3.5">
+            <p className="text-[15px] leading-relaxed text-text-secondary">
+              {profile.bio}
+            </p>
+          </section>
+        )}
 
-        {/* Services offered */}
         <section className="mt-6">
-          <h2 className="mb-2.5 text-[18px] font-bold">{t("servicesOffered")}</h2>
-          <ul className="flex flex-col gap-2.5">
-            {services.map((s, i) => {
-              const selected = i === 1;
-              return (
-                <li key={s.n}>
-                  <label
-                    className={`flex min-h-16 cursor-pointer items-center gap-3 rounded-md border-[1.5px] bg-bg-base p-3.5 ${
-                      selected ? "border-2 border-brand" : "border-border"
-                    }`}
-                  >
-                    <input type="radio" name="svc" defaultChecked={selected} className="sr-only" />
-                    <span
-                      className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 ${
-                        selected ? "border-brand" : "border-border-strong"
-                      }`}
-                      aria-hidden
-                    >
-                      {selected && <span className="h-3 w-3 rounded-full bg-brand" />}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-[16px] font-bold">{s.n}</span>
-                      <span className="mt-0.5 block text-[13px] text-text-secondary">{s.d}</span>
-                    </span>
-                    <span className="shrink-0 text-[17px] font-bold text-brand">
-                      {country === "CN" ? `¥${s.p * 8}` : `${sym}${s.p}`}
-                    </span>
-                  </label>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-
-        {/* 7-day availability */}
-        <section className="mt-6">
-          <h2 className="mb-2.5 text-[18px] font-bold">{t("available7d")}</h2>
-          {noSlots ? (
-            <div className="rounded-md border border-border bg-bg-base p-6 text-center">
-              <p className="text-[16px] font-semibold text-text-secondary">
-                {tProviders("fullyBooked")}
-              </p>
-              <button
-                type="button"
-                className="mt-3 inline-flex h-12 items-center rounded-md border-[1.5px] border-brand bg-bg-base px-6 text-[15px] font-bold text-brand"
-              >
-                {tProviders("seeNextWeek")}
-              </button>
-            </div>
+          <h2 className="mb-2.5 text-[18px] font-bold">
+            {t("servicesOffered")}
+          </h2>
+          {servicesOffered.length === 0 ? (
+            <p className="rounded-md border border-border bg-bg-base p-3.5 text-[14px] text-text-secondary">
+              {isZh
+                ? "该服务者暂无可提供的服务。"
+                : "No service variants available right now."}
+            </p>
           ) : (
-          <div className="grid grid-cols-7 gap-1.5">
-            {days.map((d, di) => (
-              <div key={d} className="flex flex-col items-center gap-1.5">
-                <span className="text-[12px] font-bold uppercase text-text-secondary">{d}</span>
-                {SLOTS.map((s, si) => {
-                  const avail = (di + si) % 3 !== 0;
-                  const sel = di === 1 && si === 2;
-                  return (
-                    <button
-                      key={s}
-                      type="button"
-                      disabled={!avail}
-                      className={`h-9 w-full rounded-sm text-[12px] font-semibold ${
-                        sel
-                          ? "bg-brand text-white"
-                          : avail
-                          ? "border border-border bg-bg-base text-text-primary"
-                          : "bg-bg-surface-2 text-text-tertiary opacity-50"
-                      }`}
-                    >
-                      {avail ? s : "—"}
-                    </button>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
+            <ul className="flex flex-col gap-2.5">
+              {servicesOffered.map((s) => (
+                <li key={s.id}>
+                  <div className="flex min-h-16 items-center gap-3 rounded-md border-[1.5px] border-border bg-bg-base p-3.5">
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[16px] font-bold">
+                        {tCategories(
+                          s.category as Parameters<typeof tCategories>[0],
+                        )}{" "}
+                        · {(s.durationMin / 60).toFixed(1)}h
+                      </span>
+                      <span className="mt-0.5 block text-[13px] text-text-tertiary">
+                        {s.code}
+                      </span>
+                    </span>
+                    <span className="shrink-0 text-[17px] font-bold text-brand tabular-nums">
+                      {s.basePrice
+                        ? `${sym}${Number(s.basePrice).toFixed(0)}`
+                        : "—"}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
           )}
         </section>
 
-        {/* Reviews */}
         <section className="mt-6">
           <h2 className="mb-2.5 text-[18px] font-bold">{t("reviewsTitle")}</h2>
-          {noReviews ? (
+          {reviewCount === 0 ? (
             <div className="rounded-md border border-border bg-bg-base p-6 text-center">
-              <p className="text-[16px] font-semibold text-text-secondary">{t("noReviews")}</p>
-              <p className="mt-1 text-[13px] text-text-tertiary">{t("noReviewsHint")}</p>
+              <p className="text-[16px] font-semibold text-text-secondary">
+                {t("noReviews")}
+              </p>
+              <p className="mt-1 text-[13px] text-text-tertiary">
+                {t("noReviewsHint")}
+              </p>
             </div>
           ) : (
-          <>
-          <div className="flex items-start gap-4 rounded-md border border-border bg-bg-base p-3.5">
-            <div className="text-[36px] font-extrabold text-text-primary">4.9</div>
-            <div className="flex-1">
-              {[5, 4, 3, 2, 1].map((n) => (
-                <div key={n} className="mb-0.5 flex items-center gap-1.5">
-                  <span className="w-3 text-[12px] text-text-tertiary">{n}</span>
-                  <Star size={12} className="text-[var(--brand-accent)]" aria-hidden />
-                  <div className="h-1.5 flex-1 overflow-hidden rounded-sm bg-bg-surface-2">
-                    <div
-                      className="h-full bg-[var(--brand-accent)]"
-                      style={{ width: [85, 12, 2, 1, 0][5 - n] + "%" }}
-                    />
-                  </div>
+            <>
+              <div className="flex items-start gap-4 rounded-md border border-border bg-bg-base p-3.5">
+                <div className="text-[36px] font-extrabold tabular-nums text-text-primary">
+                  {avgRating.toFixed(1)}
                 </div>
-              ))}
-            </div>
-          </div>
-          <article className="mt-3 rounded-md border border-border bg-bg-base p-3.5">
-            <div className="flex gap-1 text-[var(--brand-accent)]">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <Star key={i} size={14} aria-hidden />
-              ))}
-            </div>
-            <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">
-              {isZh
-                ? "李师傅非常细心，把家里打扫得干干净净，老妈很满意。下次还会再约。"
-                : "Helen was thorough and kind to my mum. Will book again — she felt very comfortable."}
-            </p>
-            <p className="mt-1.5 text-[12px] text-text-tertiary">
-              — Sarah W. · {isZh ? "2 周前" : "2 weeks ago"}
-            </p>
-          </article>
-          </>
+                <div className="flex-1">
+                  {[5, 4, 3, 2, 1].map((n) => {
+                    const pct = Math.round(((histMap.get(n) ?? 0) / histTotal) * 100);
+                    return (
+                      <div key={n} className="mb-0.5 flex items-center gap-1.5">
+                        <span className="w-3 text-[12px] text-text-tertiary tabular-nums">
+                          {n}
+                        </span>
+                        <Star
+                          size={12}
+                          className="text-[var(--brand-accent)]"
+                          aria-hidden
+                        />
+                        <div className="h-1.5 flex-1 overflow-hidden rounded-sm bg-bg-surface-2">
+                          <div
+                            className="h-full bg-[var(--brand-accent)]"
+                            style={{ width: pct + "%" }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              <ul className="mt-3 flex flex-col gap-3">
+                {recent.map((r) => (
+                  <li
+                    key={r.id}
+                    className="rounded-md border border-border bg-bg-base p-3.5"
+                  >
+                    <div
+                      className="flex gap-1 text-[var(--brand-accent)]"
+                      aria-label={`${r.rating} stars`}
+                    >
+                      {Array.from({ length: r.rating }).map((_, i) => (
+                        <Star key={i} size={14} aria-hidden />
+                      ))}
+                    </div>
+                    {r.comment && (
+                      <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">
+                        {r.comment}
+                      </p>
+                    )}
+                    <p className="mt-1.5 text-[12px] text-text-tertiary">
+                      — {customerMap.get(r.customerId) ?? "—"} ·{" "}
+                      {r.createdAt.toLocaleDateString(
+                        isZh ? "zh-CN" : "en-AU",
+                        { month: "short", day: "numeric", year: "numeric" },
+                      )}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </>
           )}
         </section>
       </main>
 
-      {/* Sticky CTA */}
       <div className="sticky bottom-[84px] z-10 flex gap-2 border-t border-border bg-bg-base p-3 sm:bottom-0">
         <button
           type="button"
           aria-label={t("messageLabel")}
-          className="inline-flex h-14 w-14 items-center justify-center rounded-md border-[1.5px] border-border-strong bg-bg-base text-text-secondary"
+          disabled
+          className="inline-flex h-14 w-14 items-center justify-center rounded-md border-[1.5px] border-border-strong bg-bg-base text-text-secondary opacity-60"
         >
           <MessageCircle size={22} aria-hidden />
         </button>
@@ -277,17 +375,9 @@ export default async function ProviderDetailPage({
           >
             {t("currentlyOfflineCta")}
           </button>
-        ) : noSlots ? (
-          <button
-            type="button"
-            disabled
-            className="flex h-14 flex-1 items-center justify-center rounded-md bg-bg-surface-2 text-[17px] font-bold text-text-tertiary"
-          >
-            {t("fullyBookedCta")}
-          </button>
         ) : (
           <Link
-            href={`/bookings/new?providerId=${id}&step=1`}
+            href="/bookings/new?step=1"
             className="flex h-14 flex-1 items-center justify-center rounded-md bg-brand text-[17px] font-bold text-white hover:bg-brand-hover"
           >
             {ctaText}

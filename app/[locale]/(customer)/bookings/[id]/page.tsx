@@ -1,5 +1,6 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect as nextRedirect, notFound } from "next/navigation";
+import { after } from "next/server";
 import { eq, and } from "drizzle-orm";
 import { Calendar, MapPin, CreditCard, Clock, X } from "lucide-react";
 import { Header } from "@/components/layout/Header";
@@ -20,6 +21,7 @@ import { users } from "@/lib/db/schema/users";
 import { addresses } from "@/lib/db/schema/customer-data";
 import { services } from "@/lib/db/schema/services";
 import { getCurrentUser } from "@/lib/auth/server";
+import { notify } from "@/lib/notifications/server";
 
 type DbStatus =
   | "pending"
@@ -96,6 +98,31 @@ async function cancelBookingAction(formData: FormData) {
       actorId: me.id,
       note: "Customer cancellation",
     });
+  });
+  after(async () => {
+    // Find the provider's user_id and notify them.
+    const [b] = await db
+      .select({ providerId: bookings.providerId })
+      .from(bookings)
+      .where(eq(bookings.id, id))
+      .limit(1);
+    if (b?.providerId) {
+      const [p] = await db
+        .select({ userId: providerProfiles.userId })
+        .from(providerProfiles)
+        .where(eq(providerProfiles.id, b.providerId))
+        .limit(1);
+      if (p?.userId) {
+        await notify({
+          userId: p.userId,
+          kind: "booking_update",
+          title: "Booking cancelled",
+          body: "The customer cancelled this booking.",
+          link: `/${locale}/provider/jobs/${id}`,
+          relatedBookingId: id,
+        });
+      }
+    }
   });
   nextRedirect(`/${locale}/bookings`);
 }

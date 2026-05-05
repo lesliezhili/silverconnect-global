@@ -1,5 +1,6 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect as nextRedirect } from "next/navigation";
+import { after } from "next/server";
 import { eq, and, asc } from "drizzle-orm";
 import { Header } from "@/components/layout/Header";
 import { Link } from "@/i18n/navigation";
@@ -14,6 +15,7 @@ import { addresses } from "@/lib/db/schema/customer-data";
 import { bookings, bookingChanges } from "@/lib/db/schema/bookings";
 import { getCurrentUser } from "@/lib/auth/server";
 import { getAuthSession, type BookingDraft } from "@/lib/auth/session";
+import { notify } from "@/lib/notifications/server";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -181,6 +183,26 @@ async function finalizeBooking(formData: FormData) {
     });
   });
   await clearDraft();
+  // Provider notification — fetch their user_id so we can write a
+  // notifications row pointing at the new booking. Deferred via after()
+  // so the redirect isn't blocked.
+  after(async () => {
+    const [p] = await db
+      .select({ userId: providerProfiles.userId })
+      .from(providerProfiles)
+      .where(eq(providerProfiles.id, draft.providerId!))
+      .limit(1);
+    if (p?.userId) {
+      await notify({
+        userId: p.userId,
+        kind: "booking_update",
+        title: "New booking request",
+        body: `Customer booking · awaiting payment · ${price.currency} ${total.toFixed(2)}`,
+        link: `/${locale}/provider/jobs/${createdId}`,
+        relatedBookingId: createdId,
+      });
+    }
+  });
   // Stripe wiring lands separately; for now route to the existing
   // /pay/[id] placeholder so the flow is end-to-end visible.
   nextRedirect(`/${locale}/pay/${createdId}`);

@@ -1,5 +1,6 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect as nextRedirect, notFound } from "next/navigation";
+import { after } from "next/server";
 import { eq, and } from "drizzle-orm";
 import { Phone, MapPin, AlertTriangle, Check, X } from "lucide-react";
 import { Header } from "@/components/layout/Header";
@@ -15,6 +16,7 @@ import { users } from "@/lib/db/schema/users";
 import { addresses } from "@/lib/db/schema/customer-data";
 import { services } from "@/lib/db/schema/services";
 import { getCurrentUser } from "@/lib/auth/server";
+import { notify } from "@/lib/notifications/server";
 
 type DbStatus =
   | "pending"
@@ -99,6 +101,30 @@ async function jobAction(formData: FormData) {
     });
   });
 
+  // Notify the customer about every transition. Deferred so the
+  // redirect lands instantly.
+  after(async () => {
+    const [b] = await db
+      .select({ customerId: bookings.customerId })
+      .from(bookings)
+      .where(eq(bookings.id, id))
+      .limit(1);
+    if (b?.customerId) {
+      const titles: Record<Action, string> = {
+        accept: "Provider accepted your booking",
+        decline: "Provider declined — please rebook",
+        start: "Your provider is on the way",
+        complete: "Your service is complete",
+      };
+      await notify({
+        userId: b.customerId,
+        kind: "booking_update",
+        title: titles[action],
+        link: `/${locale}/bookings/${id}`,
+        relatedBookingId: id,
+      });
+    }
+  });
   // After complete, leaving the provider on the same page is fine.
   // After decline, send them back to the jobs list.
   if (action === "decline") {
