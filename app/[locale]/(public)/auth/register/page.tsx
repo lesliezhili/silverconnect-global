@@ -1,5 +1,6 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect as nextRedirect } from "next/navigation";
+import { after } from "next/server";
 import { eq } from "drizzle-orm";
 import { Link, redirect } from "@/i18n/navigation";
 import { AuthCard } from "@/components/domain/AuthCard";
@@ -42,22 +43,19 @@ async function registerAction(formData: FormData) {
     });
   }
 
+  // Issue code synchronously so verify page can already accept it; defer
+  // the actual SMTP send to `after()` so the user isn't blocked on Gmail
+  // SMTP latency (frequently 20-30s from CN). If send fails the user
+  // can hit Resend on the verify page.
   const code = await issueCode(email, "email_verify");
   const { subject, text, html } = buildVerifyEmail(code, locale);
-  const result = await sendEmail({ to: email, subject, text, html });
-  if (!result.ok) {
-    if (process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console
-      console.warn("[register] sendEmail failed:", result.reason, "code=", code);
-    } else {
+  after(async () => {
+    const result = await sendEmail({ to: email, subject, text, html });
+    if (!result.ok) {
       // eslint-disable-next-line no-console
       console.error("[register] sendEmail failed:", result.reason);
     }
-    if (result.reason === "smtp-not-configured") {
-      nextRedirect(`/${locale}/auth/register?error=smtp`);
-    }
-    nextRedirect(`/${locale}/auth/register?error=send`);
-  }
+  });
   nextRedirect(
     `/${locale}/auth/verify?email=${encodeURIComponent(email)}&sent=1`,
   );

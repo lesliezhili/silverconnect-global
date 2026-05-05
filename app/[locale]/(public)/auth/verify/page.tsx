@@ -1,6 +1,7 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect as nextRedirect } from "next/navigation";
-import { eq, sql } from "drizzle-orm";
+import { after } from "next/server";
+import { eq } from "drizzle-orm";
 import { Link } from "@/i18n/navigation";
 import { CheckCircle2, Mail } from "lucide-react";
 import { AuthCard } from "@/components/domain/AuthCard";
@@ -24,14 +25,13 @@ async function resendAction(formData: FormData) {
   if (!user) nextRedirect(`/${locale}/auth/register`);
   const code = await issueCode(email, "email_verify");
   const { subject, text, html } = buildVerifyEmail(code, locale);
-  const result = await sendEmail({ to: email, subject, text, html });
-  if (!result.ok) {
-    // eslint-disable-next-line no-console
-    console.error("[resend] sendEmail failed:", result.reason);
-    nextRedirect(
-      `/${locale}/auth/verify?email=${encodeURIComponent(email)}&error=send`,
-    );
-  }
+  after(async () => {
+    const result = await sendEmail({ to: email, subject, text, html });
+    if (!result.ok) {
+      // eslint-disable-next-line no-console
+      console.error("[resend] sendEmail failed:", result.reason);
+    }
+  });
   nextRedirect(
     `/${locale}/auth/verify?email=${encodeURIComponent(email)}&resent=1`,
   );

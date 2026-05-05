@@ -1,5 +1,6 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect as nextRedirect } from "next/navigation";
+import { after } from "next/server";
 import { Link, redirect } from "@/i18n/navigation";
 import { AuthCard } from "@/components/domain/AuthCard";
 import { Button } from "@/components/ui/Button";
@@ -22,11 +23,13 @@ async function forgotAction(formData: FormData) {
   if (user) {
     const code = await issueCode(email, "password_reset");
     const { subject, text, html } = buildResetEmail(code, locale);
-    const result = await sendEmail({ to: email, subject, text, html });
-    if (!result.ok && process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console
-      console.warn("[forgot] sendEmail failed:", result.reason, "code=", code);
-    }
+    after(async () => {
+      const result = await sendEmail({ to: email, subject, text, html });
+      if (!result.ok) {
+        // eslint-disable-next-line no-console
+        console.error("[forgot] sendEmail failed:", result.reason);
+      }
+    });
   }
   nextRedirect(
     `/${locale}/auth/reset?email=${encodeURIComponent(email)}&sent=1`,
