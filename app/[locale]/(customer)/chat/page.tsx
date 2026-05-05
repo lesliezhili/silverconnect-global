@@ -1,4 +1,7 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import { redirect as nextRedirect } from "next/navigation";
+import { after } from "next/server";
+import { eq, and, asc, isNull, sql } from "drizzle-orm";
 import {
   ChevronLeft,
   Plus,
@@ -13,10 +16,118 @@ import { C9AICompanion, S7NetworkError } from "@/components/illustrations";
 import { EMERGENCY_NUMBER } from "@/components/domain/country";
 import { COUNTRY_FLAG } from "@/components/layout/CountrySelector";
 import { Header } from "@/components/layout/Header";
-import { cn } from "@/components/ui/cn";
 import { getCountry } from "@/components/domain/countryCookie";
-import { getSession } from "@/components/domain/sessionCookie";
-import { User } from "lucide-react";
+import { db } from "@/lib/db";
+import { aiConversations, aiMessages, aiEmergencyKeywords } from "@/lib/db/schema/ai";
+import { getCurrentUser } from "@/lib/auth/server";
+import { chat, detectEmergencyKeyword, type ChatMessage } from "@/lib/ai/glm";
+
+const SYSTEM_PROMPT_EN = `You are SilverConnect's customer service assistant for an elderly home-services platform (cleaning, cooking, garden, personal care, repair) operating in AU, CN and CA. Be warm, brief, and use plain English (or Chinese if the user writes Chinese). Replies should be 1-3 short sentences unless the user asks for more detail. If the user describes a medical, safety, or abuse emergency, immediately recommend they tap the SOS button or call local emergency services.`;
+
+const SYSTEM_PROMPT_ZH = `你是 SilverConnect 老年居家服务平台的客服助手（清洁/烹饪/园艺/个人护理/维修，覆盖澳大利亚、中国、加拿大）。回答温暖、简短、用通俗中文（或用户使用英文时用英文）。每次回复 1-3 句为宜，除非用户要求更详细。如用户描述医疗、人身安全或被侵害的紧急情况，立刻建议按 SOS 按钮或拨打当地紧急电话。`;
+
+async function ensureConversation(userId: string, locale: string) {
+  const [open] = await db
+    .select()
+    .from(aiConversations)
+    .where(
+      and(
+        eq(aiConversations.userId, userId),
+        isNull(aiConversations.closedAt),
+      ),
+    )
+    .orderBy(sql`${aiConversations.createdAt} desc`)
+    .limit(1);
+  if (open) return open;
+  const [created] = await db
+    .insert(aiConversations)
+    .values({ userId, locale: locale === "zh" ? "zh" : "en" })
+    .returning();
+  return created!;
+}
+
+async function sendMessageAction(formData: FormData) {
+  "use server";
+  const locale = String(formData.get("locale") ?? "en");
+  const text = String(formData.get("message") ?? "").trim();
+  const me = await getCurrentUser();
+  if (!me) nextRedirect(`/${locale}/auth/login`);
+  if (!text) nextRedirect(`/${locale}/chat`);
+
+  const conv = await ensureConversation(me.id, locale);
+
+  // Load short history (last 20 messages) to give the model context.
+  const prior = await db
+    .select({ role: aiMessages.role, content: aiMessages.content })
+    .from(aiMessages)
+    .where(eq(aiMessages.conversationId, conv.id))
+    .orderBy(asc(aiMessages.createdAt))
+    .limit(20);
+
+  // Persist the user message immediately.
+  await db.insert(aiMessages).values({
+    conversationId: conv.id,
+    role: "user",
+    content: text,
+  });
+
+  // Emergency keyword scan against this user's locale.
+  const keywords = await db
+    .select({ keyword: aiEmergencyKeywords.keyword })
+    .from(aiEmergencyKeywords)
+    .where(
+      and(
+        eq(aiEmergencyKeywords.locale, locale === "zh" ? "zh" : "en"),
+        eq(aiEmergencyKeywords.enabled, true),
+      ),
+    );
+  const matched = detectEmergencyKeyword(
+    text,
+    keywords.map((k) => k.keyword),
+  );
+  if (matched) {
+    await db
+      .update(aiConversations)
+      .set({ emergencyTriggeredAt: new Date(), updatedAt: new Date() })
+      .where(eq(aiConversations.id, conv.id));
+    nextRedirect(`/${locale}/chat?emergency=1`);
+  }
+
+  // Defer the GLM call to after() so the redirect lands fast and the
+  // user sees their message in the feed while the assistant reply
+  // streams in on the next render. Tradeoff: user has to refresh /
+  // re-navigate to see the reply (a real client component with
+  // server-sent events would feel smoother — Wave 4 polish).
+  const messages: ChatMessage[] = [
+    {
+      role: "system",
+      content: locale === "zh" ? SYSTEM_PROMPT_ZH : SYSTEM_PROMPT_EN,
+    },
+    ...(prior as ChatMessage[]),
+    { role: "user", content: text },
+  ];
+  after(async () => {
+    const result = await chat(messages, { maxTokens: 600, temperature: 0.6 });
+    if (result.ok && result.content) {
+      await db.insert(aiMessages).values({
+        conversationId: conv.id,
+        role: "assistant",
+        content: result.content,
+        tokens: result.completionTokens ?? null,
+      });
+    } else {
+      // eslint-disable-next-line no-console
+      console.error("[chat] GLM call failed:", result.reason);
+      await db.insert(aiMessages).values({
+        conversationId: conv.id,
+        role: "system",
+        content: `(GLM error: ${result.reason ?? "unknown"})`,
+      });
+    }
+  });
+
+  nextRedirect(`/${locale}/chat`);
+}
 
 export default async function ChatPage({
   params,
@@ -32,23 +143,22 @@ export default async function ChatPage({
   const tEm = await getTranslations("emergency");
   const isZh = locale === "zh";
   const country = await getCountry();
-  const session = await getSession();
+  const me = await getCurrentUser();
   const emergency = sp.emergency === "1";
   const num = EMERGENCY_NUMBER[country];
-  const state = typeof sp.state === "string" ? sp.state : undefined;
 
   if (emergency) {
     const subText = isZh
       ? country === "AU"
         ? "澳洲紧急服务 — 综合"
         : country === "CN"
-        ? "中国 120 医疗急救"
-        : "加拿大 911 综合紧急"
+          ? "中国 120 医疗急救"
+          : "加拿大 911 综合紧急"
       : country === "AU"
-      ? "Australian Emergency — combined"
-      : country === "CN"
-      ? "China 120 Medical Emergency"
-      : "Canada 911 Combined Emergency";
+        ? "Australian Emergency — combined"
+        : country === "CN"
+          ? "China 120 Medical Emergency"
+          : "Canada 911 Combined Emergency";
     return (
       <main
         id="main-content"
@@ -64,7 +174,9 @@ export default async function ChatPage({
         >
           <AlertTriangle size={68} />
         </div>
-        <h1 className="text-[30px] font-extrabold text-white">{tEm("title")}</h1>
+        <h1 className="text-[30px] font-extrabold text-white">
+          {tEm("title")}
+        </h1>
         <p className="text-[18px] leading-snug text-[#CBD5E1]">{subText}</p>
         {country === "CN" && (
           <p className="text-[14px] text-[#94A3B8]">{tEm("subLine2.CN")}</p>
@@ -76,230 +188,157 @@ export default async function ChatPage({
           <PhoneIcon size={32} aria-hidden />
           {tEm("call", { num })}
         </a>
-        <button
-          type="button"
-          className="h-14 w-full max-w-[320px] rounded-md border-[1.5px] border-white/30 bg-white/10 text-[16px] font-semibold text-white"
-        >
-          {tEm("notify")}{" · "}
-          {isZh ? "女儿 Sarah" : "Sarah"}
-        </button>
-        <Link
-          href="/chat"
-          className="text-[14px] text-[#94A3B8]"
-          replace
-        >
+        <Link href="/chat" className="text-[14px] text-[#94A3B8]" replace>
           {tEm("close")}
         </Link>
       </main>
     );
   }
 
-  // Default chat
-  const quick = isZh
-    ? ["改约", "取消政策", "联系真人客服", "紧急帮助"]
-    : ["Reschedule", "Cancel policy", "Talk to human", "Emergency"];
+  // Load conversation + messages for signed-in users.
+  let conversationMessages: { id: string; role: string; content: string }[] = [];
+  if (me) {
+    const conv = await ensureConversation(me.id, locale);
+    conversationMessages = await db
+      .select({
+        id: aiMessages.id,
+        role: aiMessages.role,
+        content: aiMessages.content,
+      })
+      .from(aiMessages)
+      .where(eq(aiMessages.conversationId, conv.id))
+      .orderBy(asc(aiMessages.createdAt));
+  }
 
   return (
     <>
-      {/* Desktop-only top bar so users have nav off /chat. Mobile uses
-          the chat-specific subheader below for back. */}
       <div className="hidden sm:block">
-        <Header country={country} signedIn={session.signedIn} initials={session.initials} />
-      </div>
-      <main id="main-content" className="flex h-dvh flex-col bg-bg-surface sm:h-[calc(100dvh-80px)]">
-      {/* Chat header */}
-      <header
-        role="banner"
-        className="flex h-16 shrink-0 items-center gap-2 border-b border-border bg-bg-base pl-1 pr-3"
-      >
-        <Link
-          href="/home"
-          aria-label={isZh ? "返回" : "Back"}
-          className="inline-flex h-12 w-12 items-center justify-center rounded-md text-text-primary hover:bg-bg-surface-2"
-        >
-          <ChevronLeft size={22} aria-hidden />
-        </Link>
-        <C9AICompanion size={40} />
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-[17px] font-bold">{t("title")}</p>
-          <p className="flex items-center gap-1 text-[12px] text-success">
-            <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-success" />
-            {t("online")}
-          </p>
-        </div>
-        <span className="inline-flex h-9 items-center gap-1 rounded-pill border-[1.5px] border-border bg-bg-surface px-2.5 text-[14px] font-semibold text-text-primary">
-          {COUNTRY_FLAG[country]} {country}
-        </span>
-      </header>
-
-      {/* Messages */}
-      <div
-        className={cn(
-          "flex flex-1 flex-col gap-3 overflow-auto px-4 pb-2 pt-4",
-          (state === "empty" || state === "escalated" || state === "error") &&
-            "items-center justify-center text-center"
-        )}
-      >
-        {state === "empty" && (
-          <>
-            <C9AICompanion size={120} />
-            <h2 className="mt-1 text-[22px] font-bold">{t("emptyTitle")}</h2>
-            <p className="max-w-[280px] text-[15px] text-text-secondary">
-              {t("emptyHint")}
-            </p>
-            <div className="mt-3 flex w-full flex-col gap-2">
-              {[
-                t("quickViewBookings"),
-                t("quickReschedule"),
-                t("quickPolicy"),
-                t("quickHuman"),
-              ].map((q) => (
-                <button
-                  key={q}
-                  type="button"
-                  className="h-12 rounded-pill border-[1.5px] border-brand bg-brand-soft px-4 text-[15px] font-semibold text-brand"
-                >
-                  {q}
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-
-        {state === "streaming" && (
-          <div className="self-start max-w-[320px] text-left">
-            <div className="flex items-end gap-2">
-              <C9AICompanion size={44} />
-              <div className="max-w-[240px] rounded-md border border-border bg-bg-base p-3 text-[15px]">
-                {isZh ? "让我看看您的下次预订…" : "Let me check your next booking…"}
-                <span
-                  aria-hidden
-                  className="sc-skel ml-1 inline-block h-3.5 w-2 align-text-bottom"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {state === "waiting" && (
-          <div className="self-start">
-            <div className="flex items-end gap-2">
-              <C9AICompanion size={44} />
-              <div className="rounded-md border border-border bg-bg-base p-3">
-                <span className="inline-flex gap-1.5">
-                  {[0, 0.2, 0.4].map((d, i) => (
-                    <span
-                      key={i}
-                      aria-hidden
-                      className="inline-block h-1.5 w-1.5 rounded-full bg-text-tertiary"
-                      style={{ animation: `sc-blink 1.2s ${d}s infinite` }}
-                    />
-                  ))}
-                </span>
-              </div>
-            </div>
-            <p className="mt-1 text-[12px] text-text-tertiary">{t("typing")}</p>
-          </div>
-        )}
-
-        {state === "escalated" && (
-          <>
-            <span className="flex h-20 w-20 items-center justify-center rounded-full bg-brand-soft text-brand">
-              <User size={48} aria-hidden />
-            </span>
-            <h2 className="mt-1 text-[21px] font-bold">{t("escalatedTitle")}</h2>
-            <p className="text-[14px] text-text-secondary">{t("escalatedHint")}</p>
-          </>
-        )}
-
-        {state === "error" && (
-          <>
-            <S7NetworkError width={200} height={140} />
-            <h2 className="mt-1 text-[21px] font-bold">{t("errorTitle")}</h2>
-            <Link
-              href="/chat"
-              className="mt-1 inline-flex h-14 items-center rounded-md bg-brand px-7 text-[17px] font-bold text-white"
-            >
-              {t("reconnect")}
-            </Link>
-          </>
-        )}
-
-        {!state && (
-          <>
-            <ChatBubble who="ai">
-              {isZh
-                ? "您好王阿姨 👋 我是 SilverConnect 助手，需要什么帮助？"
-                : "Hello Margaret 👋 I'm the SilverConnect assistant, how can I help?"}
-            </ChatBubble>
-            <ChatBubble who="me">
-              {isZh ? "我下次预订是什么时候？" : "When is my next booking?"}
-            </ChatBubble>
-            <ChatBubble who="ai">
-              {isZh
-                ? "您下次预订是 5 月 8 日 周三 14:00 — 李师傅来做 3 小时深度清洁。需要改约吗？"
-                : "Your next booking is Wed 8 May 2:00pm — Helen Li for a 3h deep clean. Want to reschedule?"}
-            </ChatBubble>
-          </>
-        )}
-      </div>
-
-      {/* Quick replies */}
-      <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 py-2">
-        {quick.map((q, i) => {
-          const danger = i === 3;
-          return danger ? (
-            <Link
-              key={q}
-              href="/chat?emergency=1"
-              className="inline-flex h-10 shrink-0 items-center rounded-pill border-[1.5px] border-danger bg-danger-soft px-3.5 text-[14px] font-semibold text-danger"
-            >
-              🆘 {q}
-            </Link>
-          ) : (
-            <button
-              key={q}
-              type="button"
-              className={cn(
-                "inline-flex h-10 shrink-0 items-center rounded-pill border-[1.5px] border-brand bg-brand-soft px-3.5 text-[14px] font-semibold text-brand"
-              )}
-            >
-              {q}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Composer */}
-      <div className="flex shrink-0 items-center gap-2 border-t border-border bg-bg-base p-2.5">
-        <button
-          type="button"
-          aria-label={t("attach")}
-          className="inline-flex h-12 w-12 items-center justify-center rounded-md text-text-primary"
-        >
-          <Plus size={22} aria-hidden />
-        </button>
-        <input
-          aria-label={t("composer")}
-          placeholder={t("composer")}
-          className="h-12 flex-1 rounded-pill border-[1.5px] border-border bg-bg-surface px-4 text-[16px] text-text-primary"
+        <Header
+          country={country}
+          signedIn={!!me}
+          initials={me?.initials}
         />
-        <button
-          type="button"
-          aria-label={t("voice")}
-          className="inline-flex h-12 w-12 items-center justify-center rounded-md text-text-primary"
-        >
-          <Mic size={22} aria-hidden />
-        </button>
-        <button
-          type="submit"
-          aria-label={t("send")}
-          className="inline-flex h-12 w-12 items-center justify-center rounded-pill bg-brand text-white"
-        >
-          <Send size={22} aria-hidden />
-        </button>
       </div>
-    </main>
+      <main
+        id="main-content"
+        className="flex h-dvh flex-col bg-bg-surface sm:h-[calc(100dvh-80px)]"
+      >
+        <header
+          role="banner"
+          className="flex h-16 shrink-0 items-center gap-2 border-b border-border bg-bg-base pl-1 pr-3"
+        >
+          <Link
+            href="/home"
+            aria-label={isZh ? "返回" : "Back"}
+            className="inline-flex h-12 w-12 items-center justify-center rounded-md text-text-primary hover:bg-bg-surface-2"
+          >
+            <ChevronLeft size={22} aria-hidden />
+          </Link>
+          <C9AICompanion size={40} />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[17px] font-bold">{t("title")}</p>
+            <p className="flex items-center gap-1 text-[12px] text-success">
+              <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-success" />
+              {t("online")}
+            </p>
+          </div>
+          <span className="inline-flex h-9 items-center gap-1 rounded-pill border-[1.5px] border-border bg-bg-surface px-2.5 text-[14px] font-semibold text-text-primary">
+            {COUNTRY_FLAG[country]} {country}
+          </span>
+        </header>
+
+        <div className="flex flex-1 flex-col gap-3 overflow-auto px-4 pb-2 pt-4">
+          {!me ? (
+            <>
+              <C9AICompanion size={120} className="mx-auto" />
+              <h2 className="mt-1 text-center text-[22px] font-bold">
+                {t("emptyTitle")}
+              </h2>
+              <p className="mx-auto max-w-[280px] text-center text-[15px] text-text-secondary">
+                {isZh ? "请先登录后再开始对话。" : "Please sign in to start a chat."}
+              </p>
+              <Link
+                href="/auth/login"
+                className="mx-auto mt-3 inline-flex h-12 items-center justify-center rounded-md bg-brand px-5 text-[15px] font-bold text-white"
+              >
+                {isZh ? "登录" : "Sign in"}
+              </Link>
+            </>
+          ) : conversationMessages.length === 0 ? (
+            <>
+              <C9AICompanion size={120} className="mx-auto" />
+              <h2 className="mt-1 text-center text-[22px] font-bold">
+                {t("emptyTitle")}
+              </h2>
+              <p className="mx-auto max-w-[280px] text-center text-[15px] text-text-secondary">
+                {t("emptyHint")}
+              </p>
+            </>
+          ) : (
+            conversationMessages.map((m) =>
+              m.role === "system" ? (
+                <p
+                  key={m.id}
+                  role="alert"
+                  className="self-center rounded-md bg-warning-soft px-3.5 py-2 text-[13px] font-semibold text-warning"
+                >
+                  {m.content}
+                </p>
+              ) : (
+                <ChatBubble
+                  key={m.id}
+                  who={m.role === "assistant" ? "ai" : "me"}
+                >
+                  {m.content}
+                </ChatBubble>
+              ),
+            )
+          )}
+        </div>
+
+        <form
+          action={sendMessageAction}
+          className="flex shrink-0 items-center gap-2 border-t border-border bg-bg-base p-2.5"
+        >
+          <input type="hidden" name="locale" value={locale} />
+          <button
+            type="button"
+            aria-label={t("attach")}
+            className="inline-flex h-12 w-12 items-center justify-center rounded-md text-text-primary opacity-50"
+            disabled
+            title="Attachments wired with file storage"
+          >
+            <Plus size={22} aria-hidden />
+          </button>
+          <input
+            name="message"
+            aria-label={t("composer")}
+            placeholder={t("composer")}
+            className="h-12 flex-1 rounded-pill border-[1.5px] border-border bg-bg-surface px-4 text-[16px] text-text-primary"
+            required
+            minLength={1}
+            maxLength={2000}
+            disabled={!me}
+          />
+          <button
+            type="button"
+            aria-label={t("voice")}
+            className="inline-flex h-12 w-12 items-center justify-center rounded-md text-text-primary opacity-50"
+            disabled
+            title="Voice input wired with Whisper"
+          >
+            <Mic size={22} aria-hidden />
+          </button>
+          <button
+            type="submit"
+            aria-label={t("send")}
+            disabled={!me}
+            className="inline-flex h-12 w-12 items-center justify-center rounded-pill bg-brand text-white disabled:opacity-50"
+          >
+            <Send size={22} aria-hidden />
+          </button>
+        </form>
+      </main>
     </>
   );
 }
