@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { ProviderAvatar } from "@/components/domain/ProviderAvatar";
 import { getCountry } from "@/components/domain/countryCookie";
 import { db } from "@/lib/db";
-import { bookings } from "@/lib/db/schema/bookings";
+import { bookings, bookingChanges } from "@/lib/db/schema/bookings";
 import { providerProfiles } from "@/lib/db/schema/providers";
 import { users } from "@/lib/db/schema/users";
 import { services } from "@/lib/db/schema/services";
@@ -64,12 +64,31 @@ async function feedbackAction(formData: FormData) {
   }
 
   try {
-    await db.insert(reviews).values({
-      bookingId: b.id,
-      customerId: me.id,
-      providerId: b.providerId,
-      rating: Math.round(ratingRaw),
-      comment: comment || null,
+    await db.transaction(async (tx) => {
+      await tx.insert(reviews).values({
+        bookingId: b.id,
+        customerId: me.id,
+        providerId: b.providerId!,
+        rating: Math.round(ratingRaw),
+        comment: comment || null,
+      });
+      // Submitting feedback releases held funds: completed → released.
+      // The button copy ("Submit & release payment") commits to this.
+      // Idempotent: if a prior run already released, the second update is a no-op.
+      if (b.status === "completed") {
+        await tx
+          .update(bookings)
+          .set({ status: "released", updatedAt: new Date() })
+          .where(eq(bookings.id, b.id));
+        await tx.insert(bookingChanges).values({
+          bookingId: b.id,
+          type: "status_change",
+          fromStatus: "completed",
+          toStatus: "released",
+          actorId: me.id,
+          note: "Customer released payment via feedback",
+        });
+      }
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
@@ -77,7 +96,7 @@ async function feedbackAction(formData: FormData) {
     if (msg.includes("reviews_booking_uq")) {
       nextRedirect(`/${locale}/bookings/${id}/feedback?error=duplicate`);
     }
-    // eslint-disable-next-line no-console
+     
     console.error("[feedback] insert failed:", msg);
     nextRedirect(`/${locale}/bookings/${id}/feedback?error=server`);
   }

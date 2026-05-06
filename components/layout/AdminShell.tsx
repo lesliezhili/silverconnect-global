@@ -75,13 +75,15 @@ export function AdminShell({
           <span className="hidden text-[13px] text-text-tertiary sm:inline">
             {email}
           </span>
-          <Link
-            href="/admin/logout"
-            aria-label={t("signOut")}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-md border-[1.5px] border-border-strong bg-bg-base text-text-primary"
-          >
-            <LogOut size={18} aria-hidden />
-          </Link>
+          <form action="/admin/logout" method="POST">
+            <button
+              type="submit"
+              aria-label={t("signOut")}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-md border-[1.5px] border-border-strong bg-bg-base text-text-primary"
+            >
+              <LogOut size={18} aria-hidden />
+            </button>
+          </form>
         </div>
       </header>
 

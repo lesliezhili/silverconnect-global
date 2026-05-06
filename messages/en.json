@@ -270,7 +270,19 @@
     "calendarNext": "Next month",
     "reviewStars": "{n} stars",
     "errorAllRequired": "Please fill in all required fields.",
-    "errorPickCategory": "Please select at least one service category."
+    "errorPickCategory": "Please select at least one service category.",
+    "reportTitle": "Report this review",
+    "reportHint": "Tell us why this review breaks our rules. An admin will check it.",
+    "reportReason": "Reason",
+    "reportReasonSpam": "Spam or fake",
+    "reportReasonAbusive": "Abusive language",
+    "reportReasonFalse": "Untrue claims",
+    "reportReasonOffTopic": "Off-topic",
+    "reportReasonOther": "Other",
+    "reportDetails": "Details (optional)",
+    "reportSubmit": "Submit report",
+    "reportSent": "Report submitted — thank you.",
+    "reportTriggerLabel": "Report review"
   },
   "booking": {
     "steps": {
@@ -322,7 +334,7 @@
       "refunded": "See refund details"
     },
     "status": {
-      "pending": "Awaiting payment",
+      "pending": "Awaiting confirmation",
       "confirmed": "Confirmed",
       "inProgress": "In progress",
       "awaitingConfirm": "Awaiting confirmation",
@@ -330,7 +342,17 @@
       "cancelledFull": "Cancelled · Full refund",
       "cancelledPartial": "Cancelled · Partial refund",
       "refunded": "Refunded"
-    }
+    },
+    "rescheduleTitle": "Reschedule booking",
+    "rescheduleHint": "Pick a new date and time. The provider will see the change.",
+    "rescheduleNewDate": "New date",
+    "rescheduleNewTime": "New time",
+    "rescheduleConfirm": "Confirm new time",
+    "rescheduleErrorTooSoon": "New time must be at least 4 hours away.",
+    "rescheduleErrorTooFar": "Reschedule no more than 30 days out.",
+    "rescheduleErrorBadStatus": "This booking can no longer be rescheduled.",
+    "rescheduleSuccess": "Booking rescheduled.",
+    "rescheduleCta": "Reschedule"
   },
   "payment": {
     "title": "Payment",
@@ -535,12 +557,13 @@
     "default": "Default",
     "setDefault": "Set as default",
     "delete": "Remove",
-    "deleteConfirm": "Remove this card?",
     "empty": "No cards on file",
     "emptyHint": "Add one to pay faster on your next booking.",
     "secureNote": "Cards are stored securely by Stripe — we never see the full number.",
     "expires": "Expires {month}/{year}",
-    "endingIn": "···· {last4}"
+    "endingIn": "···· {last4}",
+    "deleteCardTitle": "Remove this card?",
+    "deleteCardBody": "The card ending in {last4} will be removed from your account. You can add it again anytime."
   },
   "favourites": {
     "title": "Favourite providers",
@@ -857,7 +880,8 @@
     "navPayments": "Payments",
     "navAi": "AI",
     "navSettings": "Settings",
-    "navReports": "Reports"
+    "navReports": "Reports",
+    "alertSafetyOpen": "Open safety events need review"
   },
   "family": {
     "title": "Family co-management",
@@ -1028,7 +1052,16 @@
     "kbBody": "Content",
     "kbSave": "Save",
     "kbDelete": "Delete",
-    "kbTitleLabel": "Title"
+    "kbTitleLabel": "Title",
+    "kbCategory": "Category",
+    "kbCategoryPolicy": "Policy",
+    "kbCategoryPricing": "Pricing",
+    "kbCategoryHowTo": "How-to",
+    "kbCategorySafety": "Safety",
+    "kbQuestion": "Question",
+    "kbAnswer": "Answer",
+    "kbDeleted": "Deleted",
+    "kbSaved": "Saved"
   },
   "aSettings": {
     "title": "System settings",
@@ -1055,13 +1088,14 @@
     "reporter": "Reporter",
     "reason": "Reason",
     "reasonSpam": "Spam",
-    "reasonOffensive": "Offensive",
     "reasonFalse": "Inaccurate / false",
     "reasonOther": "Other",
     "actionKeep": "Keep review",
     "actionDelete": "Delete review",
     "actionWarnUser": "Warn reviewer",
-    "empty": "No reports queued."
+    "empty": "No reports queued.",
+    "reasonAbusive": "Abusive language",
+    "reasonOffTopic": "Off-topic"
   },
   "search": {
     "title": "Search",

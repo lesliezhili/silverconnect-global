@@ -1,6 +1,9 @@
 import "server-only";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { notifications } from "@/lib/db/schema/notifications";
+import { notifications, notificationPrefs } from "@/lib/db/schema/notifications";
+import { users } from "@/lib/db/schema/users";
+import { sendEmail } from "@/components/domain/email";
 
 type NotificationKind =
   | "booking_update"
@@ -39,9 +42,63 @@ export async function notify(input: NotifyInput): Promise<void> {
       relatedDisputeId: input.relatedDisputeId ?? null,
     });
   } catch (e) {
-    // eslint-disable-next-line no-console
+     
     console.error(
       "[notify] insert failed:",
+      e instanceof Error ? e.message : String(e),
+    );
+  }
+}
+
+/**
+ * Inserts the in-app notification AND sends an email if the user has
+ * email notifications enabled for this kind. Email failure never
+ * breaks the in-app insert. Caller should wrap in `after()` so the
+ * SMTP round-trip doesn't block the redirect.
+ */
+export async function notifyAndEmail(
+  input: NotifyInput & {
+    email: { subject: string; text: string; html: string };
+  },
+): Promise<void> {
+  await notify({
+    userId: input.userId,
+    kind: input.kind,
+    title: input.title,
+    body: input.body,
+    link: input.link,
+    relatedBookingId: input.relatedBookingId,
+    relatedDisputeId: input.relatedDisputeId,
+  });
+  try {
+    const [pref] = await db
+      .select({ enabled: notificationPrefs.enabled })
+      .from(notificationPrefs)
+      .where(
+        and(
+          eq(notificationPrefs.userId, input.userId),
+          eq(notificationPrefs.channel, "email"),
+          eq(notificationPrefs.kind, input.kind),
+        ),
+      )
+      .limit(1);
+    if (pref && !pref.enabled) return;
+    const [u] = await db
+      .select({ email: users.email })
+      .from(users)
+      .where(eq(users.id, input.userId))
+      .limit(1);
+    if (!u?.email) return;
+    await sendEmail({
+      to: u.email,
+      subject: input.email.subject,
+      text: input.email.text,
+      html: input.email.html,
+    });
+  } catch (e) {
+     
+    console.error(
+      "[notifyAndEmail] email send failed:",
       e instanceof Error ? e.message : String(e),
     );
   }
@@ -63,7 +120,7 @@ export async function notifyMany(inputs: NotifyInput[]): Promise<void> {
       })),
     );
   } catch (e) {
-    // eslint-disable-next-line no-console
+     
     console.error(
       "[notifyMany] insert failed:",
       e instanceof Error ? e.message : String(e),

@@ -1,10 +1,11 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
-import { notFound } from "next/navigation";
+import { notFound, redirect as nextRedirect } from "next/navigation";
 import { eq, and, desc, sql, inArray } from "drizzle-orm";
 import { Star, ShieldCheck, MessageCircle } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Link } from "@/i18n/navigation";
 import { ProviderAvatar } from "@/components/domain/ProviderAvatar";
+import { ReportReviewModal } from "@/components/domain/ReportReviewModal";
 import { CURRENCY_SYMBOL, TAX_ABBR } from "@/components/domain/country";
 import { getCountry } from "@/components/domain/countryCookie";
 import { getSession } from "@/components/domain/sessionCookie";
@@ -16,7 +17,47 @@ import {
 } from "@/lib/db/schema/providers";
 import { users } from "@/lib/db/schema/users";
 import { services, servicePrices } from "@/lib/db/schema/services";
-import { reviews } from "@/lib/db/schema/reviews";
+import { reviews, reviewReports } from "@/lib/db/schema/reviews";
+import { getCurrentUser } from "@/lib/auth/server";
+
+type ReportReason = "spam" | "abusive" | "false" | "off_topic" | "other";
+const VALID_REASONS: ReportReason[] = ["spam", "abusive", "false", "off_topic", "other"];
+
+async function reportReviewAction(formData: FormData) {
+  "use server";
+  const locale = String(formData.get("locale") ?? "en");
+  const reviewId = String(formData.get("reviewId") ?? "");
+  const reason = String(formData.get("reason") ?? "") as ReportReason;
+  const details = String(formData.get("details") ?? "").trim() || null;
+  const me = await getCurrentUser();
+  if (!me) nextRedirect(`/${locale}/auth/login`);
+  if (!reviewId || !VALID_REASONS.includes(reason)) {
+    nextRedirect(`/${locale}/providers?error=report_invalid`);
+  }
+  const [r] = await db
+    .select({ id: reviews.id, providerId: reviews.providerId, status: reviews.status })
+    .from(reviews)
+    .where(eq(reviews.id, reviewId))
+    .limit(1);
+  if (!r) nextRedirect(`/${locale}/providers?error=report_missing`);
+
+  await db.transaction(async (tx) => {
+    await tx.insert(reviewReports).values({
+      reviewId,
+      reporterId: me.id,
+      reason,
+      details,
+    });
+    if (r.status === "published") {
+      await tx
+        .update(reviews)
+        .set({ status: "reported", updatedAt: new Date() })
+        .where(eq(reviews.id, reviewId));
+    }
+  });
+
+  nextRedirect(`/${locale}/providers/${r.providerId}?reported=1`);
+}
 
 function initialsOf(name: string | null, fallback: string): string {
   const src = (name || fallback).trim();
@@ -27,19 +68,31 @@ function initialsOf(name: string | null, fallback: string): string {
 
 export default async function ProviderDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale, id } = await params;
+  const sp = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations("provider");
   const tCategories = await getTranslations("categories");
+  const tCommon = await getTranslations("common");
   const country = await getCountry();
   const session = await getSession();
   const isZh = locale === "zh";
   const sym = CURRENCY_SYMBOL[country];
   const taxAbbr = TAX_ABBR[country];
+  const reportedJustNow = sp.reported === "1";
+
+  const reportReasonOptions = [
+    { value: "spam", label: t("reportReasonSpam") },
+    { value: "abusive", label: t("reportReasonAbusive") },
+    { value: "false", label: t("reportReasonFalse") },
+    { value: "off_topic", label: t("reportReasonOffTopic") },
+    { value: "other", label: t("reportReasonOther") },
+  ];
 
   const [profile] = await db
     .select({
@@ -324,19 +377,48 @@ export default async function ProviderDetailPage({
                   })}
                 </div>
               </div>
+              {reportedJustNow && (
+                <div
+                  role="status"
+                  className="mt-3 rounded-md bg-success-soft px-3.5 py-2.5 text-[14px] font-semibold text-success"
+                >
+                  {t("reportSent")}
+                </div>
+              )}
               <ul className="mt-3 flex flex-col gap-3">
                 {recent.map((r) => (
                   <li
                     key={r.id}
                     className="rounded-md border border-border bg-bg-base p-3.5"
                   >
-                    <div
-                      className="flex gap-1 text-[var(--brand-accent)]"
-                      aria-label={`${r.rating} stars`}
-                    >
-                      {Array.from({ length: r.rating }).map((_, i) => (
-                        <Star key={i} size={14} aria-hidden />
-                      ))}
+                    <div className="flex items-start gap-2">
+                      <div
+                        className="flex gap-1 text-[var(--brand-accent)]"
+                        aria-label={`${r.rating} stars`}
+                      >
+                        {Array.from({ length: r.rating }).map((_, i) => (
+                          <Star key={i} size={14} aria-hidden />
+                        ))}
+                      </div>
+                      {session.signedIn && (
+                        <div className="ml-auto">
+                          <ReportReviewModal
+                            action={reportReviewAction}
+                            locale={locale}
+                            reviewId={r.id}
+                            strings={{
+                              triggerAriaLabel: t("reportTriggerLabel"),
+                              title: t("reportTitle"),
+                              hint: t("reportHint"),
+                              reasonLegend: t("reportReason"),
+                              reasonOptions: reportReasonOptions,
+                              detailsLabel: t("reportDetails"),
+                              cancel: tCommon("cancel"),
+                              submit: t("reportSubmit"),
+                            }}
+                          />
+                        </div>
+                      )}
                     </div>
                     {r.comment && (
                       <p className="mt-1.5 text-[14px] leading-relaxed text-text-secondary">

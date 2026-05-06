@@ -10,13 +10,6 @@ async function handle(req: Request, params: { locale: string }) {
   return res;
 }
 
-export async function GET(
-  req: Request,
-  ctx: { params: Promise<{ locale: string }> }
-) {
-  return handle(req, await ctx.params);
-}
-
 export async function POST(
   req: Request,
   ctx: { params: Promise<{ locale: string }> }

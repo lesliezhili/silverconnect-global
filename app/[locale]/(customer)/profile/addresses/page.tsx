@@ -51,10 +51,11 @@ export default async function AddressesPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale } = await params;
-  await searchParams;
+  const sp = await searchParams;
   setRequestLocale(locale);
   const me = await getCurrentUser();
   if (!me) nextRedirect(`/${locale}/auth/login`);
+  if (sp.add === "1") nextRedirect(`/${locale}/profile/addresses/new`);
   const country = await getCountry();
   const t = await getTranslations("addresses");
 

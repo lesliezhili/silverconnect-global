@@ -2,13 +2,13 @@ import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect as nextRedirect, notFound } from "next/navigation";
 import { after } from "next/server";
 import { eq, and } from "drizzle-orm";
-import { Phone, MapPin, AlertTriangle, Check, X } from "lucide-react";
+import { Phone, MapPin, AlertTriangle, Check } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Link } from "@/i18n/navigation";
-import { Button } from "@/components/ui/Button";
 import { ProviderAvatar } from "@/components/domain/ProviderAvatar";
+import { DeclineJobModal } from "@/components/domain/DeclineJobModal";
 import { getCountry } from "@/components/domain/countryCookie";
-import { priceCountry } from "@/components/domain/providerMock";
+import { priceCountry } from "@/components/domain/pricing";
 import { db } from "@/lib/db";
 import { bookings, bookingChanges } from "@/lib/db/schema/bookings";
 import { providerProfiles } from "@/lib/db/schema/providers";
@@ -16,7 +16,8 @@ import { users } from "@/lib/db/schema/users";
 import { addresses } from "@/lib/db/schema/customer-data";
 import { services } from "@/lib/db/schema/services";
 import { getCurrentUser } from "@/lib/auth/server";
-import { notify } from "@/lib/notifications/server";
+import { notifyAndEmail } from "@/lib/notifications/server";
+import { buildBookingStatusEmail } from "@/components/domain/email";
 
 type DbStatus =
   | "pending"
@@ -109,21 +110,50 @@ async function jobAction(formData: FormData) {
       .from(bookings)
       .where(eq(bookings.id, id))
       .limit(1);
-    if (b?.customerId) {
-      const titles: Record<Action, string> = {
-        accept: "Provider accepted your booking",
-        decline: "Provider declined — please rebook",
-        start: "Your provider is on the way",
-        complete: "Your service is complete",
-      };
-      await notify({
+    if (!b?.customerId) return;
+
+    const titles: Record<Action, string> = {
+      accept: "Provider accepted your booking",
+      decline: "Provider declined — please rebook",
+      start: "Your provider is on the way",
+      complete: "Your service is complete",
+    };
+    const link = `/${locale}/bookings/${id}`;
+
+    if (action === "decline") {
+      await notifyAndEmail({
         userId: b.customerId,
         kind: "booking_update",
-        title: titles[action],
-        link: `/${locale}/bookings/${id}`,
+        title: titles.decline,
+        link,
         relatedBookingId: id,
+        email: buildBookingStatusEmail(
+          "cancelled",
+          process.env.NEXT_PUBLIC_APP_URL ?? "",
+          id,
+          locale,
+        ),
       });
+      return;
     }
+    const emailStatus = action === "accept"
+      ? "confirmed"
+      : action === "start"
+        ? "in_progress"
+        : "completed";
+    await notifyAndEmail({
+      userId: b.customerId,
+      kind: "booking_update",
+      title: titles[action],
+      link,
+      relatedBookingId: id,
+      email: buildBookingStatusEmail(
+        emailStatus,
+        process.env.NEXT_PUBLIC_APP_URL ?? "",
+        id,
+        locale,
+      ),
+    });
   });
   // After complete, leaving the provider on the same page is fine.
   // After decline, send them back to the jobs list.
@@ -142,13 +172,10 @@ function initialsOf(name: string | null, fallback: string): string {
 
 export default async function ProviderJobDetailPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale, id } = await params;
-  const sp = await searchParams;
   setRequestLocale(locale);
   const me = await getCurrentUser();
   if (!me) nextRedirect(`/${locale}/auth/login`);
@@ -190,7 +217,6 @@ export default async function ProviderJobDetailPage({
   if (!row) notFound();
   const status = row.status as DbStatus;
 
-  const declineMode = sp.decline === "1";
   const justCompleted = status === "completed";
   const isCancelled = status === "cancelled";
 
@@ -327,71 +353,15 @@ export default async function ProviderJobDetailPage({
           {t("reportProblem")}
         </Link>
 
-        {declineMode && status === "pending" && (
-          <form
-            action={jobAction}
-            className="mt-6 flex flex-col gap-4 rounded-lg border-2 border-danger bg-bg-base p-5"
-          >
-            <input type="hidden" name="locale" value={locale} />
-            <input type="hidden" name="id" value={row.id} />
-            <input type="hidden" name="action" value="decline" />
-            <h2 className="text-h3 text-danger">{t("declineTitle")}</h2>
-            <p className="text-[14px] text-text-secondary">
-              {t("declineHint")}
-            </p>
-            <fieldset>
-              <legend className="text-[14px] font-bold">
-                {t("declineReason")}
-              </legend>
-              <ul className="mt-2 flex flex-col gap-2">
-                {(
-                  [
-                    "declineReason1",
-                    "declineReason2",
-                    "declineReason3",
-                    "declineReason4",
-                  ] as const
-                ).map((k) => (
-                  <li key={k}>
-                    <label className="flex cursor-pointer items-center gap-3 rounded-md border-[1.5px] border-border bg-bg-base p-3.5 has-[:checked]:border-2 has-[:checked]:border-danger">
-                      <input
-                        type="radio"
-                        name="reason"
-                        value={k}
-                        required
-                        className="peer sr-only"
-                      />
-                      <span
-                        className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-border-strong after:hidden after:h-3 after:w-3 after:rounded-full after:bg-danger after:content-[''] peer-checked:border-danger peer-checked:after:block"
-                        aria-hidden
-                      />
-                      <span className="text-[15px]">{t(k)}</span>
-                    </label>
-                  </li>
-                ))}
-              </ul>
-            </fieldset>
-            <div className="flex gap-3">
-              <Link
-                href={`/provider/jobs/${row.id}`}
-                className="inline-flex h-12 flex-1 items-center justify-center rounded-md border-[1.5px] border-border-strong bg-bg-base text-[15px] font-semibold text-text-primary"
-              >
-                {tCommon("cancel")}
-              </Link>
-              <Button type="submit" variant="primary" size="md">
-                {t("jobDecline")}
-              </Button>
-            </div>
-          </form>
-        )}
       </main>
 
-      {!declineMode && !justCompleted && !isCancelled && (
+      {!justCompleted && !isCancelled && (
         <ActionBar
           locale={locale}
           jobId={row.id}
           status={status}
           t={t}
+          tCommon={tCommon}
         />
       )}
     </>
@@ -424,58 +394,67 @@ function ActionBar({
   jobId,
   status,
   t,
+  tCommon,
 }: {
   locale: string;
   jobId: string;
   status: DbStatus;
   t: Awaited<ReturnType<typeof getTranslations<"provider">>>;
+  tCommon: Awaited<ReturnType<typeof getTranslations<"common">>>;
 }) {
-  const acts: { key: Action; label: string; primary: boolean; danger?: boolean }[] =
+  const acts: { key: Action; label: string; primary: boolean }[] =
     status === "pending"
-      ? [
-          { key: "decline", label: t("jobDecline"), primary: false, danger: true },
-          { key: "accept", label: t("jobAccept"), primary: true },
-        ]
+      ? [{ key: "accept", label: t("jobAccept"), primary: true }]
       : status === "confirmed"
         ? [{ key: "start", label: t("jobOnTheWay"), primary: true }]
         : status === "in_progress"
           ? [{ key: "complete", label: t("jobComplete"), primary: true }]
           : [];
 
-  if (acts.length === 0) return null;
+  const showDecline = status === "pending";
+  if (acts.length === 0 && !showDecline) return null;
+
+  const declineStrings = {
+    triggerLabel: t("jobDecline"),
+    title: t("declineTitle"),
+    hint: t("declineHint"),
+    reasonLegend: t("declineReason"),
+    reasonOptions: (
+      ["declineReason1", "declineReason2", "declineReason3", "declineReason4"] as const
+    ).map((k) => ({ value: k, label: t(k) })),
+    cancel: tCommon("cancel"),
+    submit: t("jobDecline"),
+  };
 
   return (
     <div className="fixed inset-x-0 bottom-[84px] z-20 border-t border-border bg-bg-base px-5 py-3 sm:bottom-0">
       <div className="mx-auto flex max-w-content gap-3">
-        {acts.map((a) =>
-          a.key === "decline" ? (
-            <Link
-              key={a.key}
-              href={`/provider/jobs/${jobId}?decline=1`}
-              className="inline-flex h-12 flex-1 items-center justify-center rounded-md border-[1.5px] border-danger bg-bg-base text-[15px] font-bold text-danger"
-            >
-              <X size={18} className="mr-1" aria-hidden />
-              {a.label}
-            </Link>
-          ) : (
-            <form key={a.key} action={jobAction} className="flex-1">
-              <input type="hidden" name="locale" value={locale} />
-              <input type="hidden" name="id" value={jobId} />
-              <input type="hidden" name="action" value={a.key} />
-              <button
-                type="submit"
-                className={
-                  "inline-flex h-12 w-full items-center justify-center rounded-md text-[15px] font-bold " +
-                  (a.primary
-                    ? "bg-brand text-white"
-                    : "border-[1.5px] border-border-strong bg-bg-base text-text-primary")
-                }
-              >
-                {a.label}
-              </button>
-            </form>
-          ),
+        {showDecline && (
+          <DeclineJobModal
+            action={jobAction}
+            locale={locale}
+            jobId={jobId}
+            strings={declineStrings}
+          />
         )}
+        {acts.map((a) => (
+          <form key={a.key} action={jobAction} className="flex-1">
+            <input type="hidden" name="locale" value={locale} />
+            <input type="hidden" name="id" value={jobId} />
+            <input type="hidden" name="action" value={a.key} />
+            <button
+              type="submit"
+              className={
+                "inline-flex h-12 w-full items-center justify-center rounded-md text-[15px] font-bold " +
+                (a.primary
+                  ? "bg-brand text-white"
+                  : "border-[1.5px] border-border-strong bg-bg-base text-text-primary")
+              }
+            >
+              {a.label}
+            </button>
+          </form>
+        ))}
       </div>
     </div>
   );

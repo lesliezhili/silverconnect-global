@@ -6,7 +6,7 @@ import { redirect } from "@/i18n/navigation";
 import { Button } from "@/components/ui/Button";
 import { getCountry } from "@/components/domain/countryCookie";
 import { getSession } from "@/components/domain/sessionCookie";
-import { priceCountry } from "@/components/domain/providerMock";
+import { priceCountry } from "@/components/domain/pricing";
 
 interface PayoutItem {
   id: string;

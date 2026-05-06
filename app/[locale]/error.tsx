@@ -18,7 +18,7 @@ export default function LocaleErrorBoundary({
   React.useEffect(() => {
     Sentry.captureException(error);
     if (process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console
+       
       console.error("[error.tsx]", error);
     }
   }, [error]);

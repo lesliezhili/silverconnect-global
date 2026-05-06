@@ -1,10 +1,17 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import { redirect as nextRedirect } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { eq, and, gte, lte } from "drizzle-orm";
 import { Header } from "@/components/layout/Header";
-import { Link, redirect } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
 import { getCountry } from "@/components/domain/countryCookie";
-import { getSession } from "@/components/domain/sessionCookie";
-import { MOCK_JOBS } from "@/components/domain/providerMock";
+import { db } from "@/lib/db";
+import { bookings } from "@/lib/db/schema/bookings";
+import {
+  providerProfiles,
+  providerBlockedTimes,
+} from "@/lib/db/schema/providers";
+import { getCurrentUser } from "@/lib/auth/server";
 
 type DayKind = "booked" | "available" | "blocked" | "muted";
 
@@ -27,15 +34,20 @@ function buildGrid(y: number, m: number): { date: Date; inMonth: boolean }[] {
   });
 }
 
-const BLOCKED_HARDCODED = new Set<string>([
-  // ISO date keys YYYY-MM-DD that we treat as "blocked" for demo (vacation)
-]);
+function dayKey(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
 
-function dayKind(date: Date, jobDates: Set<string>, inMonth: boolean): DayKind {
+function dayKind(
+  date: Date,
+  jobDates: Set<string>,
+  blockedDates: Set<string>,
+  inMonth: boolean,
+): DayKind {
   if (!inMonth) return "muted";
-  const k = date.toISOString().slice(0, 10);
+  const k = dayKey(date);
   if (jobDates.has(k)) return "booked";
-  if (BLOCKED_HARDCODED.has(k)) return "blocked";
+  if (blockedDates.has(k)) return "blocked";
   return "available";
 }
 
@@ -49,18 +61,61 @@ export default async function ProviderCalendarPage({
   const { locale } = await params;
   const sp = await searchParams;
   setRequestLocale(locale);
-  const session = await getSession();
-  if (!session.signedIn) redirect({ href: "/auth/login", locale });
+  const me = await getCurrentUser();
+  if (!me) nextRedirect(`/${locale}/auth/login`);
+  if (me.role !== "provider") nextRedirect(`/${locale}/home`);
   const country = await getCountry();
   const t = await getTranslations("provider");
 
   const { y, m } = parseYM(sp.ym);
   const grid = buildGrid(y, m);
-  const jobDates = new Set(MOCK_JOBS.map((j) => j.startISO.slice(0, 10)));
+  const monthStart = new Date(y, m, 1);
+  const monthEnd = new Date(y, m + 1, 0, 23, 59, 59, 999);
+
+  const [profile] = await db
+    .select({ id: providerProfiles.id })
+    .from(providerProfiles)
+    .where(eq(providerProfiles.userId, me.id))
+    .limit(1);
+
+  let jobDates = new Set<string>();
+  const blockedDates = new Set<string>();
+
+  if (profile) {
+    const jobRows = await db
+      .select({ scheduledAt: bookings.scheduledAt })
+      .from(bookings)
+      .where(
+        and(
+          eq(bookings.providerId, profile.id),
+          gte(bookings.scheduledAt, monthStart),
+          lte(bookings.scheduledAt, monthEnd),
+        ),
+      );
+    jobDates = new Set(jobRows.map((r) => dayKey(r.scheduledAt)));
+
+    const blockedRows = await db
+      .select({
+        startsAt: providerBlockedTimes.startsAt,
+        endsAt: providerBlockedTimes.endsAt,
+      })
+      .from(providerBlockedTimes)
+      .where(eq(providerBlockedTimes.providerId, profile.id));
+    for (const b of blockedRows) {
+      const start = b.startsAt > monthStart ? b.startsAt : monthStart;
+      const end = b.endsAt < monthEnd ? b.endsAt : monthEnd;
+      const cursor = new Date(start);
+      cursor.setHours(0, 0, 0, 0);
+      while (cursor <= end) {
+        blockedDates.add(dayKey(cursor));
+        cursor.setDate(cursor.getDate() + 1);
+      }
+    }
+  }
 
   const monthLabel = new Date(y, m, 1).toLocaleDateString(
     locale === "zh" ? "zh-CN" : "en-AU",
-    { year: "numeric", month: "long" }
+    { year: "numeric", month: "long" },
   );
 
   const prev = new Date(y, m - 1, 1);
@@ -68,15 +123,19 @@ export default async function ProviderCalendarPage({
   const fmtYM = (d: Date) =>
     `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 
-  const dayKeys = ["weekMon", "weekTue", "weekWed", "weekThu", "weekFri", "weekSat", "weekSun"] as const;
+  const dayKeys = [
+    "weekMon",
+    "weekTue",
+    "weekWed",
+    "weekThu",
+    "weekFri",
+    "weekSat",
+    "weekSun",
+  ] as const;
 
   return (
     <>
-      <Header
-        country={country}
-        signedIn={session.signedIn}
-        initials={session.initials}
-      />
+      <Header country={country} signedIn={true} initials={me.initials} />
       <main
         id="main-content"
         className="mx-auto w-full max-w-content px-5 pb-[120px] pt-6 sm:pb-12"
@@ -111,7 +170,7 @@ export default async function ProviderCalendarPage({
 
         <div className="mt-1 grid grid-cols-7 gap-1">
           {grid.map(({ date, inMonth }) => {
-            const k = dayKind(date, jobDates, inMonth);
+            const k = dayKind(date, jobDates, blockedDates, inMonth);
             return (
               <Link
                 key={date.toISOString()}
@@ -123,7 +182,10 @@ export default async function ProviderCalendarPage({
                   {date.getDate()}
                 </span>
                 {k === "booked" && (
-                  <span aria-hidden className="mt-0.5 h-1 w-1 rounded-full bg-brand" />
+                  <span
+                    aria-hidden
+                    className="mt-0.5 h-1 w-1 rounded-full bg-brand"
+                  />
                 )}
               </Link>
             );
@@ -145,7 +207,8 @@ function cellClass(k: DayKind) {
     "flex h-12 flex-col items-center justify-center rounded-md text-[14px] font-semibold tabular-nums";
   if (k === "muted") return `${base} bg-bg-base text-text-tertiary`;
   if (k === "booked") return `${base} bg-brand-soft text-brand`;
-  if (k === "blocked") return `${base} bg-bg-surface-2 text-text-tertiary line-through`;
+  if (k === "blocked")
+    return `${base} bg-bg-surface-2 text-text-tertiary line-through`;
   return `${base} bg-bg-base text-text-primary border border-border`;
 }
 

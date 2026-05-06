@@ -159,12 +159,14 @@ export default async function ProfileSecurityPage({
               </div>
             </li>
           </ul>
-          <a
-            href={`/${locale}/auth/logout`}
-            className="mt-3 inline-flex h-12 w-full items-center justify-center rounded-md border-[1.5px] border-danger bg-bg-base text-[15px] font-bold text-danger"
-          >
-            {t("signOutAll")}
-          </a>
+          <form action={`/${locale}/auth/logout`} method="POST">
+            <button
+              type="submit"
+              className="mt-3 inline-flex h-12 w-full items-center justify-center rounded-md border-[1.5px] border-danger bg-bg-base text-[15px] font-bold text-danger"
+            >
+              {t("signOutAll")}
+            </button>
+          </form>
         </section>
       </main>
     </>

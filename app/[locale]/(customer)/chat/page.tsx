@@ -116,7 +116,7 @@ async function sendMessageAction(formData: FormData) {
         tokens: result.completionTokens ?? null,
       });
     } else {
-      // eslint-disable-next-line no-console
+       
       console.error("[chat] GLM call failed:", result.reason);
       await db.insert(aiMessages).values({
         conversationId: conv.id,

@@ -104,20 +104,22 @@ export default async function ProfilePage({
           ))}
         </ul>
 
-        <Link
-          href="/auth/logout"
-          className="mt-4 flex min-h-[72px] w-full items-center gap-4 overflow-hidden rounded-lg border border-border bg-bg-base px-4 py-3"
-        >
-          <span
-            aria-hidden
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-danger-soft text-danger"
+        <form action="/auth/logout" method="POST">
+          <button
+            type="submit"
+            className="mt-4 flex min-h-[72px] w-full items-center gap-4 overflow-hidden rounded-lg border border-border bg-bg-base px-4 py-3 text-left"
           >
-            <LogOut size={22} />
-          </span>
-          <span className="flex-1 text-[16px] font-bold text-danger">
-            {tItems("signOut")}
-          </span>
-        </Link>
+            <span
+              aria-hidden
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-danger-soft text-danger"
+            >
+              <LogOut size={22} />
+            </span>
+            <span className="flex-1 text-[16px] font-bold text-danger">
+              {tItems("signOut")}
+            </span>
+          </button>
+        </form>
       </main>
     </>
   );

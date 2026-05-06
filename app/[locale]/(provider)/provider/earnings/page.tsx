@@ -5,7 +5,7 @@ import { Download } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Link } from "@/i18n/navigation";
 import { getCountry } from "@/components/domain/countryCookie";
-import { priceCountry } from "@/components/domain/providerMock";
+import { priceCountry } from "@/components/domain/pricing";
 import { db } from "@/lib/db";
 import { bookings } from "@/lib/db/schema/bookings";
 import { providerProfiles } from "@/lib/db/schema/providers";

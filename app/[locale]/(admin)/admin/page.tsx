@@ -9,10 +9,16 @@ import {
   AlertTriangle,
   ArrowRight,
 } from "lucide-react";
+import { and, eq, gte, sql } from "drizzle-orm";
 import { Link, redirect } from "@/i18n/navigation";
 import { AdminShell } from "@/components/layout/AdminShell";
 import { getAdmin } from "@/components/domain/adminCookie";
-import { ADMIN_KPI, ADMIN_ALERTS } from "@/components/domain/adminMock";
+import { db } from "@/lib/db";
+import { bookings } from "@/lib/db/schema/bookings";
+import { disputes } from "@/lib/db/schema/disputes";
+import { providerProfiles } from "@/lib/db/schema/providers";
+import { safetyEvents } from "@/lib/db/schema/safety";
+import { aiConversations } from "@/lib/db/schema/ai";
 
 export default async function AdminOverviewPage({
   params,
@@ -25,31 +31,101 @@ export default async function AdminOverviewPage({
   if (!admin.signedIn) redirect({ href: "/admin/login", locale });
   const t = await getTranslations("admin");
 
+  const now = new Date();
+  const startOfDay = new Date(now);
+  startOfDay.setHours(0, 0, 0, 0);
+  const sevenDaysAgo = new Date(now);
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  const [newOrdersRow] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(bookings)
+    .where(gte(bookings.createdAt, startOfDay));
+  const [openDisputesRow] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(disputes)
+    .where(eq(disputes.status, "open"));
+  const [pendingProvidersRow] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(providerProfiles)
+    .where(eq(providerProfiles.onboardingStatus, "pending"));
+  const [openSafetyRow] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(safetyEvents)
+    .where(eq(safetyEvents.status, "open"));
+  const [gmvRow] = await db
+    .select({
+      total: sql<number>`coalesce(sum(${bookings.totalPrice}::numeric), 0)::float`,
+    })
+    .from(bookings)
+    .where(
+      and(
+        gte(bookings.createdAt, sevenDaysAgo),
+        sql`${bookings.status} in ('completed','released')`,
+      ),
+    );
+  const [aiAgg] = await db
+    .select({
+      total: sql<number>`count(*)::int`,
+      resolved: sql<number>`count(*) filter (where ${aiConversations.closedAt} is not null)::int`,
+    })
+    .from(aiConversations)
+    .where(gte(aiConversations.createdAt, sevenDaysAgo));
+  const aiResolutionRate =
+    aiAgg && aiAgg.total > 0 ? aiAgg.resolved / aiAgg.total : 0;
+
+  const newOrdersToday = newOrdersRow?.n ?? 0;
+  const openDisputes = openDisputesRow?.n ?? 0;
+  const pendingProviders = pendingProvidersRow?.n ?? 0;
+  const safetyEventsCount = openSafetyRow?.n ?? 0;
+  const gmvWeek = Number(gmvRow?.total ?? 0);
+
+  const alerts: { key: string; severity: "warn" | "danger" }[] = [];
+  if (safetyEventsCount > 0)
+    alerts.push({ key: "alertSafetyOpen", severity: "danger" });
+  if (openDisputes >= 5)
+    alerts.push({ key: "alertWebhookLag", severity: "warn" });
+
   const kpis = [
-    { Icon: ShoppingBag, label: t("kpiNewOrders"), value: ADMIN_KPI.newOrdersToday, hint: "today" },
-    { Icon: Scale, label: t("kpiOpenDisputes"), value: ADMIN_KPI.openDisputes, accent: ADMIN_KPI.openDisputes > 0 },
-    { Icon: Users, label: t("kpiPendingProviders"), value: ADMIN_KPI.pendingProviders },
-    { Icon: ShieldAlert, label: t("kpiSafetyEvents"), value: ADMIN_KPI.safetyEvents, accent: ADMIN_KPI.safetyEvents > 0 },
+    { Icon: ShoppingBag, label: t("kpiNewOrders"), value: newOrdersToday, hint: "today" },
+    {
+      Icon: Scale,
+      label: t("kpiOpenDisputes"),
+      value: openDisputes,
+      accent: openDisputes > 0,
+    },
+    {
+      Icon: Users,
+      label: t("kpiPendingProviders"),
+      value: pendingProviders,
+    },
+    {
+      Icon: ShieldAlert,
+      label: t("kpiSafetyEvents"),
+      value: safetyEventsCount,
+      accent: safetyEventsCount > 0,
+    },
     {
       Icon: TrendingUp,
       label: t("kpiGmv"),
-      value: `$${ADMIN_KPI.gmvWeek.toLocaleString(locale === "zh" ? "zh-CN" : "en-AU")}`,
+      value: `$${gmvWeek.toLocaleString(locale === "zh" ? "zh-CN" : "en-AU", { maximumFractionDigits: 0 })}`,
     },
     {
       Icon: Bot,
       label: t("kpiAi"),
-      value: `${Math.round(ADMIN_KPI.aiResolutionRate * 100)}%`,
+      value: `${Math.round(aiResolutionRate * 100)}%`,
     },
   ];
+
 
   return (
     <AdminShell email={admin.email ?? ""}>
       <h1 className="text-h2">{t("overviewTitle")}</h1>
 
       {/* Alerts */}
-      {ADMIN_ALERTS.length > 0 && (
+      {alerts.length > 0 && (
         <ul className="mt-4 flex flex-col gap-2">
-          {ADMIN_ALERTS.map((a) => (
+          {alerts.map((a) => (
             <li
               key={a.key}
               className={
@@ -60,7 +136,9 @@ export default async function AdminOverviewPage({
               }
             >
               <AlertTriangle size={18} className="mt-0.5 shrink-0" aria-hidden />
-              <span className="font-semibold">{t(a.key as Parameters<typeof t>[0])}</span>
+              <span className="font-semibold">
+                {t(a.key as Parameters<typeof t>[0])}
+              </span>
             </li>
           ))}
         </ul>

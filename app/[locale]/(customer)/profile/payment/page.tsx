@@ -1,10 +1,11 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect as nextRedirect } from "next/navigation";
 import { eq, and } from "drizzle-orm";
-import { CreditCard, Plus, Trash2, Lock } from "lucide-react";
+import { CreditCard, Plus, Lock } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Link } from "@/i18n/navigation";
 import { getCountry } from "@/components/domain/countryCookie";
+import { DeleteCardConfirm } from "@/components/domain/DeleteCardConfirm";
 import { EmptyState } from "@/components/domain/PageStates";
 import { db } from "@/lib/db";
 import { paymentMethods } from "@/lib/db/schema/customer-data";
@@ -55,6 +56,7 @@ export default async function ProfilePaymentPage({
   if (!me) nextRedirect(`/${locale}/auth/login`);
   const country = await getCountry();
   const t = await getTranslations("paymentMethods");
+  const tCommon = await getTranslations("common");
 
   const items = await db
     .select()
@@ -142,17 +144,18 @@ export default async function ProfilePaymentPage({
                     </button>
                   </form>
                 )}
-                <form action={deleteCardAction}>
-                  <input type="hidden" name="locale" value={locale} />
-                  <input type="hidden" name="id" value={c.id} />
-                  <button
-                    type="submit"
-                    aria-label={t("delete")}
-                    className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border-[1.5px] border-danger bg-bg-base text-danger"
-                  >
-                    <Trash2 size={16} aria-hidden />
-                  </button>
-                </form>
+                <DeleteCardConfirm
+                  action={deleteCardAction}
+                  locale={locale}
+                  cardId={c.id}
+                  strings={{
+                    triggerAriaLabel: t("delete"),
+                    title: t("deleteCardTitle"),
+                    body: t("deleteCardBody", { last4: c.last4 ?? "????" }),
+                    cancel: tCommon("cancel"),
+                    confirm: t("delete"),
+                  }}
+                />
               </li>
             ))}
           </ul>

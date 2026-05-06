@@ -1,22 +1,23 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect as nextRedirect } from "next/navigation";
 import { Check, Flag } from "lucide-react";
+import { eq, isNull, desc, inArray } from "drizzle-orm";
 import { redirect } from "@/i18n/navigation";
 import { AdminShell } from "@/components/layout/AdminShell";
 import { Button } from "@/components/ui/Button";
 import { getAdmin } from "@/components/domain/adminCookie";
-import {
-  MOCK_REVIEW_REPORTS,
-  type AdminReviewReport,
-} from "@/components/domain/adminMock";
+import { getCurrentUser } from "@/lib/auth/server";
+import { db } from "@/lib/db";
+import { reviews, reviewReports } from "@/lib/db/schema/reviews";
+import { users } from "@/lib/db/schema/users";
 
-const REASON_KEYS: Record<
-  AdminReviewReport["reason"],
-  "reasonSpam" | "reasonOffensive" | "reasonFalse" | "reasonOther"
-> = {
+type ReportReason = "spam" | "abusive" | "false" | "off_topic" | "other";
+
+const REASON_KEYS: Record<ReportReason, string> = {
   spam: "reasonSpam",
-  offensive: "reasonOffensive",
+  abusive: "reasonAbusive",
   false: "reasonFalse",
+  off_topic: "reasonOffTopic",
   other: "reasonOther",
 };
 
@@ -24,6 +25,49 @@ async function reportAction(formData: FormData) {
   "use server";
   const locale = String(formData.get("locale") ?? "en");
   const id = String(formData.get("id") ?? "");
+  const action = String(formData.get("action") ?? "");
+  const me = await getCurrentUser();
+  if (!me || me.role !== "admin") {
+    nextRedirect(`/${locale}/admin/login`);
+  }
+  if (!id || !["keep", "delete", "warn"].includes(action)) {
+    nextRedirect(`/${locale}/admin/reports?error=invalid`);
+  }
+
+  const [report] = await db
+    .select({ id: reviewReports.id, reviewId: reviewReports.reviewId })
+    .from(reviewReports)
+    .where(eq(reviewReports.id, id))
+    .limit(1);
+  if (!report) {
+    nextRedirect(`/${locale}/admin/reports?error=missing`);
+  }
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(reviewReports)
+      .set({
+        resolvedAt: new Date(),
+        resolvedBy: me.id,
+        resolutionAction: action,
+      })
+      .where(eq(reviewReports.id, id));
+
+    if (action === "delete") {
+      await tx
+        .update(reviews)
+        .set({ status: "removed", updatedAt: new Date() })
+        .where(eq(reviews.id, report.reviewId));
+    } else if (action === "keep") {
+      await tx
+        .update(reviews)
+        .set({ status: "published", updatedAt: new Date() })
+        .where(eq(reviews.id, report.reviewId));
+    }
+    // For "warn": leave the review's status as-is; warning the user is
+    // an out-of-band action (admin contacts them separately).
+  });
+
   nextRedirect(`/${locale}/admin/reports?applied=${id}`);
 }
 
@@ -44,6 +88,40 @@ export default async function AdminReportsPage({
 
   const applied = typeof sp.applied === "string" ? sp.applied : null;
 
+  const rows = await db
+    .select({
+      id: reviewReports.id,
+      reviewId: reviewReports.reviewId,
+      reason: reviewReports.reason,
+      details: reviewReports.details,
+      reporterId: reviewReports.reporterId,
+      createdAt: reviewReports.createdAt,
+      reviewBody: reviews.comment,
+      reviewRating: reviews.rating,
+      reviewCustomerId: reviews.customerId,
+    })
+    .from(reviewReports)
+    .leftJoin(reviews, eq(reviews.id, reviewReports.reviewId))
+    .where(isNull(reviewReports.resolvedAt))
+    .orderBy(desc(reviewReports.createdAt));
+
+  const userIds = Array.from(
+    new Set(
+      rows
+        .flatMap((r) => [r.reporterId, r.reviewCustomerId])
+        .filter(Boolean) as string[],
+    ),
+  );
+  const userRows = userIds.length
+    ? await db
+        .select({ id: users.id, name: users.name, email: users.email })
+        .from(users)
+        .where(inArray(users.id, userIds))
+    : [];
+  const userMap = new Map(
+    userRows.map((u) => [u.id, u.name || u.email.split("@")[0]]),
+  );
+
   return (
     <AdminShell email={admin.email ?? ""}>
       <h1 className="text-h2">{tR("title")}</h1>
@@ -58,13 +136,13 @@ export default async function AdminReportsPage({
         </div>
       )}
 
-      {MOCK_REVIEW_REPORTS.length === 0 ? (
+      {rows.length === 0 ? (
         <p className="mt-6 rounded-lg border border-border bg-bg-base px-5 py-8 text-center text-[14px] text-text-tertiary">
           {tR("empty")}
         </p>
       ) : (
         <ul className="mt-5 flex flex-col gap-3">
-          {MOCK_REVIEW_REPORTS.map((r) => (
+          {rows.map((r) => (
             <li
               key={r.id}
               className="rounded-lg border border-border bg-bg-base p-4"
@@ -78,22 +156,44 @@ export default async function AdminReportsPage({
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="text-[12px] font-bold uppercase tracking-wide text-text-tertiary tabular-nums">
-                    {r.id} · {r.reviewId}
+                    {r.id.slice(0, 8)} · {r.reviewId.slice(0, 8)}
                   </p>
                   <p className="mt-1 text-[13px] text-text-secondary">
-                    {tR("reportedReview")} · {r.reviewAuthor}
+                    {tR("reportedReview")} ·{" "}
+                    {r.reviewCustomerId
+                      ? userMap.get(r.reviewCustomerId) ?? "—"
+                      : "—"}
+                    {" · "}
+                    {r.reviewRating ? `${r.reviewRating}★` : "—"}
                   </p>
-                  <blockquote className="mt-2 rounded-md border-l-2 border-border-strong bg-bg-surface-2 px-3 py-2 text-[14px] italic text-text-primary">
-                    {r.reviewBody}
-                  </blockquote>
+                  {r.reviewBody && (
+                    <blockquote className="mt-2 rounded-md border-l-2 border-border-strong bg-bg-surface-2 px-3 py-2 text-[14px] italic text-text-primary">
+                      {r.reviewBody}
+                    </blockquote>
+                  )}
                   <p className="mt-2 text-[13px]">
                     <span className="text-text-tertiary">{tR("reporter")}:</span>{" "}
-                    <span className="font-semibold">{r.reportedBy}</span>
+                    <span className="font-semibold">
+                      {r.reporterId
+                        ? userMap.get(r.reporterId) ?? "—"
+                        : "—"}
+                    </span>
                   </p>
                   <p className="mt-1 text-[13px]">
                     <span className="text-text-tertiary">{tR("reason")}:</span>{" "}
-                    <span className="font-semibold">{tR(REASON_KEYS[r.reason])}</span>
+                    <span className="font-semibold">
+                      {tR(
+                        REASON_KEYS[r.reason as ReportReason] as Parameters<
+                          typeof tR
+                        >[0],
+                      )}
+                    </span>
                   </p>
+                  {r.details && (
+                    <p className="mt-1 text-[13px] text-text-secondary">
+                      {r.details}
+                    </p>
+                  )}
                 </div>
               </div>
               <form

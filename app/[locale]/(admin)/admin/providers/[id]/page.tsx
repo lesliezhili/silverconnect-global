@@ -21,7 +21,8 @@ import { reviews } from "@/lib/db/schema/reviews";
 import { disputes } from "@/lib/db/schema/disputes";
 import { wallets } from "@/lib/db/schema/payments";
 import { findUserByEmail } from "@/lib/auth/server";
-import { notify } from "@/lib/notifications/server";
+import { notify, notifyAndEmail } from "@/lib/notifications/server";
+import { buildProviderApprovalEmail } from "@/components/domain/email";
 
 type DbStatus =
   | "pending"
@@ -128,12 +129,36 @@ async function providerDecisionAction(formData: FormData) {
       suspend: "Your provider account has been suspended",
       resume: "Your provider account has been reinstated",
     };
+    const link = `/${locale}/provider/onboarding-status`;
+
+    if (action === "approve" || action === "reject") {
+      const [u] = await db
+        .select({ locale: users.locale })
+        .from(users)
+        .where(eq(users.id, row.userId))
+        .limit(1);
+      const userLocale = u?.locale ?? "en";
+      await notifyAndEmail({
+        userId: row.userId,
+        kind: "system",
+        title: titles[action],
+        body: note || undefined,
+        link,
+        email: buildProviderApprovalEmail(
+          process.env.NEXT_PUBLIC_APP_URL ?? "",
+          userLocale,
+          action === "approve",
+          note || undefined,
+        ),
+      });
+      return;
+    }
     await notify({
       userId: row.userId,
       kind: "system",
       title: titles[action],
       body: note || undefined,
-      link: `/${locale}/provider/onboarding-status`,
+      link,
     });
   });
 

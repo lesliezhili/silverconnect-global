@@ -28,7 +28,7 @@ async function resendAction(formData: FormData) {
   after(async () => {
     const result = await sendEmail({ to: email, subject, text, html });
     if (!result.ok) {
-      // eslint-disable-next-line no-console
+       
       console.error("[resend] sendEmail failed:", result.reason);
     }
   });

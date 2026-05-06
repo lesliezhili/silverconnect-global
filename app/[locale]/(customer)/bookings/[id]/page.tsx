@@ -21,7 +21,9 @@ import { users } from "@/lib/db/schema/users";
 import { addresses } from "@/lib/db/schema/customer-data";
 import { services } from "@/lib/db/schema/services";
 import { getCurrentUser } from "@/lib/auth/server";
-import { notify } from "@/lib/notifications/server";
+import { notify, notifyAndEmail } from "@/lib/notifications/server";
+import { buildBookingStatusEmail } from "@/components/domain/email";
+import { RescheduleModal } from "@/components/domain/RescheduleModal";
 
 type DbStatus =
   | "pending"
@@ -61,6 +63,96 @@ function initialsOf(name: string | null, fallback: string): string {
   const parts = src.split(/\s+/).filter(Boolean);
   if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
   return (src.slice(0, 2) || "?").toUpperCase();
+}
+
+async function rescheduleBookingAction(formData: FormData) {
+  "use server";
+  const locale = String(formData.get("locale") ?? "en");
+  const id = String(formData.get("id") ?? "");
+  const date = String(formData.get("date") ?? "");
+  const time = String(formData.get("time") ?? "");
+  const me = await getCurrentUser();
+  if (!me) nextRedirect(`/${locale}/auth/login`);
+  if (!id || !date || !time) {
+    nextRedirect(`/${locale}/bookings/${id}?error=reschedule_invalid`);
+  }
+  const target = new Date(`${date}T${time}:00`);
+  if (Number.isNaN(target.getTime())) {
+    nextRedirect(`/${locale}/bookings/${id}?error=reschedule_invalid`);
+  }
+  const now = new Date();
+  const minMs = 4 * 60 * 60 * 1000;
+  const maxMs = 30 * 24 * 60 * 60 * 1000;
+  if (target.getTime() < now.getTime() + minMs) {
+    nextRedirect(`/${locale}/bookings/${id}?error=reschedule_too_soon`);
+  }
+  if (target.getTime() > now.getTime() + maxMs) {
+    nextRedirect(`/${locale}/bookings/${id}?error=reschedule_too_far`);
+  }
+
+  const [row] = await db
+    .select({
+      id: bookings.id,
+      status: bookings.status,
+      scheduledAt: bookings.scheduledAt,
+    })
+    .from(bookings)
+    .where(and(eq(bookings.id, id), eq(bookings.customerId, me.id)))
+    .limit(1);
+  if (!row) nextRedirect(`/${locale}/bookings`);
+  const reschedulable: DbStatus[] = ["pending", "confirmed"];
+  if (!(reschedulable as string[]).includes(row.status)) {
+    nextRedirect(`/${locale}/bookings/${id}?error=reschedule_bad_status`);
+  }
+
+  const fromIso = row.scheduledAt.toISOString();
+  await db.transaction(async (tx) => {
+    await tx
+      .update(bookings)
+      .set({ scheduledAt: target, updatedAt: new Date() })
+      .where(eq(bookings.id, id));
+    await tx.insert(bookingChanges).values({
+      bookingId: id,
+      type: "reschedule",
+      fromStatus: row.status as DbStatus,
+      toStatus: row.status as DbStatus,
+      actorId: me.id,
+      note: `Customer reschedule: ${fromIso} → ${target.toISOString()}`,
+    });
+  });
+
+  after(async () => {
+    const [b] = await db
+      .select({ providerId: bookings.providerId })
+      .from(bookings)
+      .where(eq(bookings.id, id))
+      .limit(1);
+    if (!b?.providerId) return;
+    const [p] = await db
+      .select({ userId: providerProfiles.userId, locale: users.locale })
+      .from(providerProfiles)
+      .leftJoin(users, eq(users.id, providerProfiles.userId))
+      .where(eq(providerProfiles.id, b.providerId))
+      .limit(1);
+    if (!p?.userId) return;
+    const userLocale = p.locale ?? "en";
+    await notifyAndEmail({
+      userId: p.userId,
+      kind: "booking_update",
+      title: "Booking rescheduled",
+      body: `Customer rescheduled to ${target.toLocaleString(userLocale === "zh" ? "zh-CN" : "en-AU")}.`,
+      link: `/${locale}/provider/jobs/${id}`,
+      relatedBookingId: id,
+      email: buildBookingStatusEmail(
+        "confirmed",
+        process.env.NEXT_PUBLIC_APP_URL ?? "",
+        id,
+        userLocale,
+      ),
+    });
+  });
+
+  nextRedirect(`/${locale}/bookings/${id}?rescheduled=1`);
 }
 
 async function cancelBookingAction(formData: FormData) {
@@ -198,6 +290,20 @@ export default async function BookingDetailPage({
 
   const cancellable: DbStatus[] = ["pending", "confirmed"];
   const showCancel = (cancellable as string[]).includes(status);
+  const showReschedule = showCancel;
+
+  const minMs = 4 * 60 * 60 * 1000;
+  const nowMs = new Date().getTime();
+  const rescheduleDefault = new Date(
+    Math.max(row.scheduledAt.getTime(), nowMs + minMs + 60_000),
+  );
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const defaultDate = `${rescheduleDefault.getFullYear()}-${pad(rescheduleDefault.getMonth() + 1)}-${pad(rescheduleDefault.getDate())}`;
+  const defaultTime = `${pad(rescheduleDefault.getHours())}:${pad(rescheduleDefault.getMinutes())}`;
+  const tomorrow = new Date(nowMs + minMs);
+  const minDate = `${tomorrow.getFullYear()}-${pad(tomorrow.getMonth() + 1)}-${pad(tomorrow.getDate())}`;
+  const maxBound = new Date(nowMs + 30 * 24 * 60 * 60 * 1000);
+  const maxDate = `${maxBound.getFullYear()}-${pad(maxBound.getMonth() + 1)}-${pad(maxBound.getDate())}`;
 
   const cancelBar =
     status === "confirmed" ? (
@@ -306,6 +412,26 @@ export default async function BookingDetailPage({
               <X size={22} aria-hidden />
             </button>
           </form>
+        )}
+        {showReschedule && (
+          <RescheduleModal
+            action={rescheduleBookingAction}
+            locale={locale}
+            bookingId={id}
+            defaultDate={defaultDate}
+            defaultTime={defaultTime}
+            minDate={minDate}
+            maxDate={maxDate}
+            strings={{
+              triggerLabel: t("rescheduleCta"),
+              title: t("rescheduleTitle"),
+              hint: t("rescheduleHint"),
+              dateLabel: t("rescheduleNewDate"),
+              timeLabel: t("rescheduleNewTime"),
+              cancel: tCommon("cancel"),
+              submit: t("rescheduleConfirm"),
+            }}
+          />
         )}
         {status === "pending" ? (
           <Link

@@ -270,7 +270,19 @@
     "calendarNext": "下一个月",
     "reviewStars": "{n} 星",
     "errorAllRequired": "请填写所有必填项。",
-    "errorPickCategory": "请至少选择一个服务类别。"
+    "errorPickCategory": "请至少选择一个服务类别。",
+    "reportTitle": "举报这条评价",
+    "reportHint": "告诉我们为什么这条评价违规，管理员会核查。",
+    "reportReason": "原因",
+    "reportReasonSpam": "垃圾/虚假",
+    "reportReasonAbusive": "辱骂言语",
+    "reportReasonFalse": "失实陈述",
+    "reportReasonOffTopic": "与服务无关",
+    "reportReasonOther": "其他",
+    "reportDetails": "补充说明（选填）",
+    "reportSubmit": "提交举报",
+    "reportSent": "举报已提交，感谢您的反馈。",
+    "reportTriggerLabel": "举报评价"
   },
   "booking": {
     "steps": {
@@ -322,7 +334,7 @@
       "refunded": "查看退款详情"
     },
     "status": {
-      "pending": "等待支付",
+      "pending": "等待确认",
       "confirmed": "已确认",
       "inProgress": "进行中",
       "awaitingConfirm": "等待您确认完成",
@@ -330,7 +342,17 @@
       "cancelledFull": "已取消 · 全额退款",
       "cancelledPartial": "已取消 · 部分退款",
       "refunded": "已退款"
-    }
+    },
+    "rescheduleTitle": "改约时间",
+    "rescheduleHint": "选择新的日期和时间，服务者会收到更新。",
+    "rescheduleNewDate": "新日期",
+    "rescheduleNewTime": "新时间",
+    "rescheduleConfirm": "确认新时间",
+    "rescheduleErrorTooSoon": "新时间需至少在 4 小时之后。",
+    "rescheduleErrorTooFar": "最多改约到 30 天之内。",
+    "rescheduleErrorBadStatus": "该预约已无法改约。",
+    "rescheduleSuccess": "已成功改约。",
+    "rescheduleCta": "改约"
   },
   "payment": {
     "title": "支付方式",
@@ -535,12 +557,13 @@
     "default": "默认",
     "setDefault": "设为默认",
     "delete": "删除",
-    "deleteConfirm": "删除这张卡？",
     "empty": "还没有绑定的卡",
     "emptyHint": "添加一张卡，下次预订更快。",
     "secureNote": "卡片由 Stripe 加密存储，本站从不接触完整卡号。",
     "expires": "到期 {month}/{year}",
-    "endingIn": "···· {last4}"
+    "endingIn": "···· {last4}",
+    "deleteCardTitle": "删除这张卡？",
+    "deleteCardBody": "尾号 {last4} 的银行卡会从你的账户里移除，之后可以重新添加。"
   },
   "favourites": {
     "title": "收藏的 Provider",
@@ -857,7 +880,8 @@
     "navPayments": "支付",
     "navAi": "AI",
     "navSettings": "系统设置",
-    "navReports": "举报"
+    "navReports": "举报",
+    "alertSafetyOpen": "有安全事件待处理"
   },
   "family": {
     "title": "家属共管",
@@ -1028,7 +1052,16 @@
     "kbBody": "正文",
     "kbSave": "保存",
     "kbDelete": "删除",
-    "kbTitleLabel": "标题"
+    "kbTitleLabel": "标题",
+    "kbCategory": "分类",
+    "kbCategoryPolicy": "政策",
+    "kbCategoryPricing": "价格",
+    "kbCategoryHowTo": "操作指引",
+    "kbCategorySafety": "安全",
+    "kbQuestion": "问题",
+    "kbAnswer": "回答",
+    "kbDeleted": "已删除",
+    "kbSaved": "已保存"
   },
   "aSettings": {
     "title": "系统设置",
@@ -1055,13 +1088,14 @@
     "reporter": "举报人",
     "reason": "原因",
     "reasonSpam": "垃圾",
-    "reasonOffensive": "冒犯性内容",
     "reasonFalse": "不实",
     "reasonOther": "其他",
     "actionKeep": "保留评价",
     "actionDelete": "删除评价",
     "actionWarnUser": "警告举报人",
-    "empty": "暂无举报。"
+    "empty": "暂无举报。",
+    "reasonAbusive": "辱骂言语",
+    "reasonOffTopic": "与服务无关"
   },
   "search": {
     "title": "搜索",

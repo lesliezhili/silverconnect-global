@@ -51,7 +51,7 @@ async function registerAction(formData: FormData) {
   after(async () => {
     const result = await sendEmail({ to: email, subject, text, html });
     if (!result.ok) {
-      // eslint-disable-next-line no-console
+       
       console.error("[register] sendEmail failed:", result.reason);
     }
   });

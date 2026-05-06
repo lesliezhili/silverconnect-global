@@ -19,6 +19,12 @@ export const metadata: Metadata = {
   title: "SilverConnect",
   description:
     "SilverConnect — trusted home services for older adults across AU, CN, CA.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "SilverConnect",
+  },
 };
 
 export const viewport: Viewport = {

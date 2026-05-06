@@ -1,22 +1,19 @@
 name: Deploy to Vercel
 
-# Manual trigger only.
-#
-# Auto-deploy on push to main is intentionally disabled until the
-# pre-existing TypeScript errors in app/api/** legacy Supabase routes
-# are cleaned up (Phase 2 / 3 work). Once those are removed or
-# rewritten, switch the trigger to:
-#
-#   on:
-#     push:
-#       branches: [main]
+# Auto-deploy on push to main, plus manual trigger for preview deploys.
 #
 # Required GitHub repo secrets (Settings → Secrets and variables → Actions):
 #   VERCEL_TOKEN       — Personal token from vercel.com/account/tokens
-#   VERCEL_ORG_ID      — `vercel link` output / Vercel project Settings → General
-#   VERCEL_PROJECT_ID  — same place
+#   VERCEL_ORG_ID      — team_V0iunB5JnKuPRw80UkiSNxFc
+#   VERCEL_PROJECT_ID  — prj_mfwDqQusJ1UnEWr6ppat0yEv7Rwh
+#
+# All runtime env vars (DATABASE_URL, STRIPE_*, GLM_*, EMAIL_*, etc.)
+# must be configured in the Vercel project dashboard:
+#   vercel.com → silverconnect-global → Settings → Environment Variables.
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       target:
@@ -46,15 +43,24 @@ jobs:
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
+      - name: Determine target
+        id: target
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "name=production" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=${{ inputs.target }}" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Pull Vercel environment
         run: |
           vercel pull --yes \
-            --environment=${{ inputs.target == 'production' && 'production' || 'preview' }} \
+            --environment=${{ steps.target.outputs.name }} \
             --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build
         run: |
-          if [ "${{ inputs.target }}" = "production" ]; then
+          if [ "${{ steps.target.outputs.name }}" = "production" ]; then
             vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
           else
             vercel build --token=${{ secrets.VERCEL_TOKEN }}
@@ -62,7 +68,7 @@ jobs:
 
       - name: Deploy
         run: |
-          if [ "${{ inputs.target }}" = "production" ]; then
+          if [ "${{ steps.target.outputs.name }}" = "production" ]; then
             vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
           else
             vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}

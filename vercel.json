@@ -1,12 +1,24 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "next build",
-  "outputDirectory": ".next",
-  "env": {
-    "SKIP_ENV_VALIDATION": "true"
-  },
+  "framework": "nextjs",
   "functions": {
-    "app/api/**/*.ts": {
-      "maxDuration": 30
+    "app/api/**/route.ts": {
+      "maxDuration": 60
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/recurring-bookings",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/cancel-stale",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/sla-disputes",
+      "schedule": "0 4 * * *"
+    }
+  ]
 }

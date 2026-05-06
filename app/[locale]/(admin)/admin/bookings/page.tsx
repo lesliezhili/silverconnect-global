@@ -124,6 +124,13 @@ export default async function AdminBookingsPage({
     userRows.map((u) => [u.id, u.name || u.email.split("@")[0]]),
   );
 
+  // Captured at request time so the JSX map below stays pure. This
+  // file is a Server Component — runs once per request — so reading
+  // the wall clock once here is intentional. The compiler can't tell
+  // RSC from CSR so we suppress.
+  // eslint-disable-next-line react-hooks/purity
+  const nowMs = Date.now();
+
   const filters: { key: AdminFilter; label: string }[] = [
     { key: "all", label: t("filterAll") },
     { key: "stuck", label: tB("filterStuck") },
@@ -165,7 +172,6 @@ export default async function AdminBookingsPage({
 
       <ul className="mt-3 flex flex-col gap-2">
         {rows.map((b) => {
-          const nowMs = Date.now();
           const min = Math.max(
             0,
             Math.round((nowMs - b.createdAt.getTime()) / 60000),

@@ -7,6 +7,7 @@ import { cn } from "./cn";
 
 export const Modal = Dialog.Root;
 export const ModalTrigger = Dialog.Trigger;
+export const ModalClose = Dialog.Close;
 
 export function ModalContent({
   className,

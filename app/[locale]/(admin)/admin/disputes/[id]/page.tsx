@@ -15,7 +15,8 @@ import { bookings, bookingChanges } from "@/lib/db/schema/bookings";
 import { users } from "@/lib/db/schema/users";
 import { providerProfiles } from "@/lib/db/schema/providers";
 import { findUserByEmail } from "@/lib/auth/server";
-import { notifyMany } from "@/lib/notifications/server";
+import { notifyAndEmail } from "@/lib/notifications/server";
+import { buildDisputeUpdateEmail } from "@/components/domain/email";
 
 type DbDisputeStatus = "open" | "evidence_needed" | "decided" | "closed";
 type DbResolution =
@@ -171,17 +172,27 @@ async function disputeDecisionAction(formData: FormData) {
         ctx?.customerId,
         ctx?.providerUserId,
       ].filter(Boolean) as string[];
-      await notifyMany(
-        recipients.map((userId) => ({
+      const link = `/${locale}/bookings/${d.bookingId}`;
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+
+      for (const userId of recipients) {
+        const [u] = await db
+          .select({ locale: users.locale })
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1);
+        const userLocale = u?.locale ?? "en";
+        await notifyAndEmail({
           userId,
-          kind: "dispute" as const,
+          kind: "dispute",
           title,
           body: note || undefined,
-          link: `/${locale}/bookings/${d.bookingId}`,
+          link,
           relatedBookingId: d.bookingId!,
           relatedDisputeId: id,
-        })),
-      );
+          email: buildDisputeUpdateEmail(appUrl, id, userLocale, "decided"),
+        });
+      }
     });
   }
   nextRedirect(`/${locale}/admin/disputes/${id}?applied=1`);

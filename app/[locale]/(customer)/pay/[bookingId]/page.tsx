@@ -1,10 +1,14 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import { redirect as nextRedirect, notFound } from "next/navigation";
+import { eq, and } from "drizzle-orm";
 import { Lock, CreditCard, AlertTriangle, Check } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Link } from "@/i18n/navigation";
 import { CURRENCY_SYMBOL, TAX_ABBR } from "@/components/domain/country";
 import { getCountry } from "@/components/domain/countryCookie";
-import { getSession } from "@/components/domain/sessionCookie";
+import { db } from "@/lib/db";
+import { bookings } from "@/lib/db/schema/bookings";
+import { getCurrentUser } from "@/lib/auth/server";
 import { cn } from "@/components/ui/cn";
 
 type PayState = "default" | "loading" | "threeDS" | "failed" | "success";
@@ -14,6 +18,10 @@ const VALID: PayState[] = ["default", "loading", "threeDS", "failed", "success"]
 function parseState(raw: string | undefined): PayState {
   if (raw && (VALID as string[]).includes(raw)) return raw as PayState;
   return "default";
+}
+
+function fmt(n: number): string {
+  return n.toFixed(2);
 }
 
 export default async function PaymentPage({
@@ -28,17 +36,38 @@ export default async function PaymentPage({
   setRequestLocale(locale);
   const t = await getTranslations("payment");
   const country = await getCountry();
-  const session = await getSession();
+  const me = await getCurrentUser();
+  if (!me) nextRedirect(`/${locale}/auth/login`);
+
+  const [row] = await db
+    .select({
+      id: bookings.id,
+      totalPrice: bookings.totalPrice,
+      currency: bookings.currency,
+      status: bookings.status,
+    })
+    .from(bookings)
+    .where(and(eq(bookings.id, bookingId), eq(bookings.customerId, me.id)))
+    .limit(1);
+  if (!row) notFound();
+
   const sym = CURRENCY_SYMBOL[country];
   const taxAbbr = TAX_ABBR[country];
-  const taxPct = country === "AU" ? "10%" : country === "CN" ? "6%" : "13%";
-  const total = country === "CN" ? "¥1,560.00" : `${sym}195.00`;
+  // Tax rate matches whatever was used when creating the booking. The
+  // stored totalPrice is gross; reverse-derive subtotal so the breakdown
+  // adds back to the same total the user already saw on the review step.
+  const taxRate = country === "AU" ? 0.10 : country === "CN" ? 0.06 : 0.13;
+  const taxPct = `${Math.round(taxRate * 100)}%`;
+  const totalNum = Number(row.totalPrice);
+  const subtotal = totalNum / (1 + taxRate);
+  const tax = totalNum - subtotal;
+  const total = `${sym}${fmt(totalNum)}`;
   const state = parseState(typeof sp.state === "string" ? sp.state : undefined);
 
   if (state === "success") {
     return (
       <>
-        <Header country={country} back signedIn={session.signedIn} initials={session.initials} />
+        <Header country={country} back signedIn initials={me.initials} />
         <main id="main-content" className="mx-auto flex w-full max-w-content flex-col items-center justify-center bg-bg-surface px-6 py-16 text-center">
           <span className="flex h-24 w-24 items-center justify-center rounded-full bg-success-soft text-success">
             <Check size={56} strokeWidth={3} aria-hidden />
@@ -55,7 +84,7 @@ export default async function PaymentPage({
 
   return (
     <>
-      <Header country={country} back signedIn={session.signedIn} initials={session.initials} />
+      <Header country={country} back signedIn initials={me.initials} />
       <main id="main-content" className="mx-auto w-full max-w-content overflow-auto bg-bg-surface px-5 pb-[120px] sm:pb-12 pt-5">
         <h1 className="text-[26px] font-extrabold">{t("title")}</h1>
         <p className="mt-1 flex items-center gap-1.5 text-[14px] text-text-tertiary">
@@ -148,13 +177,13 @@ export default async function PaymentPage({
         <section className="mt-4 rounded-md border border-border bg-bg-base p-3.5">
           <div className="flex justify-between text-[14px] text-text-secondary">
             <span>{t("subtotal")}</span>
-            <span>{country === "CN" ? "¥1,471.70" : `${sym}177.27`}</span>
+            <span>{sym}{fmt(subtotal)}</span>
           </div>
           <div className="mt-1.5 flex justify-between text-[14px] text-text-secondary">
             <span>
               {taxAbbr} {taxPct}
             </span>
-            <span>{country === "CN" ? "¥88.30" : `${sym}17.73`}</span>
+            <span>{sym}{fmt(tax)}</span>
           </div>
           <div className="mt-2.5 flex justify-between border-t border-border pt-2.5 text-[18px] font-extrabold">
             <span>{t("total")}</span>

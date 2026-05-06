@@ -2,7 +2,7 @@ import "server-only";
 import { eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { users, type User } from "@/lib/db/schema/users";
-import { getAuthSession, type AuthSession, type Role } from "./session";
+import { getAuthSession, type Role } from "./session";
 
 export type { Role };
 
