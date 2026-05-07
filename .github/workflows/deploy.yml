@@ -29,6 +29,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
       - uses: actions/checkout@v4
 
@@ -43,10 +46,7 @@ jobs:
       - name: Deploy to Vercel
         run: |
           if [ "${{ github.event_name }}" = "push" ] || [ "${{ inputs.target }}" = "production" ]; then
-            vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }} --scope=${{ secrets.VERCEL_ORG_ID }} --yes
+            vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
           else
-            vercel deploy --token=${{ secrets.VERCEL_TOKEN }} --scope=${{ secrets.VERCEL_ORG_ID }} --yes
+            vercel deploy --token=${{ secrets.VERCEL_TOKEN }} --yes
           fi
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
