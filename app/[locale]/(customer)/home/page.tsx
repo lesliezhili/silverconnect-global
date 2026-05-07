@@ -194,7 +194,7 @@ export default async function CustomerHomePage({
       >
         <section className="flex items-start justify-between gap-3 px-5 pb-1 pt-5">
           <div className="min-w-0 flex-1">
-            <h1 className="text-[30px] font-extrabold leading-tight">
+            <h1 className="break-words text-[30px] font-extrabold leading-tight">
               {t("greeting", { name: greetingName })}
             </h1>
             <p className="mt-1.5 text-[17px] text-text-secondary">
