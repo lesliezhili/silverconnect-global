@@ -7,18 +7,5 @@
       "maxDuration": 60
     }
   },
-  "crons": [
-    {
-      "path": "/api/cron/recurring-bookings",
-      "schedule": "0 2 * * *"
-    },
-    {
-      "path": "/api/cron/cancel-stale",
-      "schedule": "0 3 * * *"
-    },
-    {
-      "path": "/api/cron/sla-disputes",
-      "schedule": "0 4 * * *"
-    }
-  ]
+  "crons": []
 }
