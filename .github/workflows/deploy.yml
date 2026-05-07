@@ -43,6 +43,9 @@ jobs:
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
+      - name: Link Vercel project
+        run: vercel link --yes --project=silverconnect --token=${{ secrets.VERCEL_TOKEN }}
+
       - name: Deploy to Vercel
         run: |
           if [ "${{ github.event_name }}" = "push" ] || [ "${{ inputs.target }}" = "production" ]; then
