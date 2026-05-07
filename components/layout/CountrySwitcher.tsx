@@ -41,13 +41,13 @@ export function CountrySwitcher({
       <Dropdown.Trigger
         aria-label={`Country: ${value}`}
         className={cn(
-          "inline-flex h-12 min-w-touch items-center gap-1 rounded-pill border-[1.5px] border-border bg-bg-surface px-3 text-[14px] font-semibold text-text-primary",
+          "inline-flex h-12 min-w-touch items-center justify-center gap-1 rounded-pill border-[1.5px] border-border bg-bg-surface px-2 text-[14px] font-semibold text-text-primary sm:px-3",
           className
         )}
       >
         <span aria-hidden>{COUNTRY_FLAG[value]}</span>
-        <span>{value}</span>
-        <ChevronDown size={14} className="ml-0.5" aria-hidden />
+        <span className="hidden sm:inline">{value}</span>
+        <ChevronDown size={14} className="ml-0.5 hidden sm:inline" aria-hidden />
       </Dropdown.Trigger>
       <Dropdown.Portal>
         <Dropdown.Content
