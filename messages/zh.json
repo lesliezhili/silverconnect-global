@@ -679,6 +679,10 @@
   "auth": {
     "loginTitle": "欢迎回来",
     "loginSub": "安全预订上门服务",
+    "loginTitleProvider": "欢迎回来，服务者",
+    "loginSubProvider": "登录管理你的订单与收入",
+    "roleTabConsumer": "我是用户",
+    "roleTabProvider": "我是服务者",
     "registerTitle": "创建账号",
     "registerSub": "为清洁、烹饪、园艺等家政服务找一位可信赖的服务者",
     "emailPh": "your@email.com",

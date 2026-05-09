@@ -679,6 +679,10 @@
   "auth": {
     "loginTitle": "Welcome back",
     "loginSub": "Book trusted home services with confidence",
+    "loginTitleProvider": "Welcome back, helper",
+    "loginSubProvider": "Sign in to manage your bookings and earnings",
+    "roleTabConsumer": "I'm a customer",
+    "roleTabProvider": "I'm a helper",
     "registerTitle": "Create your account",
     "registerSub": "Find a helper for cleaning, cooking, garden and more",
     "emailPh": "your@email.com",

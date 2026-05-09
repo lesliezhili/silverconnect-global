@@ -2,6 +2,7 @@ import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect as nextRedirect } from "next/navigation";
 import { Link, redirect } from "@/i18n/navigation";
 import { AuthCard } from "@/components/domain/AuthCard";
+import { AuthRoleTabs, type AuthRole } from "@/components/domain/AuthRoleTabs";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
@@ -60,9 +61,15 @@ export default async function LoginPage({
       : error
       ? t("errorGeneric")
       : null;
+  const role: AuthRole = sp.role === "provider" ? "provider" : "consumer";
+  const title = role === "provider" ? t("loginTitleProvider") : t("loginTitle");
+  const subtitle = role === "provider" ? t("loginSubProvider") : t("loginSub");
+  const registerHref =
+    role === "provider" ? "/auth/register?role=provider" : "/auth/register";
 
   return (
-    <AuthCard title={t("loginTitle")} subtitle={t("loginSub")}>
+    <AuthCard title={title} subtitle={subtitle}>
+      <AuthRoleTabs current={role} />
       {errorMsg && (
         <div
           role="alert"
@@ -137,7 +144,7 @@ export default async function LoginPage({
 
       <p className="mt-6 text-center text-[15px] text-text-secondary">
         {t("noAccount")}{" "}
-        <Link href="/auth/register" className="font-semibold text-brand">
+        <Link href={registerHref} className="font-semibold text-brand">
           {t("registerLink")}
         </Link>
       </p>
