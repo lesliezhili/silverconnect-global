@@ -43,7 +43,7 @@ OPENAI_API_KEY=                     # 仅 ai_customer_service.py 消费
 
 ### 环境变量命名注意
 
-服务端运行时读 `SUPABASE_SERVICE_ROLE_KEY`，而 `scripts/seed.js`、`scripts/migrate.js`、`scripts/seed-test-data.ts`、`scripts/delete-test-data.ts` 读 `SUPABASE_SERVICE_KEY`。设同一值，或后续清理统一名称。
+服务端运行时读 `SUPABASE_SERVICE_ROLE_KEY`；旧 Supabase 脚本（如 `scripts/migrate.js`、`scripts/seed-test-data.ts`、`scripts/delete-test-data.ts`）读 `SUPABASE_SERVICE_KEY`。设同一值，或后续清理统一名称。
 
 平台费百分比也有两套来源、默认值不同：
 - DB 列 `bookings.platform_fee_percentage` 默认 **15.0**。
@@ -66,6 +66,8 @@ OPENAI_API_KEY=                     # 仅 ai_customer_service.py 消费
 # 方式 B：
 npm run db:migrate
 npm run db:seed
+# 可选：种 demo 服务者数据
+npm run db:seed:providers
 ```
 
 ## 4. 启动
@@ -90,7 +92,9 @@ npm run dev          # Next.js on :3000
 | `npm run test:e2e:ui` | Playwright UI |
 | `npm run test:performance` | Lighthouse |
 | `npm run db:migrate` | 应用迁移 |
-| `npm run db:seed` | 种 dev 数据 |
+| `npm run db:seed` | 种服务目录和价格 |
+| `npm run db:seed:providers` | 种 demo 服务者 |
+| `npm run db:seed:all` | 种服务目录、价格和 demo 服务者 |
 | `npm run docker:up` / `:down` | Compose 栈（本地基础设施，见 caveat） |
 
 ## 6. 项目结构

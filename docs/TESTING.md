@@ -60,7 +60,7 @@ test('AU price includes 10% GST', () => {
 
 ### Integration (API routes)
 - Use a dedicated Supabase project for test, or a transactional rollback wrapper.
-- Seed via `scripts/seed.js` then invoke route handlers directly.
+- Seed catalog data via `npm run db:seed`; add `npm run db:seed:providers` when tests need demo providers, then invoke route handlers directly.
 
 ### E2E
 - Use Playwright fixtures in `e2e/`. Prefer `data-testid` selectors over text where copy churns.

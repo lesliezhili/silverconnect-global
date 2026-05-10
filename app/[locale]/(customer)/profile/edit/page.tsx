@@ -99,7 +99,10 @@ export default async function ProfileEditPage({
               className="block h-touch-btn w-full rounded-md border-[1.5px] border-border bg-bg-base px-4 text-body text-text-primary focus:border-brand focus:outline-none"
             >
               <option value="en">English</option>
-              <option value="zh">中文</option>
+              <option value="zh-CN">简体中文</option>
+              <option value="zh-TW">繁體中文</option>
+              <option value="ja">日本語</option>
+              <option value="ko">한국어</option>
             </select>
           </div>
           <Button type="submit" variant="primary" block size="md">

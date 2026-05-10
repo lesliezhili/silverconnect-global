@@ -43,7 +43,7 @@ OPENAI_API_KEY=                     # consumed by ai_customer_service.py only
 
 ### Env naming caveat
 
-Server runtime reads `SUPABASE_SERVICE_ROLE_KEY` while `scripts/seed.js`, `scripts/migrate.js`, `scripts/seed-test-data.ts`, and `scripts/delete-test-data.ts` read `SUPABASE_SERVICE_KEY`. Set both to the same value, or unify the name in a follow-up cleanup.
+Server runtime reads `SUPABASE_SERVICE_ROLE_KEY`; legacy Supabase scripts such as `scripts/migrate.js`, `scripts/seed-test-data.ts`, and `scripts/delete-test-data.ts` read `SUPABASE_SERVICE_KEY`. Set both to the same value, or unify the name in a follow-up cleanup.
 
 ### `.env.example` is largely aspirational
 
@@ -66,6 +66,8 @@ Pick one source of truth before this drifts further.
 # Option B:
 npm run db:migrate
 npm run db:seed
+# Optional provider demo data:
+npm run db:seed:providers
 ```
 
 ## 4. Run
@@ -90,7 +92,9 @@ npm run dev          # Next.js on :3000
 | `npm run test:e2e:ui` | Playwright UI |
 | `npm run test:performance` | Lighthouse |
 | `npm run db:migrate` | Apply migrations |
-| `npm run db:seed` | Seed dev data |
+| `npm run db:seed` | Seed service catalog and prices |
+| `npm run db:seed:providers` | Seed demo providers |
+| `npm run db:seed:all` | Seed catalog, prices, and demo providers |
 | `npm run docker:up` / `:down` | Compose stack (local Postgres/Redis/Mailhog — see caveat below) |
 
 ## 6. Project layout

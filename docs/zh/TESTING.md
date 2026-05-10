@@ -60,7 +60,7 @@ test('AU price includes 10% GST', () => {
 
 ### Integration（API 路由）
 - 用专门的 Supabase 测试项目，或事务回滚封装。
-- 用 `scripts/seed.js` 种数据，再直接 invoke route handler。
+- 用 `npm run db:seed` 种服务目录数据；需要 demo 服务者时再跑 `npm run db:seed:providers`，然后直接 invoke route handler。
 
 ### E2E
 - 用 `e2e/` 中的 Playwright fixtures。优先 `data-testid` 选择器，避免文案漂移。

@@ -18,7 +18,7 @@ export const payments = pgTable(
     bookingId: uuid("booking_id")
       .notNull()
       .references(() => bookings.id, { onDelete: "cascade" }),
-    /** Nullable: in CN we plan to wire WeChat/Alipay separately. */
+    /** Nullable: row may exist before the Stripe PaymentIntent is created (e.g. status=pending). */
     stripePaymentIntentId: text("stripe_payment_intent_id"),
     amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
     currency: text("currency").notNull(),
