@@ -37,7 +37,7 @@ const CAT_ICON_BG: Record<string, { bg: string; fg: string; emoji: string }> = {
 
 function priceFromHourly(country: CountryCode, baseHr: number, locale: string) {
   const sym = CURRENCY_SYMBOL[country];
-  return locale === "zh" ? `${sym}${baseHr}/小时起` : `from ${sym}${baseHr}/h`;
+  return locale.startsWith("zh") ? `${sym}${baseHr}/小时起` : `from ${sym}${baseHr}/h`;
 }
 
 function initialsOf(name: string | null, fallback: string): string {

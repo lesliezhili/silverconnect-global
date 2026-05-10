@@ -20,7 +20,9 @@ async function saveKb(formData: FormData) {
   const locale = String(formData.get("locale") ?? "en");
   const category = String(formData.get("category") ?? "") as Category;
   const langRaw = String(formData.get("lang") ?? "en");
-  const lang: "en" | "zh" = langRaw === "zh" ? "zh" : "en";
+  type KbLocale = "en" | "zh-CN" | "zh-TW" | "ja" | "ko";
+  const ALLOWED: KbLocale[] = ["en", "zh-CN", "zh-TW", "ja", "ko"];
+  const lang: KbLocale = (ALLOWED as string[]).includes(langRaw) ? (langRaw as KbLocale) : "en";
   const question = String(formData.get("question") ?? "").trim();
   const answer = String(formData.get("answer") ?? "").trim();
   const me = await getCurrentUser();
@@ -191,7 +193,10 @@ export default async function AdminKbPage({
               <Label htmlFor="kb-lang">{tA("kbLang")}</Label>
               <select id="kb-lang" name="lang" className={fieldClass}>
                 <option value="en">EN</option>
-                <option value="zh">ZH</option>
+                <option value="zh-CN">ZH-CN</option>
+                <option value="zh-TW">ZH-TW</option>
+                <option value="ja">JA</option>
+                <option value="ko">KO</option>
               </select>
             </div>
           </div>

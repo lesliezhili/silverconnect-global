@@ -20,7 +20,7 @@ export default async function HelpArticlePage({
   const country = await getCountry();
   const session = await getSession();
   const t = await getTranslations("help");
-  const lang: "zh" | "en" = locale === "zh" ? "zh" : "en";
+  const lang = locale as "en" | "zh-CN" | "zh-TW" | "ja" | "ko";
   const article = findArticle(slug);
 
   if (!article) {

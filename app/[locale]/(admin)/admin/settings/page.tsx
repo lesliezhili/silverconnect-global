@@ -206,7 +206,7 @@ export default async function AdminSettingsPage({
                 <li key={i} className="tabular-nums">
                   {a.action} ·{" "}
                   {a.createdAt.toLocaleString(
-                    locale === "zh" ? "zh-CN" : "en-AU",
+                    locale === "en" ? "en-AU" : locale,
                   )}
                 </li>
               ))}

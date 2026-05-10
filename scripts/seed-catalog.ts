@@ -33,7 +33,7 @@ interface Svc {
   code: string;
   categoryCode: string;
   durationMin: number;
-  prices: { country: "AU" | "CN" | "CA"; basePrice: string; taxRate: string; currency: string }[];
+  prices: { country: "AU" | "US" | "CA"; basePrice: string; taxRate: string; currency: string }[];
 }
 
 const CATEGORIES: Cat[] = [
@@ -44,7 +44,7 @@ const CATEGORIES: Cat[] = [
   { code: "repair", iconKey: "wrench", sortOrder: 5 },
 ];
 
-// AU = 10% GST, CN = 0% VAT (consumer), CA = 13% HST (Ontario default).
+// AU = 10% GST, US = 8% sales tax (sample blended rate), CA = 13% HST (Ontario default).
 const SERVICES: Svc[] = [
   {
     code: "cleaning_basic_2h",
@@ -52,7 +52,7 @@ const SERVICES: Svc[] = [
     durationMin: 120,
     prices: [
       { country: "AU", basePrice: "110.00", taxRate: "0.1000", currency: "AUD" },
-      { country: "CN", basePrice: "180.00", taxRate: "0.0000", currency: "CNY" },
+      { country: "US", basePrice: "180.00", taxRate: "0.0800", currency: "USD" },
       { country: "CA", basePrice: "120.00", taxRate: "0.1300", currency: "CAD" },
     ],
   },
@@ -62,7 +62,7 @@ const SERVICES: Svc[] = [
     durationMin: 180,
     prices: [
       { country: "AU", basePrice: "195.00", taxRate: "0.1000", currency: "AUD" },
-      { country: "CN", basePrice: "320.00", taxRate: "0.0000", currency: "CNY" },
+      { country: "US", basePrice: "320.00", taxRate: "0.0800", currency: "USD" },
       { country: "CA", basePrice: "210.00", taxRate: "0.1300", currency: "CAD" },
     ],
   },
@@ -72,7 +72,7 @@ const SERVICES: Svc[] = [
     durationMin: 240,
     prices: [
       { country: "AU", basePrice: "280.00", taxRate: "0.1000", currency: "AUD" },
-      { country: "CN", basePrice: "460.00", taxRate: "0.0000", currency: "CNY" },
+      { country: "US", basePrice: "460.00", taxRate: "0.0800", currency: "USD" },
       { country: "CA", basePrice: "300.00", taxRate: "0.1300", currency: "CAD" },
     ],
   },
@@ -82,7 +82,7 @@ const SERVICES: Svc[] = [
     durationMin: 120,
     prices: [
       { country: "AU", basePrice: "90.00", taxRate: "0.1000", currency: "AUD" },
-      { country: "CN", basePrice: "150.00", taxRate: "0.0000", currency: "CNY" },
+      { country: "US", basePrice: "150.00", taxRate: "0.0800", currency: "USD" },
       { country: "CA", basePrice: "100.00", taxRate: "0.1300", currency: "CAD" },
     ],
   },
@@ -92,7 +92,7 @@ const SERVICES: Svc[] = [
     durationMin: 180,
     prices: [
       { country: "AU", basePrice: "140.00", taxRate: "0.1000", currency: "AUD" },
-      { country: "CN", basePrice: "230.00", taxRate: "0.0000", currency: "CNY" },
+      { country: "US", basePrice: "230.00", taxRate: "0.0800", currency: "USD" },
       { country: "CA", basePrice: "150.00", taxRate: "0.1300", currency: "CAD" },
     ],
   },
@@ -102,7 +102,7 @@ const SERVICES: Svc[] = [
     durationMin: 60,
     prices: [
       { country: "AU", basePrice: "80.00", taxRate: "0.1000", currency: "AUD" },
-      { country: "CN", basePrice: "130.00", taxRate: "0.0000", currency: "CNY" },
+      { country: "US", basePrice: "130.00", taxRate: "0.0800", currency: "USD" },
       { country: "CA", basePrice: "85.00", taxRate: "0.1300", currency: "CAD" },
     ],
   },
@@ -112,7 +112,7 @@ const SERVICES: Svc[] = [
     durationMin: 180,
     prices: [
       { country: "AU", basePrice: "150.00", taxRate: "0.1000", currency: "AUD" },
-      { country: "CN", basePrice: "240.00", taxRate: "0.0000", currency: "CNY" },
+      { country: "US", basePrice: "240.00", taxRate: "0.0800", currency: "USD" },
       { country: "CA", basePrice: "165.00", taxRate: "0.1300", currency: "CAD" },
     ],
   },
@@ -122,7 +122,7 @@ const SERVICES: Svc[] = [
     durationMin: 120,
     prices: [
       { country: "AU", basePrice: "85.00", taxRate: "0.1000", currency: "AUD" },
-      { country: "CN", basePrice: "140.00", taxRate: "0.0000", currency: "CNY" },
+      { country: "US", basePrice: "140.00", taxRate: "0.0800", currency: "USD" },
       { country: "CA", basePrice: "90.00", taxRate: "0.1300", currency: "CAD" },
     ],
   },
@@ -132,7 +132,7 @@ const SERVICES: Svc[] = [
     durationMin: 60,
     prices: [
       { country: "AU", basePrice: "60.00", taxRate: "0.1000", currency: "AUD" },
-      { country: "CN", basePrice: "100.00", taxRate: "0.0000", currency: "CNY" },
+      { country: "US", basePrice: "100.00", taxRate: "0.0800", currency: "USD" },
       { country: "CA", basePrice: "65.00", taxRate: "0.1300", currency: "CAD" },
     ],
   },
@@ -142,7 +142,7 @@ const SERVICES: Svc[] = [
     durationMin: 60,
     prices: [
       { country: "AU", basePrice: "75.00", taxRate: "0.1000", currency: "AUD" },
-      { country: "CN", basePrice: "120.00", taxRate: "0.0000", currency: "CNY" },
+      { country: "US", basePrice: "120.00", taxRate: "0.0800", currency: "USD" },
       { country: "CA", basePrice: "80.00", taxRate: "0.1300", currency: "CAD" },
     ],
   },
@@ -152,7 +152,7 @@ const SERVICES: Svc[] = [
     durationMin: 180,
     prices: [
       { country: "AU", basePrice: "210.00", taxRate: "0.1000", currency: "AUD" },
-      { country: "CN", basePrice: "340.00", taxRate: "0.0000", currency: "CNY" },
+      { country: "US", basePrice: "340.00", taxRate: "0.0800", currency: "USD" },
       { country: "CA", basePrice: "230.00", taxRate: "0.1300", currency: "CAD" },
     ],
   },

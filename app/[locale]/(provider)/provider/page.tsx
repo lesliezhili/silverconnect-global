@@ -16,7 +16,7 @@ import { wallets } from "@/lib/db/schema/payments";
 import { getCurrentUser } from "@/lib/auth/server";
 
 function formatTime(d: Date, locale: string) {
-  return d.toLocaleTimeString(locale === "zh" ? "zh-CN" : "en-AU", {
+  return d.toLocaleTimeString(locale === "en" ? "en-AU" : locale, {
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -107,7 +107,7 @@ export default async function ProviderWorkbenchPage({
           {t("greeting", { name: me.name ?? me.email.split("@")[0] })}
         </h1>
         <p className="mt-1 text-[14px] text-text-tertiary">
-          {new Date().toLocaleDateString(locale === "zh" ? "zh-CN" : "en-AU", {
+          {new Date().toLocaleDateString(locale === "en" ? "en-AU" : locale, {
             weekday: "long",
             month: "short",
             day: "numeric",

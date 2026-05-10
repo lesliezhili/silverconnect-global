@@ -114,7 +114,7 @@ export default async function ProviderCalendarPage({
   }
 
   const monthLabel = new Date(y, m, 1).toLocaleDateString(
-    locale === "zh" ? "zh-CN" : "en-AU",
+    locale === "en" ? "en-AU" : locale,
     { year: "numeric", month: "long" },
   );
 

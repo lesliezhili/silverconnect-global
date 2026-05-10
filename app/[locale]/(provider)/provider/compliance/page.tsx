@@ -150,7 +150,7 @@ export default async function CompliancePage({
     (d) => d.state === "expiring" || d.state === "expired" || d.state === "missing",
   );
   const fmt = (d: Date) =>
-    d.toLocaleDateString(locale === "zh" ? "zh-CN" : "en-AU", {
+    d.toLocaleDateString(locale === "en" ? "en-AU" : locale, {
       month: "short",
       day: "numeric",
       year: "numeric",

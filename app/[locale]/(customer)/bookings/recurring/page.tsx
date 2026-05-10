@@ -84,7 +84,7 @@ export default async function RecurringPage({
             <ul className="mt-3 flex flex-col gap-3">
               {MOCK.map((s) => {
                 const next = new Date(s.nextISO).toLocaleDateString(
-                  locale === "zh" ? "zh-CN" : "en-AU",
+                  locale === "en" ? "en-AU" : locale,
                   { weekday: "short", month: "short", day: "numeric" }
                 );
                 return (

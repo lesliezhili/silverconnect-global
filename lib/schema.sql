@@ -29,7 +29,7 @@ END $$;
 -- Insert countries
 INSERT INTO countries (code, name, name_zh, currency_code, currency_symbol, tax_rate) VALUES
 ('AU', 'Australia', '澳大利亚', 'AUD', '$', 10.00),
-('CN', 'China', '中国', 'CNY', '¥', 0.00),
+('US', 'United States', '美国', 'USD', '$', 8.00),
 ('CA', 'Canada', '加拿大', 'CAD', '$', 13.00)
 ON CONFLICT (code) DO NOTHING;
 

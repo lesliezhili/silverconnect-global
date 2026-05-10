@@ -47,10 +47,10 @@ export default async function NewPaymentMethodPage({
             <CreditCard size={28} />
           </span>
           <p className="text-[16px] font-bold">
-            {locale === "zh" ? "暂未开放" : "Not yet available"}
+            {locale.startsWith("zh") ? "暂未开放" : "Not yet available"}
           </p>
           <p className="max-w-md text-[14px] text-text-secondary">
-            {locale === "zh"
+            {locale.startsWith("zh")
               ? "添加银行卡将通过 Stripe 安全收单。Stripe 集成上线后此页面会启用真实的 Stripe Elements 表单。"
               : "Card capture goes through Stripe Elements so we never touch raw card data. This page activates once Stripe is wired up."}
           </p>
@@ -58,7 +58,7 @@ export default async function NewPaymentMethodPage({
             href="/profile/payment"
             className="mt-3 inline-flex h-12 items-center rounded-md border-[1.5px] border-border-strong bg-bg-base px-5 text-[15px] font-semibold text-text-primary"
           >
-            {locale === "zh" ? "返回" : "Back"}
+            {locale.startsWith("zh") ? "返回" : "Back"}
           </Link>
         </div>
       </main>

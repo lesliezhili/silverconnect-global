@@ -53,7 +53,7 @@ export default async function ProviderServicesPage({
   const tCommon = await getTranslations("common");
   const saved = sp.saved === "1";
   const sym = CURRENCY_SYMBOL[country];
-  const rate = country === "CN" ? 8 : 1;
+  const rate = country === "US" ? 0.65 : 1;
 
   return (
     <>

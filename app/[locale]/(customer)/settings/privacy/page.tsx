@@ -117,7 +117,7 @@ export default async function PrivacySettingsPage({
             role="alert"
             className="mt-4 rounded-md border-[1.5px] border-danger bg-danger-soft px-3.5 py-3 text-[14px] font-semibold text-danger"
           >
-            {locale === "zh"
+            {locale.startsWith("zh")
               ? '请输入"DELETE"以确认删除账号。'
               : 'Type "DELETE" to confirm account deletion.'}
           </div>
@@ -171,7 +171,7 @@ export default async function PrivacySettingsPage({
                 className="inline-flex items-center gap-1.5 font-bold underline"
               >
                 <Download size={14} aria-hidden />
-                {locale === "zh" ? "下载 JSON 存档" : "Download JSON archive"}
+                {locale.startsWith("zh") ? "下载 JSON 存档" : "Download JSON archive"}
               </a>
             </p>
           )}
@@ -195,7 +195,7 @@ export default async function PrivacySettingsPage({
           <form action={deleteAccountAction} className="mt-3 flex flex-col gap-3">
             <input type="hidden" name="locale" value={locale} />
             <label className="text-[13px] font-semibold text-danger">
-              {locale === "zh"
+              {locale.startsWith("zh")
                 ? '请输入大写 "DELETE" 以确认：'
                 : 'Type "DELETE" to confirm:'}
               <input

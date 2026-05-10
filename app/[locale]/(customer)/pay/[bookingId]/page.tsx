@@ -56,7 +56,7 @@ export default async function PaymentPage({
   // Tax rate matches whatever was used when creating the booking. The
   // stored totalPrice is gross; reverse-derive subtotal so the breakdown
   // adds back to the same total the user already saw on the review step.
-  const taxRate = country === "AU" ? 0.10 : country === "CN" ? 0.06 : 0.13;
+  const taxRate = country === "AU" ? 0.10 : country === "US" ? 0.08 : 0.13;
   const taxPct = `${Math.round(taxRate * 100)}%`;
   const totalNum = Number(row.totalPrice);
   const subtotal = totalNum / (1 + taxRate);

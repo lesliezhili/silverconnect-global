@@ -187,7 +187,7 @@ export default async function AdminSafetyDetailPage({
           <p className="text-[12px] text-text-tertiary">{t("colSubmitted")}</p>
           <p className="mt-0.5 text-[14px] font-semibold tabular-nums">
             {row.createdAt.toLocaleString(
-              locale === "zh" ? "zh-CN" : "en-AU",
+              locale === "en" ? "en-AU" : locale,
             )}
           </p>
         </div>
@@ -300,7 +300,7 @@ export default async function AdminSafetyDetailPage({
           {row.reviewedAt && (
             <p className="mt-1 text-[12px] text-text-tertiary tabular-nums">
               {row.reviewedAt.toLocaleString(
-                locale === "zh" ? "zh-CN" : "en-AU",
+                locale === "en" ? "en-AU" : locale,
               )}
               {reviewerName ? ` · ${reviewerName}` : ""}
             </p>

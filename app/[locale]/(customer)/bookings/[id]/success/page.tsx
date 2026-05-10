@@ -34,7 +34,7 @@ export default async function PaymentSuccessPage({
   const country = await getCountry();
   const me = await getCurrentUser();
   if (!me) nextRedirect(`/${locale}/auth/login`);
-  const isZh = locale === "zh";
+  const isZh = locale.startsWith("zh");
   const sym = CURRENCY_SYMBOL[country];
 
   const [row] = await db

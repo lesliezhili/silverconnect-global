@@ -111,7 +111,7 @@ export default async function BlockedTimesPage({
     .orderBy(asc(providerBlockedTimes.startsAt));
 
   const fmt = (d: Date) =>
-    d.toLocaleDateString(locale === "zh" ? "zh-CN" : "en-AU", {
+    d.toLocaleDateString(locale === "en" ? "en-AU" : locale, {
       month: "short",
       day: "numeric",
       year: "numeric",

@@ -22,9 +22,9 @@ import { aiConversations, aiMessages, aiEmergencyKeywords } from "@/lib/db/schem
 import { getCurrentUser } from "@/lib/auth/server";
 import { chat, detectEmergencyKeyword, type ChatMessage } from "@/lib/ai/glm";
 
-const SYSTEM_PROMPT_EN = `You are SilverConnect's customer service assistant for an elderly home-services platform (cleaning, cooking, garden, personal care, repair) operating in AU, CN and CA. Be warm, brief, and use plain English (or Chinese if the user writes Chinese). Replies should be 1-3 short sentences unless the user asks for more detail. If the user describes a medical, safety, or abuse emergency, immediately recommend they tap the SOS button or call local emergency services.`;
+const SYSTEM_PROMPT_EN = `You are SilverConnect's customer service assistant for an elderly home-services platform (cleaning, cooking, garden, personal care, repair) operating in AU, US and CA. Be warm, brief, and use plain English (or Chinese if the user writes Chinese). Replies should be 1-3 short sentences unless the user asks for more detail. If the user describes a medical, safety, or abuse emergency, immediately recommend they tap the SOS button or call local emergency services.`;
 
-const SYSTEM_PROMPT_ZH = `你是 SilverConnect 老年居家服务平台的客服助手（清洁/烹饪/园艺/个人护理/维修，覆盖澳大利亚、中国、加拿大）。回答温暖、简短、用通俗中文（或用户使用英文时用英文）。每次回复 1-3 句为宜，除非用户要求更详细。如用户描述医疗、人身安全或被侵害的紧急情况，立刻建议按 SOS 按钮或拨打当地紧急电话。`;
+const SYSTEM_PROMPT_ZH = `你是 SilverConnect 老年居家服务平台的客服助手（清洁/烹饪/园艺/个人护理/维修，覆盖澳大利亚、美国、加拿大）。回答温暖、简短、用通俗中文（或用户使用英文时用英文）。每次回复 1-3 句为宜，除非用户要求更详细。如用户描述医疗、人身安全或被侵害的紧急情况，立刻建议按 SOS 按钮或拨打当地紧急电话。`;
 
 async function ensureConversation(userId: string, locale: string) {
   const [open] = await db
@@ -41,7 +41,7 @@ async function ensureConversation(userId: string, locale: string) {
   if (open) return open;
   const [created] = await db
     .insert(aiConversations)
-    .values({ userId, locale: locale === "zh" ? "zh" : "en" })
+    .values({ userId, locale: locale.startsWith("zh") ? "zh-CN" : "en" })
     .returning();
   return created!;
 }
@@ -77,7 +77,7 @@ async function sendMessageAction(formData: FormData) {
     .from(aiEmergencyKeywords)
     .where(
       and(
-        eq(aiEmergencyKeywords.locale, locale === "zh" ? "zh" : "en"),
+        eq(aiEmergencyKeywords.locale, locale.startsWith("zh") ? "zh-CN" : "en"),
         eq(aiEmergencyKeywords.enabled, true),
       ),
     );
@@ -101,7 +101,7 @@ async function sendMessageAction(formData: FormData) {
   const messages: ChatMessage[] = [
     {
       role: "system",
-      content: locale === "zh" ? SYSTEM_PROMPT_ZH : SYSTEM_PROMPT_EN,
+      content: locale.startsWith("zh") ? SYSTEM_PROMPT_ZH : SYSTEM_PROMPT_EN,
     },
     ...(prior as ChatMessage[]),
     { role: "user", content: text },
@@ -141,7 +141,7 @@ export default async function ChatPage({
   setRequestLocale(locale);
   const t = await getTranslations("chat");
   const tEm = await getTranslations("emergency");
-  const isZh = locale === "zh";
+  const isZh = locale.startsWith("zh");
   const country = await getCountry();
   const me = await getCurrentUser();
   const emergency = sp.emergency === "1";
@@ -156,13 +156,13 @@ export default async function ChatPage({
     const subText = isZh
       ? country === "AU"
         ? "澳洲紧急服务 — 综合"
-        : country === "CN"
-          ? "中国 120 医疗急救"
+        : country === "US"
+          ? "美国 911 综合紧急"
           : "加拿大 911 综合紧急"
       : country === "AU"
         ? "Australian Emergency — combined"
-        : country === "CN"
-          ? "China 120 Medical Emergency"
+        : country === "US"
+          ? "United States 911 Emergency"
           : "Canada 911 Combined Emergency";
     return (
       <main
@@ -183,9 +183,6 @@ export default async function ChatPage({
           {tEm("title")}
         </h1>
         <p className="text-[18px] leading-snug text-[#CBD5E1]">{subText}</p>
-        {country === "CN" && (
-          <p className="text-[14px] text-[#94A3B8]">{tEm("subLine2.CN")}</p>
-        )}
         <a
           href={`tel:${num}`}
           className="flex h-20 w-full max-w-[320px] items-center justify-center gap-3 rounded-md bg-[#DC2626] text-[28px] font-extrabold text-white shadow-[0_8px_24px_rgba(220,38,38,0.5)]"

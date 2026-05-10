@@ -178,7 +178,7 @@ export default async function FeedbackPage({
           {existing && (
             <p className="text-[14px] text-text-tertiary">
               {existing.rating}★ ·{" "}
-              {locale === "zh" ? "已提交" : "submitted"}
+              {locale.startsWith("zh") ? "已提交" : "submitted"}
             </p>
           )}
           <Link

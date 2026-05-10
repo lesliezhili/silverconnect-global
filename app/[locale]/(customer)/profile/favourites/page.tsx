@@ -26,7 +26,7 @@ export default async function ProfileFavouritesPage({
   if (!session.signedIn) redirect({ href: "/auth/login", locale });
   const country = await getCountry();
   const t = await getTranslations("favourites");
-  const lang: "zh" | "en" = locale === "zh" ? "zh" : "en";
+  const lang: "zh" | "en" = locale.startsWith("zh") ? "zh" : "en";
   const empty = sp.state === "empty";
   const items = empty ? [] : SAMPLE_FAVOURITES;
 

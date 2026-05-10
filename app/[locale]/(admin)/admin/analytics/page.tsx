@@ -15,11 +15,11 @@ type Range = "day" | "week" | "month" | "quarter" | "year";
 
 const COUNTRY_COLOR: Record<string, string> = {
   AU: "bg-brand",
-  CN: "bg-success",
+  US: "bg-success",
   CA: "bg-warning",
 };
 
-const COUNTRIES = ["AU", "CN", "CA"] as const;
+const COUNTRIES = ["AU", "US", "CA"] as const;
 
 export default async function AdminAnalyticsPage({
   params,
@@ -173,7 +173,7 @@ export default async function AdminAnalyticsPage({
   ];
 
   const dayLabels = days.map((d) =>
-    d.toLocaleDateString(locale === "zh" ? "zh-CN" : "en-AU", {
+    d.toLocaleDateString(locale === "en" ? "en-AU" : locale, {
       weekday: "short",
     }),
   );
@@ -250,7 +250,7 @@ export default async function AdminAnalyticsPage({
                 {t(
                   `country${c.country}` as
                     | "countryAU"
-                    | "countryCN"
+                    | "countryUS"
                     | "countryCA",
                 )}
               </span>

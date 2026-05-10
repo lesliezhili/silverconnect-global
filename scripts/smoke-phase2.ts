@@ -83,10 +83,10 @@ async function main() {
     },
     {
       serviceId: svc.id,
-      country: "CN",
+      country: "US",
       basePrice: "300.00",
-      taxRate: "0.0000",
-      currency: "CNY",
+      taxRate: "0.0800",
+      currency: "USD",
     },
   ]);
   const prices = await db

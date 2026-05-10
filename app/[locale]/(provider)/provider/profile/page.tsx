@@ -15,7 +15,10 @@ async function saveProfile(formData: FormData) {
   nextRedirect(`/${locale}/provider/profile?saved=1`);
 }
 
-const LANGS = ["en", "zh", "es", "ar", "vi"];
+// Languages a provider can speak with customers — independent of the
+// app's UI locale enum. BCP47 codes; uppercase fallback for languages
+// without a localised label in messages/*.json.
+const LANGS = ["en", "zh-CN", "zh-TW", "ja", "ko", "es", "ar", "vi"];
 
 export default async function ProviderProfilePage({
   params,
@@ -79,7 +82,9 @@ export default async function ProviderProfilePage({
               {LANGS.map((l) => (
                 <label key={l} className="inline-flex h-10 cursor-pointer items-center rounded-pill border-[1.5px] border-border-strong bg-bg-base px-4 text-[13px] font-semibold text-text-primary has-[:checked]:border-brand has-[:checked]:bg-brand-soft has-[:checked]:text-brand">
                   <input type="checkbox" name="lang" value={l} defaultChecked={l === locale} className="sr-only" />
-                  {l === "en" || l === "zh" ? tLanguage(l as "en" | "zh") : l.toUpperCase()}
+                  {l === "en" || l === "zh-CN" || l === "zh-TW" || l === "ja" || l === "ko"
+                    ? tLanguage(l as "en" | "zh-CN" | "zh-TW" | "ja" | "ko")
+                    : l.toUpperCase()}
                 </label>
               ))}
             </div>

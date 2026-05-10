@@ -129,7 +129,7 @@ export function EmergencyOverlay({ country = "AU" }: { country?: CountryCode }) 
         {t("title")}
       </h1>
       <p className="text-[18px] leading-snug text-[#CBD5E1]">
-        {t(`subtitle${country}` as "subtitleAU" | "subtitleCN" | "subtitleCA")}
+        {t(`subtitle${country}` as "subtitleAU" | "subtitleUS" | "subtitleCA")}
       </p>
       <a
         ref={callRef}

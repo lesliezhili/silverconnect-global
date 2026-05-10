@@ -220,7 +220,7 @@ function CustomerDrawer({
             </dt>
             <dd className="tabular-nums">
               {item.createdAt.toLocaleDateString(
-                locale === "zh" ? "zh-CN" : "en-AU",
+                locale === "en" ? "en-AU" : locale,
                 { month: "short", day: "numeric", year: "numeric" },
               )}
             </dd>

@@ -36,23 +36,26 @@
     "primary": "主导航"
   },
   "country": {
-    "AU": "Australia",
-    "CN": "中国",
-    "CA": "Canada"
+    "AU": "澳大利亚",
+    "US": "美国",
+    "CA": "加拿大"
   },
   "language": {
     "en": "English",
-    "zh": "中文"
+    "zh-CN": "简体中文",
+    "zh-TW": "繁體中文",
+    "ja": "日本語",
+    "ko": "한국어"
   },
   "tax": {
     "incl": {
       "AU": "（含 GST）",
-      "CN": "（含 VAT）",
+      "US": "（含销售税）",
       "CA": "（含 HST）"
     },
     "inclLine": {
       "AU": "所有价格已含 GST",
-      "CN": "所有价格已含 VAT",
+      "US": "所有价格已含销售税",
       "CA": "所有价格已含 HST"
     }
   },
@@ -426,15 +429,12 @@
     "title": "需要紧急帮助？",
     "sub": {
       "AU": "澳洲紧急服务 — 综合",
-      "CN": "中国 120 医疗急救",
+      "US": "美国 911 综合紧急",
       "CA": "加拿大 911 综合紧急"
-    },
-    "subLine2": {
-      "CN": "火警 119 / 报警 110"
     },
     "call": "立即拨打 {num}",
     "notify": "通知紧急联系人",
-    "close": "长按 2 秒返回"
+    "close": "点击返回"
   },
   "status": {
     "pending": "待处理",
@@ -507,7 +507,7 @@
     "sevMid": "中等 — 担忧",
     "sevMidHint": "强势行为、粗鲁、信任受损",
     "sevHigh": "严重 — 危险",
-    "sevHighHint": "威胁、盗窃、人身伤害。请先报警 000 / 120 / 911。",
+    "sevHighHint": "威胁、盗窃、人身伤害。请先拨打当地紧急号码（澳洲 000、美国/加拿大 911）。",
     "sevHighDivertTitle": "请先确认这不是紧急情况",
     "sevHighDivertHint": "请先打开 SOS 拨打您所在国家的紧急号码。",
     "openSos": "打开 SOS",
@@ -527,9 +527,9 @@
     "title": "需要紧急帮助？",
     "callNow": "立即拨打 {num}",
     "notify": "通知紧急联系人",
-    "close": "长按 2 秒关闭",
+    "close": "点 × 或按 Esc 关闭",
     "subtitleAU": "澳大利亚紧急救援",
-    "subtitleCN": "中国 120 医疗急救",
+    "subtitleUS": "美国 911",
     "subtitleCA": "加拿大 911"
   },
   "addresses": {
@@ -868,7 +868,7 @@
     "metricPayment": "支付成功率",
     "exportImage": "导出图片",
     "countryAU": "澳大利亚",
-    "countryCN": "中国",
+    "countryUS": "美国",
     "countryCA": "加拿大",
     "emptyDisputes": "没有匹配的争议。",
     "emptySafety": "没有匹配的安全事件。",

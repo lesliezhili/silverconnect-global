@@ -10,12 +10,18 @@ import { cn } from "@/components/ui/cn";
 
 const LABELS: Record<Locale, string> = {
   en: "English",
-  zh: "中文",
+  "zh-CN": "简体中文",
+  "zh-TW": "繁體中文",
+  ja: "日本語",
+  ko: "한국어",
 };
 
 const SHORT: Record<Locale, string> = {
   en: "EN",
-  zh: "中文",
+  "zh-CN": "简",
+  "zh-TW": "繁",
+  ja: "日",
+  ko: "한",
 };
 
 /** Compact language switcher dropdown chip used in the mobile header. */

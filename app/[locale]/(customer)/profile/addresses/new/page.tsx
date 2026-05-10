@@ -12,7 +12,7 @@ import { db } from "@/lib/db";
 import { addresses } from "@/lib/db/schema/customer-data";
 import { getCurrentUser } from "@/lib/auth/server";
 
-type CountryCode = "AU" | "CN" | "CA";
+type CountryCode = "AU" | "US" | "CA";
 
 async function addAddressAction(formData: FormData) {
   "use server";

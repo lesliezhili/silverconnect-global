@@ -86,7 +86,7 @@ export function buildVerifyEmail(
   code: string,
   locale: string,
 ): { subject: string; text: string; html: string } {
-  const isZh = locale === "zh";
+  const isZh = locale.startsWith("zh");
   const subject = isZh
     ? `SilverConnect 验证码：${code}`
     : `SilverConnect verification code: ${code}`;
@@ -132,7 +132,7 @@ export function buildBookingStatusEmail(
   bookingId: string,
   locale: string,
 ): Built {
-  const isZh = locale === "zh";
+  const isZh = locale.startsWith("zh");
   const link = `${appUrl}/${locale}/bookings/${bookingId}`;
   const map: Record<BookingStatus, { en: [string, string]; zh: [string, string] }> = {
     confirmed: {
@@ -172,7 +172,7 @@ export function buildDisputeUpdateEmail(
   locale: string,
   state: "opened" | "decided",
 ): Built {
-  const isZh = locale === "zh";
+  const isZh = locale.startsWith("zh");
   const link = `${appUrl}/${locale}/help/disputes/${disputeId}`;
   const title = state === "opened"
     ? (isZh ? "争议已提交" : "Your dispute has been submitted")
@@ -195,7 +195,7 @@ export function buildProviderApprovalEmail(
   approved: boolean,
   reason?: string,
 ): Built {
-  const isZh = locale === "zh";
+  const isZh = locale.startsWith("zh");
   const link = `${appUrl}/${locale}/provider`;
   const title = approved
     ? (isZh ? "入驻审核通过" : "You're approved")
@@ -218,7 +218,7 @@ export function buildResetEmail(
   code: string,
   locale: string,
 ): { subject: string; text: string; html: string } {
-  const isZh = locale === "zh";
+  const isZh = locale.startsWith("zh");
   const subject = isZh
     ? `SilverConnect 重置密码：${code}`
     : `SilverConnect password reset code: ${code}`;

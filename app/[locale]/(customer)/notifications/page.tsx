@@ -56,7 +56,7 @@ function timeAgo(date: Date, locale: string): string {
   const min = Math.round(ms / 60_000);
   const hr = Math.round(ms / 3_600_000);
   const day = Math.round(ms / 86_400_000);
-  if (locale === "zh") {
+  if (locale.startsWith("zh")) {
     if (min < 1) return "刚刚";
     if (min < 60) return `${min} 分钟前`;
     if (hr < 24) return `${hr} 小时前`;
@@ -133,7 +133,7 @@ export default async function NotificationsPage({
     .orderBy(desc(notifications.createdAt))
     .limit(50);
 
-  const lang: "zh" | "en" = locale === "zh" ? "zh" : "en";
+  const lang: "zh" | "en" = locale.startsWith("zh") ? "zh" : "en";
 
   return (
     <NotificationsShell

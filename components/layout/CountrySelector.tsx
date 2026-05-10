@@ -9,7 +9,7 @@ import { cn } from "@/components/ui/cn";
 
 const COUNTRIES = [
   { code: "AU", flag: "🇦🇺" },
-  { code: "CN", flag: "🇨🇳" },
+  { code: "US", flag: "🇺🇸" },
   { code: "CA", flag: "🇨🇦" },
 ] as const;
 
@@ -17,7 +17,7 @@ export type CountryCode = (typeof COUNTRIES)[number]["code"];
 
 export const COUNTRY_FLAG: Record<CountryCode, string> = {
   AU: "🇦🇺",
-  CN: "🇨🇳",
+  US: "🇺🇸",
   CA: "🇨🇦",
 };
 

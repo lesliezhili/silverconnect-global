@@ -81,7 +81,7 @@ export default async function ProviderDetailPage({
   const tCommon = await getTranslations("common");
   const country = await getCountry();
   const session = await getSession();
-  const isZh = locale === "zh";
+  const isZh = locale.startsWith("zh");
   const sym = CURRENCY_SYMBOL[country];
   const taxAbbr = TAX_ABBR[country];
   const reportedJustNow = sp.reported === "1";

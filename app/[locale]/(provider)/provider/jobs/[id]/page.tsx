@@ -221,11 +221,11 @@ export default async function ProviderJobDetailPage({
   const isCancelled = status === "cancelled";
 
   const dateLabel = row.scheduledAt.toLocaleDateString(
-    locale === "zh" ? "zh-CN" : "en-AU",
+    locale === "en" ? "en-AU" : locale,
     { weekday: "long", month: "short", day: "numeric" },
   );
   const timeLabel = row.scheduledAt.toLocaleTimeString(
-    locale === "zh" ? "zh-CN" : "en-AU",
+    locale === "en" ? "en-AU" : locale,
     { hour: "2-digit", minute: "2-digit" },
   );
 

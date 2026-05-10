@@ -491,12 +491,12 @@ CREATE TRIGGER trigger_provider_pricing_updated
 -- SEED ADDITIONAL COUNTRIES PRICING
 -- ============================================================
 
--- China pricing tiers (simpler - no weekend premium)
+-- US pricing tiers (simpler - no weekend premium)
 INSERT INTO pricing_tiers (country_code, tier_name, day_type, time_slot_start, time_slot_end, price_multiplier) VALUES
-('CN', 'standard', 'weekday', '00:00:00', '23:59:59', 1.00),
-('CN', 'standard', 'saturday', '00:00:00', '23:59:59', 1.00),
-('CN', 'standard', 'sunday', '00:00:00', '23:59:59', 1.00),
-('CN', 'standard', 'public_holiday', '00:00:00', '23:59:59', 1.20);
+('US', 'standard', 'weekday', '00:00:00', '23:59:59', 1.00),
+('US', 'standard', 'saturday', '00:00:00', '23:59:59', 1.00),
+('US', 'standard', 'sunday', '00:00:00', '23:59:59', 1.00),
+('US', 'standard', 'public_holiday', '00:00:00', '23:59:59', 1.20);
 
 -- Canada pricing tiers
 INSERT INTO pricing_tiers (country_code, tier_name, day_type, time_slot_start, time_slot_end, price_multiplier) VALUES

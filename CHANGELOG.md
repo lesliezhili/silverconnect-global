@@ -5,6 +5,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 ## [Unreleased]
 
+### Changed (Breaking)
+- **Service regions**: `CN` removed; replaced by `US`. Supported regions are now AU / US / CA.
+  - `country` Postgres enum: `RENAME VALUE 'CN' TO 'US'` (see `drizzle/migrations/0004_country-us-locale-expand.sql`).
+  - Currency / tax / emergency-number tables updated; CNY display path removed; US uses approximate AUD→USD rate (0.65) as a display-only placeholder until billing FX lands.
+- **Locales**: `en` / `zh` → `en` / `zh-CN` / `zh-TW` / `ja` / `ko`.
+  - `locale` Postgres enum: `RENAME VALUE 'zh' TO 'zh-CN'`, plus `ADD VALUE` for `zh-TW`, `ja`, `ko`.
+  - `messages/zh.json` renamed to `messages/zh-CN.json`; new placeholder files `zh-TW.json` (copied from zh-CN), `ja.json` and `ko.json` (copied from en, awaiting translation).
+  - Legacy `/zh/...` URLs are 308-redirected to `/zh-CN/...` in `proxy.ts`.
+
 ## [0.1.0] — 2026-05-01
 
 ### Added

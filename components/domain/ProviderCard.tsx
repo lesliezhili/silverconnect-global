@@ -34,8 +34,8 @@ export function ProviderCard({
   const locale = useLocale() as Locale;
   const t = useTranslations("provider");
   const cur =
-    country === "CN"
-      ? `${CURRENCY_SYMBOL.CN}${provider.pricePerHour * 8}`
+    country === "US"
+      ? `${CURRENCY_SYMBOL.US}${(provider.pricePerHour * 0.65).toFixed(0)}`
       : `${CURRENCY_SYMBOL[country]}${provider.pricePerHour}`;
 
   return (
@@ -66,7 +66,7 @@ export function ProviderCard({
               <span className="text-[14px] text-text-tertiary">({provider.reviews})</span>
             </span>
             <span className="text-[14px] text-text-tertiary">
-              · {locale === "zh" ? "中文" : "Mandarin"} · {provider.distanceKm}km
+              · {locale.startsWith("zh") ? "中文" : "Mandarin"} · {provider.distanceKm}km
             </span>
           </div>
           <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
@@ -84,7 +84,7 @@ export function ProviderCard({
           <p className="mt-3.5 flex items-baseline gap-1">
             <span className="text-[22px] font-bold tabular-nums text-text-primary">{cur}</span>
             <span className="text-[13px] font-medium text-text-secondary">
-              /{locale === "zh" ? "小时" : "hr"} · {locale === "zh" ? "含税" : "incl. tax"}
+              /{locale.startsWith("zh") ? "小时" : "hr"} · {locale.startsWith("zh") ? "含税" : "incl. tax"}
             </span>
           </p>
           <div className="mt-3.5 flex gap-2">

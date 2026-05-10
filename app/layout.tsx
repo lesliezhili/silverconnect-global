@@ -18,7 +18,7 @@ const notoSansSc = Noto_Sans_SC({
 export const metadata: Metadata = {
   title: "SilverConnect",
   description:
-    "SilverConnect — trusted home services for older adults across AU, CN, CA.",
+    "SilverConnect — trusted home services for older adults across AU, US, CA.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,

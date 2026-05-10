@@ -10,6 +10,15 @@ const SHORT_LINKS: Record<string, { pathname: string; query?: Record<string, str
 };
 
 export default function proxy(request: NextRequest): NextResponse {
+  // Legacy locale: /zh/... → /zh-CN/... (redirect, not rewrite, so the
+  // bookmark/SEO updates).
+  const path = request.nextUrl.pathname;
+  if (path === "/zh" || path.startsWith("/zh/")) {
+    const next = request.nextUrl.clone();
+    next.pathname = path === "/zh" ? "/zh-CN" : `/zh-CN${path.slice(3)}`;
+    return NextResponse.redirect(next, 308);
+  }
+
   const target = SHORT_LINKS[request.nextUrl.pathname];
   if (target) {
     request.nextUrl.pathname = target.pathname;

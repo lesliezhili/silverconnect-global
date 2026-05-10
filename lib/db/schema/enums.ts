@@ -1,8 +1,8 @@
 import { pgEnum } from "drizzle-orm/pg-core";
 
 export const roleEnum = pgEnum("role", ["customer", "provider", "admin"]);
-export const countryEnum = pgEnum("country", ["AU", "CN", "CA"]);
-export const localeEnum = pgEnum("locale", ["en", "zh"]);
+export const countryEnum = pgEnum("country", ["AU", "US", "CA"]);
+export const localeEnum = pgEnum("locale", ["en", "zh-CN", "zh-TW", "ja", "ko"]);
 
 export const serviceCategoryEnum = pgEnum("service_category", [
   "cleaning",

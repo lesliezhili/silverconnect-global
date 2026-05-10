@@ -254,7 +254,7 @@ export default async function AdminSafetyPage({
                     </Td>
                     <Td className="hidden md:table-cell tabular-nums text-text-tertiary">
                       {r.createdAt.toLocaleString(
-                        locale === "zh" ? "zh-CN" : "en-AU",
+                        locale === "en" ? "en-AU" : locale,
                         {
                           month: "short",
                           day: "numeric",
@@ -376,7 +376,7 @@ function SafetyDrawer({
             </dt>
             <dd className="tabular-nums">
               {row.createdAt.toLocaleString(
-                locale === "zh" ? "zh-CN" : "en-AU",
+                locale === "en" ? "en-AU" : locale,
               )}
             </dd>
             {reviewed && (
@@ -384,7 +384,7 @@ function SafetyDrawer({
                 <dt className="font-semibold text-text-tertiary">Reviewed</dt>
                 <dd className="tabular-nums">
                   {row.reviewedAt!.toLocaleString(
-                    locale === "zh" ? "zh-CN" : "en-AU",
+                    locale === "en" ? "en-AU" : locale,
                   )}{" "}
                   {reviewerName ? `· ${reviewerName}` : ""}
                 </dd>

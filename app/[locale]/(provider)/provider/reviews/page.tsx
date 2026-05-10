@@ -246,7 +246,7 @@ export default async function ProviderReviewsPage({
                         <p className="text-[15px] font-bold">{dispName}</p>
                         <p className="text-[12px] text-text-tertiary tabular-nums">
                           {r.createdAt.toLocaleDateString(
-                            locale === "zh" ? "zh-CN" : "en-AU",
+                            locale === "en" ? "en-AU" : locale,
                             { month: "short", day: "numeric" },
                           )}
                         </p>

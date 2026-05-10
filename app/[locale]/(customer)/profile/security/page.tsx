@@ -154,7 +154,7 @@ export default async function ProfileSecurityPage({
               <div className="min-w-0 flex-1">
                 <p className="text-[15px] font-bold">{t("sessionThis")}</p>
                 <p className="text-[13px] text-text-tertiary">
-                  {t("sessionLastActive", { time: locale === "zh" ? "刚刚" : "now" })}
+                  {t("sessionLastActive", { time: locale.startsWith("zh") ? "刚刚" : "now" })}
                 </p>
               </div>
             </li>

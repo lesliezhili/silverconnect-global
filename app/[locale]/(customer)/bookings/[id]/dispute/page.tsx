@@ -173,7 +173,7 @@ export default async function DisputePage({
           </p>
           {latest && (
             <p className="text-[14px] text-text-tertiary">
-              {locale === "zh" ? "状态" : "Status"}: {latest.status}
+              {locale.startsWith("zh") ? "状态" : "Status"}: {latest.status}
             </p>
           )}
           <Link

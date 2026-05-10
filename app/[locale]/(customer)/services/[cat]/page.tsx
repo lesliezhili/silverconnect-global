@@ -53,7 +53,7 @@ export default async function ProvidersByCategoryPage({
   const tCat = await getTranslations("categories");
   const country = await getCountry();
   const session = await getSession();
-  const isZh = locale === "zh";
+  const isZh = locale.startsWith("zh");
   const sym = CURRENCY_SYMBOL[country];
   const taxAbbr = TAX_ABBR[country];
 

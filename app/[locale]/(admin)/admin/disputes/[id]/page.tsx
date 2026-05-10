@@ -403,7 +403,7 @@ export default async function AdminDisputeDetailPage({
               >
                 <p className="text-[12px] text-text-tertiary">
                   {m.createdAt.toLocaleString(
-                    locale === "zh" ? "zh-CN" : "en-AU",
+                    locale === "en" ? "en-AU" : locale,
                   )}
                   {m.isAdminOnly ? " · admin-only" : ""}
                 </p>
@@ -426,7 +426,7 @@ export default async function AdminDisputeDetailPage({
                 <p className="text-[12px] text-text-tertiary uppercase">
                   {e.kind} ·{" "}
                   {e.createdAt.toLocaleString(
-                    locale === "zh" ? "zh-CN" : "en-AU",
+                    locale === "en" ? "en-AU" : locale,
                   )}
                 </p>
                 {e.fileUrl && (
@@ -529,7 +529,7 @@ export default async function AdminDisputeDetailPage({
           {row.decidedAt && (
             <p className="mt-1 text-[12px] text-text-tertiary tabular-nums">
               {row.decidedAt.toLocaleString(
-                locale === "zh" ? "zh-CN" : "en-AU",
+                locale === "en" ? "en-AU" : locale,
               )}
             </p>
           )}

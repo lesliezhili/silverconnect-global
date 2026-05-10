@@ -8,7 +8,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/components/ui/cn";
 import { COUNTRY_FLAG, type CountryCode } from "./CountrySelector";
 
-const COUNTRY_LIST: CountryCode[] = ["AU", "CN", "CA"];
+const COUNTRY_LIST: CountryCode[] = ["AU", "US", "CA"];
 const COOKIE_NAME = "sc-country";
 const ONE_YEAR = 60 * 60 * 24 * 365;
 

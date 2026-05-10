@@ -140,7 +140,7 @@ async function rescheduleBookingAction(formData: FormData) {
       userId: p.userId,
       kind: "booking_update",
       title: "Booking rescheduled",
-      body: `Customer rescheduled to ${target.toLocaleString(userLocale === "zh" ? "zh-CN" : "en-AU")}.`,
+      body: `Customer rescheduled to ${target.toLocaleString(userLocale === "en" ? "en-AU" : userLocale)}.`,
       link: `/${locale}/provider/jobs/${id}`,
       relatedBookingId: id,
       email: buildBookingStatusEmail(
@@ -234,7 +234,7 @@ export default async function BookingDetailPage({
   const tCta = await getTranslations("booking.cta");
   const tCommon = await getTranslations("common");
   const country = await getCountry();
-  const isZh = locale === "zh";
+  const isZh = locale.startsWith("zh");
   const sym = CURRENCY_SYMBOL[country];
 
   const [row] = await db

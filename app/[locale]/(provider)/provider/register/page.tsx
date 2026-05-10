@@ -440,7 +440,7 @@ function Step2({ t, country }: { t: T; country: string }) {
     {
       key: "insurance" as const,
       labelKey: "docInsurance" as const,
-      optional: country === "CN",
+      optional: country === "US",
     },
   ];
   return (
@@ -487,7 +487,7 @@ function Step3({
 }) {
   const cats: readonly CategoryKey[] = CATEGORY_KEYS;
   const defaultRadius = String(
-    draft.serviceRadiusKm || (country === "CN" ? 10 : 15),
+    draft.serviceRadiusKm || (country === "US" ? 10 : 15),
   );
   return (
     <>

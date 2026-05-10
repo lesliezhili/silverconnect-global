@@ -52,14 +52,17 @@ export default async function AccountSettingsPage({
             <Label htmlFor="lang">{t("language")}</Label>
             <select id="lang" name="lang" defaultValue={locale} className={fieldClass}>
               <option value="en">English</option>
-              <option value="zh">中文</option>
+              <option value="zh-CN">简体中文</option>
+              <option value="zh-TW">繁體中文</option>
+              <option value="ja">日本語</option>
+              <option value="ko">한국어</option>
             </select>
           </div>
           <div>
             <Label htmlFor="region">{t("region")}</Label>
             <select id="region" name="region" defaultValue={country} className={fieldClass}>
               <option value="AU">{tCountry("AU")}</option>
-              <option value="CN">{tCountry("CN")}</option>
+              <option value="US">{tCountry("US")}</option>
               <option value="CA">{tCountry("CA")}</option>
             </select>
           </div>
@@ -67,16 +70,16 @@ export default async function AccountSettingsPage({
             <Label htmlFor="tz">{t("timezone")}</Label>
             <select id="tz" name="tz" defaultValue="Australia/Sydney" className={fieldClass}>
               <option value="Australia/Sydney">Australia/Sydney</option>
-              <option value="Asia/Shanghai">Asia/Shanghai</option>
+              <option value="America/New_York">America/New_York</option>
               <option value="America/Toronto">America/Toronto</option>
               <option value="UTC">UTC</option>
             </select>
           </div>
           <div>
             <Label htmlFor="ccy">{t("currency")}</Label>
-            <select id="ccy" name="ccy" defaultValue={country === "CN" ? "CNY" : country === "CA" ? "CAD" : "AUD"} className={fieldClass}>
+            <select id="ccy" name="ccy" defaultValue={country === "US" ? "USD" : country === "CA" ? "CAD" : "AUD"} className={fieldClass}>
               <option value="AUD">AUD</option>
-              <option value="CNY">CNY</option>
+              <option value="USD">USD</option>
               <option value="CAD">CAD</option>
             </select>
           </div>

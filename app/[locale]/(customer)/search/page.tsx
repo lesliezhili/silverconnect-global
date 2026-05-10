@@ -53,7 +53,7 @@ export default async function SearchPage({
   const tCategories = await getTranslations("categories");
 
   const q = typeof sp.q === "string" ? sp.q : "";
-  const isZh = locale === "zh";
+  const isZh = locale.startsWith("zh");
 
   // Categories matching the query (translate label, then score).
   const catRows = q

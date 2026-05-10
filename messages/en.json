@@ -37,22 +37,25 @@
   },
   "country": {
     "AU": "Australia",
-    "CN": "China",
+    "US": "United States",
     "CA": "Canada"
   },
   "language": {
     "en": "English",
-    "zh": "中文"
+    "zh-CN": "Simplified Chinese",
+    "zh-TW": "Traditional Chinese",
+    "ja": "Japanese",
+    "ko": "Korean"
   },
   "tax": {
     "incl": {
       "AU": " (incl. GST)",
-      "CN": " (incl. VAT)",
+      "US": " (incl. Sales Tax)",
       "CA": " (incl. HST)"
     },
     "inclLine": {
       "AU": "All prices include GST",
-      "CN": "All prices include VAT",
+      "US": "All prices include Sales Tax",
       "CA": "All prices include HST"
     }
   },
@@ -426,15 +429,12 @@
     "title": "Need emergency help?",
     "sub": {
       "AU": "Australian Emergency — combined",
-      "CN": "China 120 Medical Emergency",
+      "US": "United States 911 Emergency",
       "CA": "Canada 911 Combined Emergency"
-    },
-    "subLine2": {
-      "CN": "Fire 119 / Police 110"
     },
     "call": "Call {num} now",
     "notify": "Notify my emergency contact",
-    "close": "Hold 2s to return"
+    "close": "Tap to return"
   },
   "status": {
     "pending": "Pending",
@@ -507,7 +507,7 @@
     "sevMid": "Moderate — concern",
     "sevMidHint": "Pushy behaviour, rude language, broken trust",
     "sevHigh": "Serious — danger",
-    "sevHighHint": "Threats, theft, physical harm. Police or 000 / 120 / 911 first.",
+    "sevHighHint": "Threats, theft, physical harm. Call your local emergency number first (000 in AU, 911 in US/CA).",
     "sevHighDivertTitle": "Stop — this might be an emergency",
     "sevHighDivertHint": "Open the SOS overlay first to call your country's emergency number.",
     "openSos": "Open SOS",
@@ -527,9 +527,9 @@
     "title": "Need emergency help?",
     "callNow": "Call {num} now",
     "notify": "Notify my emergency contact",
-    "close": "Hold 2s to close",
+    "close": "Tap × or press Esc to close",
     "subtitleAU": "Australian Emergency",
-    "subtitleCN": "China 120 Medical Emergency",
+    "subtitleUS": "United States 911",
     "subtitleCA": "Canada 911"
   },
   "addresses": {
@@ -868,7 +868,7 @@
     "metricPayment": "Payment success",
     "exportImage": "Export image",
     "countryAU": "Australia",
-    "countryCN": "China",
+    "countryUS": "United States",
     "countryCA": "Canada",
     "emptyDisputes": "No disputes match the filter.",
     "emptySafety": "No safety events match the filter.",

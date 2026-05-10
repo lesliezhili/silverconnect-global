@@ -178,7 +178,7 @@ export default async function ProviderPayoutsPage({
                   </p>
                   <p className="mt-0.5 text-[12px] text-text-tertiary tabular-nums">
                     {new Date(p.dateISO).toLocaleDateString(
-                      locale === "zh" ? "zh-CN" : "en-AU",
+                      locale === "en" ? "en-AU" : locale,
                       { month: "short", day: "numeric", year: "numeric" }
                     )}
                     {" · "}

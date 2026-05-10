@@ -48,7 +48,7 @@ export default async function AdminPaymentsPage({
   const platformFee = (inflowTotal * PLATFORM_FEE_PERCENT) / 100;
 
   const fmt = (n: number) =>
-    n.toLocaleString(locale === "zh" ? "zh-CN" : "en-AU", {
+    n.toLocaleString(locale === "en" ? "en-AU" : locale, {
       maximumFractionDigits: 0,
     });
 

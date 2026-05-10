@@ -47,7 +47,7 @@ export default async function ServicesPage({
   const tTax = await getTranslations("tax.inclLine");
   const country = await getCountry();
   const session = await getSession();
-  const isZh = locale === "zh";
+  const isZh = locale.startsWith("zh");
 
   // Categories.
   const cats = await db

@@ -270,7 +270,7 @@ export default async function AdminProvidersPage({
                 const initials = initialsOf(p.providerName, p.providerEmail ?? "?");
                 const status = p.onboardingStatus as DbStatus;
                 const appliedDate = (p.submittedAt ?? p.createdAt).toLocaleDateString(
-                  locale === "zh" ? "zh-CN" : "en-AU",
+                  locale === "en" ? "en-AU" : locale,
                   { month: "short", day: "numeric" },
                 );
                 return (
@@ -399,7 +399,7 @@ function ApproveDrawer({
             </dt>
             <dd className="tabular-nums">
               {(row.submittedAt ?? row.createdAt).toLocaleString(
-                locale === "zh" ? "zh-CN" : "en-AU",
+                locale === "en" ? "en-AU" : locale,
               )}
             </dd>
             <dt className="font-semibold text-text-tertiary">

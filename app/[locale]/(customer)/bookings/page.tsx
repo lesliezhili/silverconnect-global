@@ -71,7 +71,7 @@ function initialsOf(name: string | null, fallback: string): string {
 }
 
 function formatWhen(d: Date, locale: string): string {
-  return d.toLocaleString(locale === "zh" ? "zh-CN" : "en-AU", {
+  return d.toLocaleString(locale === "en" ? "en-AU" : locale, {
     month: "short",
     day: "numeric",
     weekday: "short",

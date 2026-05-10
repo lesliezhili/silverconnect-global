@@ -64,7 +64,7 @@ export default async function ProfilePage({
           <div className="min-w-0 flex-1">
             <h1 className="text-h2">{name}</h1>
             <p className="mt-1 text-[14px] text-text-tertiary">
-              {t("memberSince", { date: locale === "zh" ? "2024 年 3 月" : "Mar 2024" })}
+              {t("memberSince", { date: locale.startsWith("zh") ? "2024 年 3 月" : "Mar 2024" })}
             </p>
           </div>
         </section>

@@ -108,7 +108,7 @@ export default async function AdminOverviewPage({
     {
       Icon: TrendingUp,
       label: t("kpiGmv"),
-      value: `$${gmvWeek.toLocaleString(locale === "zh" ? "zh-CN" : "en-AU", { maximumFractionDigits: 0 })}`,
+      value: `$${gmvWeek.toLocaleString(locale === "en" ? "en-AU" : locale, { maximumFractionDigits: 0 })}`,
     },
     {
       Icon: Bot,

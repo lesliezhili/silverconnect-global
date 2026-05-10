@@ -1,45 +1,46 @@
 import type { CountryCode } from "@/components/layout";
 
-export const COUNTRIES: readonly CountryCode[] = ["AU", "CN", "CA"] as const;
+export const COUNTRIES: readonly CountryCode[] = ["AU", "US", "CA"] as const;
 
 export const CURRENCY_SYMBOL: Record<CountryCode, string> = {
   AU: "A$",
-  CN: "¥",
+  US: "US$",
   CA: "C$",
 };
 
-export const TAX_ABBR: Record<CountryCode, "GST" | "VAT" | "HST"> = {
+export const TAX_ABBR: Record<CountryCode, "GST" | "Sales Tax" | "HST"> = {
   AU: "GST",
-  CN: "VAT",
+  US: "Sales Tax",
   CA: "HST",
 };
 
 export const TAX_RATE: Record<CountryCode, number> = {
   AU: 0.1,
-  CN: 0.06,
+  US: 0.08,
   CA: 0.13,
 };
 
 export const EMERGENCY_NUMBER: Record<CountryCode, string> = {
   AU: "000",
-  CN: "120",
+  US: "911",
   CA: "911",
 };
 
-const CN_RATE = 8;
+const US_RATE = 0.65;
 
 /**
  * Format a price in the current country's currency.
- * AU/CA price is base * 1; CN price is base * 8 (rough AUD→CNY rate as in design).
+ * Base value is in AUD; US uses an approximate AUD→USD FX rate for display only —
+ * real multi-currency settlement is deferred to billing/payouts.
  */
 export function fmtPrice(country: CountryCode, base: number, fractionDigits = 2): string {
-  const value = country === "CN" ? base * CN_RATE : base;
+  const value = country === "US" ? base * US_RATE : base;
   const fixed = value.toFixed(fractionDigits).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   return `${CURRENCY_SYMBOL[country]}${fixed}`;
 }
 
 export function fmtPriceRange(country: CountryCode, lo: number, hi: number): string {
-  return country === "CN"
-    ? `${CURRENCY_SYMBOL.CN}${lo * CN_RATE}–${hi * CN_RATE}`
+  return country === "US"
+    ? `${CURRENCY_SYMBOL.US}${(lo * US_RATE).toFixed(0)}–${(hi * US_RATE).toFixed(0)}`
     : `${CURRENCY_SYMBOL[country]}${lo}–${hi}`;
 }

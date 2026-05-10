@@ -118,7 +118,7 @@ async function saveStep3(formData: FormData) {
 async function finalizeBooking(formData: FormData) {
   "use server";
   const locale = String(formData.get("locale") ?? "en");
-  const country = String(formData.get("country") ?? "AU") as "AU" | "CN" | "CA";
+  const country = String(formData.get("country") ?? "AU") as "AU" | "US" | "CA";
   const notes = String(formData.get("notes") ?? "").trim() || null;
   const me = await getCurrentUser();
   if (!me) nextRedirect(`/${locale}/auth/login`);
@@ -226,7 +226,7 @@ export default async function BookingNewPage({
   const tCategories = await getTranslations("categories");
   const sym = CURRENCY_SYMBOL[country];
   const taxAbbr = TAX_ABBR[country];
-  const isZh = locale === "zh";
+  const isZh = locale.startsWith("zh");
 
   const step = clampStep(typeof sp.step === "string" ? sp.step : undefined);
   const error = typeof sp.error === "string" ? sp.error : undefined;
@@ -692,7 +692,7 @@ function Wizard({
   children,
 }: {
   step: Step;
-  country: "AU" | "CN" | "CA";
+  country: "AU" | "US" | "CA";
   initials: string;
   children: React.ReactNode;
 }) {

@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "SilverConnect",
     short_name: "SilverConnect",
     description:
-      "Trusted home services for older adults across AU, CN, CA.",
+      "Trusted home services for older adults across AU, US, CA.",
     start_url: "/",
     scope: "/",
     display: "standalone",

@@ -73,7 +73,7 @@ export default async function OnboardingStatusPage({
               when={
                 s.whenISO
                   ? new Date(s.whenISO).toLocaleDateString(
-                      locale === "zh" ? "zh-CN" : "en-AU",
+                      locale === "en" ? "en-AU" : locale,
                       { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }
                     )
                   : undefined

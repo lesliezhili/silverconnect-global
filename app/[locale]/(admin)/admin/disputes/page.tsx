@@ -425,7 +425,7 @@ export default async function AdminDisputesPage({
                       <span className="inline-flex items-center gap-1">
                         <Clock size={13} aria-hidden />
                         {d.createdAt.toLocaleDateString(
-                          locale === "zh" ? "zh-CN" : "en-AU",
+                          locale === "en" ? "en-AU" : locale,
                           { month: "short", day: "numeric" },
                         )}
                       </span>
@@ -569,7 +569,7 @@ function DisputeDrawer({
                   >
                     <p className="text-[12px] text-text-tertiary">
                       {m.authorName ?? "—"} ·{" "}
-                      {m.createdAt.toLocaleString(locale === "zh" ? "zh-CN" : "en-AU")}
+                      {m.createdAt.toLocaleString(locale === "en" ? "en-AU" : locale)}
                     </p>
                     <p className="mt-1 whitespace-pre-line">{m.body}</p>
                   </li>

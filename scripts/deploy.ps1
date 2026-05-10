@@ -180,7 +180,7 @@ npm ci --omit=dev --no-audit --no-fund
 pm2 reload silverconnect --update-env
 pm2 save
 sleep 3
-code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/zh/home)
+code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/en/home)
 if [ "$code" != "200" ]; then
   echo "Health check failed (HTTP $code) — rolling back"
   rm -rf .next
@@ -224,7 +224,7 @@ echo "Deploy OK (HTTP $code)"
     Write-Host "  Commit   : $localCommit$localDirty"
     Write-Host ""
 
-    $resp = Invoke-WebRequest -Uri "http://$VpsHost/zh/home" -UseBasicParsing -TimeoutSec 10
+    $resp = Invoke-WebRequest -Uri "http://$VpsHost/en/home" -UseBasicParsing -TimeoutSec 10
     $chunks = [regex]::Matches($resp.Content, '/_next/static/chunks/[a-z0-9~_.\-]+\.js') |
               ForEach-Object { $_.Value } |
               Select-Object -Unique -First 3

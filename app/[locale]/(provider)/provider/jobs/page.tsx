@@ -206,11 +206,11 @@ export default async function ProviderJobsPage({
                 j.customerEmail ?? "?",
               );
               const dateLabel = j.scheduledAt.toLocaleDateString(
-                locale === "zh" ? "zh-CN" : "en-AU",
+                locale === "en" ? "en-AU" : locale,
                 { weekday: "short", month: "short", day: "numeric" },
               );
               const timeLabel = j.scheduledAt.toLocaleTimeString(
-                locale === "zh" ? "zh-CN" : "en-AU",
+                locale === "en" ? "en-AU" : locale,
                 { hour: "2-digit", minute: "2-digit" },
               );
               const serviceLabel = j.serviceCategory

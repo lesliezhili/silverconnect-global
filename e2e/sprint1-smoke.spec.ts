@@ -53,12 +53,12 @@ test.describe("header chips", () => {
 });
 
 test.describe("country cookie drives prices", () => {
-  test("CN cookie flips prices to ¥", async ({ context, page }) => {
+  test("US cookie flips prices to US$", async ({ context, page }) => {
     await context.addCookies([
-      { name: "sc-country", value: "CN", url: "http://localhost:3939" },
+      { name: "sc-country", value: "US", url: "http://localhost:3939" },
     ]);
     await page.goto("/en/home");
-    await expect(page.getByText(/from ¥/).first()).toBeVisible();
+    await expect(page.getByText(/from US\$/).first()).toBeVisible();
   });
 
   test("CA cookie flips prices to C$", async ({ context, page }) => {
@@ -157,12 +157,12 @@ test.describe("emergency overlay", () => {
     await expect(page.getByText("Call 000 now")).toBeVisible();
   });
 
-  test("?emergency=1 with CN cookie shows 120", async ({ context, page }) => {
+  test("?emergency=1 with US cookie shows 911", async ({ context, page }) => {
     await context.addCookies([
-      { name: "sc-country", value: "CN", url: "http://localhost:3939" },
+      { name: "sc-country", value: "US", url: "http://localhost:3939" },
     ]);
     await page.goto("/en/chat?emergency=1");
-    await expect(page.getByText(/Call 120 now/)).toBeVisible();
+    await expect(page.getByText(/Call 911 now/)).toBeVisible();
   });
 });
 

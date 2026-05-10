@@ -193,7 +193,7 @@ export default async function ProviderEarningsPage({
                     "rounded-t-sm " + (v > 0 ? "bg-brand" : "bg-bg-surface-2")
                   }
                   style={{ height: `${h}px` }}
-                  aria-label={`${days[i].toLocaleDateString(locale === "zh" ? "zh-CN" : "en-AU", { month: "short", day: "numeric" })} ${priceCountry(country, v)}`}
+                  aria-label={`${days[i].toLocaleDateString(locale === "en" ? "en-AU" : locale, { month: "short", day: "numeric" })} ${priceCountry(country, v)}`}
                 />
               );
             })}
@@ -232,7 +232,7 @@ export default async function ProviderEarningsPage({
                     </p>
                     <p className="mt-0.5 text-[12px] text-text-tertiary tabular-nums">
                       {b.scheduledAt.toLocaleDateString(
-                        locale === "zh" ? "zh-CN" : "en-AU",
+                        locale === "en" ? "en-AU" : locale,
                         { month: "short", day: "numeric" },
                       )}
                       {" · "}
