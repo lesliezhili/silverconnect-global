@@ -1,34 +1,36 @@
-name: Deploy to Vercel
+name: Deploy to VPS
 
-# Auto-deploy on push to main, plus manual trigger for preview deploys.
+# Builds .next on the GitHub runner (VPS only has 894MB RAM), then SCPs the
+# artifact bundle to /opt/silverconnect on 47.236.169.73 and runs pm2 reload.
 #
-# Required GitHub repo secrets (Settings -> Secrets and variables -> Actions):
-#   VERCEL_TOKEN      -- Personal token from vercel.com/account/tokens
-#   VERCEL_ORG_ID     -- team_n2NbVcRR68n7epCLuyZc1M2f
-#   VERCEL_PROJECT_ID -- prj_sfSVMs2tubUghQTUn0t9u0ZmVUQS
+# Required GitHub repo secrets:
+#   VPS_SSH_KEY -- Private key matching a public key in root@47.236.169.73:~/.ssh/authorized_keys
+#                  Generate ed25519, never reuse a key that has appeared in chat/transcripts.
 #
-# All runtime env vars (DATABASE_URL, STRIPE_*, GLM_*, EMAIL_*, etc.)
-# must be configured in the Vercel project dashboard:
-#   vercel.com -> yanhaoau-1392s-projects -> silverconnect -> Settings -> Environment Variables.
+# Server-side runtime env (DATABASE_URL, SESSION_SECRET, STRIPE_*, GLM_*, EMAIL_*,
+# CRON_SECRET, SESSION_COOKIE_SECURE, etc.) lives in /opt/silverconnect/.env.local
+# on the VPS and is read by Next.js at process start. Workflow pulls it down to
+# the runner only for the build step (so NEXT_PUBLIC_* values get inlined into
+# the client bundle), then discards. Runner is ephemeral.
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
-    inputs:
-      target:
-        description: "Deploy target"
-        required: true
-        default: "preview"
-        type: choice
-        options:
-          - preview
-          - production
+
+concurrency:
+  group: deploy-vps
+  cancel-in-progress: false
+
+env:
+  VPS_HOST: 47.236.169.73
+  VPS_USER: root
+  VPS_PATH: /opt/silverconnect
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -37,16 +39,62 @@ jobs:
           node-version: 20.x
           cache: npm
 
-      - name: Install Vercel CLI
-        run: npm install --global vercel@latest
-
-      - name: Link Vercel project
-        run: vercel link --yes --project=silverconnect --token=${{ secrets.VERCEL_TOKEN }}
-
-      - name: Deploy to Vercel
+      - name: Setup SSH
         run: |
-          if [ "${{ github.event_name }}" = "push" ] || [ "${{ inputs.target }}" = "production" ]; then
-            vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
-          else
-            vercel deploy --token=${{ secrets.VERCEL_TOKEN }} --yes
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts
+
+      - name: Pull .env.local from VPS
+        run: scp -i ~/.ssh/deploy_key "$VPS_USER@$VPS_HOST:$VPS_PATH/.env.local" .env.local
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Build
+        run: npm run build
+
+      - name: Pack artifacts
+        run: |
+          tar czf deploy.tar.gz \
+            .next public \
+            package.json package-lock.json \
+            next.config.ts next-env.d.ts tsconfig.json \
+            i18n messages \
+            drizzle drizzle.config.ts \
+            lib components app
+          ls -lh deploy.tar.gz
+
+      - name: SCP artifacts to VPS
+        run: scp -i ~/.ssh/deploy_key deploy.tar.gz "$VPS_USER@$VPS_HOST:/tmp/sc-deploy.tar.gz"
+
+      - name: Extract and reload on VPS
+        run: |
+          ssh -i ~/.ssh/deploy_key "$VPS_USER@$VPS_HOST" bash <<'REMOTE'
+          set -euo pipefail
+          cd /opt/silverconnect
+          # Snapshot current build for one-step rollback
+          rm -rf .next.prev
+          [ -d .next ] && mv .next .next.prev || true
+          tar xzf /tmp/sc-deploy.tar.gz
+          rm /tmp/sc-deploy.tar.gz
+          npm ci --omit=dev --no-audit --no-fund
+          pm2 reload silverconnect --update-env
+          pm2 save
+          # Health check; if it fails, restore previous .next and reload
+          sleep 3
+          code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/zh/home)
+          if [ "$code" != "200" ]; then
+            echo "Health check failed (HTTP $code) — rolling back"
+            rm -rf .next
+            mv .next.prev .next
+            pm2 reload silverconnect --update-env
+            exit 1
           fi
+          echo "Deploy OK (HTTP $code)"
+          REMOTE
+
+      - name: Cleanup
+        if: always()
+        run: rm -f .env.local ~/.ssh/deploy_key
