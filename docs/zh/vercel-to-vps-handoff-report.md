@@ -280,4 +280,53 @@ grep CRON /var/log/syslog | tail -5
 
 ---
 
+## 10. 部署通道决策
+
+**2026-05-10 决议**：从 GitHub Actions push-to-deploy **切换到本地 PowerShell 直推**。
+
+### 起因
+
+- `feat/ui-rebuild → main` reorg 后首次 push 触发的 workflow 在 24s 挂掉（exit 255，run #3，commit 17f48c36）
+- 几乎肯定是 `VPS_SSH_KEY` secret 粘贴格式问题（缺首尾标记 / Windows 换行符）
+- 没本地 `gh auth`，失败排查得绕 web UI；secret 错了再粘一次又是同样格式风险
+
+### 决策
+
+| 维度 | 本地直推（采用） | GitHub CI/CD |
+|---|---|---|
+| Secret 管理 | 无（脚本读本地 `~\.ssh\silverconnect-deploy`） | `VPS_SSH_KEY` secret |
+| 失败排查 | 本地 stdout 直接看 | Actions log（要 web UI 或 gh CLI） |
+| 触发方式 | `.\scripts\deploy.ps1` 主动跑 | push 自动 |
+| Build 环境 | Windows 本机（非纯净） | Ubuntu runner（每次干净） |
+| 适用阶段 | 单人测试服 + 反复迭代 | 多人 / 生产上线 |
+
+测试期单人 + 频繁调试，本地通路省 GitHub 那道环。多人或上线前再切回 CI/CD（把 `on: push` 加回 [.github/workflows/deploy.yml](../../.github/workflows/deploy.yml) + 修好 secret 即可）。
+
+### 日常用法
+
+```powershell
+# 全量
+.\scripts\deploy.ps1
+
+# 跳过 build（重推已构建的 .next）
+.\scripts\deploy.ps1 -SkipBuild
+
+# 只 build + tar，不推 VPS
+.\scripts\deploy.ps1 -DryRun
+
+# 自定义 SSH key
+$env:SC_DEPLOY_KEY = 'C:\path\to\key'
+.\scripts\deploy.ps1
+# 或
+.\scripts\deploy.ps1 -KeyPath 'C:\path\to\key'
+```
+
+脚本逻辑 = workflow 同款：拉 VPS `.env.local` → `npm ci` → `npm run build` → tar → SCP → 远端 `.next.prev` 备份 + 解压 + `npm ci --omit=dev` + `pm2 reload` + 健康检查 + 失败回滚。
+
+### Workflow 现状
+
+[.github/workflows/deploy.yml](../../.github/workflows/deploy.yml) `on:` 改为只 `workflow_dispatch`。push 不再触发。手动触发仍可用（前提是 `VPS_SSH_KEY` secret 修对），作为备份通路。
+
+---
+
 *报告生成时间：2026-05-10*

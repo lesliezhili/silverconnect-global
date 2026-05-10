@@ -57,9 +57,21 @@
 | `package.json` | 删除 `@vercel/analytics` 依赖（无实际使用） | 顺手清理（可独立 PR） |
 | `docs/zh/DEPLOYMENT.md` | 更新部署目标说明 | 文档同步，最后做 |
 
-### 3.2 新的 deploy.yml（build-in-CI + SCP 产物）
+### 3.2 部署流程（本地直推）
 
-**为什么不在 VPS 上 build**：VPS 894MB RAM（剩 74MB），本地 build 太挤。改成 GitHub Actions runner 上跑 `npm ci + npm run build`，把 `.next` 产物 SCP 到 VPS，VPS 只装 production 依赖 + `pm2 reload`。
+> **2026-05-10 决策**：实际采用本地 PowerShell 脚本 [scripts/deploy.ps1](../../scripts/deploy.ps1) 直推 VPS，GitHub Actions workflow 退役为 `workflow_dispatch`-only 的备份通路。决策原因见 [vercel-to-vps-handoff-report.md §10](vercel-to-vps-handoff-report.md#10-部署通道决策)。
+
+日常用法：
+
+```powershell
+.\scripts\deploy.ps1                  # 全量部署
+.\scripts\deploy.ps1 -SkipBuild       # 跳过 build 重推 .next
+.\scripts\deploy.ps1 -DryRun          # 只 build + tar，不推
+```
+
+下文描述的是**等价的 CI 通路**（[.github/workflows/deploy.yml](../../.github/workflows/deploy.yml)），多人协作 / 上线时可恢复。
+
+**为什么不在 VPS 上 build**：VPS 894MB RAM（剩 74MB），本地 build 太挤。改成在 build 端（本机或 GitHub runner）跑 `npm ci + npm run build`，把 `.next` 产物 SCP 到 VPS，VPS 只装 production 依赖 + `pm2 reload`。
 
 实际实现见 [.github/workflows/deploy.yml](../../.github/workflows/deploy.yml)。要点：
 

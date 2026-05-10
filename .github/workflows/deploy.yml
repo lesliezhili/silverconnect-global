@@ -1,11 +1,15 @@
 name: Deploy to VPS
 
+# BACKUP CHANNEL — primary deploy is scripts/deploy.ps1 (local PowerShell).
+# This workflow is kept as workflow_dispatch-only for emergency / non-Windows
+# fallback. To re-enable push-to-deploy, add `push: branches: [main]` back to
+# the `on:` block and ensure VPS_SSH_KEY secret is correctly set.
+#
 # Builds .next on the GitHub runner (VPS only has 894MB RAM), then SCPs the
 # artifact bundle to /opt/silverconnect on 47.236.169.73 and runs pm2 reload.
 #
-# Required GitHub repo secrets:
+# Required GitHub repo secret (only when this workflow is used):
 #   VPS_SSH_KEY -- Private key matching a public key in root@47.236.169.73:~/.ssh/authorized_keys
-#                  Generate ed25519, never reuse a key that has appeared in chat/transcripts.
 #
 # Server-side runtime env (DATABASE_URL, SESSION_SECRET, STRIPE_*, GLM_*, EMAIL_*,
 # CRON_SECRET, SESSION_COOKIE_SECURE, etc.) lives in /opt/silverconnect/.env.local
@@ -14,8 +18,6 @@ name: Deploy to VPS
 # the client bundle), then discards. Runner is ephemeral.
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 concurrency:
