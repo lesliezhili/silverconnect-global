@@ -1,204 +1,94 @@
-# SilverConnect 部署指南
+# Deployment
 
-> 本文档面向开发者（CC），说明如何提交代码、触发 CI/CD 流水线，以及项目在 Vercel 上的部署配置。
+> **For AI agents and new contributors**: this is the only authoritative deploy doc. All older deploy guides are in [docs/archive/deploy-2026-05-pre-vps/](docs/archive/deploy-2026-05-pre-vps/) and should not be followed.
 
----
+## TL;DR
 
-## 一、项目基本信息
+Production runs on a single VPS. **Deploy from your Windows machine**:
 
-| 项目 | 详情 |
-|------|------|
-| 仓库地址 | https://github.com/yanhaocn2000/silverconnect |
-| 默认分支 | `main` |
-| 部署平台 | Vercel |
-| CI/CD 工具 | GitHub Actions |
-
----
-
-## 二、代码提交规范
-
-### 分支策略
-
-- **`main`** — 生产分支，每次 push 自动触发 CI/CD 并部署到 Vercel
-- **功能分支** — 命名格式：`feature/xxx`，开发完成后提 PR 合并到 `main`
-
-### 提交流程
-
-```bash
-# 1. 克隆仓库
-git clone https://github.com/yanhaocn2000/silverconnect.git
-cd silverconnect
-
-# 2. 创建功能分支
-git checkout -b feature/your-feature-name
-
-# 3. 开发并提交代码
-git add .
-git commit -m "feat: 描述你的改动"
-
-# 4. 推送到远程
-git push origin feature/your-feature-name
-
-# 5. 在 GitHub 上发起 Pull Request → main
+```powershell
+.\scripts\deploy.ps1
 ```
 
-### Commit Message 规范
+That's it. Build runs locally, artifact is shipped via SCP, PM2 reloads, health-checked, auto-rollbacks on failure.
 
-| 前缀 | 用途 |
-|------|------|
-| `feat:` | 新功能 |
-| `fix:` | Bug 修复 |
-| `docs:` | 文档更新 |
-| `style:` | 样式调整 |
-| `refactor:` | 代码重构 |
-| `chore:` | 构建/依赖更新 |
-
----
-
-## 三、CI/CD 流水线说明
-
-CI/CD 配置文件位于：`.github/workflows/ci.yml`
-
-### 触发条件
-
-| 事件 | 分支 | 触发的 Job |
-|------|------|-----------|
-| `push` | `main` | build + deploy |
-| `pull_request` | `main` | build（仅检查，不部署）|
-
-### 流水线阶段
+## Architecture (2026-05-10)
 
 ```
-push to main
-    │
-    ▼
-┌─────────────────────────────┐
-│         build Job           │
-│  1. Checkout 代码            │
-│  2. 安装 Node.js 20          │
-│  3. npm ci（安装依赖）        │
-│  4. npm test（运行测试）      │
-│  5. npm run build（构建）    │
-└────────────┬────────────────┘
-             │ 成功后
-             ▼
-┌─────────────────────────────┐
-│         deploy Job          │
-│  1. Checkout 代码            │
-│  2. 执行部署脚本              │
-│    （Vercel 自动接管部署）    │
-└─────────────────────────────┘
+http://47.236.169.73   ←  primary site (VPS, PM2 + nginx + Node 20)
+https://*.vercel.app   ←  reserved for future Stripe webhook + payment pages
+                          (workflow scaffolded but not wired yet)
 ```
 
-### 项目必须包含的文件
+Earlier docs talk about Vercel as primary — that's outdated. See [docs/zh/migrate-vercel-to-vps.md](docs/zh/migrate-vercel-to-vps.md) for the architecture rationale and [docs/zh/vercel-to-vps-handoff-report.md](docs/zh/vercel-to-vps-handoff-report.md) for the deploy-channel decision (§10).
 
-为使 CI/CD 正常运行，项目根目录需要包含：
+## The deploy command
 
-```
-silverconnect/
-├── package.json          ← 必须（定义 scripts: test, build）
-├── package-lock.json     ← 必须（npm ci 依赖此文件）
-├── .github/
-│   └── workflows/
-│       └── ci.yml        ← 已配置 ✅
-└── ...其他项目文件
+```powershell
+.\scripts\deploy.ps1                  # full pipeline (~3-5 min with build, ~90s without)
+.\scripts\deploy.ps1 -SkipBuild       # re-push existing .next without rebuild
+.\scripts\deploy.ps1 -DryRun          # build + tar locally, do not push to VPS
+.\scripts\deploy.ps1 -Force           # skip the dirty-working-tree warning
 ```
 
-### package.json 最低要求
+What the script does, in order:
+1. Preflight: SSH key, VPS reachable, optionally warn on dirty git tree
+2. SCP `.env.local` from VPS to local (VPS is source of truth for runtime env)
+3. `npm ci` + `npm run build` (skipped with `-SkipBuild`)
+4. Tar `.next` + `public` + sources + lockfile
+5. SCP tar to VPS, then SSH to extract → `npm ci --omit=dev` → `pm2 reload --update-env`
+6. Health check `/zh/home`. **Auto-rollback to `.next.prev` on failure.**
+7. Cleanup: deletes local tar and pulled `.env.local` (your local `.env.local` is restored from backup)
 
-```json
-{
-  "name": "silverconnect",
-  "version": "1.0.0",
-  "scripts": {
-    "dev": "你的开发命令",
-    "build": "你的构建命令",
-    "test": "你的测试命令（无测试可写 echo 'no tests'）",
-    "start": "你的启动命令"
-  }
-}
-```
+Logic is mirrored in [.github/workflows/deploy.yml](.github/workflows/deploy.yml) (kept as `workflow_dispatch`-only fallback).
 
----
+## Prerequisites (one-time)
 
-## 四、Vercel 部署配置
+| Item | Value |
+|---|---|
+| SSH key path | `~\.ssh\silverconnect-deploy` (or set `$env:SC_DEPLOY_KEY`) |
+| Public key on VPS | `root@47.236.169.73:~/.ssh/authorized_keys` |
+| Node version (local) | 20.x recommended; 22.x works with `EBADENGINE` warnings |
+| Tools | OpenSSH client, `tar` (Windows 10+ ships these), `npm`, `git` |
 
-### 部署说明
+VPS already has [/opt/silverconnect/.env.local](http://47.236.169.73) configured with all server-side secrets (Supabase / iron-session / GLM / Email / `CRON_SECRET` / `SESSION_COOKIE_SECURE=false`). The deploy script pulls this down at build time so `NEXT_PUBLIC_*` get inlined into the client bundle, then deletes it from the runner.
 
-| 项目 | 详情 |
-|------|------|
-| Vercel 账户 | yanhaoau-1392s（Hobby） |
-| 触发方式 | push 到 `main` 分支自动部署 |
-| 预览部署 | PR 合并前自动生成预览链接 |
+## When to use the GitHub Actions workflow
 
-### Vercel 支持的框架（选择一个）
+[.github/workflows/deploy.yml](.github/workflows/deploy.yml) is **manual-trigger only**:
 
-| 框架 | 构建命令 | 输出目录 |
-|------|----------|---------|
-| Next.js | `next build` | `.next` |
-| React (CRA) | `react-scripts build` | `build` |
-| Vue (Vite) | `vite build` | `dist` |
-| Nuxt.js | `nuxt build` | `.output` |
-| 纯静态 HTML | —（无需构建） | `./` 或 `public` |
+- Use case: deploying from a non-Windows machine, or when local PowerShell is unavailable
+- Requires `VPS_SSH_KEY` repo secret (private key matching VPS `authorized_keys`)
+- Trigger: `gh workflow run "Deploy to VPS" --ref main` or via the Actions tab
+- It does NOT auto-run on push. To re-enable push-to-deploy, add `push: branches: [main]` back to the `on:` block
 
-### vercel.json（可选，放置于项目根目录）
+## Active docs
 
-```json
-{
-  "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/"
-    }
-  ]
-}
-```
+| Doc | Purpose |
+|---|---|
+| **[scripts/deploy.ps1](scripts/deploy.ps1)** | The deploy script itself. Read it once. |
+| [docs/zh/migrate-vercel-to-vps.md](docs/zh/migrate-vercel-to-vps.md) | Full migration plan, architecture, rollback paths |
+| [docs/zh/vercel-to-vps-handoff-report.md](docs/zh/vercel-to-vps-handoff-report.md) | Decision log + remaining handoff items (cron setup, Vercel rename, etc.) |
+| [docs/DEPLOY_VPS.md](docs/DEPLOY_VPS.md) | First-time VPS bootstrap (PM2 / nginx / ufw setup). Reference only — VPS is already provisioned. |
 
-> ⚠️ 如果使用 Next.js / Vue / React 等框架，Vercel 会自动识别，**无需** `vercel.json`。
+## Archived (do not follow)
 
----
+[docs/archive/deploy-2026-05-pre-vps/](docs/archive/deploy-2026-05-pre-vps/) contains pre-2026-05-10 deploy docs that assume Vercel-as-primary. Kept for history. See the directory's README for an index.
 
-## 五、CC 操作清单
+## Quick troubleshooting
 
-请按以下清单依次完成代码提交：
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| `next: not found` in PM2 logs | `npm ci` on VPS failed silently | SSH in, `cd /opt/silverconnect && npm ci --omit=dev`, then `pm2 restart silverconnect` |
+| Build fails on `validator.ts:692` | Stale `.next/dev/types/` from a previous `next dev` run | `rm -rf .next` locally, retry |
+| `bash: line 1: ﻿set: command not found` | UTF-8 BOM in piped stdin to remote bash | Already fixed in script (writes to temp file with `[System.Text.UTF8Encoding]::new($false)`). If you see it again, check your edits didn't regress |
+| `usage: scp [-346...]` | Local path with drive colon (`f:\...`) parsed as remote host | Already fixed — script `cd`s into repo root and passes relative paths |
+| Site returns 200 but stale chunks | New build same content as previous | Compare `.next/BUILD_ID` on VPS before/after; if equal, no actual change shipped |
+| pm2 errored, restart count climbing | Process keeps crashing | `ssh ... 'pm2 logs silverconnect --err --nostream --lines 50'` |
+| Local `.env.local` lost after deploy | Script restores pre-deploy backup automatically; if it didn't, check `.env.local.bak.*` in repo root | Pull again: `scp -i ~/.ssh/silverconnect-deploy root@47.236.169.73:/opt/silverconnect/.env.local .` |
 
-- [ ] 1. 克隆仓库到本地
-- [ ] 2. 在项目根目录创建 `package.json`，填写正确的 `scripts`
-- [ ] 3. 安装依赖并生成 `package-lock.json`（运行 `npm install`）
-- [ ] 4. 提交所有项目文件到 `main` 分支
-- [ ] 5. 检查 GitHub Actions 页面，确认 CI/CD 流水线通过
-- [ ] 6. 检查 Vercel 项目页面，确认部署成功并获取访问链接
+## Out of scope (not yet deployed)
 
-### 快速验证
-
-Push 代码后，打开以下链接检查状态：
-
-- **GitHub Actions 流水线**：https://github.com/yanhaocn2000/silverconnect/actions
-- **Vercel 部署状态**：https://vercel.com/yanhaoau-1392s-projects
-
----
-
-## 六、常见问题
-
-**Q: CI/CD 报错 "Dependencies lock file is not found"**
-> A: 确保提交了 `package-lock.json` 文件（运行 `npm install` 会自动生成）
-
-**Q: CI/CD 报错 "npm test" 失败**
-> A: 在 `package.json` 的 `scripts.test` 中添加：`"test": "echo 'no tests' && exit 0"`
-
-**Q: Vercel 无法识别框架**
-> A: 在 Vercel 项目 Settings → Framework Preset 中手动选择框架
-
-**Q: 部署后页面空白**
-> A: 检查 Vercel 的 Build & Output Settings，确认 Output Directory 与框架匹配
-
----
-
-*文档生成时间：2026-05-07 | 仓库：yanhaocn2000/silverconnect*
+- Stripe webhook handlers (will land on Vercel pay subset workflow when implemented)
+- VPS cron jobs for `app/api/cron/*` (commands in handoff report §5; not yet installed)
+- HTTPS for VPS (still HTTP-only; `SESSION_COOKIE_SECURE=false` is the workaround)
