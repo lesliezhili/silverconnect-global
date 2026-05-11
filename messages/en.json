@@ -32,6 +32,7 @@
     "services": "Services",
     "bookings": "Bookings",
     "messages": "Messages",
+    "donate": "Donate",
     "profile": "Profile",
     "primary": "Primary navigation"
   },
@@ -1117,5 +1118,124 @@
     "sub": "A glitch on our side. Please retry.",
     "retry": "Retry",
     "home": "Back home"
+  },
+  "donate": {
+    "meta": {
+      "title": "Donate · SilverConnect",
+      "desc": "Companionship, health monitoring, and emergency response for older adults living alone."
+    },
+    "hero": {
+      "badge": "Registered nonprofit · transparent funding",
+      "title1": "Make sure every elder",
+      "titleHighlight": "is heard",
+      "subtitle": "SilverConnect provides companionship, health monitoring, and emergency response for isolated and dependent elders across Australia, the US, and Canada. Every donation goes through escrow, and our annual audit is open to all donors.",
+      "ctaPrimary": "Donate now",
+      "ctaSecondary": "Where every dollar goes",
+      "trust1": "🛡 SSL-encrypted payment",
+      "trust2": "🧾 Donation receipt",
+      "trust3": "📊 Annual audit published"
+    },
+    "progress": {
+      "raised": "Raised",
+      "goal": "Goal",
+      "percentComplete": "{pct}% complete",
+      "daysLeft": "<b>{days}</b> days left",
+      "donors": "donors",
+      "avg": "avg donation",
+      "communities": "partner communities"
+    },
+    "impact": {
+      "eyebrow": "Our Impact",
+      "title": "Three years in",
+      "seniorsServed": "seniors served",
+      "visits": "in-home visits",
+      "cities": "cities",
+      "volunteers": "active volunteers"
+    },
+    "stories": {
+      "title": "Their stories",
+      "s1": {
+        "name": "Grandma Chen · 78",
+        "meta": "Melbourne · alone for 6 years",
+        "quote": "A volunteer comes every Wednesday to chat and taught me how to video-call my son in China. We see each other every day now.",
+        "tag1": "Weekly visits",
+        "tag2": "Digital care"
+      },
+      "s2": {
+        "name": "Grandpa Wang · 82",
+        "meta": "Toronto · Parkinson's",
+        "quote": "When I fell at midnight my wristband called the team automatically — an ambulance was here in 30 minutes. Better than insurance.",
+        "tag1": "Emergency response",
+        "tag2": "Health monitoring"
+      },
+      "s3": {
+        "name": "Auntie Lin · 71",
+        "meta": "Shanghai · dependent care",
+        "quote": "After my husband passed I was alone. The volunteer who cooks for me pulled me out of depression. She's like a daughter now.",
+        "tag1": "Meal support",
+        "tag2": "Emotional care"
+      }
+    },
+    "allocation": {
+      "eyebrow": "Where it goes",
+      "title": "Every dollar accounted for",
+      "block1Title": "What we do",
+      "block1Body": "1-on-1 companionship, health monitoring devices, an emergency response channel, and a remote-care app for family members.",
+      "block2Title": "Why it matters",
+      "block2Body": "4.7M elders across the three countries face a companionship desert. Untreated falls are the third leading cause of death over 65.",
+      "block3Title": "What you change",
+      "block3Body": "Every $50 buys one warm visit; every $250 covers a full year of emergency response for one household.",
+      "centerLabel": "direct service",
+      "items": [
+        { "label": "In-home companionship", "pct": 45 },
+        { "label": "Health monitoring & emergency response", "pct": 25 },
+        { "label": "Volunteer training", "pct": 15 },
+        { "label": "Platform & tech", "pct": 10 },
+        { "label": "Operations", "pct": 5 }
+      ],
+      "footnote": "Funds held in escrow; audited annually by an independent firm."
+    },
+    "form": {
+      "eyebrow": "Donate",
+      "title": "Help a senior right now",
+      "subtitle": "Pick an amount. All amounts shown in AUD.",
+      "once": "One-time",
+      "monthly": "Monthly",
+      "customLabel": "Or custom amount",
+      "customPlaceholder": "Enter any amount",
+      "nameLabel": "Name *",
+      "emailLabel": "Email *",
+      "emailHint": "Receipt will be sent here",
+      "phoneLabel": "Phone (optional)",
+      "messageLabel": "A note for the elders (optional)",
+      "messagePlaceholder": "Your message will be delivered with the thank-you card",
+      "anonymous": "Donate anonymously (don't list my name publicly)",
+      "submitOnce": "Confirm ${amount}",
+      "submitMonthly": "Confirm ${amount} / mo",
+      "submitting": "Processing…",
+      "pickAmount": "Please pick an amount",
+      "overLimit": "Single donation cap is $50,000. For larger gifts please contact contact@silverconnect.org",
+      "errorGeneric": "Could not submit. Please try again.",
+      "paymentLabel": "Supported payment methods",
+      "paymentNote": "🔒 All payments are SSL-encrypted; we never store card details. A donation receipt is sent automatically.",
+      "amounts": {
+        "25": "$25 · A nutritious meal for one elder 🍲",
+        "50": "$50 · One warm visit for one elder ☕",
+        "100": "$100 · Funds one professional counselling session 💬",
+        "250": "$250 · A full year of emergency response for one household 🛟",
+        "other": "${amount} · Thank you for your generosity 💙"
+      }
+    },
+    "success": {
+      "title": "Thank you 💙",
+      "body": "We've received your ${amount} {recurring}donation. A thank-you letter and Stripe receipt are on the way to {email}.",
+      "recurring": "monthly ",
+      "cta": "Back to home"
+    },
+    "cancel": {
+      "title": "Donation cancelled",
+      "body": "Come back any time — every gift matters.",
+      "cta": "Try again"
+    }
   }
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ChevronLeft, User } from "lucide-react";
+import { ChevronLeft, Heart, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { type CountryCode } from "./CountrySelector";
@@ -63,6 +63,14 @@ export function Header({
       </div>
       <div className="flex items-center gap-1.5">
         {rightExtra}
+        <Link
+          href="/donate"
+          aria-label={tNav("donate")}
+          className="inline-flex h-12 items-center gap-1.5 rounded-md bg-brand-soft px-2.5 text-[13px] font-bold text-brand transition-colors hover:bg-brand hover:text-white sm:px-4 sm:text-[14px]"
+        >
+          <Heart size={16} aria-hidden className="fill-current" />
+          <span className="hidden sm:inline">{tNav("donate")}</span>
+        </Link>
         <CountrySwitcher value={country} />
         <LanguageChip />
         {signedIn ? (

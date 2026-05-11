@@ -16,3 +16,6 @@ export * from "./safety";
 export * from "./notifications";
 export * from "./ai";
 export * from "./admin";
+
+// Phase 4: public donation flow (4 tables, independent of bookings/payments)
+export * from "./donations";

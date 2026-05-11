@@ -36,6 +36,20 @@
       "when": 1778000000000,
       "tag": "0004_country-us-locale-expand",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1778462166357,
+      "tag": "0005_mature_calypso",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1778464218172,
+      "tag": "0006_mean_stepford_cuckoos",
+      "breakpoints": true
     }
   ]
 }

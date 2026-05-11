@@ -138,7 +138,7 @@ docs/                 Engineering docs (this folder)
 ## 9. Debugging tips
 
 - **Supabase RLS denials** show up as empty arrays — inspect with the SQL editor as the user's role.
-- **Stripe webhook locally** — `stripe listen --forward-to localhost:3000/api/webhooks/stripe`.
+- **Stripe webhook locally** — `stripe listen --forward-to localhost:3000/api/stripe/webhook`.
 - **AI agent** — `curl localhost:8000/api/health` first; check `OPENAI_API_KEY`.
 - **Currency mismatches** — Stripe charge currency must equal `countries.currency_code` for the booking.
 

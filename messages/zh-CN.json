@@ -33,6 +33,7 @@
     "bookings": "预订",
     "messages": "消息",
     "profile": "我的",
+    "donate": "捐款",
     "primary": "主导航"
   },
   "country": {
@@ -1117,5 +1118,124 @@
     "sub": "我们这边出了点问题，请重试。",
     "retry": "重试",
     "home": "返回首页"
+  },
+  "donate": {
+    "meta": {
+      "title": "公益捐款 · SilverConnect",
+      "desc": "为独居与失能长者提供陪伴、健康监测和紧急响应。"
+    },
+    "hero": {
+      "badge": "注册非营利组织 · 善款全程透明",
+      "title1": "让每一位长者都",
+      "titleHighlight": "被听见",
+      "subtitle": "SilverConnect 在澳洲、美国、加拿大三国为独居与失能长者提供陪伴、健康监测和紧急响应服务。你的每一笔捐款都会进入第三方托管账户，年度审计报告对所有捐赠人公开。",
+      "ctaPrimary": "立即捐款",
+      "ctaSecondary": "每一分钱去了哪里",
+      "trust1": "🛡 SSL 加密支付",
+      "trust2": "🧾 捐款收据",
+      "trust3": "📊 年度审计公开"
+    },
+    "progress": {
+      "raised": "已筹集",
+      "goal": "目标",
+      "percentComplete": "{pct}% 完成",
+      "daysLeft": "距截止还有 <b>{days}</b> 天",
+      "donors": "位捐赠人",
+      "avg": "平均捐款",
+      "communities": "合作社区"
+    },
+    "impact": {
+      "eyebrow": "Our Impact",
+      "title": "三年，我们走到了这里",
+      "seniorsServed": "服务长者",
+      "visits": "次上门服务",
+      "cities": "城市覆盖",
+      "volunteers": "活跃志愿者"
+    },
+    "stories": {
+      "title": "他们的故事",
+      "s1": {
+        "name": "陈奶奶 · 78",
+        "meta": "墨尔本 · 独居 6 年",
+        "quote": "志愿者每周三都会来陪我说话，还教我用手机视频。儿子在国内，现在我们每天都能见面。",
+        "tag1": "每周陪伴",
+        "tag2": "数字关怀"
+      },
+      "s2": {
+        "name": "王爷爷 · 82",
+        "meta": "多伦多 · 帕金森",
+        "quote": "上次半夜跌倒，手腕上的设备自动呼叫了团队，30 分钟救护车就到了。这比保险还让我安心。",
+        "tag1": "紧急响应",
+        "tag2": "健康监测"
+      },
+      "s3": {
+        "name": "林阿姨 · 71",
+        "meta": "上海 · 失能照护",
+        "quote": "老伴走后我一个人，是上门做饭的志愿者把我从抑郁里拉出来的。她现在像我的女儿一样。",
+        "tag1": "餐食支持",
+        "tag2": "心理陪伴"
+      }
+    },
+    "allocation": {
+      "eyebrow": "Where it goes",
+      "title": "每一分钱，都看得见",
+      "block1Title": "我们做什么",
+      "block1Body": "为独居长者提供 1v1 陪伴、健康监测设备、紧急响应通道，以及面向家属的远程关怀小程序。",
+      "block2Title": "为何重要",
+      "block2Body": "三国共有 470 万独居长者面临陪伴荒漠，跌倒后未及时救助是 65 岁以上人群第三大死因。",
+      "block3Title": "你能改变什么",
+      "block3Body": "每 $50 让一位长者多一次温暖陪伴；每 $250 让一户家庭获得全年紧急响应保护。",
+      "centerLabel": "直接服务",
+      "items": [
+        { "label": "上门陪伴服务", "pct": 45 },
+        { "label": "健康监测 & 紧急响应", "pct": 25 },
+        { "label": "志愿者培训", "pct": 15 },
+        { "label": "平台技术维护", "pct": 10 },
+        { "label": "行政成本", "pct": 5 }
+      ],
+      "footnote": "资金由第三方托管，年度由独立会计事务所审计。"
+    },
+    "form": {
+      "eyebrow": "Donate",
+      "title": "现在就帮助一位长者",
+      "subtitle": "选择一个金额。所有金额以 AUD 显示。",
+      "once": "单次捐款",
+      "monthly": "月捐",
+      "customLabel": "或自定义金额",
+      "customPlaceholder": "输入任意金额",
+      "nameLabel": "姓名 *",
+      "emailLabel": "邮箱 *",
+      "emailHint": "捐款收据将发送至此邮箱",
+      "phoneLabel": "电话（可选）",
+      "messageLabel": "想对长者说的话（可选）",
+      "messagePlaceholder": "你的祝福会随感谢卡一起送达",
+      "anonymous": "以匿名身份捐赠（不在公开名单上展示我的姓名）",
+      "submitOnce": "确认捐款 ${amount}",
+      "submitMonthly": "确认捐款 ${amount} / 月",
+      "submitting": "处理中…",
+      "pickAmount": "请选择金额",
+      "overLimit": "单笔上限 $50,000，大额捐赠请联系 contact@silverconnect.org",
+      "errorGeneric": "提交失败，请稍后重试。",
+      "paymentLabel": "支持的支付方式",
+      "paymentNote": "🔒 所有支付通过 SSL 加密，平台不留存信用卡信息。完成后系统会自动发送捐款收据。",
+      "amounts": {
+        "25": "$25 · 为一位长者送上一份营养餐 🍲",
+        "50": "$50 · 让一位长者多一次温暖陪伴 ☕",
+        "100": "$100 · 资助一次专业心理疏导 💬",
+        "250": "$250 · 为一户家庭提供全年紧急响应 🛟",
+        "other": "${amount} · 感谢你的慷慨 💙"
+      }
+    },
+    "success": {
+      "title": "感谢你的善意 💙",
+      "body": "我们已收到你的 ${amount} {recurring}捐款。一封感谢信和 Stripe 收据正在发送到 {email}。",
+      "recurring": "月度",
+      "cta": "返回主页"
+    },
+    "cancel": {
+      "title": "捐款已取消",
+      "body": "你随时可以回来，每一份心意我们都珍惜。",
+      "cta": "再试一次"
+    }
   }
 }

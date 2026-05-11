@@ -145,6 +145,50 @@
     --badge-refunded-fg: #FCA5A5;
   }
 
+  /*
+   * Force light palette on a subtree (e.g. donate marketing layout). Using
+   * the bare attribute selector (not :root[data-theme=light]) so a wrapper
+   * <div data-theme="light"> can flip a section without touching <html>.
+   * Mirrors the values from the :root block above.
+   */
+  [data-theme="light"] {
+    --brand-primary: #1858C4;
+    --brand-primary-hover: #0F47A6;
+    --brand-primary-soft: #E8F0FE;
+    --brand-accent: #F59E0B;
+    --brand-accent-soft: #FEF3C7;
+    --success: #15803D;
+    --success-soft: #DCFCE7;
+    --warning: #92400E;
+    --warning-soft: #FEF3C7;
+    --danger: #B91C1C;
+    --danger-soft: #FEE2E2;
+    --bg-base: #FFFFFF;
+    --bg-surface: #F8FAFC;
+    --bg-surface-2: #F1F5F9;
+    --border: #E2E8F0;
+    --border-strong: #CBD5E1;
+    --illu-stroke: #1F2937;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-tertiary: #64748B;
+    --text-placeholder: #64748B;
+    --text-link: #1858C4;
+    --badge-pending-bg: #FEF3C7;
+    --badge-pending-fg: #92400E;
+    --badge-confirmed-bg: #DBEAFE;
+    --badge-confirmed-fg: #1E40AF;
+    --badge-inprogress-bg: #E0E7FF;
+    --badge-inprogress-fg: #3730A3;
+    --badge-completed-bg: #DCFCE7;
+    --badge-completed-fg: #166534;
+    --badge-cancelled-bg: #F1F5F9;
+    --badge-cancelled-fg: #475569;
+    --badge-refunded-bg: #FEE2E2;
+    --badge-refunded-fg: #991B1B;
+    color-scheme: light;
+  }
+
   html {
     font-family: var(--font-sans);
     font-size: 18px; /* UI_DESIGN.md §1.2 base */

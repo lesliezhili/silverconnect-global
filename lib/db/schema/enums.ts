@@ -153,3 +153,28 @@ export const aiMessageRoleEnum = pgEnum("ai_message_role", [
   "assistant",
   "system",
 ]);
+
+export const donationModeEnum = pgEnum("donation_mode", ["once", "monthly"]);
+
+// Status semantics differ by mode:
+//   once    : pending → completed | failed
+//   monthly : pending → active → cancelled (+ failed if Checkout never completes)
+export const donationStatusEnum = pgEnum("donation_status", [
+  "pending",
+  "completed",
+  "active",
+  "cancelled",
+  "failed",
+]);
+
+// donation_payments only stores money that actually moved.
+export const donationPaymentStatusEnum = pgEnum("donation_payment_status", [
+  "succeeded",
+  "partially_refunded",
+  "refunded",
+]);
+
+export const processedStripeEventStatusEnum = pgEnum(
+  "processed_stripe_event_status",
+  ["processing", "succeeded", "failed"],
+);

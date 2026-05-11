@@ -1,0 +1,1 @@
+ALTER TABLE "donations" ADD COLUMN "locale" text DEFAULT 'en' NOT NULL;

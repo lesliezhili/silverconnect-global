@@ -138,7 +138,7 @@ docs/                 工程文档（本目录）
 ## 9. 调试小贴士
 
 - **Supabase RLS 拒绝**会以"空数组"返回——以该用户身份在 SQL editor 复盘。
-- **本地 Stripe webhook** — `stripe listen --forward-to localhost:3000/api/webhooks/stripe`。
+- **本地 Stripe webhook** — `stripe listen --forward-to localhost:3000/api/stripe/webhook`。
 - **AI agent** — 先 `curl localhost:8000/api/health`；查 `OPENAI_API_KEY`。
 - **币种不匹配** — Stripe 收款币种必须 = 该 booking 的 `countries.currency_code`。
 
