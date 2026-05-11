@@ -81,7 +81,8 @@ cat << 'EOF'
 
 ✅ Helper Scripts
    ├─ scripts/migrate.js - Database migrations
-   ├─ scripts/seed.js - Database seeding
+   ├─ scripts/seed-catalog.ts - Service catalog + price seeding
+   ├─ scripts/seed-providers.ts - Demo provider seeding
    ├─ scripts/memory-leak-test.js - Memory profiling
    ├─ scripts/quickstart.js - Quick start helper
    └─ scripts/generate-test-report.sh - Report generation
@@ -134,7 +135,8 @@ silverconnect-global/
 │   └── load-test.js            (k6 load script)
 ├── scripts/                    ✅ Helper scripts
 │   ├── migrate.js              (Database migration)
-│   ├── seed.js                 (Database seeding)
+│   ├── seed-catalog.ts         (Service catalog seeding)
+│   ├── seed-providers.ts       (Demo provider seeding)
 │   ├── memory-leak-test.js     (Memory profiling)
 │   ├── quickstart.js           (Quick start helper)
 │   └── generate-test-report.sh (Report generator)

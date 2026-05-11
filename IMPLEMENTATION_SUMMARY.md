@@ -142,7 +142,8 @@ npm run docker:logs    # View logs
 | Script | Purpose | Command |
 |--------|---------|---------|
 | `scripts/migrate.js` | Database migrations | `npm run db:migrate` |
-| `scripts/seed.js` | Database seeding | `npm run db:seed` |
+| `scripts/seed-catalog.ts` | Service catalog + price seeding | `npm run db:seed` |
+| `scripts/seed-providers.ts` | Demo provider seeding | `npm run db:seed:providers` |
 | `scripts/memory-leak-test.js` | Memory leak detection | `npm run test:memory` |
 | `scripts/quickstart.js` | Quick start setup | `node scripts/quickstart.js` |
 | `scripts/generate-test-report.sh` | Test reports | `./scripts/generate-test-report.sh` |

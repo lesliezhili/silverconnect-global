@@ -141,7 +141,8 @@ silverconnect-global/
 │   └── load-test.js               # k6 load testing script
 ├── scripts/
 │   ├── migrate.js                 # Database migrations
-│   ├── seed.js                    # Database seeding
+│   ├── seed-catalog.ts            # Service catalog + price seeding (`npm run db:seed`)
+│   ├── seed-providers.ts          # Demo provider seeding (`npm run db:seed:providers`)
 │   ├── memory-leak-test.js        # Memory leak detection
 │   ├── quickstart.js              # Quick start helper
 │   └── generate-test-report.sh    # Report generation
