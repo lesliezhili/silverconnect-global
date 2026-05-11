@@ -20,6 +20,7 @@ import {
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/components/ui/cn";
+import { ThemeToggle } from "./ThemeToggle";
 
 const NAV_PRIMARY = [
   { key: "navOverview", href: "/admin", Icon: LayoutDashboard, exact: true },
@@ -75,6 +76,7 @@ export function AdminShell({
           <span className="hidden text-[13px] text-text-tertiary sm:inline">
             {email}
           </span>
+          <ThemeToggle className="h-10 w-10" />
           <form action="/admin/logout" method="POST">
             <button
               type="submit"

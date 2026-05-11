@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Noto_Sans_SC } from "next/font/google";
 import "./globals.css";
+import { Providers } from "./providers";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -41,9 +42,16 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${notoSansSc.variable}`}>
+    // suppressHydrationWarning: next-themes sets `data-theme` on <html> from a
+    // pre-paint inline script, so the server-rendered markup intentionally
+    // differs from the client's first render of this attribute.
+    <html
+      lang="en"
+      className={`${inter.variable} ${notoSansSc.variable}`}
+      suppressHydrationWarning
+    >
       <body className="min-h-dvh bg-bg-base text-text-primary antialiased">
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

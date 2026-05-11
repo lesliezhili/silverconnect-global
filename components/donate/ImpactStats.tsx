@@ -1,18 +1,19 @@
 import { getTranslations } from "next-intl/server";
 
+type ChipColor = "blue" | "amber" | "green" | "purple";
+
 interface Tile {
   emoji: string;
-  bg: string;
-  fg: string;
+  color: ChipColor;
   value: string;
   labelKey: "seniorsServed" | "visits" | "cities" | "volunteers";
 }
 
 const TILES: Tile[] = [
-  { emoji: "👵", bg: "#E8F0FE", fg: "#1F6FEB", value: "8,640+", labelKey: "seniorsServed" },
-  { emoji: "🏠", bg: "#FEF3C7", fg: "#F59E0B", value: "52,300", labelKey: "visits" },
-  { emoji: "📍", bg: "#DCFCE7", fg: "#16A34A", value: "12", labelKey: "cities" },
-  { emoji: "🤝", bg: "#EDE9FE", fg: "#7C3AED", value: "1,150", labelKey: "volunteers" },
+  { emoji: "👵", color: "blue", value: "8,640+", labelKey: "seniorsServed" },
+  { emoji: "🏠", color: "amber", value: "52,300", labelKey: "visits" },
+  { emoji: "📍", color: "green", value: "12", labelKey: "cities" },
+  { emoji: "🤝", color: "purple", value: "1,150", labelKey: "volunteers" },
 ];
 
 export async function ImpactStats() {
@@ -35,7 +36,10 @@ export async function ImpactStats() {
           >
             <div
               className="w-12 h-12 rounded-md flex items-center justify-center text-2xl"
-              style={{ background: tile.bg, color: tile.fg }}
+              style={{
+                background: `var(--chip-${tile.color}-bg)`,
+                color: `var(--chip-${tile.color}-fg)`,
+              }}
             >
               {tile.emoji}
             </div>

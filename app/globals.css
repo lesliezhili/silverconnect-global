@@ -9,6 +9,8 @@
 
 @layer base {
   :root {
+    color-scheme: light;
+
     /* Brand */
     --brand-primary: #1858C4;
     --brand-primary-hover: #0F47A6;
@@ -46,6 +48,22 @@
     --badge-refunded-bg: #FEE2E2;
     --badge-refunded-fg: #991B1B;
 
+    /* Decorative chip color pairs (donate story tags, impact tiles, etc.) —
+       light: pale tint bg + dark text; dark variants below mirror the
+       --badge-* approach (translucent bg + light text). */
+    --chip-blue-bg: #E8F0FE;
+    --chip-blue-fg: #1F6FEB;
+    --chip-amber-bg: #FEF3C7;
+    --chip-amber-fg: #92400E;
+    --chip-green-bg: #DCFCE7;
+    --chip-green-fg: #15803D;
+    --chip-red-bg: #FEE2E2;
+    --chip-red-fg: #B91C1C;
+    --chip-pink-bg: #FCE7F3;
+    --chip-pink-fg: #DB2777;
+    --chip-purple-bg: #EDE9FE;
+    --chip-purple-fg: #7C3AED;
+
     /* Soft tints (used on category chips, recently-booked rows, etc.) */
     --brand-primary-soft: #E8F0FE;
     --brand-accent-soft: #FEF3C7;
@@ -76,9 +94,14 @@
       "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   }
 
-  /* Dark — follows system; never pushed */
+  /* Dark — JS-fail fallback only. next-themes' pre-paint inline script normally
+     sets <html data-theme="dark"> + inline color-scheme before this matters;
+     this @media block keeps CSS vars + color-scheme correct if JS is disabled
+     or the script fails. It cannot affect Tailwind `dark:` utilities (those are
+     gated on the [data-theme="dark"] selector), so never rely on it for `dark:`. */
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
+      color-scheme: dark;
       --brand-primary: #5B9CFF;
       --brand-primary-hover: #3B82F6;
       --brand-primary-soft: #1B2B4A;
@@ -109,10 +132,23 @@
       --badge-cancelled-fg: #CBD5E1;
       --badge-refunded-bg: rgba(239, 68, 68, 0.18);
       --badge-refunded-fg: #FCA5A5;
+      --chip-blue-bg: rgba(59, 130, 246, 0.18);
+      --chip-blue-fg: #93C5FD;
+      --chip-amber-bg: rgba(245, 158, 11, 0.18);
+      --chip-amber-fg: #FCD34D;
+      --chip-green-bg: rgba(34, 197, 94, 0.18);
+      --chip-green-fg: #86EFAC;
+      --chip-red-bg: rgba(239, 68, 68, 0.18);
+      --chip-red-fg: #FCA5A5;
+      --chip-pink-bg: rgba(236, 72, 153, 0.18);
+      --chip-pink-fg: #F9A8D4;
+      --chip-purple-bg: rgba(139, 92, 246, 0.18);
+      --chip-purple-fg: #C4B5FD;
     }
   }
 
   :root[data-theme="dark"] {
+    color-scheme: dark;
     --brand-primary: #5B9CFF;
     --brand-primary-hover: #3B82F6;
     --brand-primary-soft: #1B2B4A;
@@ -143,13 +179,30 @@
     --badge-cancelled-fg: #CBD5E1;
     --badge-refunded-bg: rgba(239, 68, 68, 0.18);
     --badge-refunded-fg: #FCA5A5;
+    --chip-blue-bg: rgba(59, 130, 246, 0.18);
+    --chip-blue-fg: #93C5FD;
+    --chip-amber-bg: rgba(245, 158, 11, 0.18);
+    --chip-amber-fg: #FCD34D;
+    --chip-green-bg: rgba(34, 197, 94, 0.18);
+    --chip-green-fg: #86EFAC;
+    --chip-red-bg: rgba(239, 68, 68, 0.18);
+    --chip-red-fg: #FCA5A5;
+    --chip-pink-bg: rgba(236, 72, 153, 0.18);
+    --chip-pink-fg: #F9A8D4;
+    --chip-purple-bg: rgba(139, 92, 246, 0.18);
+    --chip-purple-fg: #C4B5FD;
   }
 
   /*
-   * Force light palette on a subtree (e.g. donate marketing layout). Using
-   * the bare attribute selector (not :root[data-theme=light]) so a wrapper
-   * <div data-theme="light"> can flip a section without touching <html>.
-   * Mirrors the values from the :root block above.
+   * Force-light palette for a subtree, AND the palette next-themes applies when
+   * the user picks "light" (it writes <html data-theme="light">).
+   *
+   * The selector is bare ([data-theme="light"], not :root[...]) so a nested
+   * wrapper can flip a section. ⚠️ With the global theme system in place,
+   * business pages MUST NOT add their own data-theme="light"/"dark" wrappers —
+   * this block stays only as a *controlled exception* (e.g. a future marketing
+   * page that must always be light, approved in review). The `data-theme=` rg
+   * audit (theme-system-plan §3) checks for unsanctioned uses.
    */
   [data-theme="light"] {
     --brand-primary: #1858C4;
@@ -186,6 +239,18 @@
     --badge-cancelled-fg: #475569;
     --badge-refunded-bg: #FEE2E2;
     --badge-refunded-fg: #991B1B;
+    --chip-blue-bg: #E8F0FE;
+    --chip-blue-fg: #1F6FEB;
+    --chip-amber-bg: #FEF3C7;
+    --chip-amber-fg: #92400E;
+    --chip-green-bg: #DCFCE7;
+    --chip-green-fg: #15803D;
+    --chip-red-bg: #FEE2E2;
+    --chip-red-fg: #B91C1C;
+    --chip-pink-bg: #FCE7F3;
+    --chip-pink-fg: #DB2777;
+    --chip-purple-bg: #EDE9FE;
+    --chip-purple-fg: #7C3AED;
     color-scheme: light;
   }
 

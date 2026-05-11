@@ -36,6 +36,12 @@
     "profile": "Profile",
     "primary": "Primary navigation"
   },
+  "theme": {
+    "toggle": "Toggle theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
   "country": {
     "AU": "Australia",
     "US": "United States",
@@ -190,6 +196,8 @@
     "afternoon": "Afternoon",
     "evening": "Evening",
     "stripeConnect": "Connect with Stripe",
+    "stripeContinue": "Continue Stripe setup",
+    "stripeStarted": "Stripe setup started",
     "stripeHint": "We pay your earnings via Stripe Connect. Bank info stays with Stripe.",
     "onboardingTitle": "Application status",
     "onboardingSub": "We review every step. You will get a notification at each stage.",
@@ -1228,8 +1236,8 @@
     },
     "success": {
       "title": "Thank you 💙",
-      "body": "We've received your ${amount} {recurring}donation. A thank-you letter and Stripe receipt are on the way to {email}.",
-      "recurring": "monthly ",
+      "bodyOnce": "We've received your ${amount} donation. A thank-you letter and Stripe receipt are on the way to {email}.",
+      "bodyMonthly": "We've received your ${amount} monthly donation. A thank-you letter and Stripe receipt are on the way to {email}.",
       "cta": "Back to home"
     },
     "cancel": {

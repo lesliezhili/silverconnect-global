@@ -36,6 +36,12 @@
     "donate": "捐款",
     "primary": "主導覽"
   },
+  "theme": {
+    "toggle": "切換主題",
+    "light": "淺色",
+    "dark": "深色",
+    "system": "跟隨系統"
+  },
   "country": {
     "AU": "澳大利亞",
     "US": "美國",
@@ -190,6 +196,8 @@
     "afternoon": "中午",
     "evening": "晚上",
     "stripeConnect": "綁定 Stripe",
+    "stripeContinue": "繼續 Stripe 設定",
+    "stripeStarted": "已開始 Stripe 設定",
     "stripeHint": "透過 Stripe Connect 撥款。銀行卡資料只儲存於 Stripe。",
     "onboardingTitle": "申請狀態",
     "onboardingSub": "每個階段都會通知您。",
@@ -1121,136 +1129,121 @@
   },
   "donate": {
     "meta": {
-      "title": "Donate · SilverConnect",
-      "desc": "Companionship, health monitoring, and emergency response for older adults living alone."
+      "title": "公益捐款 · SilverConnect",
+      "desc": "為獨居與失能長者提供陪伴、健康監測和緊急應變。"
     },
     "hero": {
-      "badge": "Registered nonprofit · transparent funding",
-      "title1": "Make sure every elder",
-      "titleHighlight": "is heard",
-      "subtitle": "SilverConnect provides companionship, health monitoring, and emergency response for isolated and dependent elders across Australia, the US, and Canada. Every donation goes through escrow, and our annual audit is open to all donors.",
-      "ctaPrimary": "Donate now",
-      "ctaSecondary": "Where every dollar goes",
-      "trust1": "🛡 SSL-encrypted payment",
-      "trust2": "🧾 Donation receipt",
-      "trust3": "📊 Annual audit published"
+      "badge": "註冊非營利組織 · 善款全程透明",
+      "title1": "讓每一位長者都",
+      "titleHighlight": "被聽見",
+      "subtitle": "SilverConnect 在澳洲、美國、加拿大三國為獨居與失能長者提供陪伴、健康監測和緊急應變服務。你的每一筆捐款都會進入第三方託管帳戶，年度審計報告對所有捐款人公開。",
+      "ctaPrimary": "立即捐款",
+      "ctaSecondary": "每一分錢去了哪裡",
+      "trust1": "🛡 SSL 加密支付",
+      "trust2": "🧾 捐款收據",
+      "trust3": "📊 年度審計公開"
     },
     "progress": {
-      "raised": "Raised",
-      "goal": "Goal",
-      "percentComplete": "{pct}% complete",
-      "daysLeft": "<b>{days}</b> days left",
-      "donors": "donors",
-      "avg": "avg donation",
-      "communities": "partner communities"
+      "raised": "已籌集",
+      "goal": "目標",
+      "percentComplete": "{pct}% 完成",
+      "daysLeft": "距截止還有 <b>{days}</b> 天",
+      "donors": "位捐款人",
+      "avg": "平均捐款",
+      "communities": "合作社區"
     },
     "impact": {
       "eyebrow": "Our Impact",
-      "title": "Three years in",
-      "seniorsServed": "seniors served",
-      "visits": "in-home visits",
-      "cities": "cities",
-      "volunteers": "active volunteers"
+      "title": "三年，我們走到了這裡",
+      "seniorsServed": "服務長者",
+      "visits": "次到府服務",
+      "cities": "城市覆蓋",
+      "volunteers": "活躍志工"
     },
     "stories": {
-      "title": "Their stories",
+      "title": "他們的故事",
       "s1": {
-        "name": "Grandma Chen · 78",
-        "meta": "Melbourne · alone for 6 years",
-        "quote": "A volunteer comes every Wednesday to chat and taught me how to video-call my son in China. We see each other every day now.",
-        "tag1": "Weekly visits",
-        "tag2": "Digital care"
+        "name": "陳奶奶 · 78",
+        "meta": "墨爾本 · 獨居 6 年",
+        "quote": "志工每週三都會來陪我說話，還教我用手機視訊。兒子在國內，現在我們每天都能見面。",
+        "tag1": "每週陪伴",
+        "tag2": "數位關懷"
       },
       "s2": {
-        "name": "Grandpa Wang · 82",
-        "meta": "Toronto · Parkinson's",
-        "quote": "When I fell at midnight my wristband called the team automatically — an ambulance was here in 30 minutes. Better than insurance.",
-        "tag1": "Emergency response",
-        "tag2": "Health monitoring"
+        "name": "王爺爺 · 82",
+        "meta": "多倫多 · 帕金森",
+        "quote": "上次半夜跌倒，手腕上的設備自動呼叫了團隊，30 分鐘救護車就到了。這比保險還讓我安心。",
+        "tag1": "緊急應變",
+        "tag2": "健康監測"
       },
       "s3": {
-        "name": "Auntie Lin · 71",
-        "meta": "Shanghai · dependent care",
-        "quote": "After my husband passed I was alone. The volunteer who cooks for me pulled me out of depression. She's like a daughter now.",
-        "tag1": "Meal support",
-        "tag2": "Emotional care"
+        "name": "林阿姨 · 71",
+        "meta": "上海 · 失能照護",
+        "quote": "老伴走後我一個人，是到府做飯的志工把我從憂鬱裡拉出來的。她現在像我的女兒一樣。",
+        "tag1": "餐食支援",
+        "tag2": "心理陪伴"
       }
     },
     "allocation": {
       "eyebrow": "Where it goes",
-      "title": "Every dollar accounted for",
-      "block1Title": "What we do",
-      "block1Body": "1-on-1 companionship, health monitoring devices, an emergency response channel, and a remote-care app for family members.",
-      "block2Title": "Why it matters",
-      "block2Body": "4.7M elders across the three countries face a companionship desert. Untreated falls are the third leading cause of death over 65.",
-      "block3Title": "What you change",
-      "block3Body": "Every $50 buys one warm visit; every $250 covers a full year of emergency response for one household.",
-      "centerLabel": "direct service",
+      "title": "每一分錢，都看得見",
+      "block1Title": "我們做什麼",
+      "block1Body": "為獨居長者提供 1v1 陪伴、健康監測設備、緊急應變通道，以及面向家屬的遠端關懷小程式。",
+      "block2Title": "為何重要",
+      "block2Body": "三國共有 470 萬獨居長者面臨陪伴荒漠，跌倒後未及時救助是 65 歲以上人群第三大死因。",
+      "block3Title": "你能改變什麼",
+      "block3Body": "每 $50 讓一位長者多一次溫暖陪伴；每 $250 讓一戶家庭獲得全年緊急應變保護。",
+      "centerLabel": "直接服務",
       "items": [
-        {
-          "label": "In-home companionship",
-          "pct": 45
-        },
-        {
-          "label": "Health monitoring & emergency response",
-          "pct": 25
-        },
-        {
-          "label": "Volunteer training",
-          "pct": 15
-        },
-        {
-          "label": "Platform & tech",
-          "pct": 10
-        },
-        {
-          "label": "Operations",
-          "pct": 5
-        }
+        { "label": "到府陪伴服務", "pct": 45 },
+        { "label": "健康監測 & 緊急應變", "pct": 25 },
+        { "label": "志工培訓", "pct": 15 },
+        { "label": "平台技術維護", "pct": 10 },
+        { "label": "行政成本", "pct": 5 }
       ],
-      "footnote": "Funds held in escrow; audited annually by an independent firm."
+      "footnote": "資金由第三方託管，年度由獨立會計師事務所審計。"
     },
     "form": {
       "eyebrow": "Donate",
-      "title": "Help a senior right now",
-      "subtitle": "Pick an amount. All amounts shown in AUD.",
-      "once": "One-time",
-      "monthly": "Monthly",
-      "customLabel": "Or custom amount",
-      "customPlaceholder": "Enter any amount",
-      "nameLabel": "Name *",
-      "emailLabel": "Email *",
-      "emailHint": "Receipt will be sent here",
-      "phoneLabel": "Phone (optional)",
-      "messageLabel": "A note for the elders (optional)",
-      "messagePlaceholder": "Your message will be delivered with the thank-you card",
-      "anonymous": "Donate anonymously (don't list my name publicly)",
-      "submitOnce": "Confirm ${amount}",
-      "submitMonthly": "Confirm ${amount} / mo",
-      "submitting": "Processing…",
-      "pickAmount": "Please pick an amount",
-      "overLimit": "Single donation cap is $50,000. For larger gifts please contact contact@silverconnect.org",
-      "errorGeneric": "Could not submit. Please try again.",
-      "paymentLabel": "Supported payment methods",
-      "paymentNote": "🔒 All payments are SSL-encrypted; we never store card details. A donation receipt is sent automatically.",
+      "title": "現在就幫助一位長者",
+      "subtitle": "選擇一個金額。所有金額以 AUD 顯示。",
+      "once": "單次捐款",
+      "monthly": "每月捐款",
+      "customLabel": "或自訂金額",
+      "customPlaceholder": "輸入任意金額",
+      "nameLabel": "姓名 *",
+      "emailLabel": "電子郵件 *",
+      "emailHint": "捐款收據將寄送至此信箱",
+      "phoneLabel": "電話（選填）",
+      "messageLabel": "想對長者說的話（選填）",
+      "messagePlaceholder": "你的祝福會隨感謝卡一起送達",
+      "anonymous": "以匿名身分捐款（不在公開名單上顯示我的姓名）",
+      "submitOnce": "確認捐款 ${amount}",
+      "submitMonthly": "確認捐款 ${amount} / 月",
+      "submitting": "處理中…",
+      "pickAmount": "請選擇金額",
+      "overLimit": "單筆上限 $50,000，大額捐款請聯絡 contact@silverconnect.org",
+      "errorGeneric": "送出失敗，請稍後再試。",
+      "paymentLabel": "支援的支付方式",
+      "paymentNote": "🔒 所有支付透過 SSL 加密，平台不留存信用卡資訊。完成後系統會自動寄送捐款收據。",
       "amounts": {
-        "25": "$25 · A nutritious meal for one elder 🍲",
-        "50": "$50 · One warm visit for one elder ☕",
-        "100": "$100 · Funds one professional counselling session 💬",
-        "250": "$250 · A full year of emergency response for one household 🛟",
-        "other": "${amount} · Thank you for your generosity 💙"
+        "25": "$25 · 為一位長者送上一份營養餐 🍲",
+        "50": "$50 · 讓一位長者多一次溫暖陪伴 ☕",
+        "100": "$100 · 資助一次專業心理輔導 💬",
+        "250": "$250 · 為一戶家庭提供全年緊急應變 🛟",
+        "other": "${amount} · 感謝你的慷慨 💙"
       }
     },
     "success": {
-      "title": "Thank you 💙",
-      "body": "We've received your ${amount} {recurring}donation. A thank-you letter and Stripe receipt are on the way to {email}.",
-      "recurring": "monthly ",
-      "cta": "Back to home"
+      "title": "感謝你的善意 💙",
+      "bodyOnce": "我們已收到你的 ${amount} 捐款。一封感謝信和 Stripe 收據正在寄送到 {email}。",
+      "bodyMonthly": "我們已收到你的 ${amount} 每月捐款。一封感謝信和 Stripe 收據正在寄送到 {email}。",
+      "cta": "返回主頁"
     },
     "cancel": {
-      "title": "Donation cancelled",
-      "body": "Come back any time — every gift matters.",
-      "cta": "Try again"
+      "title": "捐款已取消",
+      "body": "你隨時可以回來，每一份心意我們都珍惜。",
+      "cta": "再試一次"
     }
   }
 }

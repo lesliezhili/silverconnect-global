@@ -8,6 +8,7 @@ import { type CountryCode } from "./CountrySelector";
 import { CountrySwitcher } from "./CountrySwitcher";
 import { DesktopNav } from "./DesktopNav";
 import { LanguageChip } from "./LanguageSelector";
+import { ThemeToggle } from "./ThemeToggle";
 
 export interface HeaderProps {
   back?: boolean;
@@ -71,6 +72,7 @@ export function Header({
           <Heart size={16} aria-hidden className="fill-current" />
           <span className="hidden sm:inline">{tNav("donate")}</span>
         </Link>
+        <ThemeToggle />
         <CountrySwitcher value={country} />
         <LanguageChip />
         {signedIn ? (

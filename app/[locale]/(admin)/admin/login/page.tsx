@@ -5,6 +5,7 @@ import { redirect } from "@/i18n/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
+import { PublicThemeCorner } from "@/components/layout/PublicThemeCorner";
 import { getAdmin, setAdmin } from "@/components/domain/adminCookie";
 
 async function loginAction(formData: FormData) {
@@ -40,6 +41,7 @@ export default async function AdminLoginPage({
       id="main-content"
       className="flex min-h-screen items-center justify-center bg-bg-surface-2 px-5 py-12"
     >
+      <PublicThemeCorner />
       <div className="w-full max-w-[420px] rounded-lg border border-border bg-bg-base p-6 shadow-card sm:p-8">
         <div className="flex items-center gap-2">
           <span

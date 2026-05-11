@@ -23,24 +23,22 @@ export default async function DonateSuccess({
   const t = await getTranslations("donate.success");
 
   let amountWithSymbol = "—";
-  let recurring = "";
   let email = "";
+  let bodyKey: "bodyOnce" | "bodyMonthly" = "bodyOnce";
   if (session_id) {
     const donation = await findDonationBySessionId(session_id);
     if (donation) {
       amountWithSymbol = `$${(donation.amountCents / 100).toFixed(2)}`;
-      recurring = donation.mode === "monthly" ? t("recurring") + " " : "";
+      bodyKey = donation.mode === "monthly" ? "bodyMonthly" : "bodyOnce";
       email = donation.donorEmail;
     }
   }
 
-  // Template uses `${amount}` (literal, not ICU) so we substitute manually.
-  // Replacement *includes* the `$` so the leading `$` from the template is
-  // not lost. {recurring} / {email} are also literal — t.raw bypasses ICU.
-  const body = t.raw("body") as string;
-  const filled = body
+  // Each locale's bodyOnce / bodyMonthly is a complete sentence; we only
+  // substitute `${amount}` (literal `$` + a `{amount}` token — t.raw bypasses
+  // ICU so this is plain string replace) and `{email}`.
+  const filled = (t.raw(bodyKey) as string)
     .replace("${amount}", amountWithSymbol)
-    .replace("{recurring}", recurring)
     .replace("{email}", email || "");
 
   return (

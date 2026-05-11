@@ -36,6 +36,12 @@
     "donate": "捐款",
     "primary": "主导航"
   },
+  "theme": {
+    "toggle": "切换主题",
+    "light": "浅色",
+    "dark": "深色",
+    "system": "跟随系统"
+  },
   "country": {
     "AU": "澳大利亚",
     "US": "美国",
@@ -190,6 +196,8 @@
     "afternoon": "中午",
     "evening": "晚上",
     "stripeConnect": "绑定 Stripe",
+    "stripeContinue": "继续 Stripe 设置",
+    "stripeStarted": "已开始 Stripe 设置",
     "stripeHint": "通过 Stripe Connect 发放收入。银行卡信息只存在 Stripe。",
     "onboardingTitle": "申请状态",
     "onboardingSub": "每一步都会通知你。",
@@ -1228,8 +1236,8 @@
     },
     "success": {
       "title": "感谢你的善意 💙",
-      "body": "我们已收到你的 ${amount} {recurring}捐款。一封感谢信和 Stripe 收据正在发送到 {email}。",
-      "recurring": "月度",
+      "bodyOnce": "我们已收到你的 ${amount} 捐款。一封感谢信和 Stripe 收据正在发送到 {email}。",
+      "bodyMonthly": "我们已收到你的 ${amount} 月度捐款。一封感谢信和 Stripe 收据正在发送到 {email}。",
       "cta": "返回主页"
     },
     "cancel": {

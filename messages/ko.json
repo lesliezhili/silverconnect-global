@@ -36,6 +36,12 @@
     "donate": "기부",
     "primary": "주요 메뉴"
   },
+  "theme": {
+    "toggle": "테마 전환",
+    "light": "밝게",
+    "dark": "어둡게",
+    "system": "시스템 설정"
+  },
   "country": {
     "AU": "호주",
     "US": "미국",
@@ -190,6 +196,8 @@
     "afternoon": "오후",
     "evening": "저녁",
     "stripeConnect": "Stripe 연결",
+    "stripeContinue": "Stripe 설정 계속하기",
+    "stripeStarted": "Stripe 설정 시작됨",
     "stripeHint": "수입은 Stripe Connect로 지급됩니다. 은행 정보는 Stripe에 안전하게 보관됩니다.",
     "onboardingTitle": "지원 상태",
     "onboardingSub": "단계별로 검토합니다. 각 단계마다 알림을 받게 됩니다.",
@@ -1121,136 +1129,121 @@
   },
   "donate": {
     "meta": {
-      "title": "Donate · SilverConnect",
-      "desc": "Companionship, health monitoring, and emergency response for older adults living alone."
+      "title": "기부 · SilverConnect",
+      "desc": "독거 및 거동이 불편한 어르신을 위한 말벗, 건강 모니터링, 긴급 대응."
     },
     "hero": {
-      "badge": "Registered nonprofit · transparent funding",
-      "title1": "Make sure every elder",
-      "titleHighlight": "is heard",
-      "subtitle": "SilverConnect provides companionship, health monitoring, and emergency response for isolated and dependent elders across Australia, the US, and Canada. Every donation goes through escrow, and our annual audit is open to all donors.",
-      "ctaPrimary": "Donate now",
-      "ctaSecondary": "Where every dollar goes",
-      "trust1": "🛡 SSL-encrypted payment",
-      "trust2": "🧾 Donation receipt",
-      "trust3": "📊 Annual audit published"
+      "badge": "등록 비영리 단체 · 후원금 사용 내역 전면 공개",
+      "title1": "모든 어르신의 목소리가",
+      "titleHighlight": "닿을 수 있도록",
+      "subtitle": "SilverConnect는 호주·미국·캐나다 3개국에서 독거 및 거동이 불편한 어르신에게 말벗·건강 모니터링·긴급 대응 서비스를 제공합니다. 모든 기부금은 제3자 예치 계좌에서 관리되며, 연례 감사 보고서는 모든 기부자에게 공개됩니다.",
+      "ctaPrimary": "지금 기부하기",
+      "ctaSecondary": "후원금이 어디에 쓰이나요",
+      "trust1": "🛡 SSL 암호화 결제",
+      "trust2": "🧾 기부금 영수증 발급",
+      "trust3": "📊 연례 감사 공개"
     },
     "progress": {
-      "raised": "Raised",
-      "goal": "Goal",
-      "percentComplete": "{pct}% complete",
-      "daysLeft": "<b>{days}</b> days left",
-      "donors": "donors",
-      "avg": "avg donation",
-      "communities": "partner communities"
+      "raised": "모금액",
+      "goal": "목표",
+      "percentComplete": "{pct}% 달성",
+      "daysLeft": "마감까지 <b>{days}</b>일 남음",
+      "donors": "명의 기부자",
+      "avg": "평균 기부액",
+      "communities": "협력 커뮤니티"
     },
     "impact": {
       "eyebrow": "Our Impact",
-      "title": "Three years in",
-      "seniorsServed": "seniors served",
-      "visits": "in-home visits",
-      "cities": "cities",
-      "volunteers": "active volunteers"
+      "title": "3년의 발자취",
+      "seniorsServed": "지원한 어르신",
+      "visits": "회 방문 지원",
+      "cities": "개 도시 운영",
+      "volunteers": "활동 중인 자원봉사자"
     },
     "stories": {
-      "title": "Their stories",
+      "title": "어르신들의 이야기",
       "s1": {
-        "name": "Grandma Chen · 78",
-        "meta": "Melbourne · alone for 6 years",
-        "quote": "A volunteer comes every Wednesday to chat and taught me how to video-call my son in China. We see each other every day now.",
-        "tag1": "Weekly visits",
-        "tag2": "Digital care"
+        "name": "천 씨 · 78",
+        "meta": "멜버른 · 독거 6년",
+        "quote": "자원봉사자분이 매주 수요일에 말벗을 해주러 오시고, 휴대폰 영상통화도 알려주셨어요. 아들은 중국에 있는데, 이제는 매일 얼굴을 봅니다.",
+        "tag1": "매주 방문",
+        "tag2": "디지털 지원"
       },
       "s2": {
-        "name": "Grandpa Wang · 82",
-        "meta": "Toronto · Parkinson's",
-        "quote": "When I fell at midnight my wristband called the team automatically — an ambulance was here in 30 minutes. Better than insurance.",
-        "tag1": "Emergency response",
-        "tag2": "Health monitoring"
+        "name": "왕 씨 · 82",
+        "meta": "토론토 · 파킨슨병",
+        "quote": "지난번 한밤중에 넘어졌을 때, 손목의 기기가 자동으로 팀을 호출해 30분 만에 구급차가 왔습니다. 보험보다 더 안심됩니다.",
+        "tag1": "긴급 대응",
+        "tag2": "건강 모니터링"
       },
       "s3": {
-        "name": "Auntie Lin · 71",
-        "meta": "Shanghai · dependent care",
-        "quote": "After my husband passed I was alone. The volunteer who cooks for me pulled me out of depression. She's like a daughter now.",
-        "tag1": "Meal support",
-        "tag2": "Emotional care"
+        "name": "린 씨 · 71",
+        "meta": "상하이 · 거동 불편",
+        "quote": "남편이 떠난 뒤 혼자가 되었을 때, 식사를 만들어주러 오시는 자원봉사자분이 저를 우울증에서 끌어내 주셨어요. 이제는 딸 같은 분입니다.",
+        "tag1": "식사 지원",
+        "tag2": "정서적 지원"
       }
     },
     "allocation": {
       "eyebrow": "Where it goes",
-      "title": "Every dollar accounted for",
-      "block1Title": "What we do",
-      "block1Body": "1-on-1 companionship, health monitoring devices, an emergency response channel, and a remote-care app for family members.",
-      "block2Title": "Why it matters",
-      "block2Body": "4.7M elders across the three countries face a companionship desert. Untreated falls are the third leading cause of death over 65.",
-      "block3Title": "What you change",
-      "block3Body": "Every $50 buys one warm visit; every $250 covers a full year of emergency response for one household.",
-      "centerLabel": "direct service",
+      "title": "후원금, 한 푼까지 투명하게",
+      "block1Title": "저희가 하는 일",
+      "block1Body": "독거 어르신을 위한 1:1 말벗, 건강 모니터링 기기, 긴급 대응 창구, 그리고 가족을 위한 원격 돌봄 앱을 제공합니다.",
+      "block2Title": "왜 중요한가요",
+      "block2Body": "3개국에서 470만 명의 어르신이 '외로움'에 직면해 있습니다. 낙상 후 적절한 도움을 받지 못하는 것은 65세 이상 사망 원인 3위입니다.",
+      "block3Title": "당신이 바꿀 수 있는 것",
+      "block3Body": "$50로 어르신 한 분께 따뜻한 방문 한 번을, $250로 한 가구에 1년간의 긴급 대응을.",
+      "centerLabel": "직접 지원",
       "items": [
-        {
-          "label": "In-home companionship",
-          "pct": 45
-        },
-        {
-          "label": "Health monitoring & emergency response",
-          "pct": 25
-        },
-        {
-          "label": "Volunteer training",
-          "pct": 15
-        },
-        {
-          "label": "Platform & tech",
-          "pct": 10
-        },
-        {
-          "label": "Operations",
-          "pct": 5
-        }
+        { "label": "방문 말벗 서비스", "pct": 45 },
+        { "label": "건강 모니터링 & 긴급 대응", "pct": 25 },
+        { "label": "자원봉사자 교육", "pct": 15 },
+        { "label": "플랫폼 운영", "pct": 10 },
+        { "label": "관리비", "pct": 5 }
       ],
-      "footnote": "Funds held in escrow; audited annually by an independent firm."
+      "footnote": "기금은 제3자 예치로 관리되며, 매년 독립 회계법인의 감사를 받습니다."
     },
     "form": {
       "eyebrow": "Donate",
-      "title": "Help a senior right now",
-      "subtitle": "Pick an amount. All amounts shown in AUD.",
-      "once": "One-time",
-      "monthly": "Monthly",
-      "customLabel": "Or custom amount",
-      "customPlaceholder": "Enter any amount",
-      "nameLabel": "Name *",
-      "emailLabel": "Email *",
-      "emailHint": "Receipt will be sent here",
-      "phoneLabel": "Phone (optional)",
-      "messageLabel": "A note for the elders (optional)",
-      "messagePlaceholder": "Your message will be delivered with the thank-you card",
-      "anonymous": "Donate anonymously (don't list my name publicly)",
-      "submitOnce": "Confirm ${amount}",
-      "submitMonthly": "Confirm ${amount} / mo",
-      "submitting": "Processing…",
-      "pickAmount": "Please pick an amount",
-      "overLimit": "Single donation cap is $50,000. For larger gifts please contact contact@silverconnect.org",
-      "errorGeneric": "Could not submit. Please try again.",
-      "paymentLabel": "Supported payment methods",
-      "paymentNote": "🔒 All payments are SSL-encrypted; we never store card details. A donation receipt is sent automatically.",
+      "title": "지금 어르신을 도와주세요",
+      "subtitle": "금액을 선택하세요. 모든 금액은 AUD(호주 달러)로 표시됩니다.",
+      "once": "일회성 기부",
+      "monthly": "매월 기부",
+      "customLabel": "또는 직접 금액 입력",
+      "customPlaceholder": "원하는 금액 입력",
+      "nameLabel": "이름 *",
+      "emailLabel": "이메일 *",
+      "emailHint": "기부금 영수증이 이 이메일로 발송됩니다",
+      "phoneLabel": "전화번호 (선택)",
+      "messageLabel": "어르신께 전하고 싶은 말 (선택)",
+      "messagePlaceholder": "보내주신 메시지는 감사 카드와 함께 전달됩니다",
+      "anonymous": "익명으로 기부하기 (공개 명단에 이름을 표시하지 않음)",
+      "submitOnce": "${amount} 기부하기",
+      "submitMonthly": "매월 ${amount} 기부하기",
+      "submitting": "처리 중…",
+      "pickAmount": "금액을 선택하세요",
+      "overLimit": "1회 기부 한도는 $50,000입니다. 그 이상의 기부는 contact@silverconnect.org로 문의해 주세요",
+      "errorGeneric": "제출에 실패했습니다. 다시 시도해 주세요.",
+      "paymentLabel": "지원하는 결제 수단",
+      "paymentNote": "🔒 모든 결제는 SSL로 암호화되며, 카드 정보는 저장하지 않습니다. 완료 후 기부금 영수증이 자동으로 발송됩니다.",
       "amounts": {
-        "25": "$25 · A nutritious meal for one elder 🍲",
-        "50": "$50 · One warm visit for one elder ☕",
-        "100": "$100 · Funds one professional counselling session 💬",
-        "250": "$250 · A full year of emergency response for one household 🛟",
-        "other": "${amount} · Thank you for your generosity 💙"
+        "25": "$25 · 어르신 한 분께 영양 가득한 식사를 🍲",
+        "50": "$50 · 어르신 한 분께 따뜻한 방문 한 번을 ☕",
+        "100": "$100 · 전문 심리 상담 한 회 지원 💬",
+        "250": "$250 · 한 가구에 1년간의 긴급 대응을 🛟",
+        "other": "${amount} · 너그러운 마음에 감사드립니다 💙"
       }
     },
     "success": {
-      "title": "Thank you 💙",
-      "body": "We've received your ${amount} {recurring}donation. A thank-you letter and Stripe receipt are on the way to {email}.",
-      "recurring": "monthly ",
-      "cta": "Back to home"
+      "title": "감사합니다 💙",
+      "bodyOnce": "${amount} 기부를 접수했습니다. 감사 편지와 Stripe 영수증을 {email}로 보내드립니다.",
+      "bodyMonthly": "${amount} 매월 기부를 접수했습니다. 감사 편지와 Stripe 영수증을 {email}로 보내드립니다.",
+      "cta": "홈으로 돌아가기"
     },
     "cancel": {
-      "title": "Donation cancelled",
-      "body": "Come back any time — every gift matters.",
-      "cta": "Try again"
+      "title": "기부가 취소되었습니다",
+      "body": "언제든지 다시 오세요. 모든 마음을 소중히 여깁니다.",
+      "cta": "다시 시도하기"
     }
   }
 }

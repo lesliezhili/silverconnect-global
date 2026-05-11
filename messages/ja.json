@@ -36,6 +36,12 @@
     "donate": "寄付",
     "primary": "メインナビゲーション"
   },
+  "theme": {
+    "toggle": "テーマを切り替え",
+    "light": "ライト",
+    "dark": "ダーク",
+    "system": "システムに合わせる"
+  },
   "country": {
     "AU": "オーストラリア",
     "US": "アメリカ合衆国",
@@ -190,6 +196,8 @@
     "afternoon": "午後",
     "evening": "夕方",
     "stripeConnect": "Stripeに接続",
+    "stripeContinue": "Stripe 設定を続ける",
+    "stripeStarted": "Stripe 設定を開始しました",
     "stripeHint": "収入は Stripe Connect 経由でお支払いします。銀行情報は Stripe で管理されます。",
     "onboardingTitle": "申込み状況",
     "onboardingSub": "各ステップを審査します。段階ごとに通知をお送りします。",
@@ -1121,136 +1129,121 @@
   },
   "donate": {
     "meta": {
-      "title": "Donate · SilverConnect",
-      "desc": "Companionship, health monitoring, and emergency response for older adults living alone."
+      "title": "ご寄付 · SilverConnect",
+      "desc": "ひとり暮らし・要介護の高齢者への寄り添い、健康モニタリング、緊急対応。"
     },
     "hero": {
-      "badge": "Registered nonprofit · transparent funding",
-      "title1": "Make sure every elder",
-      "titleHighlight": "is heard",
-      "subtitle": "SilverConnect provides companionship, health monitoring, and emergency response for isolated and dependent elders across Australia, the US, and Canada. Every donation goes through escrow, and our annual audit is open to all donors.",
-      "ctaPrimary": "Donate now",
-      "ctaSecondary": "Where every dollar goes",
-      "trust1": "🛡 SSL-encrypted payment",
-      "trust2": "🧾 Donation receipt",
-      "trust3": "📊 Annual audit published"
+      "badge": "登録非営利団体 · 寄付金の使途を全面公開",
+      "title1": "すべての高齢者の声を",
+      "titleHighlight": "届けるために",
+      "subtitle": "SilverConnect は、オーストラリア・アメリカ・カナダの3か国で、ひとり暮らしや要介護の高齢者に寄り添い・健康モニタリング・緊急対応を提供しています。いただいた寄付はすべて第三者預託口座で管理し、年次監査報告はすべての寄付者に公開しています。",
+      "ctaPrimary": "今すぐ寄付する",
+      "ctaSecondary": "寄付金の使い道",
+      "trust1": "🛡 SSL 暗号化決済",
+      "trust2": "🧾 寄付受領証を発行",
+      "trust3": "📊 年次監査を公開"
     },
     "progress": {
-      "raised": "Raised",
-      "goal": "Goal",
-      "percentComplete": "{pct}% complete",
-      "daysLeft": "<b>{days}</b> days left",
-      "donors": "donors",
-      "avg": "avg donation",
-      "communities": "partner communities"
+      "raised": "集まった金額",
+      "goal": "目標",
+      "percentComplete": "{pct}% 達成",
+      "daysLeft": "締切まであと <b>{days}</b> 日",
+      "donors": "人の寄付者",
+      "avg": "平均寄付額",
+      "communities": "連携コミュニティ"
     },
     "impact": {
       "eyebrow": "Our Impact",
-      "title": "Three years in",
-      "seniorsServed": "seniors served",
-      "visits": "in-home visits",
-      "cities": "cities",
-      "volunteers": "active volunteers"
+      "title": "3年間の歩み",
+      "seniorsServed": "支援した高齢者",
+      "visits": "回の訪問支援",
+      "cities": "都市で展開",
+      "volunteers": "活動中のボランティア"
     },
     "stories": {
-      "title": "Their stories",
+      "title": "支援を受けた方々の声",
       "s1": {
-        "name": "Grandma Chen · 78",
-        "meta": "Melbourne · alone for 6 years",
-        "quote": "A volunteer comes every Wednesday to chat and taught me how to video-call my son in China. We see each other every day now.",
-        "tag1": "Weekly visits",
-        "tag2": "Digital care"
+        "name": "陳さん · 78",
+        "meta": "メルボルン · ひとり暮らし 6 年",
+        "quote": "ボランティアの方が毎週水曜に話し相手に来てくれて、スマホのビデオ通話も教えてくれました。息子は中国にいますが、今は毎日顔を見られます。",
+        "tag1": "毎週の訪問",
+        "tag2": "デジタル支援"
       },
       "s2": {
-        "name": "Grandpa Wang · 82",
-        "meta": "Toronto · Parkinson's",
-        "quote": "When I fell at midnight my wristband called the team automatically — an ambulance was here in 30 minutes. Better than insurance.",
-        "tag1": "Emergency response",
-        "tag2": "Health monitoring"
+        "name": "王さん · 82",
+        "meta": "トロント · パーキンソン病",
+        "quote": "夜中に転倒したとき、手首の端末が自動でチームを呼んでくれて、30分で救急車が来ました。保険よりも安心です。",
+        "tag1": "緊急対応",
+        "tag2": "健康モニタリング"
       },
       "s3": {
-        "name": "Auntie Lin · 71",
-        "meta": "Shanghai · dependent care",
-        "quote": "After my husband passed I was alone. The volunteer who cooks for me pulled me out of depression. She's like a daughter now.",
-        "tag1": "Meal support",
-        "tag2": "Emotional care"
+        "name": "林さん · 71",
+        "meta": "上海 · 要介護",
+        "quote": "夫が亡くなって一人になったとき、食事を作りに来てくれるボランティアの方がうつから救い出してくれました。今では娘のような存在です。",
+        "tag1": "食事支援",
+        "tag2": "心のケア"
       }
     },
     "allocation": {
       "eyebrow": "Where it goes",
-      "title": "Every dollar accounted for",
-      "block1Title": "What we do",
-      "block1Body": "1-on-1 companionship, health monitoring devices, an emergency response channel, and a remote-care app for family members.",
-      "block2Title": "Why it matters",
-      "block2Body": "4.7M elders across the three countries face a companionship desert. Untreated falls are the third leading cause of death over 65.",
-      "block3Title": "What you change",
-      "block3Body": "Every $50 buys one warm visit; every $250 covers a full year of emergency response for one household.",
-      "centerLabel": "direct service",
+      "title": "寄付金の使い道は、すべて見えます",
+      "block1Title": "私たちの活動",
+      "block1Body": "ひとり暮らしの高齢者への1対1の寄り添い、健康モニタリング機器、緊急対応窓口、そしてご家族向けの遠隔見守りアプリを提供しています。",
+      "block2Title": "なぜ重要か",
+      "block2Body": "3か国で470万人の高齢者が「孤独」に直面しています。転倒後に適切な救助が受けられないことは、65歳以上の死因の第3位です。",
+      "block3Title": "あなたが変えられること",
+      "block3Body": "$50 で高齢者一人に温かい訪問を一回。$250 で一世帯に1年間の緊急対応を。",
+      "centerLabel": "直接支援",
       "items": [
-        {
-          "label": "In-home companionship",
-          "pct": 45
-        },
-        {
-          "label": "Health monitoring & emergency response",
-          "pct": 25
-        },
-        {
-          "label": "Volunteer training",
-          "pct": 15
-        },
-        {
-          "label": "Platform & tech",
-          "pct": 10
-        },
-        {
-          "label": "Operations",
-          "pct": 5
-        }
+        { "label": "訪問による寄り添い", "pct": 45 },
+        { "label": "健康モニタリング & 緊急対応", "pct": 25 },
+        { "label": "ボランティア研修", "pct": 15 },
+        { "label": "プラットフォーム運用", "pct": 10 },
+        { "label": "管理費", "pct": 5 }
       ],
-      "footnote": "Funds held in escrow; audited annually by an independent firm."
+      "footnote": "資金は第三者預託で管理し、年次で独立した会計事務所による監査を受けています。"
     },
     "form": {
       "eyebrow": "Donate",
-      "title": "Help a senior right now",
-      "subtitle": "Pick an amount. All amounts shown in AUD.",
-      "once": "One-time",
-      "monthly": "Monthly",
-      "customLabel": "Or custom amount",
-      "customPlaceholder": "Enter any amount",
-      "nameLabel": "Name *",
-      "emailLabel": "Email *",
-      "emailHint": "Receipt will be sent here",
-      "phoneLabel": "Phone (optional)",
-      "messageLabel": "A note for the elders (optional)",
-      "messagePlaceholder": "Your message will be delivered with the thank-you card",
-      "anonymous": "Donate anonymously (don't list my name publicly)",
-      "submitOnce": "Confirm ${amount}",
-      "submitMonthly": "Confirm ${amount} / mo",
-      "submitting": "Processing…",
-      "pickAmount": "Please pick an amount",
-      "overLimit": "Single donation cap is $50,000. For larger gifts please contact contact@silverconnect.org",
-      "errorGeneric": "Could not submit. Please try again.",
-      "paymentLabel": "Supported payment methods",
-      "paymentNote": "🔒 All payments are SSL-encrypted; we never store card details. A donation receipt is sent automatically.",
+      "title": "今すぐ高齢者を支援する",
+      "subtitle": "金額をお選びください。表示はすべて AUD（豪ドル）です。",
+      "once": "今回のみ",
+      "monthly": "毎月の寄付",
+      "customLabel": "またはご自由に金額を入力",
+      "customPlaceholder": "任意の金額を入力",
+      "nameLabel": "お名前 *",
+      "emailLabel": "メールアドレス *",
+      "emailHint": "寄付受領証をこちらに送信します",
+      "phoneLabel": "電話番号（任意）",
+      "messageLabel": "高齢者へのメッセージ（任意）",
+      "messagePlaceholder": "メッセージは感謝カードに添えてお届けします",
+      "anonymous": "匿名で寄付する（公開リストに名前を掲載しない）",
+      "submitOnce": "${amount} を寄付する",
+      "submitMonthly": "${amount} を毎月寄付する",
+      "submitting": "処理中…",
+      "pickAmount": "金額をお選びください",
+      "overLimit": "1回の寄付の上限は $50,000 です。それ以上のご寄付は contact@silverconnect.org までご連絡ください",
+      "errorGeneric": "送信できませんでした。もう一度お試しください。",
+      "paymentLabel": "対応している支払い方法",
+      "paymentNote": "🔒 すべての決済は SSL で暗号化され、カード情報は保存されません。完了後、寄付受領証が自動で送信されます。",
       "amounts": {
-        "25": "$25 · A nutritious meal for one elder 🍲",
-        "50": "$50 · One warm visit for one elder ☕",
-        "100": "$100 · Funds one professional counselling session 💬",
-        "250": "$250 · A full year of emergency response for one household 🛟",
-        "other": "${amount} · Thank you for your generosity 💙"
+        "25": "$25 · 高齢者一人に栄養のある食事を 🍲",
+        "50": "$50 · 高齢者一人に温かい訪問を一回 ☕",
+        "100": "$100 · 専門カウンセリングを一回 💬",
+        "250": "$250 · 一世帯に1年間の緊急対応を 🛟",
+        "other": "${amount} · ご厚意に感謝します 💙"
       }
     },
     "success": {
-      "title": "Thank you 💙",
-      "body": "We've received your ${amount} {recurring}donation. A thank-you letter and Stripe receipt are on the way to {email}.",
-      "recurring": "monthly ",
-      "cta": "Back to home"
+      "title": "ありがとうございます 💙",
+      "bodyOnce": "${amount} のご寄付を受け付けました。感謝状と Stripe の領収書を {email} にお送りします。",
+      "bodyMonthly": "${amount} の毎月のご寄付を受け付けました。感謝状と Stripe の領収書を {email} にお送りします。",
+      "cta": "ホームに戻る"
     },
     "cancel": {
-      "title": "Donation cancelled",
-      "body": "Come back any time — every gift matters.",
-      "cta": "Try again"
+      "title": "寄付がキャンセルされました",
+      "body": "いつでもまたお越しください。どんなご支援も大切にしています。",
+      "cta": "もう一度試す"
     }
   }
 }

@@ -44,27 +44,9 @@ export async function AllocationDonut() {
             {t("title")}
           </h2>
           <div className="mt-8 space-y-6">
-            <Block
-              icon="💙"
-              bg="#E8F0FE"
-              fg="#1858C4"
-              title={t("block1Title")}
-              body={t("block1Body")}
-            />
-            <Block
-              icon="⏳"
-              bg="#FEF3C7"
-              fg="#F59E0B"
-              title={t("block2Title")}
-              body={t("block2Body")}
-            />
-            <Block
-              icon="🌱"
-              bg="#DCFCE7"
-              fg="#16A34A"
-              title={t("block3Title")}
-              body={t("block3Body")}
-            />
+            <Block icon="💙" color="blue" title={t("block1Title")} body={t("block1Body")} />
+            <Block icon="⏳" color="amber" title={t("block2Title")} body={t("block2Body")} />
+            <Block icon="🌱" color="green" title={t("block3Title")} body={t("block3Body")} />
           </div>
         </div>
         <div className="rounded-lg bg-bg-base border border-border shadow-card p-8">
@@ -80,7 +62,14 @@ export async function AllocationDonut() {
               <desc id="donut-desc">
                 {segments.map((s) => `${s.label} ${s.pct}%`).join("; ")}
               </desc>
-              <circle cx="21" cy="21" r="15.915" fill="#fff" stroke="#F1F5F9" strokeWidth="6" />
+              <circle
+                cx="21"
+                cy="21"
+                r="15.915"
+                fill="var(--bg-base)"
+                stroke="var(--bg-surface-2)"
+                strokeWidth="6"
+              />
               {segments.map((s, i) => (
                 <circle
                   key={i}
@@ -95,10 +84,17 @@ export async function AllocationDonut() {
                   transform="rotate(-90 21 21)"
                 />
               ))}
-              <text x="21" y="20" textAnchor="middle" fontSize="4" fontWeight="800" fill="#0F172A">
+              <text
+                x="21"
+                y="20"
+                textAnchor="middle"
+                fontSize="4"
+                fontWeight="800"
+                fill="var(--text-primary)"
+              >
                 95%
               </text>
-              <text x="21" y="25" textAnchor="middle" fontSize="2.4" fill="#64748B">
+              <text x="21" y="25" textAnchor="middle" fontSize="2.4" fill="var(--text-tertiary)">
                 {t("centerLabel")}
               </text>
             </svg>
@@ -126,14 +122,12 @@ export async function AllocationDonut() {
 
 function Block({
   icon,
-  bg,
-  fg,
+  color,
   title,
   body,
 }: {
   icon: string;
-  bg: string;
-  fg: string;
+  color: "blue" | "amber" | "green";
   title: string;
   body: string;
 }) {
@@ -141,7 +135,7 @@ function Block({
     <div className="flex gap-4">
       <div
         className="w-12 h-12 rounded-md flex items-center justify-center text-xl shrink-0"
-        style={{ background: bg, color: fg }}
+        style={{ background: `var(--chip-${color}-bg)`, color: `var(--chip-${color}-fg)` }}
         aria-hidden
       >
         {icon}

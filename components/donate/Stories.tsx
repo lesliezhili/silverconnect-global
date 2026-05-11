@@ -1,48 +1,24 @@
 import { getTranslations } from "next-intl/server";
 
+type ChipColor = "blue" | "amber" | "green" | "red" | "pink" | "purple";
+
 interface Story {
   key: "s1" | "s2" | "s3";
   initial: string;
-  initialBg: string;
-  initialFg: string;
-  tag1Bg: string;
-  tag1Fg: string;
-  tag2Bg: string;
-  tag2Fg: string;
+  initialColor: ChipColor;
+  tag1Color: ChipColor;
+  tag2Color: ChipColor;
 }
 
 const STORIES: Story[] = [
-  {
-    key: "s1",
-    initial: "陈",
-    initialBg: "#FCE7F3",
-    initialFg: "#DB2777",
-    tag1Bg: "#E8F0FE",
-    tag1Fg: "#1F6FEB",
-    tag2Bg: "#FEF3C7",
-    tag2Fg: "#92400E",
-  },
-  {
-    key: "s2",
-    initial: "王",
-    initialBg: "#DCFCE7",
-    initialFg: "#16A34A",
-    tag1Bg: "#FEE2E2",
-    tag1Fg: "#B91C1C",
-    tag2Bg: "#DCFCE7",
-    tag2Fg: "#15803D",
-  },
-  {
-    key: "s3",
-    initial: "林",
-    initialBg: "#EDE9FE",
-    initialFg: "#7C3AED",
-    tag1Bg: "#FEF3C7",
-    tag1Fg: "#92400E",
-    tag2Bg: "#E8F0FE",
-    tag2Fg: "#1F6FEB",
-  },
+  { key: "s1", initial: "陈", initialColor: "pink", tag1Color: "blue", tag2Color: "amber" },
+  { key: "s2", initial: "王", initialColor: "green", tag1Color: "red", tag2Color: "green" },
+  { key: "s3", initial: "林", initialColor: "purple", tag1Color: "amber", tag2Color: "blue" },
 ];
+
+function chipStyle(c: ChipColor) {
+  return { background: `var(--chip-${c}-bg)`, color: `var(--chip-${c}-fg)` };
+}
 
 export async function Stories() {
   const t = await getTranslations("donate.stories");
@@ -58,7 +34,7 @@ export async function Stories() {
             <div className="flex items-center gap-3">
               <div
                 className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-semibold"
-                style={{ background: s.initialBg, color: s.initialFg }}
+                style={chipStyle(s.initialColor)}
                 aria-hidden
               >
                 {s.initial}
@@ -70,16 +46,10 @@ export async function Stories() {
             </div>
             <p className="mt-4 text-text-secondary leading-relaxed">{t(`${s.key}.quote`)}</p>
             <div className="mt-4 flex flex-wrap gap-2">
-              <span
-                className="px-2.5 py-0.5 rounded-full text-xs"
-                style={{ background: s.tag1Bg, color: s.tag1Fg }}
-              >
+              <span className="px-2.5 py-0.5 rounded-full text-xs" style={chipStyle(s.tag1Color)}>
                 {t(`${s.key}.tag1`)}
               </span>
-              <span
-                className="px-2.5 py-0.5 rounded-full text-xs"
-                style={{ background: s.tag2Bg, color: s.tag2Fg }}
-              >
+              <span className="px-2.5 py-0.5 rounded-full text-xs" style={chipStyle(s.tag2Color)}>
                 {t(`${s.key}.tag2`)}
               </span>
             </div>
