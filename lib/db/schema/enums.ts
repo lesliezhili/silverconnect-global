@@ -35,6 +35,14 @@ export const documentStatusEnum = pgEnum("document_status", [
   "expired",
 ]);
 
+export const backgroundCheckStatusEnum = pgEnum("background_check_status", [
+  "not_started",
+  "pending",
+  "cleared",
+  "failed",
+  "expired",
+]);
+
 export const timeSlotEnum = pgEnum("time_slot", ["morning", "afternoon", "evening"]);
 
 export const verificationPurposeEnum = pgEnum("verification_purpose", [

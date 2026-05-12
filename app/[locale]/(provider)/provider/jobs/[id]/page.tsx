@@ -16,6 +16,7 @@ import { users } from "@/lib/db/schema/users";
 import { addresses } from "@/lib/db/schema/customer-data";
 import { services } from "@/lib/db/schema/services";
 import { getCurrentUser } from "@/lib/auth/server";
+import { getProviderActiveState } from "@/lib/provider/requireActiveProvider";
 import { notifyAndEmail } from "@/lib/notifications/server";
 import { buildBookingStatusEmail } from "@/components/domain/email";
 
@@ -64,6 +65,16 @@ async function jobAction(formData: FormData) {
   const owned = await ensureProviderJob(id, me.id);
   if (!owned) nextRedirect(`/${locale}/provider/jobs`);
   const from = owned.booking.status;
+
+  // Accepting a *new* job requires an active (approved + cleared) provider.
+  // start / complete / decline on jobs already in flight stay allowed so a
+  // downgraded provider can wrap up existing work.
+  if (action === "accept") {
+    const state = await getProviderActiveState(me.id);
+    if (!state?.active) {
+      nextRedirect(`/${locale}/provider/onboarding-status`);
+    }
+  }
 
   // Validate transition
   const transitions: Record<Action, { from: DbStatus[]; to: DbStatus }> = {
@@ -187,6 +198,14 @@ export default async function ProviderJobDetailPage({
 
   const owned = await ensureProviderJob(id, me.id);
   if (!owned) notFound();
+
+  // A not-yet-active provider can't act on a pending dispatch — send them to
+  // the onboarding-status page. (Confirmed/in-progress/past jobs stay visible
+  // so they can finish work in flight.)
+  if (owned.booking.status === "pending") {
+    const state = await getProviderActiveState(me.id);
+    if (!state?.active) nextRedirect(`/${locale}/provider/onboarding-status`);
+  }
 
   const [row] = await db
     .select({

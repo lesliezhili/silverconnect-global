@@ -24,6 +24,7 @@ import { users } from "@/lib/db/schema/users";
 import { addresses } from "@/lib/db/schema/customer-data";
 import { services } from "@/lib/db/schema/services";
 import { getCurrentUser } from "@/lib/auth/server";
+import { getProviderActiveState } from "@/lib/provider/requireActiveProvider";
 
 type Tab = "today" | "week" | "history";
 
@@ -79,6 +80,14 @@ export default async function ProviderJobsPage({
     .limit(1);
   if (!profile) nextRedirect(`/${locale}/provider/register`);
 
+  const activeState = await getProviderActiveState(me.id);
+  const isActive = activeState?.active ?? false;
+  // A not-yet-active provider can still see jobs already in flight, but no
+  // new `pending` dispatches.
+  const activeStatuses = isActive
+    ? ACTIVE_STATUSES
+    : ACTIVE_STATUSES.filter((s) => s !== "pending");
+
   const rawTab = Array.isArray(sp.tab) ? sp.tab[0] : sp.tab;
   const tab: Tab =
     rawTab === "week" || rawTab === "history" ? rawTab : "today";
@@ -96,7 +105,7 @@ export default async function ProviderJobsPage({
   if (tab === "today") {
     where = and(
       eq(bookings.providerId, profile.id),
-      inArray(bookings.status, ACTIVE_STATUSES),
+      inArray(bookings.status, activeStatuses),
       gte(bookings.scheduledAt, startOfDay),
       lt(bookings.scheduledAt, endOfDay),
     )!;
@@ -104,7 +113,7 @@ export default async function ProviderJobsPage({
   } else if (tab === "week") {
     where = and(
       eq(bookings.providerId, profile.id),
-      inArray(bookings.status, ACTIVE_STATUSES),
+      inArray(bookings.status, activeStatuses),
       gte(bookings.scheduledAt, endOfDay),
       lt(bookings.scheduledAt, endOfWeek),
     )!;
@@ -161,6 +170,15 @@ export default async function ProviderJobsPage({
         className="mx-auto w-full max-w-content px-5 pb-[120px] pt-6 sm:pb-12"
       >
         <h1 className="text-h2">{t("navJobs")}</h1>
+
+        {!isActive && (
+          <div
+            role="status"
+            className="mt-3 rounded-md border-[1.5px] border-warning bg-warning-soft px-3.5 py-3 text-[13px] font-semibold text-warning"
+          >
+            {t("accountInReview")}
+          </div>
+        )}
 
         <nav
           role="tablist"

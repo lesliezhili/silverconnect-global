@@ -1,6 +1,6 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect as nextRedirect } from "next/navigation";
-import { eq, and, gte, lt, asc } from "drizzle-orm";
+import { eq, and, gte, lt, asc, ne } from "drizzle-orm";
 import { ChevronRight, DollarSign } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Link } from "@/i18n/navigation";
@@ -14,6 +14,7 @@ import { users } from "@/lib/db/schema/users";
 import { services } from "@/lib/db/schema/services";
 import { wallets } from "@/lib/db/schema/payments";
 import { getCurrentUser } from "@/lib/auth/server";
+import { getProviderActiveState } from "@/lib/provider/requireActiveProvider";
 
 function formatTime(d: Date, locale: string) {
   return d.toLocaleTimeString(locale === "en" ? "en-AU" : locale, {
@@ -50,6 +51,9 @@ export default async function ProviderWorkbenchPage({
     .limit(1);
   if (!profile) nextRedirect(`/${locale}/provider/register`);
 
+  const activeState = await getProviderActiveState(me.id);
+  const isActive = activeState?.active ?? false;
+
   // Today window: midnight to midnight in server time. Good-enough for MVP.
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);
@@ -75,6 +79,8 @@ export default async function ProviderWorkbenchPage({
         eq(bookings.providerId, profile.id),
         gte(bookings.scheduledAt, startOfDay),
         lt(bookings.scheduledAt, endOfDay),
+        // Hide new `pending` dispatches from a not-yet-active provider.
+        isActive ? undefined : ne(bookings.status, "pending"),
       ),
     )
     .orderBy(asc(bookings.scheduledAt))
@@ -113,6 +119,18 @@ export default async function ProviderWorkbenchPage({
             day: "numeric",
           })}
         </p>
+
+        {!isActive && (
+          <div
+            role="status"
+            className="mt-4 rounded-md border-[1.5px] border-warning bg-warning-soft px-3.5 py-3 text-[13px] font-semibold text-warning"
+          >
+            {t("accountInReview")}{" "}
+            <Link href="/provider/onboarding-status" className="underline">
+              {t("onboardingTitle")}
+            </Link>
+          </div>
+        )}
 
         <Link
           href="/provider/earnings"

@@ -1,6 +1,6 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, and, desc, sql, inArray } from "drizzle-orm";
 import { Header } from "@/components/layout/Header";
 import { ProviderCard } from "@/components/domain/ProviderCard";
 import { CURRENCY_SYMBOL, TAX_ABBR } from "@/components/domain/country";
@@ -16,6 +16,7 @@ import {
 import {
   providerProfiles,
   providerCategories,
+  providerBadges,
 } from "@/lib/db/schema/providers";
 import { users } from "@/lib/db/schema/users";
 import { reviews } from "@/lib/db/schema/reviews";
@@ -139,6 +140,26 @@ export default async function ProvidersByCategoryPage({
     )
     .limit(50);
 
+  const verifiedIds =
+    provs.length > 0
+      ? new Set(
+          (
+            await db
+              .select({ providerId: providerBadges.providerId })
+              .from(providerBadges)
+              .where(
+                and(
+                  inArray(
+                    providerBadges.providerId,
+                    provs.map((p) => p.id),
+                  ),
+                  eq(providerBadges.kind, "verified"),
+                ),
+              )
+          ).map((r) => r.providerId),
+        )
+      : new Set<string>();
+
   // Cheapest hourly per provider (we use the category-level lo for now).
   const cheapestHourly = Number.isFinite(lo) ? Math.round(lo) : 0;
 
@@ -205,7 +226,7 @@ export default async function ProvidersByCategoryPage({
                   reviews: Number(p.ratingCount) || 0,
                   distanceKm: "—",
                   pricePerHour: cheapestHourly,
-                  verified: true,
+                  verified: verifiedIds.has(p.id),
                   firstAid: false,
                 }}
               />

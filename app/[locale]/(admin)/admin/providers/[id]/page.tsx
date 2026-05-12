@@ -1,7 +1,7 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { notFound, redirect as nextRedirect } from "next/navigation";
 import { after } from "next/server";
-import { eq, and, desc, sql, gte } from "drizzle-orm";
+import { eq, and, desc, sql, gte, inArray } from "drizzle-orm";
 import { ChevronLeft, Check } from "lucide-react";
 import { Link, redirect } from "@/i18n/navigation";
 import { AdminShell } from "@/components/layout/AdminShell";
@@ -14,8 +14,11 @@ import {
   providerProfiles,
   providerDocuments,
   providerCategories,
+  providerBackgroundChecks,
+  complianceWebhookEvents,
 } from "@/lib/db/schema/providers";
 import { users } from "@/lib/db/schema/users";
+import { adminActions } from "@/lib/db/schema/admin";
 import { bookings } from "@/lib/db/schema/bookings";
 import { reviews } from "@/lib/db/schema/reviews";
 import { disputes } from "@/lib/db/schema/disputes";
@@ -23,6 +26,10 @@ import { wallets } from "@/lib/db/schema/payments";
 import { findUserByEmail } from "@/lib/auth/server";
 import { notify, notifyAndEmail } from "@/lib/notifications/server";
 import { buildProviderApprovalEmail } from "@/components/domain/email";
+import { tryAutoApproveProvider } from "@/lib/provider/autoApprove";
+import {
+  retryBackgroundCheck,
+} from "@/lib/provider/backgroundCheck";
 
 type DbStatus =
   | "pending"
@@ -32,6 +39,7 @@ type DbStatus =
   | "suspended";
 type UiAction =
   | "approve"
+  | "forceApprove"
   | "sendBack"
   | "hold"
   | "reject"
@@ -70,8 +78,36 @@ async function providerDecisionAction(formData: FormData) {
 
   const adminUser = admin.email ? await findUserByEmail(admin.email) : null;
 
+  const [row] = await db
+    .select({ id: providerProfiles.id, userId: providerProfiles.userId })
+    .from(providerProfiles)
+    .where(eq(providerProfiles.id, id))
+    .limit(1);
+  if (!row) nextRedirect(`/${locale}/admin/providers?error=missing`);
+
+  // "Approve" no longer rubber-stamps: it re-runs the auto-approval check,
+  // which only promotes if every gate for the provider's country is met.
+  if (action === "approve") {
+    await tryAutoApproveProvider(id);
+    const [after2] = await db
+      .select({ s: providerProfiles.onboardingStatus })
+      .from(providerProfiles)
+      .where(eq(providerProfiles.id, id))
+      .limit(1);
+    if (after2?.s === "approved") {
+      nextRedirect(`/${locale}/admin/providers/${id}?applied=1`);
+    }
+    nextRedirect(`/${locale}/admin/providers/${id}?error=conditionsNotMet`);
+  }
+
+  // "Force approve" bypasses the checks — requires a justification note and
+  // is recorded in the admin audit log.
+  if (action === "forceApprove" && !note) {
+    nextRedirect(`/${locale}/admin/providers/${id}?error=noteRequired`);
+  }
+
   const patches: Record<
-    UiAction,
+    Exclude<UiAction, "approve">,
     Partial<{
       onboardingStatus: DbStatus;
       approvedAt: Date | null;
@@ -79,7 +115,7 @@ async function providerDecisionAction(formData: FormData) {
       rejectionReason: string | null;
     }>
   > = {
-    approve: {
+    forceApprove: {
       onboardingStatus: "approved",
       approvedAt: new Date(),
       rejectedAt: null,
@@ -107,22 +143,26 @@ async function providerDecisionAction(formData: FormData) {
     nextRedirect(`/${locale}/admin/providers/${id}?error=invalid`);
   }
 
-  const [row] = await db
-    .select({ id: providerProfiles.id, userId: providerProfiles.userId })
-    .from(providerProfiles)
-    .where(eq(providerProfiles.id, id))
-    .limit(1);
-  if (!row) nextRedirect(`/${locale}/admin/providers?error=missing`);
-
   await db
     .update(providerProfiles)
     .set({ ...patch, updatedAt: new Date() })
     .where(eq(providerProfiles.id, id));
 
+  if (action === "forceApprove") {
+    await db.insert(adminActions).values({
+      adminId: adminUser?.id ?? null,
+      action: "provider.force_approve",
+      targetType: "provider_profile",
+      targetId: id,
+      notes: note,
+      metadata: { bypassedChecks: true },
+    });
+  }
+
   after(async () => {
     if (!row.userId) return;
-    const titles: Record<UiAction, string> = {
-      approve: "Your provider application is approved",
+    const titles: Record<Exclude<UiAction, "approve">, string> = {
+      forceApprove: "Your provider application is approved",
       sendBack: "Action needed on your provider application",
       hold: "Your provider application is on hold",
       reject: "Your provider application was declined",
@@ -131,7 +171,7 @@ async function providerDecisionAction(formData: FormData) {
     };
     const link = `/${locale}/provider/onboarding-status`;
 
-    if (action === "approve" || action === "reject") {
+    if (action === "forceApprove" || action === "reject") {
       const [u] = await db
         .select({ locale: users.locale })
         .from(users)
@@ -147,7 +187,7 @@ async function providerDecisionAction(formData: FormData) {
         email: buildProviderApprovalEmail(
           process.env.NEXT_PUBLIC_APP_URL ?? "",
           userLocale,
-          action === "approve",
+          action === "forceApprove",
           note || undefined,
         ),
       });
@@ -162,9 +202,166 @@ async function providerDecisionAction(formData: FormData) {
     });
   });
 
-  void adminUser;
-
   nextRedirect(`/${locale}/admin/providers/${id}?applied=1`);
+}
+
+async function reviewDocumentAction(formData: FormData) {
+  "use server";
+  const locale = String(formData.get("locale") ?? "en");
+  const providerId = String(formData.get("providerId") ?? "");
+  const docId = String(formData.get("docId") ?? "");
+  const decision = String(formData.get("decision") ?? "");
+  const note = String(formData.get("note") ?? "").trim();
+  const admin = await getAdmin();
+  if (!admin.signedIn) nextRedirect(`/${locale}/admin/login`);
+  if (decision !== "approve" && decision !== "reject") {
+    nextRedirect(`/${locale}/admin/providers/${providerId}?error=invalid`);
+  }
+  if (decision === "reject" && !note) {
+    nextRedirect(`/${locale}/admin/providers/${providerId}?error=noteRequired`);
+  }
+  const adminUser = admin.email ? await findUserByEmail(admin.email) : null;
+
+  const [docRow] = await db
+    .select({
+      id: providerDocuments.id,
+      providerId: providerDocuments.providerId,
+      type: providerDocuments.type,
+    })
+    .from(providerDocuments)
+    .where(
+      and(eq(providerDocuments.id, docId), eq(providerDocuments.providerId, providerId)),
+    )
+    .limit(1);
+  if (!docRow) {
+    nextRedirect(`/${locale}/admin/providers/${providerId}?error=missingDoc`);
+  }
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(providerDocuments)
+      .set({
+        status: decision === "approve" ? "approved" : "rejected",
+        reviewedAt: new Date(),
+        reviewerNote: note || null,
+        updatedAt: new Date(),
+      })
+      .where(eq(providerDocuments.id, docId));
+    await tx.insert(adminActions).values({
+      adminId: adminUser?.id ?? null,
+      action:
+        decision === "approve"
+          ? "provider.document_approved"
+          : "provider.document_rejected",
+      targetType: "provider_document",
+      targetId: docId,
+      notes: note || null,
+      metadata: { providerId, documentType: docRow.type },
+    });
+  });
+
+  // Tell the provider their document was reviewed.
+  after(async () => {
+    const [p] = await db
+      .select({ userId: providerProfiles.userId })
+      .from(providerProfiles)
+      .where(eq(providerProfiles.id, providerId))
+      .limit(1);
+    if (!p?.userId) return;
+    await notify({
+      userId: p.userId,
+      kind: "system",
+      title:
+        decision === "approve"
+          ? "A compliance document was approved"
+          : "A compliance document needs your attention",
+      body: decision === "reject" ? note : undefined,
+      link: `/${locale}/provider/compliance`,
+    });
+  });
+
+  // An approved document may complete the set — re-evaluate auto-approval.
+  if (decision === "approve") {
+    after(() => tryAutoApproveProvider(providerId));
+  }
+
+  nextRedirect(
+    `/${locale}/admin/providers/${providerId}?applied=1`,
+  );
+}
+
+async function retryBgCheckAdminAction(formData: FormData) {
+  "use server";
+  const locale = String(formData.get("locale") ?? "en");
+  const id = String(formData.get("id") ?? "");
+  const admin = await getAdmin();
+  if (!admin.signedIn) nextRedirect(`/${locale}/admin/login`);
+  await retryBackgroundCheck(id);
+  nextRedirect(`/${locale}/admin/providers/${id}?applied=1`);
+}
+
+/**
+ * Re-process an orphaned/failed background-check webhook event: re-match by
+ * external ref, apply the status, and re-evaluate auto-approval. If the row
+ * still doesn't exist, the event stays orphaned.
+ */
+async function replayWebhookEventAction(formData: FormData) {
+  "use server";
+  const locale = String(formData.get("locale") ?? "en");
+  const providerId = String(formData.get("id") ?? "");
+  const eventId = String(formData.get("eventId") ?? "");
+  const admin = await getAdmin();
+  if (!admin.signedIn) nextRedirect(`/${locale}/admin/login`);
+
+  const [evt] = await db
+    .select({
+      id: complianceWebhookEvents.id,
+      externalRef: complianceWebhookEvents.externalRef,
+      payload: complianceWebhookEvents.payload,
+    })
+    .from(complianceWebhookEvents)
+    .where(eq(complianceWebhookEvents.id, eventId))
+    .limit(1);
+  if (!evt || !evt.externalRef) {
+    nextRedirect(`/${locale}/admin/providers/${providerId}?error=replayFailed`);
+  }
+
+  const [check] = await db
+    .select({
+      id: providerBackgroundChecks.id,
+      providerId: providerBackgroundChecks.providerId,
+    })
+    .from(providerBackgroundChecks)
+    .where(eq(providerBackgroundChecks.externalRef, evt.externalRef))
+    .limit(1);
+  if (!check) {
+    nextRedirect(`/${locale}/admin/providers/${providerId}?error=replayNoRow`);
+  }
+
+  const payload = (evt.payload ?? {}) as { status?: string };
+  const status =
+    payload.status === "cleared"
+      ? "cleared"
+      : payload.status === "failed"
+        ? "failed"
+        : "pending";
+  await db
+    .update(providerBackgroundChecks)
+    .set({
+      status,
+      clearedAt: status === "cleared" ? new Date() : null,
+      rawPayload: evt.payload,
+      updatedAt: new Date(),
+    })
+    .where(eq(providerBackgroundChecks.id, check.id));
+  await db
+    .update(complianceWebhookEvents)
+    .set({ status: "processed", processedAt: new Date() })
+    .where(eq(complianceWebhookEvents.id, evt.id));
+  if (status === "cleared") {
+    after(() => tryAutoApproveProvider(check.providerId));
+  }
+  nextRedirect(`/${locale}/admin/providers/${providerId}?applied=1`);
 }
 
 export default async function AdminProviderDetailPage({
@@ -182,6 +379,7 @@ export default async function AdminProviderDetailPage({
   const t = await getTranslations("admin");
   const tCat = await getTranslations("categories");
   const applied = sp.applied === "1";
+  const errorCode = typeof sp.error === "string" ? sp.error : null;
 
   const [row] = await db
     .select({
@@ -192,6 +390,13 @@ export default async function AdminProviderDetailPage({
       serviceRadiusKm: providerProfiles.serviceRadiusKm,
       stripeAccountId: providerProfiles.stripeAccountId,
       bio: providerProfiles.bio,
+      abn: providerProfiles.abn,
+      businessName: providerProfiles.businessName,
+      abnActive: providerProfiles.abnActive,
+      abnValidatedAt: providerProfiles.abnValidatedAt,
+      bgCheckConsentAt: providerProfiles.bgCheckConsentAt,
+      bgCheckConsentVersion: providerProfiles.bgCheckConsentVersion,
+      bgCheckConsentIp: providerProfiles.bgCheckConsentIp,
       submittedAt: providerProfiles.submittedAt,
       approvedAt: providerProfiles.approvedAt,
       rejectedAt: providerProfiles.rejectedAt,
@@ -211,10 +416,12 @@ export default async function AdminProviderDetailPage({
     await Promise.all([
       db
         .select({
+          id: providerDocuments.id,
           type: providerDocuments.type,
           status: providerDocuments.status,
           fileUrl: providerDocuments.fileUrl,
           documentNumber: providerDocuments.documentNumber,
+          reviewerNote: providerDocuments.reviewerNote,
         })
         .from(providerDocuments)
         .where(eq(providerDocuments.providerId, id)),
@@ -279,6 +486,39 @@ export default async function AdminProviderDetailPage({
         .limit(1),
     ]);
 
+  const [bgCheck] = await db
+    .select({
+      vendor: providerBackgroundChecks.vendor,
+      externalRef: providerBackgroundChecks.externalRef,
+      status: providerBackgroundChecks.status,
+      requestedAt: providerBackgroundChecks.requestedAt,
+      clearedAt: providerBackgroundChecks.clearedAt,
+      expiresAt: providerBackgroundChecks.expiresAt,
+      lastError: providerBackgroundChecks.lastError,
+    })
+    .from(providerBackgroundChecks)
+    .where(
+      and(
+        eq(providerBackgroundChecks.providerId, id),
+        eq(providerBackgroundChecks.isCurrent, true),
+      ),
+    )
+    .limit(1);
+
+  const deadLetters = await db
+    .select({
+      id: complianceWebhookEvents.id,
+      vendor: complianceWebhookEvents.vendor,
+      externalRef: complianceWebhookEvents.externalRef,
+      status: complianceWebhookEvents.status,
+      error: complianceWebhookEvents.error,
+      receivedAt: complianceWebhookEvents.receivedAt,
+    })
+    .from(complianceWebhookEvents)
+    .where(inArray(complianceWebhookEvents.status, ["orphaned", "failed"]))
+    .orderBy(desc(complianceWebhookEvents.receivedAt))
+    .limit(20);
+
   const since30 = new Date();
   since30.setDate(since30.getDate() - 30);
   const [recentAgg] = await db
@@ -318,6 +558,24 @@ export default async function AdminProviderDetailPage({
           className="mt-2 flex items-center gap-2 rounded-md bg-success-soft px-3.5 py-2.5 text-[14px] font-semibold text-success"
         >
           <Check size={16} aria-hidden /> {t("applied")}
+        </div>
+      )}
+      {errorCode && (
+        <div
+          role="alert"
+          className="mt-2 rounded-md bg-danger-soft px-3.5 py-2.5 text-[14px] font-semibold text-danger"
+        >
+          {errorCode === "noteRequired"
+            ? "A reason / note is required."
+            : errorCode === "missingDoc"
+              ? "Document not found."
+              : errorCode === "conditionsNotMet"
+                ? "Can't approve yet — background check, required documents, ABN (AU) and Stripe payouts must all be in order. Use Force approve to override."
+                : errorCode === "replayNoRow"
+                  ? "Still no matching background-check row for that event."
+                  : errorCode === "replayFailed"
+                    ? "Couldn't replay that webhook event."
+                    : "Something went wrong — please try again."}
         </div>
       )}
 
@@ -416,46 +674,205 @@ export default async function AdminProviderDetailPage({
           <p className="mt-2 text-[13px] text-text-tertiary">None uploaded</p>
         ) : (
           <ul className="mt-2 divide-y divide-border">
-            {docs.map((d, i) => (
-              <li
-                key={i}
-                className="flex items-center justify-between gap-3 py-2.5 text-[13px]"
-              >
-                <span className="min-w-0 flex-1">
-                  <span className="block font-semibold uppercase">
-                    {d.type}
-                  </span>
-                  {d.documentNumber && (
-                    <span className="block text-[12px] text-text-tertiary tabular-nums">
-                      {d.documentNumber}
+            {docs.map((d) => (
+              <li key={d.id} className="py-3 text-[13px]">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-semibold uppercase">
+                      {d.type}
                     </span>
-                  )}
-                </span>
-                <span
-                  className={
-                    "inline-flex h-6 items-center rounded-sm px-2 text-[11px] font-bold uppercase " +
-                    (d.status === "approved"
-                      ? "bg-success-soft text-success"
-                      : d.status === "rejected"
-                        ? "bg-danger-soft text-danger"
-                        : "bg-warning-soft text-warning")
-                  }
-                >
-                  {d.status}
-                </span>
-                {d.fileUrl && (
-                  <a
-                    href={d.fileUrl}
-                    target="_blank"
-                    rel="noopener"
-                    className="text-[12px] font-semibold text-brand"
+                    {d.documentNumber && (
+                      <span className="block text-[12px] text-text-tertiary tabular-nums">
+                        {d.documentNumber}
+                      </span>
+                    )}
+                  </span>
+                  <span
+                    className={
+                      "inline-flex h-6 items-center rounded-sm px-2 text-[11px] font-bold uppercase " +
+                      (d.status === "approved"
+                        ? "bg-success-soft text-success"
+                        : d.status === "rejected"
+                          ? "bg-danger-soft text-danger"
+                          : "bg-warning-soft text-warning")
+                    }
                   >
-                    open
-                  </a>
+                    {d.status}
+                  </span>
+                  {d.fileUrl && (
+                    <a
+                      href={`/api/compliance/documents/${d.id}`}
+                      target="_blank"
+                      rel="noopener"
+                      className="text-[12px] font-semibold text-brand"
+                    >
+                      open
+                    </a>
+                  )}
+                </div>
+                {d.reviewerNote && (
+                  <p className="mt-1 text-[12px] text-text-tertiary">
+                    Note: {d.reviewerNote}
+                  </p>
                 )}
+                <form
+                  action={reviewDocumentAction}
+                  className="mt-2 flex flex-wrap items-center gap-2"
+                >
+                  <input type="hidden" name="locale" value={locale} />
+                  <input type="hidden" name="providerId" value={id} />
+                  <input type="hidden" name="docId" value={d.id} />
+                  <input
+                    name="note"
+                    placeholder="Reason (required to reject)"
+                    defaultValue=""
+                    className="h-8 min-w-0 flex-1 rounded-sm border border-border bg-bg-base px-2 text-[12px]"
+                  />
+                  <button
+                    type="submit"
+                    name="decision"
+                    value="approve"
+                    className="h-8 rounded-sm bg-success-soft px-3 text-[12px] font-semibold text-success"
+                  >
+                    Approve
+                  </button>
+                  <button
+                    type="submit"
+                    name="decision"
+                    value="reject"
+                    className="h-8 rounded-sm bg-danger-soft px-3 text-[12px] font-semibold text-danger"
+                  >
+                    Reject
+                  </button>
+                </form>
               </li>
             ))}
           </ul>
+        )}
+      </section>
+
+      <section className="mt-5 rounded-lg border border-border bg-bg-base p-5">
+        <p className="text-[14px] font-bold">Compliance &amp; verification</p>
+        <dl className="mt-2 grid grid-cols-1 gap-x-6 gap-y-2 text-[13px] sm:grid-cols-2">
+          {(row.providerCountry === "AU" || row.abn) && (
+            <>
+              <div>
+                <dt className="text-text-tertiary">ABN</dt>
+                <dd className="font-semibold tabular-nums">
+                  {row.abn ?? "—"}
+                  {row.abn != null && (
+                    <span
+                      className={
+                        "ml-2 rounded-sm px-1.5 py-0.5 text-[11px] font-bold uppercase " +
+                        (row.abnActive
+                          ? "bg-success-soft text-success"
+                          : "bg-danger-soft text-danger")
+                      }
+                    >
+                      {row.abnActive ? "active" : "inactive"}
+                    </span>
+                  )}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-text-tertiary">Registered business</dt>
+                <dd className="font-semibold">{row.businessName ?? "—"}</dd>
+              </div>
+            </>
+          )}
+          <div>
+            <dt className="text-text-tertiary">Background check</dt>
+            <dd className="font-semibold">
+              {bgCheck ? (
+                <>
+                  <span className="uppercase">{bgCheck.status}</span>{" "}
+                  <span className="font-normal text-text-tertiary">
+                    ({bgCheck.vendor}
+                    {bgCheck.externalRef ? ` · ${bgCheck.externalRef}` : ""})
+                  </span>
+                  {bgCheck.clearedAt && (
+                    <span className="ml-1 font-normal text-text-tertiary">
+                      cleared {fmt(bgCheck.clearedAt)}
+                    </span>
+                  )}
+                  {bgCheck.expiresAt && (
+                    <span className="ml-1 font-normal text-text-tertiary">
+                      · expires {fmt(bgCheck.expiresAt)}
+                    </span>
+                  )}
+                  {bgCheck.lastError && (
+                    <span className="ml-1 font-normal text-danger">
+                      · {bgCheck.lastError}
+                    </span>
+                  )}
+                </>
+              ) : (
+                "not started"
+              )}
+            </dd>
+            {bgCheck && (bgCheck.status === "failed" || bgCheck.status === "expired") && (
+              <form action={retryBgCheckAdminAction} className="mt-1.5">
+                <input type="hidden" name="locale" value={locale} />
+                <input type="hidden" name="id" value={row.id} />
+                <button
+                  type="submit"
+                  className="h-8 rounded-sm bg-brand-soft px-3 text-[12px] font-semibold text-brand"
+                >
+                  Re-run background check
+                </button>
+              </form>
+            )}
+          </div>
+          <div>
+            <dt className="text-text-tertiary">Background check consent</dt>
+            <dd className="font-semibold">
+              {row.bgCheckConsentAt ? (
+                <span className="font-normal text-text-secondary tabular-nums">
+                  {fmt(row.bgCheckConsentAt)} · v{row.bgCheckConsentVersion ?? "?"}
+                  {row.bgCheckConsentIp ? ` · ${row.bgCheckConsentIp}` : ""}
+                </span>
+              ) : (
+                "not given"
+              )}
+            </dd>
+          </div>
+        </dl>
+
+        {deadLetters.length > 0 && (
+          <div className="mt-4 border-t border-border pt-3">
+            <p className="text-[13px] font-bold text-danger">
+              Webhook events needing attention
+            </p>
+            <ul className="mt-2 divide-y divide-border">
+              {deadLetters.map((e) => (
+                <li
+                  key={e.id}
+                  className="flex items-center justify-between gap-3 py-2 text-[12px]"
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="font-semibold uppercase">{e.status}</span>{" "}
+                    <span className="text-text-tertiary tabular-nums">
+                      {e.vendor} · {e.externalRef ?? "no ref"} · {fmt(e.receivedAt)}
+                    </span>
+                    {e.error && (
+                      <span className="block text-danger">{e.error}</span>
+                    )}
+                  </span>
+                  <form action={replayWebhookEventAction}>
+                    <input type="hidden" name="locale" value={locale} />
+                    <input type="hidden" name="id" value={row.id} />
+                    <input type="hidden" name="eventId" value={e.id} />
+                    <button
+                      type="submit"
+                      className="h-8 rounded-sm bg-brand-soft px-3 font-semibold text-brand"
+                    >
+                      Replay
+                    </button>
+                  </form>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
       </section>
 
@@ -528,6 +945,7 @@ export default async function AdminProviderDetailPage({
             {(
               [
                 { key: "approve", label: t("provApprove"), show: !isApproved },
+                { key: "forceApprove", label: "Force approve (override — note required)", show: !isApproved },
                 { key: "sendBack", label: t("provSendBack"), show: !isSuspended },
                 { key: "hold", label: t("provHold"), show: !isSuspended },
                 { key: "reject", label: t("provReject"), show: status !== "rejected" },

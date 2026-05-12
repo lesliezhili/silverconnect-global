@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   pgTable,
   uuid,
@@ -6,6 +7,7 @@ import {
   boolean,
   integer,
   decimal,
+  jsonb,
   primaryKey,
   index,
   uniqueIndex,
@@ -15,6 +17,7 @@ import {
   onboardingStatusEnum,
   documentTypeEnum,
   documentStatusEnum,
+  backgroundCheckStatusEnum,
   serviceCategoryEnum,
   timeSlotEnum,
   badgeKindEnum,
@@ -34,6 +37,16 @@ export const providerProfiles = pgTable(
     serviceRadiusKm: integer("service_radius_km").notNull().default(10),
     onboardingStatus: onboardingStatusEnum("onboarding_status").notNull().default("pending"),
     stripeAccountId: text("stripe_account_id"),
+    // Australian Business Number (AU providers only). Validated against the
+    // ABR Lookup API; businessName is the entity name returned by ABR.
+    abn: text("abn"),
+    businessName: text("business_name"),
+    abnActive: boolean("abn_active"),
+    abnValidatedAt: timestamp("abn_validated_at", { withTimezone: true }),
+    // Provider's consent to run a third-party background check (NCC).
+    bgCheckConsentAt: timestamp("bg_check_consent_at", { withTimezone: true }),
+    bgCheckConsentVersion: text("bg_check_consent_version"),
+    bgCheckConsentIp: text("bg_check_consent_ip"),
     submittedAt: timestamp("submitted_at", { withTimezone: true }),
     approvedAt: timestamp("approved_at", { withTimezone: true }),
     rejectedAt: timestamp("rejected_at", { withTimezone: true }),
@@ -141,6 +154,94 @@ export const providerBadges = pgTable(
   }),
 );
 
+/**
+ * One row per background-check attempt for a provider. The current attempt
+ * has isCurrent=true; superseded attempts (renewals / re-checks) are kept
+ * for history. The partial unique index guarantees at most one current row.
+ */
+export const providerBackgroundChecks = pgTable(
+  "provider_background_checks",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    providerId: uuid("provider_id")
+      .notNull()
+      .references(() => providerProfiles.id, { onDelete: "cascade" }),
+    vendor: text("vendor").notNull(),
+    externalRef: text("external_ref"),
+    status: backgroundCheckStatusEnum("status").notNull().default("not_started"),
+    requestedAt: timestamp("requested_at", { withTimezone: true }),
+    clearedAt: timestamp("cleared_at", { withTimezone: true }),
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+    rawPayload: jsonb("raw_payload"),
+    lastError: text("last_error"),
+    isCurrent: boolean("is_current").notNull().default(true),
+    supersededAt: timestamp("superseded_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => ({
+    currentUq: uniqueIndex("provider_background_checks_current_uq")
+      .on(t.providerId)
+      .where(sql`${t.isCurrent}`),
+    vendorRefUq: uniqueIndex("provider_background_checks_vendor_ref_uq")
+      .on(t.vendor, t.externalRef)
+      .where(sql`${t.externalRef} is not null`),
+    providerIdx: index("provider_background_checks_provider_idx").on(t.providerId),
+  }),
+);
+
+/**
+ * Dedup ledger for the 30-day compliance-expiry alert cron. One row per
+ * (subject, expiresAt) once we've sent the warning; if expiresAt changes
+ * (renewal) a new alert fires for the new date.
+ */
+export const complianceExpiryAlerts = pgTable(
+  "compliance_expiry_alerts",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    // 'provider_document' | 'background_check'
+    subjectType: text("subject_type").notNull(),
+    subjectId: uuid("subject_id").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    alertedAt: timestamp("alerted_at", { withTimezone: true }).defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => ({
+    subjectExpiryUq: uniqueIndex("compliance_expiry_alerts_subject_expiry_uq").on(
+      t.subjectType,
+      t.subjectId,
+      t.expiresAt,
+    ),
+  }),
+);
+
+/**
+ * Inbox for background-check vendor webhooks — including orphan callbacks
+ * (no matching local check row) and failed ones, so admins can inspect /
+ * replay instead of losing them to a log line.
+ */
+export const complianceWebhookEvents = pgTable(
+  "compliance_webhook_events",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    vendor: text("vendor").notNull(),
+    vendorEventId: text("vendor_event_id"),
+    externalRef: text("external_ref"),
+    payload: jsonb("payload"),
+    // 'received' | 'processed' | 'orphaned' | 'failed'
+    status: text("status").notNull().default("received"),
+    error: text("error"),
+    receivedAt: timestamp("received_at", { withTimezone: true }).defaultNow().notNull(),
+    processedAt: timestamp("processed_at", { withTimezone: true }),
+  },
+  (t) => ({
+    vendorEventUq: uniqueIndex("compliance_webhook_events_vendor_event_uq")
+      .on(t.vendor, t.vendorEventId)
+      .where(sql`${t.vendorEventId} is not null`),
+    statusIdx: index("compliance_webhook_events_status_idx").on(t.status),
+  }),
+);
+
 export type ProviderProfile = typeof providerProfiles.$inferSelect;
 export type NewProviderProfile = typeof providerProfiles.$inferInsert;
 export type ProviderDocument = typeof providerDocuments.$inferSelect;
@@ -148,3 +249,7 @@ export type ProviderAvailability = typeof providerAvailability.$inferSelect;
 export type ProviderBlockedTime = typeof providerBlockedTimes.$inferSelect;
 export type ProviderCategory = typeof providerCategories.$inferSelect;
 export type ProviderBadge = typeof providerBadges.$inferSelect;
+export type ProviderBackgroundCheck = typeof providerBackgroundChecks.$inferSelect;
+export type NewProviderBackgroundCheck = typeof providerBackgroundChecks.$inferInsert;
+export type ComplianceExpiryAlert = typeof complianceExpiryAlerts.$inferSelect;
+export type ComplianceWebhookEvent = typeof complianceWebhookEvents.$inferSelect;

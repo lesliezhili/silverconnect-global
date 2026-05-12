@@ -89,6 +89,6 @@ VPS already has [/opt/silverconnect/.env.local](http://47.236.169.73) configured
 
 ## Out of scope (not yet deployed)
 
-- Stripe webhook handlers (will land on Vercel pay subset workflow when implemented)
-- VPS cron jobs for `app/api/cron/*` (commands in handoff report §5; not yet installed)
+- Stripe webhook handlers (will land on Vercel pay subset workflow when implemented). Note: provider compliance now also has `app/api/stripe/connect-webhook/route.ts` (Stripe Connect `account.updated`) and `app/api/compliance/background-check/webhook/route.ts` (background-check vendor / mock) — both need webhook endpoints + secrets (`STRIPE_CONNECT_WEBHOOK_SECRET`, `BG_CHECK_WEBHOOK_SECRET`) configured.
+- VPS cron jobs for `app/api/cron/*` (commands in handoff report §5; not yet installed). Includes the new daily `GET /api/cron/check-compliance-expiry` (30-day expiry warnings + auto-downgrade on expiry) — e.g. `0 6 * * * curl -fsS -H "Authorization: Bearer $CRON_SECRET" https://silverconnect.xinxinsoft.org/api/cron/check-compliance-expiry`.
 - ~~HTTPS for VPS~~ — done 2026-05-10. Site is `https://silverconnect.xinxinsoft.org`. AWS-1 (Sydney, `15.134.38.42`) terminates SSL with Let's Encrypt and proxies HTTP to VPS-5 (`47.236.169.73`); VPS-5 nginx still listens 80 and forwards `X-Forwarded-Proto` upstream. `SESSION_COOKIE_SECURE` in VPS `.env.local` is commented out — `lib/auth/session.ts` defaults to Secure under `NODE_ENV=production`. Cert renewal is certbot timer on AWS-1, valid through 2026-08-08.

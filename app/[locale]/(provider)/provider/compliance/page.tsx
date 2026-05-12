@@ -1,5 +1,6 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect as nextRedirect } from "next/navigation";
+import { after } from "next/server";
 import { eq } from "drizzle-orm";
 import {
   CheckCircle2,
@@ -17,16 +18,18 @@ import {
   providerProfiles,
   providerDocuments,
 } from "@/lib/db/schema/providers";
+import { users } from "@/lib/db/schema/users";
+import { auditLog } from "@/lib/db/schema/admin";
 import { getCurrentUser } from "@/lib/auth/server";
-import { saveUpload } from "@/lib/upload/local";
+import { savePrivateUpload } from "@/lib/upload/private";
+import {
+  allComplianceDocTypes,
+  requiredDocTypes,
+  type ComplianceDocType,
+} from "@/lib/compliance/country";
+import { notifyAdmins } from "@/lib/notifications/admins";
 
 type DocType = "police_check" | "first_aid" | "insurance" | "identity" | "wwc";
-
-const KNOWN_TYPES: DocType[] = [
-  "police_check",
-  "first_aid",
-  "insurance",
-];
 
 async function uploadDocAction(formData: FormData) {
   "use server";
@@ -41,21 +44,27 @@ async function uploadDocAction(formData: FormData) {
   if (!me) nextRedirect(`/${locale}/auth/login`);
   if (me.role !== "provider") nextRedirect(`/${locale}/home`);
 
-  if (!KNOWN_TYPES.includes(type)) {
-    nextRedirect(`/${locale}/provider/compliance?error=badType`);
-  }
-
   const [profile] = await db
-    .select({ id: providerProfiles.id })
+    .select({
+      id: providerProfiles.id,
+      onboardingStatus: providerProfiles.onboardingStatus,
+      country: users.country,
+    })
     .from(providerProfiles)
+    .leftJoin(users, eq(users.id, providerProfiles.userId))
     .where(eq(providerProfiles.userId, me.id))
     .limit(1);
   if (!profile) nextRedirect(`/${locale}/provider/register`);
 
+  const allowed = allComplianceDocTypes(profile.country) as readonly string[];
+  if (!allowed.includes(type)) {
+    nextRedirect(`/${locale}/provider/compliance?error=badType`);
+  }
+
   if (!(file instanceof File)) {
     nextRedirect(`/${locale}/provider/compliance?error=empty`);
   }
-  const result = await saveUpload(file, `compliance/${profile.id}`);
+  const result = await savePrivateUpload(file, `compliance/${profile.id}`);
   if ("error" in result) {
     nextRedirect(`/${locale}/provider/compliance?error=${result.error}`);
   }
@@ -63,12 +72,14 @@ async function uploadDocAction(formData: FormData) {
   const expiresAt = expiresAtStr ? new Date(expiresAtStr) : null;
 
   // Upsert by (providerId, type) — schema has a unique index on this pair.
+  // fileUrl holds the private-storage key (see lib/upload/private.ts), not a
+  // public URL; download goes through /api/compliance/documents/[id].
   await db
     .insert(providerDocuments)
     .values({
       providerId: profile.id,
       type,
-      fileUrl: result.url,
+      fileUrl: result.key,
       documentNumber,
       status: "pending",
       expiresAt,
@@ -76,7 +87,7 @@ async function uploadDocAction(formData: FormData) {
     .onConflictDoUpdate({
       target: [providerDocuments.providerId, providerDocuments.type],
       set: {
-        fileUrl: result.url,
+        fileUrl: result.key,
         documentNumber,
         status: "pending",
         expiresAt,
@@ -85,6 +96,31 @@ async function uploadDocAction(formData: FormData) {
         updatedAt: new Date(),
       },
     });
+
+  // If an already-approved provider re-uploads a *required* document, take
+  // them back to docs_review until it's re-approved (the new file is pending).
+  const isRequired = (requiredDocTypes(profile.country) as readonly string[]).includes(type);
+  if (isRequired && profile.onboardingStatus === "approved") {
+    await db
+      .update(providerProfiles)
+      .set({ onboardingStatus: "docs_review", updatedAt: new Date() })
+      .where(eq(providerProfiles.id, profile.id));
+    await db.insert(auditLog).values({
+      actorId: me.id,
+      actorRole: "provider",
+      action: "provider.required_document_reuploaded",
+      targetType: "provider_profile",
+      targetId: profile.id,
+      metadata: { documentType: type },
+    });
+    after(() =>
+      notifyAdmins({
+        title: "Provider re-uploaded a required compliance document",
+        body: `Document "${type}" needs re-review; the provider is back in docs_review.`,
+        link: `/${locale}/admin/providers/${profile.id}`,
+      }),
+    );
+  }
 
   nextRedirect(`/${locale}/provider/compliance?uploaded=${type}`);
 }
@@ -110,14 +146,16 @@ export default async function CompliancePage({
   const uploaded = typeof sp.uploaded === "string" ? sp.uploaded : null;
 
   const [profile] = await db
-    .select({ id: providerProfiles.id })
+    .select({ id: providerProfiles.id, country: users.country })
     .from(providerProfiles)
+    .leftJoin(users, eq(users.id, providerProfiles.userId))
     .where(eq(providerProfiles.userId, me.id))
     .limit(1);
   if (!profile) nextRedirect(`/${locale}/provider/register`);
 
   const rows = await db
     .select({
+      id: providerDocuments.id,
       type: providerDocuments.type,
       status: providerDocuments.status,
       fileUrl: providerDocuments.fileUrl,
@@ -129,25 +167,31 @@ export default async function CompliancePage({
     .where(eq(providerDocuments.providerId, profile.id));
 
   const byType = new Map(rows.map((r) => [r.type as DocType, r]));
+  const required = new Set<string>(requiredDocTypes(profile.country));
   const now = new Date();
-  const docs = KNOWN_TYPES.map((type) => {
-    const r = byType.get(type);
-    let state: "missing" | "valid" | "expiring" | "expired" = "missing";
-    let days = 0;
-    if (r) {
-      if (r.expiresAt) {
-        const ms = r.expiresAt.getTime() - now.getTime();
-        days = Math.round(ms / 86400000);
-        state = days < 0 ? "expired" : days < 30 ? "expiring" : "valid";
-      } else {
-        state = "valid";
+  const docs = (allComplianceDocTypes(profile.country) as ComplianceDocType[]).map(
+    (type) => {
+      const r = byType.get(type);
+      let state: "missing" | "valid" | "expiring" | "expired" = "missing";
+      let days = 0;
+      if (r) {
+        if (r.expiresAt) {
+          const ms = r.expiresAt.getTime() - now.getTime();
+          days = Math.round(ms / 86400000);
+          state = days < 0 ? "expired" : days < 30 ? "expiring" : "valid";
+        } else {
+          state = "valid";
+        }
       }
-    }
-    return { type, row: r, state, days };
-  });
+      return { type, row: r, state, days, optional: !required.has(type) };
+    },
+  );
 
   const anyExpiring = docs.some(
-    (d) => d.state === "expiring" || d.state === "expired" || d.state === "missing",
+    (d) =>
+      d.state === "expiring" ||
+      d.state === "expired" ||
+      (d.state === "missing" && !d.optional),
   );
   const fmt = (d: Date) =>
     d.toLocaleDateString(locale === "en" ? "en-AU" : locale, {
@@ -235,6 +279,11 @@ export default async function CompliancePage({
                   <div className="min-w-0 flex-1">
                     <p className="text-[15px] font-bold">
                       {tProvider(labelKey)}
+                      {d.optional && (
+                        <span className="ml-2 text-[12px] font-normal text-text-tertiary">
+                          ({tProvider("docOptional")})
+                        </span>
+                      )}
                     </p>
                     {d.row?.expiresAt && (
                       <p className="mt-0.5 text-[13px] text-text-secondary tabular-nums">
@@ -269,9 +318,9 @@ export default async function CompliancePage({
                       </p>
                     )}
                   </div>
-                  {d.row?.fileUrl && (
+                  {d.row?.id && (
                     <a
-                      href={d.row.fileUrl}
+                      href={`/api/compliance/documents/${d.row.id}`}
                       target="_blank"
                       rel="noopener"
                       className="text-[12px] font-semibold text-brand"

@@ -5,6 +5,7 @@
 /coverage
 /playwright-report
 /test-results
+/.private-uploads/
 .DS_Store
 *.pem
 npm-debug.log*

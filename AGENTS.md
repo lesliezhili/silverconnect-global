@@ -19,3 +19,13 @@ Key facts:
 
 Decision history: [docs/zh/vercel-to-vps-handoff-report.md §10](docs/zh/vercel-to-vps-handoff-report.md).
 <!-- END:deploy-rules -->
+
+<!-- BEGIN:i18n-rules -->
+# i18n — 新增页面必须同步全部 locale
+
+每新增一个页面（`app/[locale]/**/page.tsx`），必须为它用到的所有 UI 文案在全部 5 个 locale 文件中补齐对应 key：`messages/en.json`、`messages/zh-CN.json`、`messages/zh-TW.json`、`messages/ja.json`、`messages/ko.json`。
+
+- 不允许只加 `en.json` 就提交；不允许在页面里硬编码可见文案
+- 5 个文件的 key 结构必须一致（缺 key 会在运行时报错）
+- 改动现有页面时若新增了文案 key，同样适用本规则
+<!-- END:i18n-rules -->

@@ -14,6 +14,7 @@ import { serviceCategories, services, servicePrices } from "@/lib/db/schema/serv
 import {
   providerProfiles,
   providerCategories,
+  providerBadges,
 } from "@/lib/db/schema/providers";
 import { users } from "@/lib/db/schema/users";
 import { bookings } from "@/lib/db/schema/bookings";
@@ -181,6 +182,22 @@ export default async function CustomerHomePage({
     }
   }
 
+  // `verified` badge comes from providerBadges (not from onboardingStatus).
+  let recommendedVerified = false;
+  if (recommended.length) {
+    const [badge] = await db
+      .select({ kind: providerBadges.kind })
+      .from(providerBadges)
+      .where(
+        and(
+          eq(providerBadges.providerId, recommended[0].id),
+          eq(providerBadges.kind, "verified"),
+        ),
+      )
+      .limit(1);
+    recommendedVerified = !!badge;
+  }
+
   return (
     <>
       <Header
@@ -317,7 +334,7 @@ export default async function CustomerHomePage({
                 reviews: Number(recommended[0].ratingCount) || 0,
                 distanceKm: "—",
                 pricePerHour: recommendedHourly || 0,
-                verified: true,
+                verified: recommendedVerified,
                 firstAid: false,
               }}
             />

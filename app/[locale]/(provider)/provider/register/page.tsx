@@ -1,5 +1,6 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect as nextRedirect } from "next/navigation";
+import { headers } from "next/headers";
 import { eq } from "drizzle-orm";
 import { Upload, MapPin, Check } from "lucide-react";
 import { Header } from "@/components/layout/Header";
@@ -16,6 +17,16 @@ import {
   providerAvailability,
 } from "@/lib/db/schema/providers";
 import { getCurrentUser, signInUser } from "@/lib/auth/server";
+import {
+  ensureConnectAccount,
+  createConnectOnboardingLink,
+} from "@/lib/stripe/connect";
+import { absoluteUrl } from "@/lib/donations/appUrl";
+import { lookupAbn } from "@/lib/compliance/abr";
+import { requiresAbn } from "@/lib/compliance/country";
+import { startBackgroundCheck } from "@/lib/provider/backgroundCheck";
+
+const BG_CHECK_CONSENT_VERSION = "2026-05-11";
 
 const TOTAL_STEPS = 5;
 const STEPS = [1, 2, 3, 4, 5] as const;
@@ -79,6 +90,7 @@ async function saveStep1(formData: FormData) {
   "use server";
   const locale = String(formData.get("locale") ?? "en");
   const me = await requireSignedInUser(locale);
+  const country = await getCountry();
   const name = String(formData.get("name") ?? "").trim();
   const phone = String(formData.get("phone") ?? "").trim();
   const address = String(formData.get("address") ?? "").trim();
@@ -86,6 +98,34 @@ async function saveStep1(formData: FormData) {
   if (!name || !phone || !address) {
     nextRedirect(`/${locale}/provider/register?step=1&error=required`);
   }
+
+  // ABN is AU-only and validated against the ABR before we let the provider
+  // past step 1.
+  let abnPatch: {
+    abn: string;
+    businessName: string | null;
+    abnActive: boolean;
+    abnValidatedAt: Date;
+  } | null = null;
+  if (requiresAbn(country)) {
+    const abnRaw = String(formData.get("abn") ?? "").trim();
+    const result = await lookupAbn(abnRaw);
+    if (!result.ok) {
+      const code =
+        result.error === "unavailable" ? "abnLookup" : "abnInvalid";
+      nextRedirect(`/${locale}/provider/register?step=1&error=${code}`);
+    } else if (!result.active) {
+      nextRedirect(`/${locale}/provider/register?step=1&error=abnInactive`);
+    } else {
+      abnPatch = {
+        abn: result.abn,
+        businessName: result.entityName,
+        abnActive: true,
+        abnValidatedAt: new Date(),
+      };
+    }
+  }
+
   await db
     .update(users)
     .set({ name, phone, updatedAt: new Date() })
@@ -93,7 +133,12 @@ async function saveStep1(formData: FormData) {
   const draft = await ensureDraft(me.id);
   await db
     .update(providerProfiles)
-    .set({ addressLine: address, bio: bio || null, updatedAt: new Date() })
+    .set({
+      addressLine: address,
+      bio: bio || null,
+      ...(abnPatch ?? {}),
+      updatedAt: new Date(),
+    })
     .where(eq(providerProfiles.id, draft.id));
   nextRedirect(`/${locale}/provider/register?step=2`);
 }
@@ -171,6 +216,17 @@ async function finishWizard(formData: FormData) {
   "use server";
   const locale = String(formData.get("locale") ?? "en");
   const me = await requireSignedInUser(locale);
+
+  // Background-check authorisation is mandatory before submitting.
+  if (!formData.get("consent")) {
+    nextRedirect(`/${locale}/provider/register?step=5&error=consent`);
+  }
+  const h = await headers();
+  const consentIp =
+    h.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    h.get("x-real-ip") ||
+    null;
+
   const draft = await ensureDraft(me.id);
 
   await db
@@ -178,6 +234,9 @@ async function finishWizard(formData: FormData) {
     .set({
       onboardingStatus: "docs_review",
       submittedAt: new Date(),
+      bgCheckConsentAt: new Date(),
+      bgCheckConsentVersion: BG_CHECK_CONSENT_VERSION,
+      bgCheckConsentIp: consentIp,
       updatedAt: new Date(),
     })
     .where(eq(providerProfiles.id, draft.id));
@@ -192,7 +251,39 @@ async function finishWizard(formData: FormData) {
     name: me.name,
     role: "provider",
   });
+  // Kick off the background check (creates a local `pending` row now, fires
+  // the vendor call in the background).
+  await startBackgroundCheck(draft.id);
   nextRedirect(`/${locale}/provider/onboarding-status`);
+}
+
+async function startStripeConnect(formData: FormData) {
+  "use server";
+  const locale = String(formData.get("locale") ?? "en");
+  const me = await requireSignedInUser(locale);
+  const draft = await ensureDraft(me.id);
+  const [u] = await db
+    .select({ email: users.email, country: users.country })
+    .from(users)
+    .where(eq(users.id, me.id))
+    .limit(1);
+  const accountId = await ensureConnectAccount({
+    existingAccountId: draft.stripeAccountId,
+    email: u?.email ?? me.email,
+    country: u?.country ?? "AU",
+  });
+  if (accountId !== draft.stripeAccountId) {
+    await db
+      .update(providerProfiles)
+      .set({ stripeAccountId: accountId, updatedAt: new Date() })
+      .where(eq(providerProfiles.id, draft.id));
+  }
+  const url = await createConnectOnboardingLink({
+    accountId,
+    returnUrl: absoluteUrl(`/${locale}/provider/register?step=5&stripe=done`),
+    refreshUrl: absoluteUrl(`/${locale}/provider/register?step=5&stripe=refresh`),
+  });
+  nextRedirect(url);
 }
 
 interface DraftSnapshot {
@@ -203,6 +294,9 @@ interface DraftSnapshot {
   availability: Set<string>; // `${day}|${slot}`
   name: string;
   phone: string;
+  stripeAccountId: string | null;
+  abn: string;
+  businessName: string | null;
 }
 
 async function loadDraft(userId: string): Promise<DraftSnapshot> {
@@ -226,6 +320,9 @@ async function loadDraft(userId: string): Promise<DraftSnapshot> {
       availability: new Set(),
       name: u?.name ?? "",
       phone: u?.phone ?? "",
+      stripeAccountId: null,
+      abn: "",
+      businessName: null,
     };
   }
   const [cats, avails] = await Promise.all([
@@ -251,6 +348,9 @@ async function loadDraft(userId: string): Promise<DraftSnapshot> {
     ),
     name: u?.name ?? "",
     phone: u?.phone ?? "",
+    stripeAccountId: draft.stripeAccountId,
+    abn: draft.abn ?? "",
+    businessName: draft.businessName ?? null,
   };
 }
 
@@ -284,6 +384,14 @@ export default async function ProviderRegisterPage({
       ? t("errorAllRequired")
       : error === "noCategory"
       ? t("errorPickCategory")
+      : error === "abnInvalid"
+      ? t("errorAbnInvalid")
+      : error === "abnInactive"
+      ? t("errorAbnInactive")
+      : error === "abnLookup"
+      ? t("errorAbnLookup")
+      : error === "consent"
+      ? t("errorConsent")
       : null;
 
   const draft = await loadDraft(me.id);
@@ -348,7 +456,7 @@ export default async function ProviderRegisterPage({
 
         <form action={action} className="mt-6 flex flex-col gap-4">
           <input type="hidden" name="locale" value={locale} />
-          {step === 1 && <Step1 t={t} draft={draft} />}
+          {step === 1 && <Step1 t={t} draft={draft} country={country} />}
           {step === 2 && <Step2 t={t} country={country} />}
           {step === 3 && (
             <Step3
@@ -359,7 +467,13 @@ export default async function ProviderRegisterPage({
             />
           )}
           {step === 4 && <Step4 t={t} draft={draft} />}
-          {step === 5 && <Step5 t={t} />}
+          {step === 5 && (
+            <Step5
+              t={t}
+              connected={!!draft.stripeAccountId}
+              connectAction={startStripeConnect}
+            />
+          )}
 
           <div className="mt-4 flex items-center gap-3">
             <Link
@@ -381,7 +495,15 @@ export default async function ProviderRegisterPage({
 
 type T = Awaited<ReturnType<typeof getTranslations<"provider">>>;
 
-function Step1({ t, draft }: { t: T; draft: DraftSnapshot }) {
+function Step1({
+  t,
+  draft,
+  country,
+}: {
+  t: T;
+  draft: DraftSnapshot;
+  country: string;
+}) {
   return (
     <>
       <div>
@@ -394,6 +516,24 @@ function Step1({ t, draft }: { t: T; draft: DraftSnapshot }) {
           required
         />
       </div>
+      {requiresAbn(country) && (
+        <div>
+          <Label htmlFor="abn">{t("rAbn")}</Label>
+          <Input
+            id="abn"
+            name="abn"
+            inputMode="numeric"
+            defaultValue={draft.abn}
+            aria-describedby="abn-hint"
+            required
+          />
+          <p id="abn-hint" className="mt-1.5 text-[13px] text-text-tertiary">
+            {draft.businessName
+              ? `${t("rAbnBusiness")}: ${draft.businessName}`
+              : t("rAbnHint")}
+          </p>
+        </div>
+      )}
       <div>
         <Label htmlFor="phone">{t("rPhone")}</Label>
         <Input
@@ -577,17 +717,47 @@ function Step4({ t, draft }: { t: T; draft: DraftSnapshot }) {
   );
 }
 
-function Step5({ t }: { t: T }) {
+function Step5({
+  t,
+  connected,
+  connectAction,
+}: {
+  t: T;
+  connected: boolean;
+  connectAction: (formData: FormData) => void | Promise<void>;
+}) {
   return (
     <div className="rounded-lg border border-border bg-bg-base p-5">
       <p className="text-[15px] text-text-secondary">{t("stripeHint")}</p>
+      {connected && (
+        <p className="mt-3 inline-flex items-center gap-1.5 rounded-sm bg-success-soft px-2.5 py-1 text-[13px] font-semibold text-success">
+          <Check size={14} aria-hidden /> {t("stripeStarted")}
+        </p>
+      )}
       <button
-        type="button"
+        type="submit"
+        formAction={connectAction}
         className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-[#635BFF] px-5 text-[15px] font-bold text-white"
       >
         <Check size={18} aria-hidden />
-        {t("stripeConnect")}
+        {connected ? t("stripeContinue") : t("stripeConnect")}
       </button>
+
+      <div className="mt-6 border-t border-border pt-4">
+        <p className="text-[15px] font-bold text-text-primary">
+          {t("bgConsentTitle")}
+        </p>
+        <label className="mt-2 flex cursor-pointer items-start gap-3 text-[14px] text-text-secondary">
+          <input
+            type="checkbox"
+            name="consent"
+            value="1"
+            required
+            className="mt-0.5 h-5 w-5 shrink-0 rounded border-[1.5px] border-border-strong accent-brand"
+          />
+          <span>{t("bgConsentText")}</span>
+        </label>
+      </div>
     </div>
   );
 }
