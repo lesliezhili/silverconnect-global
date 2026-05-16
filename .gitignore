@@ -14,3 +14,4 @@ npm-debug.log*
 !.env.local.example
 .vercel
 .env*.local
+supabase/

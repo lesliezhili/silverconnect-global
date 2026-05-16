@@ -3,7 +3,7 @@ config({ path: ".env.local", override: true });
 
 import { eq, sql, inArray, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
+import { createPgClient } from "../../lib/db/pg-connection";
 import bcrypt from "bcryptjs";
 import { users } from "../../lib/db/schema/users";
 import {
@@ -22,7 +22,7 @@ import { wallets } from "../../lib/db/schema/payments";
 const url = process.env.DATABASE_URL;
 if (!url) throw new Error("DATABASE_URL not set");
 
-const client = postgres(url, { ssl: "require", prepare: false, max: 5 });
+const client = createPgClient(url, 5);
 export const db = drizzle(client);
 
 export async function dbClose() {

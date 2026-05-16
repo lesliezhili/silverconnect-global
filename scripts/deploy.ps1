@@ -177,6 +177,8 @@ rm -rf .next.prev
 tar xzf /tmp/sc-deploy.tar.gz
 rm /tmp/sc-deploy.tar.gz
 npm ci --omit=dev --no-audit --no-fund
+set -a && source .env.local && set +a
+npm run db:migrate
 pm2 reload silverconnect --update-env
 pm2 save
 sleep 3

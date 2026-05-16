@@ -17,6 +17,7 @@
  *     run through UI.
  *
  * Run:  npx playwright test e2e/full-flow-ui.spec.ts --project=chromium
+ * Tagged @critical when DATABASE_URL is set (see first test).
  *
  * Pre-req: dev server on http://localhost:3000 (or PLAYWRIGHT_TEST_BASE_URL).
  */

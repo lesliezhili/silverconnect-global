@@ -23,27 +23,28 @@ export interface AuthSession {
   bookingDraft?: BookingDraft;
 }
 
-const secret = process.env.SESSION_SECRET;
-if (!secret || secret.length < 32) {
-  throw new Error("SESSION_SECRET must be at least 32 characters");
+function sessionOptions(): SessionOptions {
+  const secret = process.env.SESSION_SECRET;
+  if (!secret || secret.length < 32) {
+    throw new Error("SESSION_SECRET must be at least 32 characters");
+  }
+  return {
+    cookieName: "sc-session",
+    password: secret,
+    cookieOptions: {
+      httpOnly: true,
+      sameSite: "lax",
+      secure:
+        process.env.SESSION_COOKIE_SECURE === "false"
+          ? false
+          : process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30,
+    },
+  };
 }
-
-const options: SessionOptions = {
-  cookieName: "sc-session",
-  password: secret,
-  cookieOptions: {
-    httpOnly: true,
-    sameSite: "lax",
-    secure:
-      process.env.SESSION_COOKIE_SECURE === "false"
-        ? false
-        : process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 30,
-  },
-};
 
 export async function getAuthSession() {
   const store = await cookies();
-  return getIronSession<AuthSession>(store, options);
+  return getIronSession<AuthSession>(store, sessionOptions());
 }

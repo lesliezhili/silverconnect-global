@@ -10,8 +10,8 @@ import { config } from "dotenv";
 config({ path: ".env.local", override: true });
 
 import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
 import { eq, sql } from "drizzle-orm";
+import { createPgClient } from "../lib/db/pg-connection";
 import {
   serviceCategories,
   services,
@@ -20,7 +20,7 @@ import {
 
 const url = process.env.DATABASE_URL;
 if (!url) throw new Error("DATABASE_URL not set");
-const client = postgres(url, { ssl: "require", prepare: false, max: 1 });
+const client = createPgClient(url, 1);
 const db = drizzle(client);
 
 interface Cat {
