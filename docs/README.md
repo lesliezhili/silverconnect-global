@@ -10,6 +10,7 @@ Canonical engineering documentation. Existing root-level files are kept; this fo
 |---|---|
 | [ARCHITECTURE.md](ARCHITECTURE.md) | System architecture, components, data flow |
 | [REQUIREMENTS.md](REQUIREMENTS.md) | Product requirements (PRD), user stories, scope |
+| [MULTILINGUAL_ELDER_FIRST_SPEC.md](MULTILINGUAL_ELDER_FIRST_SPEC.md) | Mandatory multilingual, elder-first, voice-first product and implementation mandate |
 | [API.md](API.md) | REST API reference for all routes under `app/api/` |
 | [DATABASE.md](DATABASE.md) | Data model, tables, relationships, migrations |
 | [DEVELOPMENT.md](DEVELOPMENT.md) | Local setup, conventions, scripts |

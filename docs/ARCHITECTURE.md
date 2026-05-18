@@ -4,6 +4,8 @@
 
 SilverConnect Global is a multi-country, two-sided marketplace connecting senior customers with vetted service providers (cleaning, cooking, gardening, personal care, maintenance) across **Australia (AU)**, **China (CN)**, and **Canada (CA)**.
 
+The target architecture is an **Asia-Pacific Multilingual Elder Support Platform**. All architecture decisions must comply with the mandatory [Multilingual & Elder-First Specification](MULTILINGUAL_ELDER_FIRST_SPEC.md), including voice-first interaction, elder accessibility modes, multilingual AI translation, migrant worker usability, and culturally inclusive family coordination.
+
 The system is a Next.js full-stack application (App Router) backed by Supabase (PostgreSQL + Auth + RLS), with Stripe for payments and a separate FastAPI microservice for AI customer service.
 
 ## 2. C4 — Context
@@ -30,6 +32,8 @@ The system is a Next.js full-stack application (App Router) backed by Supabase (
 | Auth | Supabase Auth | Email/password, JWT sessions |
 | Payments | Stripe | Charges, escrow, Connect payouts, webhooks |
 | AI Service | FastAPI (`ai_customer_service.py`) | Chat, intent routing, emergency detection |
+| Translation Middleware | Provider-neutral AI translation service | Chat, voice-note, worker-note, family-summary, and notification localization |
+| Voice Layer | Whisper / Piper / LiveKit-compatible services | Multilingual STT, TTS, realtime voice routing, slow-speech playback |
 | CDN/Edge | Vercel | Static assets, edge functions |
 
 ## 4. Module map
@@ -43,12 +47,14 @@ Implemented in 7 modules. Migration files are not strictly numbered 1:1 — thre
 5. **Feedback & Ratings** — reviews, responses, reports.
 6. **Disputes & Safety** — disputes with evidence, incident reports, safety flags, compliance documents.
 7. **AI Automation** — sessions, conversations, intents, knowledge base, templates.
+8. **Multilingual Elder Experience** — language preferences, Grandparent Mode, large text mode, high contrast mode, voice-first booking, translated notifications, worker simple mode, and family summaries.
 
 ## 5. Key components
 
 | Frontend (`components/`) | Purpose |
 |---|---|
 | `Header.tsx`, `CountrySelector.tsx`, `LanguageSelector.tsx`, `LocationDetector.tsx` | Global chrome, locale + geolocation |
+| `ElderButton`, `VoiceInputButton`, `LargeCard`, `EmergencyActionCard`, `SimplifiedNavigation`, `FamilyStatusCard`, `ServiceTimelineCard` | Required elder-first design-system components |
 | `ServiceCard.tsx`, `ProviderCard.tsx` | Catalog display |
 | `BookingForm.tsx`, `BookingModal.tsx`, `BookingStatusFlow.tsx` | Booking flow |
 | `ProviderRegistration.tsx`, `ProviderAvailability.tsx` | Provider onboarding |
@@ -66,7 +72,9 @@ Implemented in 7 modules. Migration files are not strictly numbered 1:1 — thre
 | `paymentUtils.ts` | Stripe helpers, fee calculations |
 | `providers.ts`, `services.ts` | Domain queries |
 | `location.ts`, `locationUtils.ts` | Geolocation, distance |
-| `translations.ts` | EN/ZH dictionary |
+| `messages/*`, `i18n/*` | `next-intl` locale routing and message catalogs |
+| `translation/*` (planned) | Provider-neutral translation middleware adapters |
+| `voice/*` (planned) | STT, TTS, VAD, and realtime voice routing adapters |
 | `types.ts` | Shared TS types and enums |
 | `ai/pricingTemplates.ts` | Pricing-related prompt templates used by the AI agent |
 
@@ -83,20 +91,31 @@ Customer → POST /api/bookings
   → on completion → manual escrow release via DB function `release_escrow(booking_id)` → payout queued (Module 4 tables). Time-based auto-release is **not yet implemented**.
 ```
 
-## 7. Multi-country handling
+## 7. Multi-country and multilingual handling
 
 - `countries` table: `AU`, `CN`, `CA` with `currency_code`, `tax_rate`.
 - All pricing stored per `(service_id, country_code)` in `service_prices`.
 - Currency picked from user country; Stripe charge currency must match.
-- i18n via `lib/translations.ts` (EN/ZH; FR planned).
+- i18n via `next-intl` with locale-prefixed routes and persisted locale preference.
+- Mandatory first-class languages: English, Simplified Chinese, Traditional Chinese, Japanese, Korean, Thai.
+- Future language architecture must allow Vietnamese, Indonesian, Filipino/Tagalog, Hindi, and Malay.
+- Domain content must support UTF-8 multilingual metadata, translated service categories, multilingual notifications, and original-language audit records.
 
-## 8. AuthN / AuthZ
+## 8. AI translation and voice architecture
+
+- AI chat, family summaries, worker notes, service requests, voice notes, and notifications must flow through a translation middleware before reaching recipients with different language preferences.
+- Open source translation providers are preferred: LibreTranslate, Argos Translate, MarianMT, and NLLB models. OpenAI translation or DeepL may be used as paid fallback providers.
+- Voice-first experiences must support multilingual speech-to-text, text-to-speech, slow speech mode, voice reminders, and voice navigation.
+- Preferred open source voice stack: Whisper for STT, Piper for TTS, LiveKit for realtime voice, and VAD + LangChain-style routing for intent dispatch.
+- Translation records must preserve source language, source text, target locale, translated text, provider, confidence/quality metadata where available, and audit timestamps.
+
+## 9. AuthN / AuthZ
 
 - **AuthN**: Supabase Auth (JWT in HTTP-only cookies).
 - **AuthZ**: Postgres Row-Level Security on every user-owned table. Server routes additionally verify role for privileged actions (admin, provider-only).
 - Service-role key is **server-only**; never shipped to the client.
 
-## 9. Cross-cutting concerns
+## 10. Cross-cutting concerns
 
 | Concern | Mechanism |
 |---|---|
@@ -107,7 +126,7 @@ Customer → POST /api/bookings
 | Rate limiting | (planned) Upstash on `/api/ai/*` and auth |
 | Feature flags | (none yet — env vars where needed) |
 
-## 10. Non-functional targets
+## 11. Non-functional targets
 
 | Attribute | Target |
 |---|---|
@@ -115,8 +134,10 @@ Customer → POST /api/bookings
 | p95 page load | < 2.5s on 4G |
 | API p95 | < 400 ms (excl. Stripe round-trip). Hard upper bound: Vercel function `maxDuration: 30s` (`vercel.json`). |
 | RPO / RTO | 24h / 4h (Supabase PITR) |
+| Accessibility | WCAG AA minimum plus elder-first large text, high contrast, large touch target, and simplified UI modes |
+| Multilingual readiness | All customer, worker, family, and notification surfaces support mandatory locales |
 
-## 11. Decisions (ADRs, condensed)
+## 12. Decisions (ADRs, condensed)
 
 - **Next.js App Router over pages router** — server components, streaming.
 - **Supabase over self-hosted Postgres** — managed Auth + RLS + Storage in one.

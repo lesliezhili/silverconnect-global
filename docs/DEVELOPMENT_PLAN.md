@@ -3,6 +3,8 @@
 > 配套文档：[UI_DESIGN.md](UI_DESIGN.md) · [UI_PAGES.md](UI_PAGES.md) · [ARCHITECTURE.md](ARCHITECTURE.md) · [REQUIREMENTS.md](zh/REQUIREMENTS.md)
 >
 > 决策：**前端 UI 全量重建**。后端 API（`app/api/**`）、数据库（Supabase）、AI 服务（FastAPI）、`lib/**` 业务逻辑 **全部保留**。
+>
+> Mandatory extension: all implementation work must comply with [MULTILINGUAL_ELDER_FIRST_SPEC.md](MULTILINGUAL_ELDER_FIRST_SPEC.md). The platform is now an Asia-Pacific multilingual elder support platform, not a generic marketplace UI.
 
 ---
 
@@ -37,7 +39,9 @@
 | 语言 | TypeScript strict | 已在用 |
 | 样式 | **Tailwind CSS** + CSS 变量（§1.1 token） | 已在用 |
 | 组件库 | **自建 + shadcn/ui 选用** | 不引入完整 UI lib，按 UI_DESIGN.md token 自建 |
-| i18n | **next-intl**（替换 `lib/translations.ts` 的简易 dict） | EN/ZH 完整 locale 路由 `/[locale]/...` |
+| i18n | **next-intl**（替换 `lib/translations.ts` 的简易 dict） | Mandatory locales: EN, zh-Hans, zh-Hant, ja, ko, th; future-ready for vi, id, tl, hi, ms |
+| Translation | Provider-neutral middleware | LibreTranslate / Argos / MarianMT / NLLB preferred; OpenAI / DeepL fallback |
+| Voice | Whisper + Piper + LiveKit-compatible architecture | Multilingual STT/TTS, voice navigation, slow speech mode |
 | 状态 | React Server Components + URL state + `nuqs` | 不引入 Redux/Zustand 除非确有共享状态 |
 | 表单 | **react-hook-form + zod** | 表单页 (#12, #38, etc.) 重度使用 |
 | 数据 | **Supabase JS client + TanStack Query**（客户端缓存） | RSC 默认服务端取数 |
@@ -100,8 +104,8 @@ app/
 
 | Phase | 主题 | 时长（人周） | 交付里程碑 |
 |---|---|---|---|
-| **P0** | 清理 + 基线搭建 | 1 周 | 旧 UI 删除、Token/Layout/i18n/路由骨架可跑 |
-| **P1** | Sprint 1 客户黄金路径 | 3 周 | #7 #8 #9 #10 #12 #13 #14 #15 #16 #28 #29 共 14 屏可演示 + E2E 通过 |
+| **P0** | 清理 + 基线搭建 | 1 周 | 旧 UI 删除、Token/Layout/i18n/路由骨架可跑；强制接入多语言与老人模式基础 |
+| **P1** | Sprint 1 客户黄金路径 | 3 周 | #7 #8 #9 #10 #12 #13 #14 #15 #16 #28 #29 共 14 屏可演示 + voice booking + E2E 通过 |
 | **P2** | Sprint 2 信任与回流 | 2 周 | 注册登录、个人资料、评价、争议、安全、紧急覆盖 11 屏 |
 | **P3** | Sprint 3 Provider 核心 | 2 周 | Provider **10 页**核心可用 + Stripe Connect 接入（剩 4 页入 P5）|
 | **P4** | Sprint 4 管理员核心 | 2 周 | 管理员 **8 屏 + 5 抽屉** + #66 系统设置（剩 7 页入 P5），仅桌面 |
@@ -121,19 +125,28 @@ app/
 | P0-1 | 备份当前分支：`git branch backup/old-ui-2026-05` | 安全网 | git |
 | P0-2 | 删除 §0.2 范围内所有旧路由与组件 | 干净的 `app/[locale]` 与 `components/` 空骨架 | rm -rf |
 | P0-3 | 引入 `next-intl`：`messages/{en,zh}.json` + `middleware.ts`（**显式排除 `/admin/*`、`/api/*`、`/_next/*` 不做 locale 重定向**）+ 迁移 `lib/translations.ts` | `/en /zh` 可切换；`/admin` 不被前缀化 | next-intl docs |
+| P0-3a | 扩展 locale 骨架：`en`, `zh-Hans`, `zh-Hant`, `ja`, `ko`, `th`；语言偏好保存与自动侦测 | Mandatory locale shell ready | MULTILINGUAL_ELDER_FIRST_SPEC.md |
 | P0-4 | 写入 §1.1 全部 CSS 变量到 `app/globals.css`（浅色 + 深色 + 配色契约） | token 可用 | UI_DESIGN.md §1.1 |
+| P0-4a | 加 Elder Accessibility tokens：150% / 200% / 300% 字号缩放、warm high-contrast palette、large touch target scale | Elder mode foundations | MULTILINGUAL_ELDER_FIRST_SPEC.md §6 |
 | P0-5 | 配 `tailwind.config.ts` 引用 token 变量 + 字号阶梯 + 触控尺寸 | Tailwind class 可消费 token | UI_DESIGN.md §1.2 §1.3 |
 | P0-6 | 重写 `app/layout.tsx`：HTML lang/dir、字体加载（Inter + Noto Sans SC）、ThemeProvider | 全局 chrome 就位 | — |
 | P0-7 | 建立 `components/ui/`（Button、Input、Card、Badge、Modal、Toast）按 UI_DESIGN.md §2.4 | 通用原子组件 ≥10 个 | UI_DESIGN.md §2 |
+| P0-7a | 建立 `ElderButton`, `VoiceInputButton`, `LargeCard`, `EmergencyActionCard`, `SimplifiedNavigation`, `FamilyStatusCard`, `ServiceTimelineCard` | Mandatory elder-first components | MULTILINGUAL_ELDER_FIRST_SPEC.md §12 |
 | P0-8 | 建立 `components/layout/` (Header §2.1, BottomTabBar §2.2, AIFloatButton §2.3) | 全局壳 | UI_DESIGN.md §2 |
 | P0-9 | 建立 `components/illustrations/` 角色 C1–C10 + 场景 S1–S10 SVG 占位（先用线稿草图占位，与 Claude Design 出稿同步替换） | 10+10 占位 SVG | UI_DESIGN.md §1.8 |
 | P0-10 | 配 Storybook 或路由 `/_dev/components` 内部预览页 | 设计师/QA 可独立查 | — |
 | P0-11 | CI 加 `lint:contrast`：脚本扫描 token 组合是否违反 §1.1 配色契约 | 自动防回归 | 简单 node 脚本 |
+| P0-12 | 建立 translation middleware interface + provider adapter stubs | Chat/request/voice-note/family-summary translation contract | MULTILINGUAL_ELDER_FIRST_SPEC.md §5 |
+| P0-13 | 建立 voice interface stubs：STT/TTS/VAD/realtime routing | Voice-first architecture ready | MULTILINGUAL_ELDER_FIRST_SPEC.md §7 |
 
 ### 2.2 验收
 
 - [ ] `pnpm dev` 跑起 `/en` `/zh` `/en/_dev/components` 三页
 - [ ] Header 切语言能 hot-swap，不刷新
+- [ ] Mandatory locale routes exist for EN, zh-Hans, zh-Hant, JA, KO, TH
+- [ ] Large Text Mode 150% / 200% / 300% does not break core navigation
+- [ ] High Contrast Mode meets WCAG AA and elder usability review
+- [ ] Grandparent Mode shell exists with simplified navigation and persistent help
 - [ ] 浅色 / 深色切换通过 `prefers-color-scheme` 与手动开关同时工作
 - [ ] 所有原子组件在 `/_dev/components` 各出 浅 EN/浅 ZH/深 EN/深 ZH 4 态
 - [ ] CI 通过
@@ -149,6 +162,7 @@ app/
 | 周 | 页面 / 功能 | 后端 API | 关键风险 |
 |---|---|---|---|
 | W2-D1-2 | #7 `/home` 首页 | `GET /api/services`、`GET /api/customer/recent` | 插画占位待 Claude Design 替换 |
+| W2-D1-2a | Voice booking entry on `/home` | STT/TTS adapter | Must support elder utterances such as "Book cleaning tomorrow" |
 | W2-D3 | #8 `/services` 大类列表 | `GET /api/services` 按国别 | 国别价含税 (FR-01) |
 | W2-D4-5 | #9 `/services/[cat]` Provider 列表 + 筛选/排序 | `POST /api/provider/search` | 距离计算 `lib/locationUtils.ts` |
 | W3-D1-2 | #10 `/providers/[id]` Provider 详情 | `GET /api/provider/[id]`、`GET /api/provider/[id]/availability`、`GET /api/provider/[id]/reviews` | 可用时段预览组件复用 #12 Step 2 |
@@ -159,6 +173,7 @@ app/
 | W4-D3 | #16 `/bookings/[id]` 详情 | `GET /api/bookings/[id]`、`PATCH` 改约/取消 | BookingStatusFlow 组件、按状态条件渲染 |
 | W4-D4 | #28 `/notifications` 通知中心 | `GET /api/notifications`、SSE 实时 | SSE / 轮询权衡 |
 | W4-D5 | #29 `/chat` AI 聊天 | `POST /api/ai/chat` 流式 | 流式 SSE 渲染、紧急关键词触发 |
+| W4-D5a | Translation middleware in chat and family summary flows | Translation adapter | Thai worker -> English family summary -> Chinese elder playback scenario |
 
 ### 3.2 横切组件（W2 同步建）
 

@@ -22,6 +22,22 @@ Targets:
 | Lighthouse | `lighthouserc.json` URLs `/`, `/services`, `/bookings`, 3 runs each | Performance ≥ 0.9, Accessibility ≥ 0.9, Best Practices ≥ 0.85, SEO ≥ 0.9 |
 | Load | k6 (`k6/`) | Goal: booking endpoint 100 RPS, p95 < 500 ms |
 
+## Multilingual and elder-first test mandate
+
+All new customer, worker, and family-facing flows must comply with [MULTILINGUAL_ELDER_FIRST_SPEC.md](MULTILINGUAL_ELDER_FIRST_SPEC.md). Test plans must include:
+
+- multilingual E2E coverage for English, Simplified Chinese, Traditional Chinese, Japanese, Korean, and Thai
+- locale switching, auto-detection, and saved preference tests
+- accessibility tests for WCAG AA plus elder-specific usability checks
+- large text responsive tests at 150%, 200%, and 300%
+- high contrast mode tests
+- Grandparent Mode simplified-navigation tests
+- voice workflow tests for speech-to-text, text-to-speech, voice booking, voice reminders, and slow speech mode
+- translation middleware contract tests for chat, service requests, voice notes, family summaries, worker notes, and notifications
+- worker simple mode tests for checklist, before/after photo, voice summary, and translated report flows
+- family portal tests for localized notifications, timezone-aware updates, and translated AI summaries
+- low-tech usability UAT with seniors aged 65+ and migrant or international worker participants
+
 ## Running
 
 ```bash
