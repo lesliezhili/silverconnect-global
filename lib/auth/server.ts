@@ -2,7 +2,7 @@ import "server-only";
 import { eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { users, type User } from "@/lib/db/schema/users";
-import { getAuthSession, type Role } from "./session";
+import { getAuthSession, getOptionalAuthSession, type Role } from "./session";
 
 export type { Role };
 
@@ -44,8 +44,8 @@ export interface CurrentUser {
  * (`signOut`, login redirect, etc.) rather than here.
  */
 export async function getCurrentUser(): Promise<CurrentUser | null> {
-  const session = await getAuthSession();
-  if (!session.userId) return null;
+  const session = await getOptionalAuthSession();
+  if (!session?.userId) return null;
   const u = await findUserById(session.userId);
   if (!u || u.deletedAt) return null;
   return {

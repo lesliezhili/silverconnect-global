@@ -35,6 +35,20 @@ const CAT_ICON_BG: Record<string, { bg: string; fg: string; emoji: string }> = {
   repair:       { bg: "#EDE9FE", fg: "#7C3AED", emoji: "🔧" },
 };
 
+const FALLBACK_CATEGORIES = [
+  { code: "cleaning", sortOrder: 10 },
+  { code: "cooking", sortOrder: 20 },
+  { code: "garden", sortOrder: 30 },
+  { code: "personalCare", sortOrder: 40 },
+  { code: "repair", sortOrder: 50 },
+];
+
+const FALLBACK_HOURLY: Record<CountryCode, Record<string, number>> = {
+  AU: { cleaning: 60, cooking: 45, garden: 50, personalCare: 40, repair: 65 },
+  CN: { cleaning: 280, cooking: 210, garden: 235, personalCare: 188, repair: 305 },
+  CA: { cleaning: 55, cooking: 42, garden: 45, personalCare: 38, repair: 60 },
+};
+
 function priceFromHourly(country: CountryCode, baseHr: number, locale: string) {
   const sym = CURRENCY_SYMBOL[country];
   return locale === "zh" ? `${sym}${baseHr}/小时起` : `from ${sym}${baseHr}/h`;
@@ -62,39 +76,48 @@ export default async function CustomerHomePage({
   const greetingName = me?.name ?? me?.email.split("@")[0] ?? tCommon("guest");
 
   // ----- Categories with min hourly price (per country) -----
-  const catRows = await db
-    .select({
-      code: serviceCategories.code,
-      sortOrder: serviceCategories.sortOrder,
-    })
-    .from(serviceCategories)
-    .where(eq(serviceCategories.enabled, true))
-    .orderBy(serviceCategories.sortOrder);
+  let catRows = FALLBACK_CATEGORIES;
+  const minHourlyByCategory = new Map<string, number>(
+    Object.entries(FALLBACK_HOURLY[country]),
+  );
 
-  // Cheapest hourly rate per category for the user's country.
-  // Hourly = base_price / (duration_min / 60).
-  const minHourlyRows = await db
-    .select({
-      category: services.categoryCode,
-      basePrice: servicePrices.basePrice,
-      durationMin: services.durationMin,
-    })
-    .from(services)
-    .innerJoin(
-      servicePrices,
-      and(
-        eq(servicePrices.serviceId, services.id),
-        eq(servicePrices.country, country),
-      ),
-    )
-    .where(eq(services.enabled, true));
-  const minHourlyByCategory = new Map<string, number>();
-  for (const r of minHourlyRows) {
-    const hr = (Number(r.basePrice) * 60) / Math.max(1, r.durationMin);
-    const prev = minHourlyByCategory.get(r.category);
-    if (prev === undefined || hr < prev) {
-      minHourlyByCategory.set(r.category, hr);
+  try {
+    catRows = await db
+      .select({
+        code: serviceCategories.code,
+        sortOrder: serviceCategories.sortOrder,
+      })
+      .from(serviceCategories)
+      .where(eq(serviceCategories.enabled, true))
+      .orderBy(serviceCategories.sortOrder);
+
+    // Cheapest hourly rate per category for the user's country.
+    // Hourly = base_price / (duration_min / 60).
+    const minHourlyRows = await db
+      .select({
+        category: services.categoryCode,
+        basePrice: servicePrices.basePrice,
+        durationMin: services.durationMin,
+      })
+      .from(services)
+      .innerJoin(
+        servicePrices,
+        and(
+          eq(servicePrices.serviceId, services.id),
+          eq(servicePrices.country, country),
+        ),
+      )
+      .where(eq(services.enabled, true));
+    minHourlyByCategory.clear();
+    for (const r of minHourlyRows) {
+      const hr = (Number(r.basePrice) * 60) / Math.max(1, r.durationMin);
+      const prev = minHourlyByCategory.get(r.category);
+      if (prev === undefined || hr < prev) {
+        minHourlyByCategory.set(r.category, hr);
+      }
     }
+  } catch (error) {
+    console.error("[home] Falling back to static category data", error);
   }
 
   // ----- Recently booked: last 4 distinct providers from this user's bookings -----
@@ -139,45 +162,61 @@ export default async function CustomerHomePage({
 
   // ----- Recommended: top approved provider by avg rating -----
   // (single-row featured card; multi-row carousel can be a Wave 7 polish)
-  const recommended = await db
-    .select({
-      id: providerProfiles.id,
-      userId: providerProfiles.userId,
-      providerName: users.name,
-      providerEmail: users.email,
-      ratingAvg: sql<number>`coalesce(avg(${reviews.rating}), 0)::float`,
-      ratingCount: sql<number>`count(${reviews.id})::int`,
-    })
-    .from(providerProfiles)
-    .leftJoin(users, eq(users.id, providerProfiles.userId))
-    .leftJoin(
-      reviews,
-      and(
-        eq(reviews.providerId, providerProfiles.id),
-        eq(reviews.status, "published"),
-      ),
-    )
-    .where(eq(providerProfiles.onboardingStatus, "approved"))
-    .groupBy(providerProfiles.id, users.name, users.email)
-    .orderBy(desc(sql`avg(${reviews.rating})`), desc(sql`count(${reviews.id})`))
-    .limit(1);
+  let recommended: {
+    id: string;
+    userId: string | null;
+    providerName: string | null;
+    providerEmail: string | null;
+    ratingAvg: number;
+    ratingCount: number;
+  }[] = [];
+  try {
+    recommended = await db
+      .select({
+        id: providerProfiles.id,
+        userId: providerProfiles.userId,
+        providerName: users.name,
+        providerEmail: users.email,
+        ratingAvg: sql<number>`coalesce(avg(${reviews.rating}), 0)::float`,
+        ratingCount: sql<number>`count(${reviews.id})::int`,
+      })
+      .from(providerProfiles)
+      .leftJoin(users, eq(users.id, providerProfiles.userId))
+      .leftJoin(
+        reviews,
+        and(
+          eq(reviews.providerId, providerProfiles.id),
+          eq(reviews.status, "published"),
+        ),
+      )
+      .where(eq(providerProfiles.onboardingStatus, "approved"))
+      .groupBy(providerProfiles.id, users.name, users.email)
+      .orderBy(desc(sql`avg(${reviews.rating})`), desc(sql`count(${reviews.id})`))
+      .limit(1);
+  } catch (error) {
+    console.error("[home] Skipping recommended providers", error);
+  }
 
   // Recommended provider's cheapest hourly (across the categories they offer).
   let recommendedHourly = 0;
   if (recommended.length) {
-    const provCats = await db
-      .select({ category: providerCategories.category })
-      .from(providerCategories)
-      .where(eq(providerCategories.providerId, recommended[0].id));
-    const codes = provCats.map((c) => c.category as string);
-    if (codes.length) {
-      const min = Array.from(minHourlyByCategory.entries()).filter(([k]) =>
-        codes.includes(k),
-      );
-      const cheapest = min
-        .map(([, v]) => v)
-        .reduce((a, b) => Math.min(a, b), Number.POSITIVE_INFINITY);
-      if (Number.isFinite(cheapest)) recommendedHourly = Math.round(cheapest);
+    try {
+      const provCats = await db
+        .select({ category: providerCategories.category })
+        .from(providerCategories)
+        .where(eq(providerCategories.providerId, recommended[0].id));
+      const codes = provCats.map((c) => c.category as string);
+      if (codes.length) {
+        const min = Array.from(minHourlyByCategory.entries()).filter(([k]) =>
+          codes.includes(k),
+        );
+        const cheapest = min
+          .map(([, v]) => v)
+          .reduce((a, b) => Math.min(a, b), Number.POSITIVE_INFINITY);
+        if (Number.isFinite(cheapest)) recommendedHourly = Math.round(cheapest);
+      }
+    } catch (error) {
+      console.error("[home] Skipping recommended provider pricing", error);
     }
   }
 

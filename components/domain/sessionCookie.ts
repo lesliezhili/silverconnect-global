@@ -1,7 +1,12 @@
 import "server-only";
-import { getAuthSession, type Role } from "@/lib/auth/session";
+import {
+  getAuthSession,
+  getOptionalAuthSession,
+  type Role,
+} from "@/lib/auth/session";
+import { SESSION_COOKIE_NAME } from "@/lib/auth/session-config";
 
-export const SESSION_COOKIE = "sc-session";
+export const SESSION_COOKIE = SESSION_COOKIE_NAME;
 
 export interface Session {
   signedIn: boolean;
@@ -17,8 +22,8 @@ export interface Session {
  * unseal return an empty session (signed-out) rather than throwing.
  */
 export async function getSession(): Promise<Session> {
-  const s = await getAuthSession();
-  if (!s.userId) return { signedIn: false };
+  const s = await getOptionalAuthSession();
+  if (!s?.userId) return { signedIn: false };
   return {
     signedIn: true,
     userId: s.userId,

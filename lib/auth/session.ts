@@ -1,6 +1,10 @@
 import "server-only";
 import { cookies } from "next/headers";
 import { getIronSession, type SessionOptions } from "iron-session";
+import {
+  isSessionSecretConfigured,
+  SESSION_COOKIE_NAME,
+} from "./session-config";
 
 export type Role = "customer" | "provider" | "admin";
 
@@ -29,7 +33,7 @@ function sessionOptions(): SessionOptions {
     throw new Error("SESSION_SECRET must be at least 32 characters");
   }
   return {
-    cookieName: "sc-session",
+    cookieName: SESSION_COOKIE_NAME,
     password: secret,
     cookieOptions: {
       httpOnly: true,
@@ -47,4 +51,17 @@ function sessionOptions(): SessionOptions {
 export async function getAuthSession() {
   const store = await cookies();
   return getIronSession<AuthSession>(store, sessionOptions());
+}
+
+export async function getOptionalAuthSession(): Promise<AuthSession | null> {
+  const store = await cookies();
+  if (!store.has(SESSION_COOKIE_NAME) || !isSessionSecretConfigured()) {
+    return null;
+  }
+
+  try {
+    return await getIronSession<AuthSession>(store, sessionOptions());
+  } catch {
+    return null;
+  }
 }
