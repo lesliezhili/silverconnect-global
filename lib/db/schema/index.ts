@@ -16,3 +16,9 @@ export * from "./safety";
 export * from "./notifications";
 export * from "./ai";
 export * from "./admin";
+
+// Module implementation tables
+export * from "./user-roles";
+export * from "./escrow-payments";
+export * from "./ai-services";
+export * from "./verification";
