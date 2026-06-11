@@ -91,6 +91,12 @@
     "companion": "Bầu bạn",
     "transport": "Đưa đón",
     "itSupport": "Hỗ trợ IT",
+    "musicLesson": "Học nhạc",
+    "musicLessonDesc": "Hát, piano, guitar, ukulele — chào mừng người mới bắt đầu",
+    "artClass": "Mỹ thuật & Vẽ",
+    "artClassDesc": "Màu nước, phác thảo, thủ công — sáng tạo cho người cao tuổi",
+    "digitalLiteracy": "Kỹ thuật số & AI",
+    "digitalLiteracyDesc": "Smartphone, ChatGPT cơ bản, ngân hàng trực tuyến, gọi video, an toàn mạng",
     "faith": "Dịch Vụ Đức Tin",
     "faithDesc": "Chăm sóc tâm linh miễn phí cho người cao tuổi"
   },
