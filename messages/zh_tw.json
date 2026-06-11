@@ -103,6 +103,12 @@
     "transportDesc": "就醫、購物、辦事、出行",
     "itSupport": "電腦培訓與IT支援",
     "itSupportDesc": "手機/平板幫助、電子郵件、視訊通話、網路安全、列印",
+    "musicLesson": "音樂課程",
+    "musicLessonDesc": "聲樂、鋼琴、吉他 — 歡迎初學者",
+    "artClass": "繪畫與手工課程",
+    "artClassDesc": "水彩、素描、手工藝術 — 讓長輩以藝術表達自我",
+    "digitalLiteracy": "數位與AI課程",
+    "digitalLiteracyDesc": "智慧手機、ChatGPT入門、網路銀行、視訊通話、社群媒體、資安防詐",
     "faith": "信仰服務",
     "faithDesc": "免費的精神關懷與陪伴"
   },

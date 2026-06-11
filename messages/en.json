@@ -100,6 +100,12 @@
     "transportDesc": "Medical appointments, shopping, errands",
     "itSupport": "IT Support & Computer Training",
     "itSupportDesc": "Phone/tablet help, email, video calls, online safety, printing",
+    "musicLesson": "Music Lessons",
+    "musicLessonDesc": "Singing, piano, guitar, ukulele — all levels welcome",
+    "artClass": "Art & Drawing",
+    "artClassDesc": "Watercolour, sketching, crafts, pottery — creative expression for seniors",
+    "digitalLiteracy": "AI & Computer Courses",
+    "digitalLiteracyDesc": "Smartphones, ChatGPT, online banking, video calls, social media, cyber safety",
     "faith": "Faith Services",
     "faithDesc": "Free spiritual care & companionship for seniors"
   },

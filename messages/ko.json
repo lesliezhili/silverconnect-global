@@ -101,6 +101,12 @@
     "transportDesc": "병원, 쇼핑, 은행, 외출",
     "itSupport": "IT 지원 & 컴퓨터 교육",
     "itSupportDesc": "스마트폰, 이메일, 영상통화, 인터넷 안전, 프린터",
+    "musicLesson": "음악 수업",
+    "musicLessonDesc": "노래, 피아노, 기타 — 초보자 환영",
+    "artClass": "미술 수업",
+    "artClassDesc": "수체화, 스케치, 공예 — 노인을 위한 예술적 표현",
+    "digitalLiteracy": "AI & 컴퓨터 교육",
+    "digitalLiteracyDesc": "스마트폰 활용, ChatGPT 입문, 영상통화, SNS, 사이버 보안",
     "faith": "신앙 서비스",
     "faithDesc": "무료 영적 돌봄 및 동행"
   },

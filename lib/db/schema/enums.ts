@@ -12,6 +12,9 @@ export const serviceCategoryEnum = pgEnum("service_category", [
   "repair",
   "itSupport",
   "transport",
+  "musicLesson",
+  "artClass",
+  "digitalLiteracy",
 ]);
 
 export const onboardingStatusEnum = pgEnum("onboarding_status", [

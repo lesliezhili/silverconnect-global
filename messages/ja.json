@@ -101,6 +101,12 @@
     "transportDesc": "通院、買い物、銀行、外出",
     "itSupport": "ITサポート＆パソコン教室",
     "itSupportDesc": "スマホ・タブレット操作、メール、ビデオ通話、セキュリティ",
+    "musicLesson": "音楽レッスン",
+    "musicLessonDesc": "唱歌、ピアノ、ギター — 初心者大歓迎",
+    "artClass": "アート教室",
+    "artClassDesc": "水彩画、デッサン、クラフト — シニアのクリエイティブ表現",
+    "digitalLiteracy": "AI・PC講座",
+    "digitalLiteracyDesc": "スマホ活用、ChatGPT入門、ネットバンキング、ビデオ通話、SNS、ネット安全",
     "faith": "信仰サービス",
     "faithDesc": "高齢者向け無料スピリチュアルケア"
   },

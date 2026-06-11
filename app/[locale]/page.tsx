@@ -138,7 +138,10 @@ export default async function LandingPage({
               { e: "💊", cat: "personalCare", label: t("personalCare") },
               { e: "👋", cat: "companion", label: t("companion") },
               { e: "🚗", cat: "transport", label: t("transport") },
-              { e: "💻", cat: "itSupport", label: t("itSupport") },
+              { e: "💻", cat: "itSupport",       label: t("itSupport") },
+              { e: "🎵", cat: "musicLesson",     label: t("musicLesson") },
+              { e: "🎨", cat: "artClass",         label: t("artClass") },
+              { e: "🤖", cat: "digitalLiteracy",  label: t("digitalLiteracy") },
             ].map((s) => (
               <Link
                 key={s.cat}
