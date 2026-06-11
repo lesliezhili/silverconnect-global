@@ -1,0 +1,449 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   SilverConnect — Design Tokens (UI_DESIGN.md §1.1)
+   Light is default; dark only follows prefers-color-scheme or [data-theme=dark]
+   ========================================================================== */
+
+@layer base {
+  :root {
+    /* Brand */
+    --brand-primary: #1858C4;
+    --brand-primary-hover: #0F47A6;
+    --brand-accent: #F59E0B;
+
+    /* Semantic — calibrated to pass WCAG AA (≥4.5:1) on their *-soft
+       backgrounds. Original Tailwind 500/600 shades fail when paired
+       with light tints, so we use the 700/800 shade family. */
+    --success: #15803D;
+    --warning: #92400E;
+    --danger: #B91C1C;
+
+    /* Surfaces */
+    --bg-base: #FFFFFF;
+    --bg-surface: #F8FAFC;
+    --border: #E2E8F0;
+
+    /* Text */
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-placeholder: #475569;
+    --text-link: #1858C4;
+
+    /* Status badges — light surface */
+    --badge-pending-bg: #FEF3C7;
+    --badge-pending-fg: #92400E;
+    --badge-confirmed-bg: #DBEAFE;
+    --badge-confirmed-fg: #1E40AF;
+    --badge-inprogress-bg: #E0E7FF;
+    --badge-inprogress-fg: #3730A3;
+    --badge-completed-bg: #DCFCE7;
+    --badge-completed-fg: #166534;
+    --badge-cancelled-bg: #F1F5F9;
+    --badge-cancelled-fg: #475569;
+    --badge-refunded-bg: #FEE2E2;
+    --badge-refunded-fg: #991B1B;
+
+    /* Soft tints (used on category chips, recently-booked rows, etc.) */
+    --brand-primary-soft: #E8F0FE;
+    --brand-accent-soft: #FEF3C7;
+    --success-soft: #DCFCE7;
+    --warning-soft: #FEF3C7;
+    --danger-soft: #FEE2E2;
+
+    /* Surface stack — bg-base / bg-surface / bg-surface-2 / border / border-strong */
+    --bg-surface-2: #F1F5F9;
+    --border-strong: #CBD5E1;
+
+    /* Illustration stroke colour (flips per theme) */
+    --illu-stroke: #1F2937;
+
+    /* Tertiary text (used for timestamps, captions in design) */
+    --text-tertiary: #64748B;
+
+    /* Geometry — warm variant per design (doc 16/12, warm 20/14) */
+    --radius-sm: 10px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --radius-pill: 999px;
+    --shadow-card: 0 2px 8px rgba(15, 23, 42, 0.06);
+    --shadow-card-hover: 0 4px 16px rgba(15, 23, 42, 0.08);
+    --shadow-popover: 0 12px 32px rgba(15, 23, 42, 0.12);
+
+    --font-sans: var(--font-inter), var(--font-noto-sc), system-ui, -apple-system,
+      "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  /* Dark — follows system; never pushed */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --brand-primary: #5B9CFF;
+      --brand-primary-hover: #3B82F6;
+      --brand-primary-soft: #1B2B4A;
+      --brand-accent-soft: #3A2E14;
+      --success-soft: #14331E;
+      --warning-soft: #3A2E14;
+      --danger-soft: #3A1A1A;
+      --bg-base: #1E293B;
+      --bg-surface: #334155;
+      --bg-surface-2: #475569;
+      --border: #475569;
+      --border-strong: #64748B;
+      --illu-stroke: #F1F5F9;
+      --text-primary: #F1F5F9;
+      --text-secondary: #CBD5E1;
+      --text-tertiary: #94A3B8;
+      --text-placeholder: #475569;
+      --text-link: #93C5FD;
+      --badge-pending-bg: rgba(245, 158, 11, 0.18);
+      --badge-pending-fg: #FCD34D;
+      --badge-confirmed-bg: rgba(59, 130, 246, 0.18);
+      --badge-confirmed-fg: #93C5FD;
+      --badge-inprogress-bg: rgba(99, 102, 241, 0.18);
+      --badge-inprogress-fg: #A5B4FC;
+      --badge-completed-bg: rgba(34, 197, 94, 0.18);
+      --badge-completed-fg: #86EFAC;
+      --badge-cancelled-bg: rgba(255, 255, 255, 0.12);
+      --badge-cancelled-fg: #CBD5E1;
+      --badge-refunded-bg: rgba(239, 68, 68, 0.18);
+      --badge-refunded-fg: #FCA5A5;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --brand-primary: #5B9CFF;
+    --brand-primary-hover: #3B82F6;
+    --brand-primary-soft: #1B2B4A;
+    --brand-accent-soft: #3A2E14;
+    --success-soft: #14331E;
+    --warning-soft: #3A2E14;
+    --danger-soft: #3A1A1A;
+    --bg-base: #1E293B;
+    --bg-surface: #334155;
+    --bg-surface-2: #475569;
+    --border: #475569;
+    --border-strong: #64748B;
+    --illu-stroke: #F1F5F9;
+    --text-primary: #F1F5F9;
+    --text-secondary: #CBD5E1;
+    --text-tertiary: #94A3B8;
+    --text-placeholder: #475569;
+    --text-link: #93C5FD;
+    --badge-pending-bg: rgba(245, 158, 11, 0.18);
+    --badge-pending-fg: #FCD34D;
+    --badge-confirmed-bg: rgba(59, 130, 246, 0.18);
+    --badge-confirmed-fg: #93C5FD;
+    --badge-inprogress-bg: rgba(99, 102, 241, 0.18);
+    --badge-inprogress-fg: #A5B4FC;
+    --badge-completed-bg: rgba(34, 197, 94, 0.18);
+    --badge-completed-fg: #86EFAC;
+    --badge-cancelled-bg: rgba(255, 255, 255, 0.12);
+    --badge-cancelled-fg: #CBD5E1;
+    --badge-refunded-bg: rgba(239, 68, 68, 0.18);
+    --badge-refunded-fg: #FCA5A5;
+  }
+
+  html {
+    font-family: var(--font-sans);
+    font-size: 18px; /* UI_DESIGN.md §1.2 base */
+    line-height: 1.6;
+    color: var(--text-primary);
+    background: var(--bg-base);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background: var(--bg-base);
+    color: var(--text-primary);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--brand-primary);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand-primary) 20%, transparent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* Skeleton shimmer */
+.sc-skel {
+  background: linear-gradient(
+    90deg,
+    var(--bg-surface) 0%,
+    var(--bg-surface-2) 50%,
+    var(--bg-surface) 100%
+  );
+  background-size: 200% 100%;
+  animation: sc-skel 1.4s linear infinite;
+  border-radius: var(--radius-sm);
+}
+@keyframes sc-skel {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Emergency pulse */
+@keyframes sc-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+
+/* Chat typing dots */
+@keyframes sc-blink {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+@layer utilities {
+  .scrollbar-hide { scrollbar-width: none; }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+}
+
+
+
+/* ==========================================================================
+   Elder-First Design System — SilverConnect Global
+   Target: Seniors 60+, retired, disabled
+   ========================================================================== */
+
+/* Emergency Button Pulse */
+.emergency-pulse {
+  animation: emergency-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes emergency-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+  50% { box-shadow: 0 0 0 12px rgba(220, 38, 38, 0); }
+}
+
+/* Voice Recording Pulse */
+.voice-pulse {
+  animation: voice-pulse 2s ease-in-out infinite;
+}
+
+@keyframes voice-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.5); }
+  50% { box-shadow: 0 0 0 16px rgba(37, 99, 235, 0); }
+}
+
+/* Elder-First Base Overrides */
+@layer base {
+  /* Increase base font for elder users */
+  html {
+    font-size: 18px;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Larger touch targets globally */
+  button, a, input, select, textarea {
+    min-height: 48px;
+  }
+
+  /* High contrast focus rings */
+  :focus-visible {
+    outline: 3px solid #1E40AF;
+    outline-offset: 2px;
+  }
+
+  /* Smoother scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Prevent accidental text selection on buttons */
+  button {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
+
+/* Elder-Friendly Utility Classes */
+@layer utilities {
+  .touch-target {
+    min-height: 56px;
+    min-width: 56px;
+  }
+
+  .touch-target-lg {
+    min-height: 64px;
+    min-width: 64px;
+  }
+
+  .touch-target-emergency {
+    min-height: 72px;
+    min-width: 72px;
+  }
+
+  /* High-contrast text helpers */
+  .text-high-contrast {
+    color: #0F172A;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Safe area for bottom navigation */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 24px);
+  }
+}
+
+
+/* ==========================================================================
+   Elder-First Global Style Enforcement
+   All pages inherit these sizes — consistent with home page styling.
+   ========================================================================== */
+
+@layer base {
+  /* Base font size — elder-friendly (18px instead of 16px) */
+  html {
+    font-size: 18px;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    font-size: 1rem; /* 18px from html */
+    line-height: 1.5;
+    color: var(--text-primary);
+    background: var(--bg-base);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* All headings — elder-first sizes */
+  h1 { font-size: 32px; line-height: 1.2; font-weight: 700; }
+  h2 { font-size: 26px; line-height: 1.3; font-weight: 600; }
+  h3 { font-size: 22px; line-height: 1.3; font-weight: 600; }
+  h4 { font-size: 20px; line-height: 1.4; font-weight: 600; }
+
+  /* Paragraphs — minimum readable size */
+  p, li, td, th, label, span {
+    font-size: inherit;
+    line-height: 1.5;
+  }
+
+  /* Links — clear, large touch targets */
+  a {
+    color: var(--text-link);
+    text-decoration: none;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* All buttons — 48px min height, 18px text */
+  button, [role="button"], input[type="submit"], input[type="button"] {
+    min-height: 48px;
+    font-size: 18px;
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  /* All inputs/selects — 52px height for fat fingers */
+  input:not([type="checkbox"]):not([type="radio"]),
+  select, textarea {
+    min-height: 52px;
+    font-size: 18px;
+    padding: 12px 16px;
+    border-radius: var(--radius-md);
+    border: 1.5px solid var(--border);
+    background: var(--bg-base);
+    color: var(--text-primary);
+    width: 100%;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    outline: 3px solid var(--brand-primary);
+    outline-offset: 2px;
+    border-color: var(--brand-primary);
+  }
+
+  /* Labels — always visible, good contrast */
+  label {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: block;
+    margin-bottom: 6px;
+  }
+}
+
+@layer components {
+  /* Page wrapper — consistent padding + max-width across all pages */
+  .page-container {
+    @apply mx-auto w-full max-w-content px-5 pb-[120px] pt-5 sm:pb-12;
+  }
+
+  /* Section headings — elder-first */
+  .section-title {
+    @apply text-elder-subheading font-semibold text-text-primary;
+  }
+
+  /* Card — consistent rounded + shadow */
+  .card {
+    @apply rounded-lg border border-border bg-bg-base p-4 shadow-card;
+  }
+
+  /* Card with hover */
+  .card-interactive {
+    @apply card transition-shadow hover:shadow-card-hover;
+  }
+
+  /* List item — large touch target, consistent height */
+  .list-item {
+    @apply flex min-h-[64px] items-center gap-4 rounded-md border border-border bg-bg-base px-4 py-3;
+  }
+
+  /* Primary button — elder-friendly */
+  .btn-primary {
+    @apply flex h-14 w-full items-center justify-center rounded-md bg-brand px-6 text-[18px] font-bold text-white;
+  }
+
+  /* Secondary button */
+  .btn-secondary {
+    @apply flex h-14 w-full items-center justify-center rounded-md border-[1.5px] border-brand bg-bg-base px-6 text-[18px] font-bold text-brand;
+  }
+
+  /* Badge — status indicators */
+  .badge {
+    @apply inline-flex h-8 items-center rounded-pill px-3 text-[14px] font-semibold;
+  }
+
+  /* Tab bar item — large + clear */
+  .tab-item {
+    @apply flex h-12 items-center justify-center rounded-md px-4 text-[16px] font-semibold;
+  }
+
+  /* Elder-friendly text overrides — bump common small sizes */
+  .text-body { font-size: 18px; line-height: 1.5; }
+  .text-h3 { font-size: 22px; line-height: 1.3; font-weight: 600; }
+  .text-h2 { font-size: 26px; line-height: 1.3; font-weight: 600; }
+  .text-h1 { font-size: 32px; line-height: 1.2; font-weight: 700; }
+}
+
+@layer utilities {
+  /* Force minimum text size — prevents any text smaller than 14px */
+  .min-text-elder {
+    font-size: max(14px, 1em);
+  }
+
+  /* Scrollbar hide for horizontal scroll sections */
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Safe area padding for bottom nav */
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0); }
+}

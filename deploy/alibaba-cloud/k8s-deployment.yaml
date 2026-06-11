@@ -1,0 +1,109 @@
+# Alibaba Cloud ACK (Kubernetes) Deployment
+# Region: cn-shanghai (recommended for aged care, government proximity)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jiuding-web
+  namespace: jiuding-prod
+  labels:
+    app: jiuding
+    tier: frontend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: jiuding
+  template:
+    metadata:
+      labels:
+        app: jiuding
+    spec:
+      containers:
+        - name: jiuding-next
+          image: registry.cn-shanghai.aliyuncs.com/jiuding/web:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: jiuding-secrets
+                  key: database-url
+            - name: WECHAT_PAY_MERCHANT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: jiuding-secrets
+                  key: wechat-merchant-id
+            - name: WECHAT_PAY_APP_ID
+              valueFrom:
+                secretKeyRef:
+                  name: jiuding-secrets
+                  key: wechat-app-id
+            - name: ALIPAY_APP_ID
+              valueFrom:
+                secretKeyRef:
+                  name: jiuding-secrets
+                  key: alipay-app-id
+            - name: NEXT_PUBLIC_APP_URL
+              value: "https://www.jiuding.cn"
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jiuding-web-svc
+  namespace: jiuding-prod
+spec:
+  type: ClusterIP
+  selector:
+    app: jiuding
+  ports:
+    - port: 80
+      targetPort: 3000
+---
+# Alibaba Cloud SLB Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jiuding-ingress
+  namespace: jiuding-prod
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    # Alibaba Cloud CDN integration
+    service.beta.kubernetes.io/alibaba-cloud-loadbalancer-spec: "slb.s2.small"
+spec:
+  tls:
+    - hosts:
+        - www.jiuding.cn
+        - jiuding.cn
+      secretName: jiuding-tls
+  rules:
+    - host: www.jiuding.cn
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: jiuding-web-svc
+                port:
+                  number: 80

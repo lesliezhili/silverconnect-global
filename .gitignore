@@ -1,0 +1,31 @@
+/node_modules
+/.next/
+/out/
+/build
+/coverage
+/playwright-report
+/test-results
+.DS_Store
+*.pem
+npm-debug.log*
+.env
+.env.local
+.env.*.local
+!.env.local.example
+.vercel
+.env*.local
+/supabase/
+
+# Large binaries (should never be committed)
+git/
+node-v20.18.0-win-x64/
+PortableGit.exe
+node.zip
+repo.zip
+.design-handoff/
+ai_customer_service.py
+requirements.txt
+
+# Large binaries (never commit)
+*.exe
+*.zip

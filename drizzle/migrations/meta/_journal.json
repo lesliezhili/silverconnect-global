@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1777949914527,
+      "tag": "0000_plain_zaran",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1777956977188,
+      "tag": "0001_phase2-services-bookings-payments",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1777958889824,
+      "tag": "0002_phase3-reviews-disputes-safety-notifications-ai-admin",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1777959070098,
+      "tag": "0003_phase3-fixup-nullable-fks",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1779758818780,
+      "tag": "0004_melodic_iron_fist",
+      "breakpoints": true
+    }
+  ]
+}

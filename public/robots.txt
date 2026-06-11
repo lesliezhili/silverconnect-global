@@ -1,0 +1,1 @@
+User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /*/admin/\nSitemap: https://silverconnect-global.vercel.app/sitemap.xml\n
