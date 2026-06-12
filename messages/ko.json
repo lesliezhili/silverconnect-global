@@ -26,7 +26,13 @@
     "yes": "예",
     "no": "아니오",
     "ok": "확인",
-    "retry": "재시도"
+    "retry": "재시도",
+    "askAI": "Ask AI",
+    "talkHuman": "Talk to a human",
+    "skipToContent": "Skip to main content",
+    "backToHome": "Back to home",
+    "viewBooking": "View booking",
+    "backToBooking": "Back to booking"
   },
   "nav": {
     "home": "홈",
@@ -123,7 +129,8 @@
     "clearFilters": "초기화",
     "errorLoad": "로드 실패",
     "fullyBooked": "예약 마감",
-    "viewProfile": "프로필 보기"
+    "viewProfile": "프로필 보기",
+    "seeNextWeek": "See next week"
   },
   "provider": {
     "view": "보기",
@@ -363,7 +370,60 @@
     "contactProvider": "연락",
     "reportIssue": "문제 신고",
     "rate": "평가하기",
-    "rebook": "다시 예약"
+    "rebook": "다시 예약",
+    "noUpcoming": "No upcoming bookings",
+    "bookAClean": "Book a clean",
+    "noPast": "No past bookings",
+    "noPastHint": "Completed services will appear here",
+    "noRecurring": "No recurring bookings",
+    "noRecurringHint": "Save 5% with weekly cleans",
+    "fullyBookedDay": "Fully booked",
+    "tryAnother": "Pick another date or another provider",
+    "seeOtherTimes": "See other times",
+    "errorTimes": "Couldn't load times",
+    "recurringTitle": "Set up recurring",
+    "recurringWeekly": "Weekly",
+    "recurringBiweekly": "Bi-weekly",
+    "recurringMonthly": "Monthly",
+    "recurringDiscount": "ℹ️ Save 5% on recurring bookings",
+    "cancelFreeUntil": "Free cancel until 24h before ({hours}h left)",
+    "cantCancelInProgress": "⚠️ In progress — cannot cancel",
+    "statusTimeline": "Status timeline",
+    "timeline": {
+      "booked": "Booked",
+      "confirmed": "Confirmed",
+      "inProgress": "In progress",
+      "completed": "Completed"
+    },
+    "cta": {
+      "pending": "Pay now",
+      "confirmed": "Reschedule",
+      "inProgress": "Contact provider",
+      "awaitingConfirm": "Confirm completion",
+      "completed": "Leave review",
+      "cancelledFull": "See refund details",
+      "cancelledPartial": "See refund details",
+      "refunded": "See refund details"
+    },
+    "status": {
+      "pending": "Awaiting confirmation",
+      "confirmed": "Confirmed",
+      "inProgress": "In progress",
+      "awaitingConfirm": "Awaiting confirmation",
+      "completed": "Completed",
+      "cancelledFull": "Cancelled · Full refund",
+      "cancelledPartial": "Cancelled · Partial refund",
+      "refunded": "Refunded"
+    },
+    "rescheduleTitle": "Reschedule booking",
+    "rescheduleHint": "Pick a new date and time. The provider will see the change.",
+    "rescheduleNewDate": "New date",
+    "rescheduleNewTime": "New time",
+    "rescheduleConfirm": "Confirm new time",
+    "rescheduleErrorTooSoon": "New time must be at least 4 hours away.",
+    "rescheduleErrorTooFar": "Reschedule no more than 30 days out.",
+    "rescheduleErrorBadStatus": "This booking can no longer be rescheduled.",
+    "rescheduleCta": "Reschedule"
   },
   "payment": {
     "title": "결제",
@@ -389,7 +449,20 @@
     "removeCard": "카드 삭제",
     "defaultCard": "기본 카드",
     "bankFee": "은행 수수료",
-    "bankFeeNote": "거래 처리 수수료 (1.7% + 30c)"
+    "bankFeeNote": "거래 처리 수수료 (1.7% + 30c)",
+    "cvvLabel": "CVV",
+    "expLabel": "MM / YY",
+    "subtotal": "Subtotal",
+    "total": "Total",
+    "payNow": "Pay securely {amount}",
+    "waitingBank": "Waiting for bank",
+    "declined": "Card declined",
+    "declinedHint": "Try another payment method or contact your bank",
+    "threeDS": "3D Secure verification…",
+    "threeDSHint": "Complete the prompt from your bank",
+    "successTitle": "Payment confirmed",
+    "successAmount": "Charged {amount}",
+    "redirecting": "Redirecting to booking…"
   },
   "success": {
     "title": "예약 완료! 🎉",
@@ -517,7 +590,14 @@
     "responseTime": "2시간 내 답변",
     "helpful": "도움이 되셨나요?",
     "yes": "예",
-    "no": "아니오"
+    "no": "아니오",
+    "contactCardTitle": "Still need help?",
+    "contactCardSub": "Our team replies within a few hours.",
+    "contactCardCta": "Talk to a human",
+    "notFoundTitle": "Article not found",
+    "notFoundSub": "It may have been moved. Try the help home.",
+    "backToHelp": "Back to help",
+    "lastUpdated": "Last updated {date}"
   },
   "profileEdit": {
     "title": "프로필 수정",
@@ -546,7 +626,14 @@
     "revokeAll": "모두 로그아웃",
     "deleteAccount": "계정 삭제",
     "deleteWarn": "되돌릴 수 없음",
-    "deleteConfirm": "정말 삭제하시겠습니까?"
+    "deleteConfirm": "정말 삭제하시겠습니까?",
+    "twoFactorEnable": "Enable",
+    "twoFactorEnabled": "Enabled",
+    "sessionThis": "This device",
+    "sessionLastActive": "Last active {time}",
+    "signOutAll": "Sign out everywhere",
+    "errorMismatch": "Passwords don't match.",
+    "errorWrongCurrent": "Current password is incorrect."
   },
   "safetyReport": {
     "title": "안전 신고",
@@ -570,7 +657,16 @@
     "submittedHint": "24시간 내 연락",
     "anonymous": "익명",
     "anonymousHint": "신원 비공개",
-    "contactMe": "연락 요청"
+    "contactMe": "연락 요청",
+    "sevHighDivertTitle": "Stop — this might be an emergency",
+    "sevHighDivertHint": "Open the SOS overlay first to call your country's emergency number.",
+    "openSos": "Open SOS",
+    "when": "When did this happen?",
+    "describeHint": "At least 30 characters. Stick to facts — who, what, where.",
+    "policeContacted": "I have contacted the police",
+    "successTitle": "Report received",
+    "successHint": "An admin will review within 24 hours and contact you with next steps.",
+    "evidenceMediaHint": "Photos, video or audio."
   },
   "emergencyOverlay": {
     "triggerLabel": "SOS 긴급",
@@ -607,7 +703,10 @@
     "edit": "수정",
     "save": "저장",
     "saved": "저장됨",
-    "confirmDelete": "삭제?"
+    "confirmDelete": "삭제?",
+    "deleteConfirm": "Delete this address?",
+    "empty": "No addresses yet",
+    "emptyHint": "Add one to speed up future bookings."
   },
   "paymentMethods": {
     "title": "결제 수단",
@@ -621,7 +720,11 @@
     "confirmDelete": "삭제?",
     "visa": "Visa",
     "mastercard": "Mastercard",
-    "amex": "Amex"
+    "amex": "Amex",
+    "expires": "Expires {month}/{year}",
+    "endingIn": "···· {last4}",
+    "deleteCardTitle": "Remove this card?",
+    "deleteCardBody": "The card ending in {last4} will be removed from your account. You can add it again anytime."
   },
   "favourites": {
     "title": "즐겨찾기",
@@ -646,7 +749,11 @@
     "topicMarketing": "소식",
     "topicMarketingHint": "혜택/소식",
     "quietHours": "방해금지",
-    "quietHoursHint": "알림 중지"
+    "quietHoursHint": "알림 중지",
+    "topicReminders": "Reminders",
+    "topicRemindersHint": "Day before service + 1h before",
+    "save": "Save preferences",
+    "saved": "Preferences saved"
   },
   "emergencyContacts": {
     "title": "긴급 연락처",
@@ -665,7 +772,10 @@
     "setPrimary": "주로 설정",
     "delete": "삭제",
     "save": "저장",
-    "confirmDelete": "삭제?"
+    "confirmDelete": "삭제?",
+    "relSibling": "Sibling",
+    "empty": "No emergency contacts",
+    "emptyHint": "Add at least one. We'll only contact them in a real emergency."
   },
   "feedback": {
     "title": "평가",
@@ -687,7 +797,15 @@
     "anonymous": "익명",
     "anonymousHint": "이름 비표시",
     "edit": "수정",
-    "delete": "삭제"
+    "delete": "삭제",
+    "tagFair": "Fair price",
+    "commentPh": "Tell us about your experience…",
+    "photos": "Add photos",
+    "photosHint": "Up to 5 photos. JPG or PNG.",
+    "successTitle": "Thanks for the feedback",
+    "successHint": "Payment released to {provider}. See you next time.",
+    "errorRequired": "Please pick a star rating before submitting.",
+    "mockService": "Deep clean · 3h"
   },
   "dispute": {
     "title": "분쟁",
@@ -733,7 +851,8 @@
       "help": "도움말",
       "helpDesc": "FAQ, 문의하기",
       "signOut": "로그아웃"
-    }
+    },
+    "funding": "Government Funding"
   },
   "auth": {
     "loginTitle": "다시 오셨군요",
@@ -833,7 +952,142 @@
     "back": "뒤로",
     "next": "다음",
     "prev": "이전",
-    "page": "{current}/{total}"
+    "page": "{current}/{total}",
+    "signOut": "Sign out",
+    "loginTitle": "Admin sign in",
+    "loginSub": "Two-factor required.",
+    "loginEmail": "Email",
+    "loginPassword": "Password",
+    "loginTotp": "TOTP code",
+    "loginTotpHint": "6-digit code from your authenticator app.",
+    "loginCta": "Sign in",
+    "loginInvalid": "Invalid credentials or TOTP.",
+    "loginIpHint": "Sign-ins are restricted to allow-listed IPs.",
+    "loginLockHint": "5 failed attempts will lock the account for 15 minutes.",
+    "overviewTitle": "Overview",
+    "kpiNewOrders": "New orders today",
+    "kpiOpenDisputes": "Open disputes",
+    "kpiPendingProviders": "Pending providers",
+    "kpiSafetyEvents": "Safety events",
+    "kpiGmv": "GMV (week)",
+    "kpiAi": "AI resolution",
+    "alertWebhookLag": "Stripe webhook latency above 5 s",
+    "alertPaymentFail": "Elevated payment failure rate",
+    "alertSafetySpike": "Safety event spike (last 24 h)",
+    "quickLinks": "Quick links",
+    "reviewDisputes": "Review disputes",
+    "reviewSafety": "Review safety events",
+    "reviewProviders": "Approve providers",
+    "disputesTitle": "Disputes",
+    "filterStatus": "Status",
+    "filterCountry": "Country",
+    "filterType": "Type",
+    "filterAll": "All",
+    "statusOpen": "Open",
+    "statusReview": "Under review",
+    "statusResolved": "Resolved",
+    "statusRejected": "Rejected",
+    "statusInvestigating": "Investigating",
+    "statusClosed": "Closed",
+    "statusPending": "Pending",
+    "statusDocsReview": "Docs review",
+    "statusBackground": "Background check",
+    "statusStripe": "Stripe verification",
+    "statusApproved": "Approved",
+    "colId": "ID",
+    "colBooking": "Booking",
+    "colCustomer": "Customer",
+    "colProvider": "Provider",
+    "colType": "Type",
+    "colAmount": "Amount",
+    "colCountry": "Country",
+    "colStatus": "Status",
+    "colSubmitted": "Submitted",
+    "colSla": "SLA",
+    "colReporter": "Reporter",
+    "colReported": "Reported",
+    "colLevel": "Severity",
+    "colAppliedAt": "Applied",
+    "colStep": "Step",
+    "colReason": "Reason",
+    "typeNotShow": "No-show",
+    "typeIncomplete": "Incomplete",
+    "typeDamage": "Damage",
+    "typeOther": "Other",
+    "levelLow": "Low",
+    "levelMid": "Moderate",
+    "levelHigh": "High",
+    "reasonDispute": "Dispute outcome",
+    "reasonSelfService": "Self-service",
+    "slaDanger": "{h} h overdue",
+    "slaWarn": "{h} h left",
+    "slaSafe": "{h} h left",
+    "slaDone": "—",
+    "drawerClose": "Close drawer",
+    "disputeDrawer": "Dispute details",
+    "disputeAction": "Decision",
+    "disputeFullRefund": "Full refund",
+    "disputePartialRefund": "Partial refund",
+    "disputePartialAmount": "Partial amount",
+    "disputeReject": "Reject",
+    "disputeEscalate": "Escalate to human",
+    "disputeNote": "Internal note",
+    "disputeNoteHint": "Visible to admins only.",
+    "disputeApply": "Apply decision",
+    "disputeTimeline": "Timeline",
+    "evidence": "Evidence",
+    "noEvidence": "No evidence uploaded.",
+    "safetyTitle": "Safety events",
+    "safetyDrawer": "Safety event details",
+    "safetyAction": "Action",
+    "safetyWarn": "Warn provider",
+    "safetySuspend": "Suspend provider",
+    "safetyBan": "Permanently ban",
+    "safetyPolice": "Notify police",
+    "safetyClose": "Close case",
+    "providersTitle": "Provider approvals",
+    "providerDrawer": "Provider review",
+    "providerApprove": "Approve",
+    "providerReject": "Reject",
+    "providerHold": "Put on hold",
+    "providerSendBack": "Send back for fixes",
+    "providerStepCheck": "Document checklist",
+    "providerNoteHint": "Visible to the provider.",
+    "refundsTitle": "Refund queue",
+    "refundProcess": "Process refund",
+    "refundEmpty": "No refunds queued.",
+    "analyticsTitle": "Analytics",
+    "rangeDay": "Day",
+    "rangeWeek": "Week",
+    "rangeMonth": "Month",
+    "rangeQuarter": "Quarter",
+    "rangeYear": "Year",
+    "metricOrders": "Weekly orders by country",
+    "metricReorder": "Reorder rate",
+    "metricRating": "Average rating",
+    "metricDispute": "Dispute rate",
+    "metricAi": "AI resolution",
+    "metricPayment": "Payment success",
+    "exportImage": "Export image",
+    "countryAU": "Australia",
+    "countryCN": "China",
+    "countryCA": "Canada",
+    "emptyDisputes": "No disputes match the filter.",
+    "emptySafety": "No safety events match the filter.",
+    "emptyProviders": "No providers match the filter.",
+    "applied": "Applied",
+    "filterApply": "Apply",
+    "refundQueued": "Queued",
+    "refundProcessing": "Processing",
+    "refundDone": "Done",
+    "refundFailed": "Failed",
+    "navCustomers": "Customers",
+    "navBookings": "Bookings",
+    "navPayments": "Payments",
+    "navAi": "AI",
+    "navSettings": "Settings",
+    "navReports": "Reports",
+    "alertSafetyOpen": "Open safety events need review"
   },
   "family": {
     "title": "가족 모니터링",
@@ -852,7 +1106,14 @@
     "lastBooking": "최근 예약",
     "safetyStatus": "안전",
     "allClear": "정상",
-    "alert": "주의"
+    "alert": "주의",
+    "inviteName": "Name",
+    "inviteSend": "Send invitation",
+    "accepted": "Accepted",
+    "revoke": "Revoke access",
+    "invited": "Invited {when}",
+    "self": "You",
+    "empty": "No co-managers yet."
   },
   "recurring": {
     "title": "정기 예약",
@@ -869,7 +1130,11 @@
     "paused": "정지됨",
     "confirmCancel": "취소?",
     "history": "이력",
-    "edit": "수정"
+    "edit": "수정",
+    "end": "End series",
+    "activeCount": "{n} active",
+    "pausedCount": "{n} paused",
+    "empty": "No recurring bookings. Schedule one and we'll auto-rebook."
   },
   "privacy": {
     "title": "개인정보",
@@ -885,7 +1150,10 @@
     "deleteDataHint": "영구 삭제",
     "deleteConfirm": "정말 삭제?",
     "lastUpdated": "최종 업데이트",
-    "privacyPolicy": "정책"
+    "privacyPolicy": "정책",
+    "deleteAccount": "Delete my account",
+    "deleteHint": "This is permanent. Active bookings will be cancelled.",
+    "saved": "Preferences saved."
   },
   "account": {
     "title": "계정 설정",
@@ -927,7 +1195,9 @@
     "reasonPersonal": "개인",
     "reasonOther": "기타",
     "remove": "삭제",
-    "saved": "저장됨"
+    "saved": "저장됨",
+    "cannotBlockBooked": "Can't block — already booked.",
+    "empty": "No blocked times."
   },
   "pCompliance": {
     "title": "서류",
@@ -952,7 +1222,12 @@
     "activate": "활성화",
     "delete": "삭제",
     "notes": "메모",
-    "addNote": "추가"
+    "addNote": "추가",
+    "deleteGdpr": "Delete (GDPR)",
+    "viewFull": "View full profile",
+    "registeredAt": "Registered {when}",
+    "colRegistered": "Registered",
+    "colEmail": "Email"
   },
   "aCustomerDetail": {
     "title": "상세",
@@ -964,7 +1239,9 @@
     "loginHistory": "로그인",
     "suspend": "정지",
     "delete": "삭제",
-    "contactCustomer": "연락"
+    "contactCustomer": "연락",
+    "resume": "Resume",
+    "ban": "Permanently ban"
   },
   "aBookings": {
     "title": "예약 관리",
@@ -978,7 +1255,9 @@
     "statusDisputed": "분쟁",
     "statusCancelled": "취소",
     "assign": "배정",
-    "reassign": "재배정"
+    "reassign": "재배정",
+    "statusRescheduled": "Rescheduled",
+    "minutesAgo": "{n} min ago"
   },
   "aPayments": {
     "title": "재무",
@@ -990,7 +1269,9 @@
     "suspicious": "의심",
     "exportCsv": "CSV",
     "reconcile": "대사",
-    "pending": "처리 중"
+    "pending": "처리 중",
+    "exportPdf": "Export PDF",
+    "none": "Nothing flagged."
   },
   "aAi": {
     "convTitle": "AI 대화",
@@ -1021,7 +1302,26 @@
     "totalCost": "총비용",
     "dailyConversations": "일일 대화",
     "resolutionRate": "해결률",
-    "avgTurns": "평균 턴"
+    "avgTurns": "평균 턴",
+    "kbTitle": "Knowledge base",
+    "kbAdd": "Add entry",
+    "kbCountry": "Country",
+    "kbLang": "Language",
+    "kbVariable": "Variable",
+    "kbVarHint": "Insert '{customer_name}', '{provider_name}', '{service}'.",
+    "kbBody": "Content",
+    "kbSave": "Save",
+    "kbDelete": "Delete",
+    "kbTitleLabel": "Title",
+    "kbCategory": "Category",
+    "kbCategoryPolicy": "Policy",
+    "kbCategoryPricing": "Pricing",
+    "kbCategoryHowTo": "How-to",
+    "kbCategorySafety": "Safety",
+    "kbQuestion": "Question",
+    "kbAnswer": "Answer",
+    "kbDeleted": "Deleted",
+    "kbSaved": "Saved"
   },
   "aSettings": {
     "title": "설정",
@@ -1032,7 +1332,8 @@
     "admins": "관리자",
     "auditLog": "감사 로그",
     "addAdmin": "추가",
-    "removeAdmin": "삭제"
+    "removeAdmin": "삭제",
+    "save": "Save settings"
   },
   "oops": {
     "title": "문제 발생",
@@ -1057,7 +1358,13 @@
     "escalate": "에스컬",
     "priority": "우선순위",
     "evidence": "증거",
-    "notes": "메모"
+    "notes": "메모",
+    "actionKeep": "Keep review",
+    "actionDelete": "Delete review",
+    "actionWarnUser": "Warn reviewer",
+    "empty": "No reports queued.",
+    "reasonAbusive": "Abusive language",
+    "reasonOffTopic": "Off-topic"
   },
   "search": {
     "title": "검색",
@@ -1068,7 +1375,8 @@
     "sectionProviders": "케어러",
     "sectionServices": "서비스",
     "sectionHelp": "도움말",
-    "recent": "최근"
+    "recent": "최근",
+    "submitToSearch": "Press enter to search"
   },
   "error": {
     "title": "오류",
@@ -1105,8 +1413,58 @@
     "bannerTitle": "8개국 서비스",
     "bannerDesc": "AU · CN · CA · US · TW · SG · HK · MY — 중국어 케어"
   },
-  "availability": {},
-  "extension": {},
+  "availability": {
+    "title": "Set Your Availability",
+    "subtitle": "Add time periods for each day you're available. We'll validate if slots meet minimum service requirements.",
+    "addSlot": "Add Slot",
+    "notSet": "Not set — unavailable this day",
+    "to": "to",
+    "endAfterStart": "End must be after start",
+    "durationWarning": "Time slot too short for:",
+    "needs": "needs",
+    "only": "only",
+    "warningHint": "Customers won't be able to book these services in this slot. Consider extending.",
+    "requirements": "Service Duration Requirements",
+    "minimum": "Min",
+    "save": "Save Availability",
+    "saved": "Saved",
+    "warningCount": "{count} warning(s) — you can still save, but some services won't be bookable in short slots",
+    "templates": "Quick Templates",
+    "tplWeekdayMorning": "Weekday mornings",
+    "tplFullDay": "Full day (9-5)",
+    "tplWeekend": "Weekends only"
+  },
+  "extension": {
+    "title": "Extend Service Time",
+    "currentService": "Current service",
+    "scheduledEnd": "Scheduled end",
+    "selectDuration": "Select extension duration",
+    "customMinutes": "Or custom minutes",
+    "minutes": "minutes",
+    "newEndTime": "New end time",
+    "extraCharge": "Extra charge",
+    "requestButton": "Request Extension from Customer",
+    "sending": "Sending...",
+    "disclaimer": "Customer will be notified and can approve or decline. Extra charges added to bill automatically.",
+    "waitingApproval": "Waiting for Customer Approval",
+    "sentTo": "Extension request sent to {name}",
+    "usuallyReplies": "Customer will confirm via app notification. Usually replies within 1-2 min.",
+    "callCustomer": "Call Customer",
+    "approved": "Extension Approved",
+    "declined": "Extension Declined",
+    "declinedHint": "Customer declined the extension. Please complete service by original end time.",
+    "originalEnd": "Original end",
+    "approvalTitle": "Service Extension Request",
+    "approvalSubtitle": "{name} is requesting more time",
+    "service": "Service",
+    "extension": "Extension",
+    "extraCost": "Extra cost",
+    "approve": "Approve Extension",
+    "decline": "Decline, end on time",
+    "approvedMsg": "Service extended to {time}. {cost} will be added to your bill.",
+    "declinedMsg": "Service will end at the original time: {time}.",
+    "costDisclaimer": "Extra charges will be added to your bill automatically."
+  },
   "proximity": {
     "title": "가까운 서비스 제공자 찾기",
     "subtitle": "가까울수록 저렴합니다",
@@ -1431,5 +1789,16 @@
     "facilityCTA": "주간보호 알아보기",
     "facilityBadge": "회원제",
     "homeBadge": "방문당 결제"
+  },
+  "funding": {
+    "title": "Government Funding",
+    "subtitle": "Set up your funding scheme to use government benefits for services",
+    "yourClaims": "Your Claims",
+    "viewLetter": "View Approval Letter",
+    "noClaims": "No funding claims yet",
+    "addNew": "Add Government Funding",
+    "verified": "Verified",
+    "pending": "Pending Verification",
+    "rejected": "Rejected"
   }
 }

@@ -26,7 +26,13 @@
     "yes": "はい",
     "no": "いいえ",
     "ok": "OK",
-    "retry": "再試行"
+    "retry": "再試行",
+    "askAI": "Ask AI",
+    "talkHuman": "Talk to a human",
+    "skipToContent": "Skip to main content",
+    "backToHome": "Back to home",
+    "viewBooking": "View booking",
+    "backToBooking": "Back to booking"
   },
   "nav": {
     "home": "ホーム",
@@ -123,7 +129,8 @@
     "clearFilters": "絞り込みクリア",
     "errorLoad": "ケアラーを読み込めませんでした",
     "fullyBooked": "予約満員",
-    "viewProfile": "プロフィールを見る"
+    "viewProfile": "プロフィールを見る",
+    "seeNextWeek": "See next week"
   },
   "provider": {
     "view": "表示",
@@ -363,7 +370,60 @@
     "contactProvider": "ケアラーに連絡",
     "reportIssue": "問題を報告",
     "rate": "評価する",
-    "rebook": "もう一度予約"
+    "rebook": "もう一度予約",
+    "noUpcoming": "No upcoming bookings",
+    "bookAClean": "Book a clean",
+    "noPast": "No past bookings",
+    "noPastHint": "Completed services will appear here",
+    "noRecurring": "No recurring bookings",
+    "noRecurringHint": "Save 5% with weekly cleans",
+    "fullyBookedDay": "Fully booked",
+    "tryAnother": "Pick another date or another provider",
+    "seeOtherTimes": "See other times",
+    "errorTimes": "Couldn't load times",
+    "recurringTitle": "Set up recurring",
+    "recurringWeekly": "Weekly",
+    "recurringBiweekly": "Bi-weekly",
+    "recurringMonthly": "Monthly",
+    "recurringDiscount": "ℹ️ Save 5% on recurring bookings",
+    "cancelFreeUntil": "Free cancel until 24h before ({hours}h left)",
+    "cantCancelInProgress": "⚠️ In progress — cannot cancel",
+    "statusTimeline": "Status timeline",
+    "timeline": {
+      "booked": "Booked",
+      "confirmed": "Confirmed",
+      "inProgress": "In progress",
+      "completed": "Completed"
+    },
+    "cta": {
+      "pending": "Pay now",
+      "confirmed": "Reschedule",
+      "inProgress": "Contact provider",
+      "awaitingConfirm": "Confirm completion",
+      "completed": "Leave review",
+      "cancelledFull": "See refund details",
+      "cancelledPartial": "See refund details",
+      "refunded": "See refund details"
+    },
+    "status": {
+      "pending": "Awaiting confirmation",
+      "confirmed": "Confirmed",
+      "inProgress": "In progress",
+      "awaitingConfirm": "Awaiting confirmation",
+      "completed": "Completed",
+      "cancelledFull": "Cancelled · Full refund",
+      "cancelledPartial": "Cancelled · Partial refund",
+      "refunded": "Refunded"
+    },
+    "rescheduleTitle": "Reschedule booking",
+    "rescheduleHint": "Pick a new date and time. The provider will see the change.",
+    "rescheduleNewDate": "New date",
+    "rescheduleNewTime": "New time",
+    "rescheduleConfirm": "Confirm new time",
+    "rescheduleErrorTooSoon": "New time must be at least 4 hours away.",
+    "rescheduleErrorTooFar": "Reschedule no more than 30 days out.",
+    "rescheduleErrorBadStatus": "This booking can no longer be rescheduled.",
+    "rescheduleCta": "Reschedule"
   },
   "payment": {
     "title": "お支払い",
@@ -389,7 +449,20 @@
     "removeCard": "カードを削除",
     "defaultCard": "既定のカード",
     "bankFee": "銀行手数料",
-    "bankFeeNote": "取引処理手数料 (1.7% + 30c)"
+    "bankFeeNote": "取引処理手数料 (1.7% + 30c)",
+    "cvvLabel": "CVV",
+    "expLabel": "MM / YY",
+    "subtotal": "Subtotal",
+    "total": "Total",
+    "payNow": "Pay securely {amount}",
+    "waitingBank": "Waiting for bank",
+    "declined": "Card declined",
+    "declinedHint": "Try another payment method or contact your bank",
+    "threeDS": "3D Secure verification…",
+    "threeDSHint": "Complete the prompt from your bank",
+    "successTitle": "Payment confirmed",
+    "successAmount": "Charged {amount}",
+    "redirecting": "Redirecting to booking…"
   },
   "success": {
     "title": "予約完了！🎉",
@@ -517,7 +590,14 @@
     "responseTime": "2時間以内に返信",
     "helpful": "役に立ちましたか？",
     "yes": "はい",
-    "no": "いいえ"
+    "no": "いいえ",
+    "contactCardTitle": "Still need help?",
+    "contactCardSub": "Our team replies within a few hours.",
+    "contactCardCta": "Talk to a human",
+    "notFoundTitle": "Article not found",
+    "notFoundSub": "It may have been moved. Try the help home.",
+    "backToHelp": "Back to help",
+    "lastUpdated": "Last updated {date}"
   },
   "profileEdit": {
     "title": "プロフィール編集",
@@ -546,7 +626,14 @@
     "revokeAll": "他の端末からログアウト",
     "deleteAccount": "アカウント削除",
     "deleteWarn": "取り消せません",
-    "deleteConfirm": "本当に削除しますか？"
+    "deleteConfirm": "本当に削除しますか？",
+    "twoFactorEnable": "Enable",
+    "twoFactorEnabled": "Enabled",
+    "sessionThis": "This device",
+    "sessionLastActive": "Last active {time}",
+    "signOutAll": "Sign out everywhere",
+    "errorMismatch": "Passwords don't match.",
+    "errorWrongCurrent": "Current password is incorrect."
   },
   "safetyReport": {
     "title": "安全報告",
@@ -570,7 +657,16 @@
     "submittedHint": "24時間以内にご連絡します",
     "anonymous": "匿名",
     "anonymousHint": "身元は非公開",
-    "contactMe": "連絡してください"
+    "contactMe": "連絡してください",
+    "sevHighDivertTitle": "Stop — this might be an emergency",
+    "sevHighDivertHint": "Open the SOS overlay first to call your country's emergency number.",
+    "openSos": "Open SOS",
+    "when": "When did this happen?",
+    "describeHint": "At least 30 characters. Stick to facts — who, what, where.",
+    "policeContacted": "I have contacted the police",
+    "successTitle": "Report received",
+    "successHint": "An admin will review within 24 hours and contact you with next steps.",
+    "evidenceMediaHint": "Photos, video or audio."
   },
   "emergencyOverlay": {
     "triggerLabel": "SOS 緊急",
@@ -607,7 +703,10 @@
     "edit": "編集",
     "save": "保存",
     "saved": "保存しました",
-    "confirmDelete": "削除しますか？"
+    "confirmDelete": "削除しますか？",
+    "deleteConfirm": "Delete this address?",
+    "empty": "No addresses yet",
+    "emptyHint": "Add one to speed up future bookings."
   },
   "paymentMethods": {
     "title": "お支払い方法",
@@ -621,7 +720,11 @@
     "confirmDelete": "削除しますか？",
     "visa": "Visa",
     "mastercard": "Mastercard",
-    "amex": "Amex"
+    "amex": "Amex",
+    "expires": "Expires {month}/{year}",
+    "endingIn": "···· {last4}",
+    "deleteCardTitle": "Remove this card?",
+    "deleteCardBody": "The card ending in {last4} will be removed from your account. You can add it again anytime."
   },
   "favourites": {
     "title": "お気に入り",
@@ -646,7 +749,11 @@
     "topicMarketing": "お知らせ",
     "topicMarketingHint": "新サービス・特典",
     "quietHours": "おやすみモード",
-    "quietHoursHint": "通知を停止"
+    "quietHoursHint": "通知を停止",
+    "topicReminders": "Reminders",
+    "topicRemindersHint": "Day before service + 1h before",
+    "save": "Save preferences",
+    "saved": "Preferences saved"
   },
   "emergencyContacts": {
     "title": "緊急連絡先",
@@ -665,7 +772,10 @@
     "setPrimary": "第一に設定",
     "delete": "削除",
     "save": "保存",
-    "confirmDelete": "削除しますか？"
+    "confirmDelete": "削除しますか？",
+    "relSibling": "Sibling",
+    "empty": "No emergency contacts",
+    "emptyHint": "Add at least one. We'll only contact them in a real emergency."
   },
   "feedback": {
     "title": "評価",
@@ -687,7 +797,15 @@
     "anonymous": "匿名",
     "anonymousHint": "名前非表示",
     "edit": "編集",
-    "delete": "削除"
+    "delete": "削除",
+    "tagFair": "Fair price",
+    "commentPh": "Tell us about your experience…",
+    "photos": "Add photos",
+    "photosHint": "Up to 5 photos. JPG or PNG.",
+    "successTitle": "Thanks for the feedback",
+    "successHint": "Payment released to {provider}. See you next time.",
+    "errorRequired": "Please pick a star rating before submitting.",
+    "mockService": "Deep clean · 3h"
   },
   "dispute": {
     "title": "紛争",
@@ -733,7 +851,8 @@
       "help": "ヘルプ",
       "helpDesc": "FAQ、お問い合わせ",
       "signOut": "ログアウト"
-    }
+    },
+    "funding": "Government Funding"
   },
   "auth": {
     "loginTitle": "おかえりなさい",
@@ -833,7 +952,142 @@
     "back": "戻る",
     "next": "次へ",
     "prev": "前へ",
-    "page": "{current}/{total}"
+    "page": "{current}/{total}",
+    "signOut": "Sign out",
+    "loginTitle": "Admin sign in",
+    "loginSub": "Two-factor required.",
+    "loginEmail": "Email",
+    "loginPassword": "Password",
+    "loginTotp": "TOTP code",
+    "loginTotpHint": "6-digit code from your authenticator app.",
+    "loginCta": "Sign in",
+    "loginInvalid": "Invalid credentials or TOTP.",
+    "loginIpHint": "Sign-ins are restricted to allow-listed IPs.",
+    "loginLockHint": "5 failed attempts will lock the account for 15 minutes.",
+    "overviewTitle": "Overview",
+    "kpiNewOrders": "New orders today",
+    "kpiOpenDisputes": "Open disputes",
+    "kpiPendingProviders": "Pending providers",
+    "kpiSafetyEvents": "Safety events",
+    "kpiGmv": "GMV (week)",
+    "kpiAi": "AI resolution",
+    "alertWebhookLag": "Stripe webhook latency above 5 s",
+    "alertPaymentFail": "Elevated payment failure rate",
+    "alertSafetySpike": "Safety event spike (last 24 h)",
+    "quickLinks": "Quick links",
+    "reviewDisputes": "Review disputes",
+    "reviewSafety": "Review safety events",
+    "reviewProviders": "Approve providers",
+    "disputesTitle": "Disputes",
+    "filterStatus": "Status",
+    "filterCountry": "Country",
+    "filterType": "Type",
+    "filterAll": "All",
+    "statusOpen": "Open",
+    "statusReview": "Under review",
+    "statusResolved": "Resolved",
+    "statusRejected": "Rejected",
+    "statusInvestigating": "Investigating",
+    "statusClosed": "Closed",
+    "statusPending": "Pending",
+    "statusDocsReview": "Docs review",
+    "statusBackground": "Background check",
+    "statusStripe": "Stripe verification",
+    "statusApproved": "Approved",
+    "colId": "ID",
+    "colBooking": "Booking",
+    "colCustomer": "Customer",
+    "colProvider": "Provider",
+    "colType": "Type",
+    "colAmount": "Amount",
+    "colCountry": "Country",
+    "colStatus": "Status",
+    "colSubmitted": "Submitted",
+    "colSla": "SLA",
+    "colReporter": "Reporter",
+    "colReported": "Reported",
+    "colLevel": "Severity",
+    "colAppliedAt": "Applied",
+    "colStep": "Step",
+    "colReason": "Reason",
+    "typeNotShow": "No-show",
+    "typeIncomplete": "Incomplete",
+    "typeDamage": "Damage",
+    "typeOther": "Other",
+    "levelLow": "Low",
+    "levelMid": "Moderate",
+    "levelHigh": "High",
+    "reasonDispute": "Dispute outcome",
+    "reasonSelfService": "Self-service",
+    "slaDanger": "{h} h overdue",
+    "slaWarn": "{h} h left",
+    "slaSafe": "{h} h left",
+    "slaDone": "—",
+    "drawerClose": "Close drawer",
+    "disputeDrawer": "Dispute details",
+    "disputeAction": "Decision",
+    "disputeFullRefund": "Full refund",
+    "disputePartialRefund": "Partial refund",
+    "disputePartialAmount": "Partial amount",
+    "disputeReject": "Reject",
+    "disputeEscalate": "Escalate to human",
+    "disputeNote": "Internal note",
+    "disputeNoteHint": "Visible to admins only.",
+    "disputeApply": "Apply decision",
+    "disputeTimeline": "Timeline",
+    "evidence": "Evidence",
+    "noEvidence": "No evidence uploaded.",
+    "safetyTitle": "Safety events",
+    "safetyDrawer": "Safety event details",
+    "safetyAction": "Action",
+    "safetyWarn": "Warn provider",
+    "safetySuspend": "Suspend provider",
+    "safetyBan": "Permanently ban",
+    "safetyPolice": "Notify police",
+    "safetyClose": "Close case",
+    "providersTitle": "Provider approvals",
+    "providerDrawer": "Provider review",
+    "providerApprove": "Approve",
+    "providerReject": "Reject",
+    "providerHold": "Put on hold",
+    "providerSendBack": "Send back for fixes",
+    "providerStepCheck": "Document checklist",
+    "providerNoteHint": "Visible to the provider.",
+    "refundsTitle": "Refund queue",
+    "refundProcess": "Process refund",
+    "refundEmpty": "No refunds queued.",
+    "analyticsTitle": "Analytics",
+    "rangeDay": "Day",
+    "rangeWeek": "Week",
+    "rangeMonth": "Month",
+    "rangeQuarter": "Quarter",
+    "rangeYear": "Year",
+    "metricOrders": "Weekly orders by country",
+    "metricReorder": "Reorder rate",
+    "metricRating": "Average rating",
+    "metricDispute": "Dispute rate",
+    "metricAi": "AI resolution",
+    "metricPayment": "Payment success",
+    "exportImage": "Export image",
+    "countryAU": "Australia",
+    "countryCN": "China",
+    "countryCA": "Canada",
+    "emptyDisputes": "No disputes match the filter.",
+    "emptySafety": "No safety events match the filter.",
+    "emptyProviders": "No providers match the filter.",
+    "applied": "Applied",
+    "filterApply": "Apply",
+    "refundQueued": "Queued",
+    "refundProcessing": "Processing",
+    "refundDone": "Done",
+    "refundFailed": "Failed",
+    "navCustomers": "Customers",
+    "navBookings": "Bookings",
+    "navPayments": "Payments",
+    "navAi": "AI",
+    "navSettings": "Settings",
+    "navReports": "Reports",
+    "alertSafetyOpen": "Open safety events need review"
   },
   "family": {
     "title": "家族の見守り",
@@ -852,7 +1106,14 @@
     "lastBooking": "最近の予約",
     "safetyStatus": "安全状態",
     "allClear": "問題なし",
-    "alert": "注意"
+    "alert": "注意",
+    "inviteName": "Name",
+    "inviteSend": "Send invitation",
+    "accepted": "Accepted",
+    "revoke": "Revoke access",
+    "invited": "Invited {when}",
+    "self": "You",
+    "empty": "No co-managers yet."
   },
   "recurring": {
     "title": "定期予約",
@@ -869,7 +1130,11 @@
     "paused": "停止中",
     "confirmCancel": "取消しますか？",
     "history": "履歴",
-    "edit": "編集"
+    "edit": "編集",
+    "end": "End series",
+    "activeCount": "{n} active",
+    "pausedCount": "{n} paused",
+    "empty": "No recurring bookings. Schedule one and we'll auto-rebook."
   },
   "privacy": {
     "title": "プライバシー",
@@ -885,7 +1150,10 @@
     "deleteDataHint": "完全に削除",
     "deleteConfirm": "本当に削除しますか？",
     "lastUpdated": "最終更新",
-    "privacyPolicy": "ポリシー"
+    "privacyPolicy": "ポリシー",
+    "deleteAccount": "Delete my account",
+    "deleteHint": "This is permanent. Active bookings will be cancelled.",
+    "saved": "Preferences saved."
   },
   "account": {
     "title": "アカウント設定",
@@ -927,7 +1195,9 @@
     "reasonPersonal": "個人",
     "reasonOther": "その他",
     "remove": "削除",
-    "saved": "保存済み"
+    "saved": "保存済み",
+    "cannotBlockBooked": "Can't block — already booked.",
+    "empty": "No blocked times."
   },
   "pCompliance": {
     "title": "書類管理",
@@ -952,7 +1222,12 @@
     "activate": "有効化",
     "delete": "削除",
     "notes": "メモ",
-    "addNote": "メモ追加"
+    "addNote": "メモ追加",
+    "deleteGdpr": "Delete (GDPR)",
+    "viewFull": "View full profile",
+    "registeredAt": "Registered {when}",
+    "colRegistered": "Registered",
+    "colEmail": "Email"
   },
   "aCustomerDetail": {
     "title": "利用者詳細",
@@ -964,7 +1239,9 @@
     "loginHistory": "ログイン履歴",
     "suspend": "停止",
     "delete": "削除",
-    "contactCustomer": "連絡"
+    "contactCustomer": "連絡",
+    "resume": "Resume",
+    "ban": "Permanently ban"
   },
   "aBookings": {
     "title": "予約管理",
@@ -978,7 +1255,9 @@
     "statusDisputed": "紛争中",
     "statusCancelled": "取消済",
     "assign": "割当",
-    "reassign": "再割当"
+    "reassign": "再割当",
+    "statusRescheduled": "Rescheduled",
+    "minutesAgo": "{n} min ago"
   },
   "aPayments": {
     "title": "財務",
@@ -990,7 +1269,9 @@
     "suspicious": "不審取引",
     "exportCsv": "CSV出力",
     "reconcile": "照合",
-    "pending": "処理中"
+    "pending": "処理中",
+    "exportPdf": "Export PDF",
+    "none": "Nothing flagged."
   },
   "aAi": {
     "convTitle": "AI会話",
@@ -1021,7 +1302,26 @@
     "totalCost": "総コスト",
     "dailyConversations": "日次会話",
     "resolutionRate": "解決率",
-    "avgTurns": "平均ターン"
+    "avgTurns": "平均ターン",
+    "kbTitle": "Knowledge base",
+    "kbAdd": "Add entry",
+    "kbCountry": "Country",
+    "kbLang": "Language",
+    "kbVariable": "Variable",
+    "kbVarHint": "Insert '{customer_name}', '{provider_name}', '{service}'.",
+    "kbBody": "Content",
+    "kbSave": "Save",
+    "kbDelete": "Delete",
+    "kbTitleLabel": "Title",
+    "kbCategory": "Category",
+    "kbCategoryPolicy": "Policy",
+    "kbCategoryPricing": "Pricing",
+    "kbCategoryHowTo": "How-to",
+    "kbCategorySafety": "Safety",
+    "kbQuestion": "Question",
+    "kbAnswer": "Answer",
+    "kbDeleted": "Deleted",
+    "kbSaved": "Saved"
   },
   "aSettings": {
     "title": "システム設定",
@@ -1032,7 +1332,8 @@
     "admins": "管理者",
     "auditLog": "監査ログ",
     "addAdmin": "追加",
-    "removeAdmin": "削除"
+    "removeAdmin": "削除",
+    "save": "Save settings"
   },
   "oops": {
     "title": "エラー",
@@ -1057,7 +1358,13 @@
     "escalate": "エスカレ",
     "priority": "優先度",
     "evidence": "証拠",
-    "notes": "メモ"
+    "notes": "メモ",
+    "actionKeep": "Keep review",
+    "actionDelete": "Delete review",
+    "actionWarnUser": "Warn reviewer",
+    "empty": "No reports queued.",
+    "reasonAbusive": "Abusive language",
+    "reasonOffTopic": "Off-topic"
   },
   "search": {
     "title": "検索",
@@ -1068,7 +1375,8 @@
     "sectionProviders": "ケアラー",
     "sectionServices": "サービス",
     "sectionHelp": "ヘルプ",
-    "recent": "最近の検索"
+    "recent": "最近の検索",
+    "submitToSearch": "Press enter to search"
   },
   "error": {
     "title": "エラー",
@@ -1105,8 +1413,58 @@
     "bannerTitle": "8カ国対応サービス",
     "bannerDesc": "AU · CN · CA · US · TW · SG · HK · MY — 中国語対応ケア"
   },
-  "availability": {},
-  "extension": {},
+  "availability": {
+    "title": "Set Your Availability",
+    "subtitle": "Add time periods for each day you're available. We'll validate if slots meet minimum service requirements.",
+    "addSlot": "Add Slot",
+    "notSet": "Not set — unavailable this day",
+    "to": "to",
+    "endAfterStart": "End must be after start",
+    "durationWarning": "Time slot too short for:",
+    "needs": "needs",
+    "only": "only",
+    "warningHint": "Customers won't be able to book these services in this slot. Consider extending.",
+    "requirements": "Service Duration Requirements",
+    "minimum": "Min",
+    "save": "Save Availability",
+    "saved": "Saved",
+    "warningCount": "{count} warning(s) — you can still save, but some services won't be bookable in short slots",
+    "templates": "Quick Templates",
+    "tplWeekdayMorning": "Weekday mornings",
+    "tplFullDay": "Full day (9-5)",
+    "tplWeekend": "Weekends only"
+  },
+  "extension": {
+    "title": "Extend Service Time",
+    "currentService": "Current service",
+    "scheduledEnd": "Scheduled end",
+    "selectDuration": "Select extension duration",
+    "customMinutes": "Or custom minutes",
+    "minutes": "minutes",
+    "newEndTime": "New end time",
+    "extraCharge": "Extra charge",
+    "requestButton": "Request Extension from Customer",
+    "sending": "Sending...",
+    "disclaimer": "Customer will be notified and can approve or decline. Extra charges added to bill automatically.",
+    "waitingApproval": "Waiting for Customer Approval",
+    "sentTo": "Extension request sent to {name}",
+    "usuallyReplies": "Customer will confirm via app notification. Usually replies within 1-2 min.",
+    "callCustomer": "Call Customer",
+    "approved": "Extension Approved",
+    "declined": "Extension Declined",
+    "declinedHint": "Customer declined the extension. Please complete service by original end time.",
+    "originalEnd": "Original end",
+    "approvalTitle": "Service Extension Request",
+    "approvalSubtitle": "{name} is requesting more time",
+    "service": "Service",
+    "extension": "Extension",
+    "extraCost": "Extra cost",
+    "approve": "Approve Extension",
+    "decline": "Decline, end on time",
+    "approvedMsg": "Service extended to {time}. {cost} will be added to your bill.",
+    "declinedMsg": "Service will end at the original time: {time}.",
+    "costDisclaimer": "Extra charges will be added to your bill automatically."
+  },
   "proximity": {
     "title": "近くのサービス提供者を探す",
     "subtitle": "近いほど安い",
@@ -1431,5 +1789,16 @@
     "facilityCTA": "デイケアを見る",
     "facilityBadge": "会員制",
     "homeBadge": "都度払い"
+  },
+  "funding": {
+    "title": "Government Funding",
+    "subtitle": "Set up your funding scheme to use government benefits for services",
+    "yourClaims": "Your Claims",
+    "viewLetter": "View Approval Letter",
+    "noClaims": "No funding claims yet",
+    "addNew": "Add Government Funding",
+    "verified": "Verified",
+    "pending": "Pending Verification",
+    "rejected": "Rejected"
   }
 }

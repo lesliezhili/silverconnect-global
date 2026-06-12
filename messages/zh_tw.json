@@ -28,7 +28,13 @@
     "yes": "是",
     "no": "否",
     "ok": "確定",
-    "retry": "重試"
+    "retry": "重試",
+    "askAI": "Ask AI",
+    "talkHuman": "Talk to a human",
+    "skipToContent": "Skip to main content",
+    "backToHome": "Back to home",
+    "viewBooking": "View booking",
+    "backToBooking": "Back to booking"
   },
   "nav": {
     "home": "首頁",
@@ -125,7 +131,8 @@
     "clearFilters": "清除篩選",
     "errorLoad": "無法載入服務人員",
     "fullyBooked": "已滿額",
-    "viewProfile": "查看資料"
+    "viewProfile": "查看資料",
+    "seeNextWeek": "See next week"
   },
   "provider": {
     "view": "查看",
@@ -365,7 +372,60 @@
     "contactProvider": "聯絡服務人員",
     "reportIssue": "回報問題",
     "rate": "為這次服務評分",
-    "rebook": "再次預約"
+    "rebook": "再次預約",
+    "noUpcoming": "No upcoming bookings",
+    "bookAClean": "Book a clean",
+    "noPast": "No past bookings",
+    "noPastHint": "Completed services will appear here",
+    "noRecurring": "No recurring bookings",
+    "noRecurringHint": "Save 5% with weekly cleans",
+    "fullyBookedDay": "Fully booked",
+    "tryAnother": "Pick another date or another provider",
+    "seeOtherTimes": "See other times",
+    "errorTimes": "Couldn't load times",
+    "recurringTitle": "Set up recurring",
+    "recurringWeekly": "Weekly",
+    "recurringBiweekly": "Bi-weekly",
+    "recurringMonthly": "Monthly",
+    "recurringDiscount": "ℹ️ Save 5% on recurring bookings",
+    "cancelFreeUntil": "Free cancel until 24h before ({hours}h left)",
+    "cantCancelInProgress": "⚠️ In progress — cannot cancel",
+    "statusTimeline": "Status timeline",
+    "timeline": {
+      "booked": "Booked",
+      "confirmed": "Confirmed",
+      "inProgress": "In progress",
+      "completed": "Completed"
+    },
+    "cta": {
+      "pending": "Pay now",
+      "confirmed": "Reschedule",
+      "inProgress": "Contact provider",
+      "awaitingConfirm": "Confirm completion",
+      "completed": "Leave review",
+      "cancelledFull": "See refund details",
+      "cancelledPartial": "See refund details",
+      "refunded": "See refund details"
+    },
+    "status": {
+      "pending": "Awaiting confirmation",
+      "confirmed": "Confirmed",
+      "inProgress": "In progress",
+      "awaitingConfirm": "Awaiting confirmation",
+      "completed": "Completed",
+      "cancelledFull": "Cancelled · Full refund",
+      "cancelledPartial": "Cancelled · Partial refund",
+      "refunded": "Refunded"
+    },
+    "rescheduleTitle": "Reschedule booking",
+    "rescheduleHint": "Pick a new date and time. The provider will see the change.",
+    "rescheduleNewDate": "New date",
+    "rescheduleNewTime": "New time",
+    "rescheduleConfirm": "Confirm new time",
+    "rescheduleErrorTooSoon": "New time must be at least 4 hours away.",
+    "rescheduleErrorTooFar": "Reschedule no more than 30 days out.",
+    "rescheduleErrorBadStatus": "This booking can no longer be rescheduled.",
+    "rescheduleCta": "Reschedule"
   },
   "payment": {
     "title": "付款方式",
@@ -391,7 +451,20 @@
     "removeCard": "移除卡片",
     "defaultCard": "預設卡片",
     "bankFee": "銀行手續費",
-    "bankFeeNote": "交易處理費 (1.7% + 30分)"
+    "bankFeeNote": "交易處理費 (1.7% + 30分)",
+    "cvvLabel": "CVV",
+    "expLabel": "MM / YY",
+    "subtotal": "Subtotal",
+    "total": "Total",
+    "payNow": "Pay securely {amount}",
+    "waitingBank": "Waiting for bank",
+    "declined": "Card declined",
+    "declinedHint": "Try another payment method or contact your bank",
+    "threeDS": "3D Secure verification…",
+    "threeDSHint": "Complete the prompt from your bank",
+    "successTitle": "Payment confirmed",
+    "successAmount": "Charged {amount}",
+    "redirecting": "Redirecting to booking…"
   },
   "success": {
     "title": "預約成功！🎉",
@@ -519,7 +592,14 @@
     "responseTime": "通常在2小時內回覆",
     "helpful": "這篇文章有幫助嗎？",
     "yes": "有幫助",
-    "no": "沒有幫助"
+    "no": "沒有幫助",
+    "contactCardTitle": "Still need help?",
+    "contactCardSub": "Our team replies within a few hours.",
+    "contactCardCta": "Talk to a human",
+    "notFoundTitle": "Article not found",
+    "notFoundSub": "It may have been moved. Try the help home.",
+    "backToHelp": "Back to help",
+    "lastUpdated": "Last updated {date}"
   },
   "profileEdit": {
     "title": "編輯個人資料",
@@ -548,7 +628,14 @@
     "revokeAll": "登出所有其他裝置",
     "deleteAccount": "刪除帳號",
     "deleteWarn": "此操作無法復原",
-    "deleteConfirm": "確定要刪除帳號嗎？"
+    "deleteConfirm": "確定要刪除帳號嗎？",
+    "twoFactorEnable": "Enable",
+    "twoFactorEnabled": "Enabled",
+    "sessionThis": "This device",
+    "sessionLastActive": "Last active {time}",
+    "signOutAll": "Sign out everywhere",
+    "errorMismatch": "Passwords don't match.",
+    "errorWrongCurrent": "Current password is incorrect."
   },
   "safetyReport": {
     "title": "安全回報",
@@ -572,7 +659,16 @@
     "submittedHint": "我們會在24小時內回覆",
     "anonymous": "匿名回報",
     "anonymousHint": "您的身份不會透露給對方",
-    "contactMe": "可以聯繫我了解更多"
+    "contactMe": "可以聯繫我了解更多",
+    "sevHighDivertTitle": "Stop — this might be an emergency",
+    "sevHighDivertHint": "Open the SOS overlay first to call your country's emergency number.",
+    "openSos": "Open SOS",
+    "when": "When did this happen?",
+    "describeHint": "At least 30 characters. Stick to facts — who, what, where.",
+    "policeContacted": "I have contacted the police",
+    "successTitle": "Report received",
+    "successHint": "An admin will review within 24 hours and contact you with next steps.",
+    "evidenceMediaHint": "Photos, video or audio."
   },
   "emergencyOverlay": {
     "triggerLabel": "SOS 緊急求助",
@@ -609,7 +705,10 @@
     "edit": "編輯",
     "save": "儲存",
     "saved": "已儲存",
-    "confirmDelete": "確定要刪除此地址？"
+    "confirmDelete": "確定要刪除此地址？",
+    "deleteConfirm": "Delete this address?",
+    "empty": "No addresses yet",
+    "emptyHint": "Add one to speed up future bookings."
   },
   "paymentMethods": {
     "title": "付款方式",
@@ -623,7 +722,11 @@
     "confirmDelete": "確定要刪除此卡片？",
     "visa": "Visa",
     "mastercard": "Mastercard",
-    "amex": "Amex"
+    "amex": "Amex",
+    "expires": "Expires {month}/{year}",
+    "endingIn": "···· {last4}",
+    "deleteCardTitle": "Remove this card?",
+    "deleteCardBody": "The card ending in {last4} will be removed from your account. You can add it again anytime."
   },
   "favourites": {
     "title": "我的收藏",
@@ -648,7 +751,11 @@
     "topicMarketing": "優惠資訊",
     "topicMarketingHint": "新服務和特別優惠",
     "quietHours": "勿擾時段",
-    "quietHoursHint": "在此時段內不發送通知"
+    "quietHoursHint": "在此時段內不發送通知",
+    "topicReminders": "Reminders",
+    "topicRemindersHint": "Day before service + 1h before",
+    "save": "Save preferences",
+    "saved": "Preferences saved"
   },
   "emergencyContacts": {
     "title": "緊急聯絡人",
@@ -667,7 +774,10 @@
     "setPrimary": "設為主要",
     "delete": "刪除",
     "save": "儲存",
-    "confirmDelete": "確定要刪除此聯絡人？"
+    "confirmDelete": "確定要刪除此聯絡人？",
+    "relSibling": "Sibling",
+    "empty": "No emergency contacts",
+    "emptyHint": "Add at least one. We'll only contact them in a real emergency."
   },
   "feedback": {
     "title": "評價服務",
@@ -689,7 +799,15 @@
     "anonymous": "匿名評價",
     "anonymousHint": "您的姓名不會顯示",
     "edit": "修改評價",
-    "delete": "刪除評價"
+    "delete": "刪除評價",
+    "tagFair": "Fair price",
+    "commentPh": "Tell us about your experience…",
+    "photos": "Add photos",
+    "photosHint": "Up to 5 photos. JPG or PNG.",
+    "successTitle": "Thanks for the feedback",
+    "successHint": "Payment released to {provider}. See you next time.",
+    "errorRequired": "Please pick a star rating before submitting.",
+    "mockService": "Deep clean · 3h"
   },
   "dispute": {
     "title": "爭議",
@@ -735,7 +853,8 @@
       "help": "幫助與支持",
       "helpDesc": "常見問題、聯繫我們",
       "signOut": "登出"
-    }
+    },
+    "funding": "Government Funding"
   },
   "auth": {
     "loginTitle": "歡迎回來",
@@ -841,7 +960,142 @@
     "back": "返回",
     "next": "下一頁",
     "prev": "上一頁",
-    "page": "第{current}/{total}頁"
+    "page": "第{current}/{total}頁",
+    "signOut": "Sign out",
+    "loginTitle": "Admin sign in",
+    "loginSub": "Two-factor required.",
+    "loginEmail": "Email",
+    "loginPassword": "Password",
+    "loginTotp": "TOTP code",
+    "loginTotpHint": "6-digit code from your authenticator app.",
+    "loginCta": "Sign in",
+    "loginInvalid": "Invalid credentials or TOTP.",
+    "loginIpHint": "Sign-ins are restricted to allow-listed IPs.",
+    "loginLockHint": "5 failed attempts will lock the account for 15 minutes.",
+    "overviewTitle": "Overview",
+    "kpiNewOrders": "New orders today",
+    "kpiOpenDisputes": "Open disputes",
+    "kpiPendingProviders": "Pending providers",
+    "kpiSafetyEvents": "Safety events",
+    "kpiGmv": "GMV (week)",
+    "kpiAi": "AI resolution",
+    "alertWebhookLag": "Stripe webhook latency above 5 s",
+    "alertPaymentFail": "Elevated payment failure rate",
+    "alertSafetySpike": "Safety event spike (last 24 h)",
+    "quickLinks": "Quick links",
+    "reviewDisputes": "Review disputes",
+    "reviewSafety": "Review safety events",
+    "reviewProviders": "Approve providers",
+    "disputesTitle": "Disputes",
+    "filterStatus": "Status",
+    "filterCountry": "Country",
+    "filterType": "Type",
+    "filterAll": "All",
+    "statusOpen": "Open",
+    "statusReview": "Under review",
+    "statusResolved": "Resolved",
+    "statusRejected": "Rejected",
+    "statusInvestigating": "Investigating",
+    "statusClosed": "Closed",
+    "statusPending": "Pending",
+    "statusDocsReview": "Docs review",
+    "statusBackground": "Background check",
+    "statusStripe": "Stripe verification",
+    "statusApproved": "Approved",
+    "colId": "ID",
+    "colBooking": "Booking",
+    "colCustomer": "Customer",
+    "colProvider": "Provider",
+    "colType": "Type",
+    "colAmount": "Amount",
+    "colCountry": "Country",
+    "colStatus": "Status",
+    "colSubmitted": "Submitted",
+    "colSla": "SLA",
+    "colReporter": "Reporter",
+    "colReported": "Reported",
+    "colLevel": "Severity",
+    "colAppliedAt": "Applied",
+    "colStep": "Step",
+    "colReason": "Reason",
+    "typeNotShow": "No-show",
+    "typeIncomplete": "Incomplete",
+    "typeDamage": "Damage",
+    "typeOther": "Other",
+    "levelLow": "Low",
+    "levelMid": "Moderate",
+    "levelHigh": "High",
+    "reasonDispute": "Dispute outcome",
+    "reasonSelfService": "Self-service",
+    "slaDanger": "{h} h overdue",
+    "slaWarn": "{h} h left",
+    "slaSafe": "{h} h left",
+    "slaDone": "—",
+    "drawerClose": "Close drawer",
+    "disputeDrawer": "Dispute details",
+    "disputeAction": "Decision",
+    "disputeFullRefund": "Full refund",
+    "disputePartialRefund": "Partial refund",
+    "disputePartialAmount": "Partial amount",
+    "disputeReject": "Reject",
+    "disputeEscalate": "Escalate to human",
+    "disputeNote": "Internal note",
+    "disputeNoteHint": "Visible to admins only.",
+    "disputeApply": "Apply decision",
+    "disputeTimeline": "Timeline",
+    "evidence": "Evidence",
+    "noEvidence": "No evidence uploaded.",
+    "safetyTitle": "Safety events",
+    "safetyDrawer": "Safety event details",
+    "safetyAction": "Action",
+    "safetyWarn": "Warn provider",
+    "safetySuspend": "Suspend provider",
+    "safetyBan": "Permanently ban",
+    "safetyPolice": "Notify police",
+    "safetyClose": "Close case",
+    "providersTitle": "Provider approvals",
+    "providerDrawer": "Provider review",
+    "providerApprove": "Approve",
+    "providerReject": "Reject",
+    "providerHold": "Put on hold",
+    "providerSendBack": "Send back for fixes",
+    "providerStepCheck": "Document checklist",
+    "providerNoteHint": "Visible to the provider.",
+    "refundsTitle": "Refund queue",
+    "refundProcess": "Process refund",
+    "refundEmpty": "No refunds queued.",
+    "analyticsTitle": "Analytics",
+    "rangeDay": "Day",
+    "rangeWeek": "Week",
+    "rangeMonth": "Month",
+    "rangeQuarter": "Quarter",
+    "rangeYear": "Year",
+    "metricOrders": "Weekly orders by country",
+    "metricReorder": "Reorder rate",
+    "metricRating": "Average rating",
+    "metricDispute": "Dispute rate",
+    "metricAi": "AI resolution",
+    "metricPayment": "Payment success",
+    "exportImage": "Export image",
+    "countryAU": "Australia",
+    "countryCN": "China",
+    "countryCA": "Canada",
+    "emptyDisputes": "No disputes match the filter.",
+    "emptySafety": "No safety events match the filter.",
+    "emptyProviders": "No providers match the filter.",
+    "applied": "Applied",
+    "filterApply": "Apply",
+    "refundQueued": "Queued",
+    "refundProcessing": "Processing",
+    "refundDone": "Done",
+    "refundFailed": "Failed",
+    "navCustomers": "Customers",
+    "navBookings": "Bookings",
+    "navPayments": "Payments",
+    "navAi": "AI",
+    "navSettings": "Settings",
+    "navReports": "Reports",
+    "alertSafetyOpen": "Open safety events need review"
   },
   "family": {
     "title": "家庭監護",
@@ -860,7 +1114,14 @@
     "lastBooking": "最近預約",
     "safetyStatus": "安全狀態",
     "allClear": "一切正常",
-    "alert": "需要關注"
+    "alert": "需要關注",
+    "inviteName": "Name",
+    "inviteSend": "Send invitation",
+    "accepted": "Accepted",
+    "revoke": "Revoke access",
+    "invited": "Invited {when}",
+    "self": "You",
+    "empty": "No co-managers yet."
   },
   "recurring": {
     "title": "定期預約",
@@ -877,7 +1138,11 @@
     "paused": "已暫停",
     "confirmCancel": "確定要取消此定期預約？",
     "history": "歷史記錄",
-    "edit": "編輯"
+    "edit": "編輯",
+    "end": "End series",
+    "activeCount": "{n} active",
+    "pausedCount": "{n} paused",
+    "empty": "No recurring bookings. Schedule one and we'll auto-rebook."
   },
   "privacy": {
     "title": "隱私設定",
@@ -893,7 +1158,10 @@
     "deleteDataHint": "永久刪除所有個人資料",
     "deleteConfirm": "確認刪除所有資料？此操作無法復原",
     "lastUpdated": "最後更新",
-    "privacyPolicy": "隱私政策"
+    "privacyPolicy": "隱私政策",
+    "deleteAccount": "Delete my account",
+    "deleteHint": "This is permanent. Active bookings will be cancelled.",
+    "saved": "Preferences saved."
   },
   "account": {
     "title": "帳戶設定",
@@ -935,7 +1203,9 @@
     "reasonPersonal": "個人原因",
     "reasonOther": "其他",
     "remove": "移除",
-    "saved": "已儲存"
+    "saved": "已儲存",
+    "cannotBlockBooked": "Can't block — already booked.",
+    "empty": "No blocked times."
   },
   "pCompliance": {
     "title": "合規文件",
@@ -960,7 +1230,12 @@
     "activate": "啟用帳號",
     "delete": "刪除帳號",
     "notes": "備註",
-    "addNote": "新增備註"
+    "addNote": "新增備註",
+    "deleteGdpr": "Delete (GDPR)",
+    "viewFull": "View full profile",
+    "registeredAt": "Registered {when}",
+    "colRegistered": "Registered",
+    "colEmail": "Email"
   },
   "aCustomerDetail": {
     "title": "客戶詳情",
@@ -972,7 +1247,9 @@
     "loginHistory": "登入歷史",
     "suspend": "暫停帳號",
     "delete": "刪除帳號",
-    "contactCustomer": "聯絡客戶"
+    "contactCustomer": "聯絡客戶",
+    "resume": "Resume",
+    "ban": "Permanently ban"
   },
   "aBookings": {
     "title": "預約管理",
@@ -986,7 +1263,9 @@
     "statusDisputed": "異議中",
     "statusCancelled": "已取消",
     "assign": "指派",
-    "reassign": "重新指派"
+    "reassign": "重新指派",
+    "statusRescheduled": "Rescheduled",
+    "minutesAgo": "{n} min ago"
   },
   "aPayments": {
     "title": "財務管理",
@@ -998,7 +1277,9 @@
     "suspicious": "可疑交易",
     "exportCsv": "匯出 CSV",
     "reconcile": "對帳",
-    "pending": "待處理"
+    "pending": "待處理",
+    "exportPdf": "Export PDF",
+    "none": "Nothing flagged."
   },
   "aAi": {
     "convTitle": "AI對話記錄",
@@ -1029,7 +1310,26 @@
     "totalCost": "總成本",
     "dailyConversations": "每日對話數",
     "resolutionRate": "解決率",
-    "avgTurns": "平均對話輪數"
+    "avgTurns": "平均對話輪數",
+    "kbTitle": "Knowledge base",
+    "kbAdd": "Add entry",
+    "kbCountry": "Country",
+    "kbLang": "Language",
+    "kbVariable": "Variable",
+    "kbVarHint": "Insert '{customer_name}', '{provider_name}', '{service}'.",
+    "kbBody": "Content",
+    "kbSave": "Save",
+    "kbDelete": "Delete",
+    "kbTitleLabel": "Title",
+    "kbCategory": "Category",
+    "kbCategoryPolicy": "Policy",
+    "kbCategoryPricing": "Pricing",
+    "kbCategoryHowTo": "How-to",
+    "kbCategorySafety": "Safety",
+    "kbQuestion": "Question",
+    "kbAnswer": "Answer",
+    "kbDeleted": "Deleted",
+    "kbSaved": "Saved"
   },
   "aSettings": {
     "title": "系統設定",
@@ -1040,7 +1340,8 @@
     "admins": "管理員",
     "auditLog": "稽核記錄",
     "addAdmin": "新增管理員",
-    "removeAdmin": "移除管理員"
+    "removeAdmin": "移除管理員",
+    "save": "Save settings"
   },
   "oops": {
     "title": "糟糕！出了點問題",
@@ -1065,7 +1366,13 @@
     "escalate": "升級處理",
     "priority": "優先順序",
     "evidence": "證據",
-    "notes": "備註"
+    "notes": "備註",
+    "actionKeep": "Keep review",
+    "actionDelete": "Delete review",
+    "actionWarnUser": "Warn reviewer",
+    "empty": "No reports queued.",
+    "reasonAbusive": "Abusive language",
+    "reasonOffTopic": "Off-topic"
   },
   "search": {
     "title": "搜尋",
@@ -1076,7 +1383,8 @@
     "sectionProviders": "服務人員",
     "sectionServices": "服務項目",
     "sectionHelp": "幫助文章",
-    "recent": "最近搜尋"
+    "recent": "最近搜尋",
+    "submitToSearch": "Press enter to search"
   },
   "error": {
     "title": "發生錯誤",
@@ -1489,5 +1797,16 @@
     "facilityCTA": "了解日間照護",
     "facilityBadge": "會員制",
     "homeBadge": "按次付費"
+  },
+  "funding": {
+    "title": "Government Funding",
+    "subtitle": "Set up your funding scheme to use government benefits for services",
+    "yourClaims": "Your Claims",
+    "viewLetter": "View Approval Letter",
+    "noClaims": "No funding claims yet",
+    "addNew": "Add Government Funding",
+    "verified": "Verified",
+    "pending": "Pending Verification",
+    "rejected": "Rejected"
   }
 }

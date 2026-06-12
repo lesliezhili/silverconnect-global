@@ -26,7 +26,13 @@
     "yes": "ใช่",
     "no": "ไม่",
     "ok": "ตกลง",
-    "retry": "ลองอีกครั้ง"
+    "retry": "ลองอีกครั้ง",
+    "askAI": "Ask AI",
+    "talkHuman": "Talk to a human",
+    "skipToContent": "Skip to main content",
+    "backToHome": "Back to home",
+    "viewBooking": "View booking",
+    "backToBooking": "Back to booking"
   },
   "nav": {
     "home": "หน้าแรก",
@@ -123,7 +129,8 @@
     "clearFilters": "ล้าง",
     "errorLoad": "โหลดไม่สำเร็จ",
     "fullyBooked": "เต็ม",
-    "viewProfile": "ดูโปรไฟล์"
+    "viewProfile": "ดูโปรไฟล์",
+    "seeNextWeek": "See next week"
   },
   "provider": {
     "view": "ดู",
@@ -363,7 +370,60 @@
     "contactProvider": "ติดต่อ",
     "reportIssue": "แจ้งปัญหา",
     "rate": "ให้คะแนน",
-    "rebook": "จองอีก"
+    "rebook": "จองอีก",
+    "noUpcoming": "No upcoming bookings",
+    "bookAClean": "Book a clean",
+    "noPast": "No past bookings",
+    "noPastHint": "Completed services will appear here",
+    "noRecurring": "No recurring bookings",
+    "noRecurringHint": "Save 5% with weekly cleans",
+    "fullyBookedDay": "Fully booked",
+    "tryAnother": "Pick another date or another provider",
+    "seeOtherTimes": "See other times",
+    "errorTimes": "Couldn't load times",
+    "recurringTitle": "Set up recurring",
+    "recurringWeekly": "Weekly",
+    "recurringBiweekly": "Bi-weekly",
+    "recurringMonthly": "Monthly",
+    "recurringDiscount": "ℹ️ Save 5% on recurring bookings",
+    "cancelFreeUntil": "Free cancel until 24h before ({hours}h left)",
+    "cantCancelInProgress": "⚠️ In progress — cannot cancel",
+    "statusTimeline": "Status timeline",
+    "timeline": {
+      "booked": "Booked",
+      "confirmed": "Confirmed",
+      "inProgress": "In progress",
+      "completed": "Completed"
+    },
+    "cta": {
+      "pending": "Pay now",
+      "confirmed": "Reschedule",
+      "inProgress": "Contact provider",
+      "awaitingConfirm": "Confirm completion",
+      "completed": "Leave review",
+      "cancelledFull": "See refund details",
+      "cancelledPartial": "See refund details",
+      "refunded": "See refund details"
+    },
+    "status": {
+      "pending": "Awaiting confirmation",
+      "confirmed": "Confirmed",
+      "inProgress": "In progress",
+      "awaitingConfirm": "Awaiting confirmation",
+      "completed": "Completed",
+      "cancelledFull": "Cancelled · Full refund",
+      "cancelledPartial": "Cancelled · Partial refund",
+      "refunded": "Refunded"
+    },
+    "rescheduleTitle": "Reschedule booking",
+    "rescheduleHint": "Pick a new date and time. The provider will see the change.",
+    "rescheduleNewDate": "New date",
+    "rescheduleNewTime": "New time",
+    "rescheduleConfirm": "Confirm new time",
+    "rescheduleErrorTooSoon": "New time must be at least 4 hours away.",
+    "rescheduleErrorTooFar": "Reschedule no more than 30 days out.",
+    "rescheduleErrorBadStatus": "This booking can no longer be rescheduled.",
+    "rescheduleCta": "Reschedule"
   },
   "payment": {
     "title": "ชำระเงิน",
@@ -389,7 +449,20 @@
     "removeCard": "ลบบัตร",
     "defaultCard": "บัตรหลัก",
     "bankFee": "ค่าธรรมเนียมธนาคาร",
-    "bankFeeNote": "ค่าดำเนินการ (1.7% + 30c)"
+    "bankFeeNote": "ค่าดำเนินการ (1.7% + 30c)",
+    "cvvLabel": "CVV",
+    "expLabel": "MM / YY",
+    "subtotal": "Subtotal",
+    "total": "Total",
+    "payNow": "Pay securely {amount}",
+    "waitingBank": "Waiting for bank",
+    "declined": "Card declined",
+    "declinedHint": "Try another payment method or contact your bank",
+    "threeDS": "3D Secure verification…",
+    "threeDSHint": "Complete the prompt from your bank",
+    "successTitle": "Payment confirmed",
+    "successAmount": "Charged {amount}",
+    "redirecting": "Redirecting to booking…"
   },
   "success": {
     "title": "จองสำเร็จ! 🎉",
@@ -726,7 +799,8 @@
       "help": "ช่วยเหลือ",
       "helpDesc": "FAQ ติดต่อเรา",
       "signOut": "ออกจากระบบ"
-    }
+    },
+    "funding": "Government Funding"
   },
   "auth": {
     "loginTitle": "ยินดีต้อนรับกลับ",
@@ -1163,7 +1237,8 @@
     "sectionProviders": "ผู้ดูแล",
     "sectionServices": "บริการ",
     "sectionHelp": "ช่วยเหลือ",
-    "recent": "ล่าสุด"
+    "recent": "ล่าสุด",
+    "submitToSearch": "Press enter to search"
   },
   "error": {
     "title": "ข้อผิดพลาด",
@@ -1200,8 +1275,58 @@
     "bannerTitle": "บริการใน 8 ประเทศ",
     "bannerDesc": "AU · CN · CA · US · TW · SG · HK · MY — บริการภาษาจีน"
   },
-  "availability": {},
-  "extension": {},
+  "availability": {
+    "title": "Set Your Availability",
+    "subtitle": "Add time periods for each day you're available. We'll validate if slots meet minimum service requirements.",
+    "addSlot": "Add Slot",
+    "notSet": "Not set — unavailable this day",
+    "to": "to",
+    "endAfterStart": "End must be after start",
+    "durationWarning": "Time slot too short for:",
+    "needs": "needs",
+    "only": "only",
+    "warningHint": "Customers won't be able to book these services in this slot. Consider extending.",
+    "requirements": "Service Duration Requirements",
+    "minimum": "Min",
+    "save": "Save Availability",
+    "saved": "Saved",
+    "warningCount": "{count} warning(s) — you can still save, but some services won't be bookable in short slots",
+    "templates": "Quick Templates",
+    "tplWeekdayMorning": "Weekday mornings",
+    "tplFullDay": "Full day (9-5)",
+    "tplWeekend": "Weekends only"
+  },
+  "extension": {
+    "title": "Extend Service Time",
+    "currentService": "Current service",
+    "scheduledEnd": "Scheduled end",
+    "selectDuration": "Select extension duration",
+    "customMinutes": "Or custom minutes",
+    "minutes": "minutes",
+    "newEndTime": "New end time",
+    "extraCharge": "Extra charge",
+    "requestButton": "Request Extension from Customer",
+    "sending": "Sending...",
+    "disclaimer": "Customer will be notified and can approve or decline. Extra charges added to bill automatically.",
+    "waitingApproval": "Waiting for Customer Approval",
+    "sentTo": "Extension request sent to {name}",
+    "usuallyReplies": "Customer will confirm via app notification. Usually replies within 1-2 min.",
+    "callCustomer": "Call Customer",
+    "approved": "Extension Approved",
+    "declined": "Extension Declined",
+    "declinedHint": "Customer declined the extension. Please complete service by original end time.",
+    "originalEnd": "Original end",
+    "approvalTitle": "Service Extension Request",
+    "approvalSubtitle": "{name} is requesting more time",
+    "service": "Service",
+    "extension": "Extension",
+    "extraCost": "Extra cost",
+    "approve": "Approve Extension",
+    "decline": "Decline, end on time",
+    "approvedMsg": "Service extended to {time}. {cost} will be added to your bill.",
+    "declinedMsg": "Service will end at the original time: {time}.",
+    "costDisclaimer": "Extra charges will be added to your bill automatically."
+  },
   "proximity": {
     "title": "ค้นหาผู้ให้บริการใกล้เคียง",
     "subtitle": "ยิ่งใกล้ยิ่งถูก",
@@ -1526,5 +1651,16 @@
     "facilityCTA": "สำรวจศูนย์ดูแล",
     "facilityBadge": "สมาชิก",
     "homeBadge": "จ่ายต่อครั้ง"
+  },
+  "funding": {
+    "title": "Government Funding",
+    "subtitle": "Set up your funding scheme to use government benefits for services",
+    "yourClaims": "Your Claims",
+    "viewLetter": "View Approval Letter",
+    "noClaims": "No funding claims yet",
+    "addNew": "Add Government Funding",
+    "verified": "Verified",
+    "pending": "Pending Verification",
+    "rejected": "Rejected"
   }
 }
