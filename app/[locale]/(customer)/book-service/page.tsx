@@ -19,6 +19,7 @@ const CATEGORIES = [
 
 const HOURLY_RATE = 45; // AUD base
 const NZ_CATEGORY_RATE: Record<string, number> = { cleaning: 45, repair: 70, garden: 55, personalCare: 50, companion: 38, transport: 42, itSupport: 60 };
+const CN_CATEGORY_RATE: Record<string, number> = { cleaning: 120, repair: 200, garden: 100, personalCare: 150, companion: 100, transport: 80, itSupport: 200 }; // CNY/hr
 
 // Smart Price — market rate recommendations ($/hr AUD)
 const SMART_RATE: Record<string, number> = {
@@ -121,21 +122,28 @@ function BookServiceContent() {
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ bookingId?: string; total?: number } | null>(null);
   const [platformTier, setPlatformTier] = useState<"standard" | "premium" | "free">("standard");
-  const [country, setCountry] = useState<"AU" | "NZ">("AU");
+  const [country, setCountry] = useState<"AU" | "NZ" | "CN">("AU");
   const [region, setRegion] = useState("");
   const AU_REGIONS = ["NSW", "VIC", "QLD", "WA", "SA", "TAS", "NT", "ACT"];
   const NZ_REGIONS = ["Auckland", "Wellington", "Canterbury", "Waikato", "Bay of Plenty", "Otago", "Hawkes Bay", "Taranaki", "Northland", "Southland"];
+  const CN_REGIONS = ["北京 Beijing", "上海 Shanghai", "广州 Guangzhou", "深圳 Shenzhen", "成都 Chengdu", "杭州 Hangzhou", "武汉 Wuhan", "西安 Xi'an", "南京 Nanjing", "重庆 Chongqing", "天津 Tianjin", "苏州 Suzhou", "青岛 Qingdao", "长沙 Changsha", "郑州 Zhengzhou"];
+
+  // Auto-select China when viewing in Simplified Chinese
+  useEffect(() => {
+    if (locale === "zh") { setCountry("CN"); setRegion(""); }
+  }, [locale]);
   const [showTierInfo, setShowTierInfo] = useState(false);
 
-  const marketRate = subtype ? (SMART_RATE[subtype] || HOURLY_RATE) : (country === "NZ" ? (NZ_CATEGORY_RATE[category] || HOURLY_RATE) : (CATEGORY_RATE[category] || HOURLY_RATE));
+  const marketRate = subtype ? (SMART_RATE[subtype] || HOURLY_RATE) : (country === "NZ" ? (NZ_CATEGORY_RATE[category] || HOURLY_RATE) : country === "CN" ? (CN_CATEGORY_RATE[category] || 120) : (CATEGORY_RATE[category] || HOURLY_RATE));
   const smartRate = providerRate || marketRate;
   const calInfo = getCalendarLabel(date, time);
   const effectiveRate = Math.round(smartRate * calInfo.mult * 100) / 100;
   const basePrice = Math.round((effectiveRate * duration / 60) * 100) / 100;
-  const taxRate = country === "NZ" ? 0.15 : 0.10; // GST: NZ 15%, AU 10%
+  const taxRate = country === "NZ" ? 0.15 : country === "CN" ? 0.06 : 0.10; // GST/VAT: NZ 15%, CN 6%, AU 10%
   const taxAmount = Math.round(basePrice * taxRate * 100) / 100;
   // Bank fee: Stripe 1.7% + 30c (free with PHLedger)
-  const bankFee = platformTier === "free" ? 0 : Math.round(((basePrice + taxAmount) * 0.017 + 0.30) * 100) / 100;
+  // CN uses WeChat Pay / Alipay — no Stripe fee. Bank fee waived for CN.
+  const bankFee = (platformTier === "free" || country === "CN") ? 0 : Math.round(((basePrice + taxAmount) * 0.017 + 0.30) * 100) / 100;
   // Cloud platform fee: serverless compute + database hosting
   const CLOUD_FEES = { standard: 1.50, premium: 3.50, free: 0 }; // per booking
   const cloudFee = CLOUD_FEES[platformTier];
@@ -150,7 +158,7 @@ function BookServiceContent() {
       const resp = await fetch("/api/bookings/charged", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ categoryCode: category, durationMin: duration, scheduledAt, notes: subtypeNote + notes, basePrice, taxAmount, bankFee, cloudFee, platformTier, totalPrice, country, region, currency: country === "NZ" ? "NZD" : "AUD" }),
+        body: JSON.stringify({ categoryCode: category, durationMin: duration, scheduledAt, notes: subtypeNote + notes, basePrice, taxAmount, bankFee, cloudFee, platformTier, totalPrice, country, region, currency: country === "NZ" ? "NZD" : country === "CN" ? "CNY" : "AUD" }),
       });
       const d = await resp.json();
       if (d.bookingId) { setResult({ bookingId: d.bookingId, total: totalPrice }); setStep(4); }
@@ -238,24 +246,36 @@ function BookServiceContent() {
         <div className="flex items-center gap-3 mb-3">
           <span className="text-sm font-medium text-gray-700">{t("Location", "地区", "ที่ตั้ง", "위치", "地域", "Khu vực")}</span>
         </div>
-        <div className="flex gap-2 mb-3">
-          <button onClick={() => { setCountry("AU"); setRegion(""); }} className={"flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border-2 text-sm font-semibold transition " + (country === "AU" ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-gray-200 bg-white text-gray-600 hover:border-gray-300")}>
+        <div className="flex flex-wrap gap-2 mb-3">
+          <button onClick={() => { setCountry("AU"); setRegion(""); }} className={"flex-1 min-w-[90px] flex items-center justify-center gap-1.5 py-2.5 rounded-lg border-2 text-sm font-semibold transition " + (country === "AU" ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-gray-200 bg-white text-gray-600 hover:border-gray-300")}>
             <span className="text-lg">\ud83c\udde6\ud83c\uddfa</span> {t("Australia", "澳大利亚", "ออสเตรเลีย", "호주", "オーストラリア", "Úc")}
-            <span className="text-xs text-gray-400 ml-1">AUD</span>
+            <span className="text-xs text-gray-400">AUD</span>
           </button>
-          <button onClick={() => { setCountry("NZ"); setRegion(""); }} className={"flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border-2 text-sm font-semibold transition " + (country === "NZ" ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-gray-200 bg-white text-gray-600 hover:border-gray-300")}>
+          <button onClick={() => { setCountry("NZ"); setRegion(""); }} className={"flex-1 min-w-[90px] flex items-center justify-center gap-1.5 py-2.5 rounded-lg border-2 text-sm font-semibold transition " + (country === "NZ" ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-gray-200 bg-white text-gray-600 hover:border-gray-300")}>
             <span className="text-lg">\ud83c\uddf3\ud83c\uddff</span> {t("New Zealand", "新西兰", "นิวซีแลนด์", "뉴질랜드", "ニュージーランド", "New Zealand")}
-            <span className="text-xs text-gray-400 ml-1">NZD</span>
+            <span className="text-xs text-gray-400">NZD</span>
+          </button>
+          <button onClick={() => { setCountry("CN"); setRegion(""); }} className={"flex-1 min-w-[90px] flex items-center justify-center gap-1.5 py-2.5 rounded-lg border-2 text-sm font-semibold transition " + (country === "CN" ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-gray-200 bg-white text-gray-600 hover:border-gray-300")}>
+            <span className="text-lg">\ud83c\udde8\ud83c\uddf3</span> {t("China", "中国大陆", "จีน", "중국", "中国", "Trung Quốc")}
+            <span className="text-xs text-gray-400">CNY</span>
           </button>
         </div>
         <select value={region} onChange={e => setRegion(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-300">
-          <option value="">{t("Select region", "选择地区", "เลือกภูมิภาค", "지역 선택", "地域を選択", "Chọn vùng")}</option>
-          {(country === "AU" ? AU_REGIONS : NZ_REGIONS).map(r => <option key={r} value={r}>{r}</option>)}
+          <option value="">{t("Select region", country === "CN" ? "选择城市" : "选择地区", "เลือกภูมิภาค", "지역 선택", "地域を選択", "Chọn vùng")}</option>
+          {(country === "AU" ? AU_REGIONS : country === "CN" ? CN_REGIONS : NZ_REGIONS).map(r => <option key={r} value={r}>{r}</option>)}
         </select>
         {country === "NZ" && (
           <p className="text-xs text-blue-600 mt-2 flex items-center gap-1">
             <span>\u2139\ufe0f</span> {t("NZ: 15% GST applies. Prices in NZD.", "新西兰：15% GST适用，价格以新西兰元计", "นิวซีแลนด์: GST 15% ราคาเป็น NZD", "뉴질랜드: 15% GST 적용. NZD 표시.", "NZ: GST 15%適用。NZD表示。", "NZ: 15% GST. Giá NZD.")}
           </p>
+        )}
+        {country === "CN" && (
+          <div className="mt-2 space-y-1">
+            <p className="text-xs text-red-600 flex items-center gap-1">
+              <span>\u2139\ufe0f</span> {t("China: 6% VAT applies. Prices in CNY (¥). WeChat Pay / Alipay supported.", "中国大陆：增值税 6%，价格以人民币 (¥) 计。支持微信支付 / 支付宝。")}
+            </p>
+            <p className="text-xs text-gray-400">{t("Long-term Care Insurance (LTCI) eligible services available in pilot cities.", "长期护理险 (长护险) 试点城市可享受政府补贴服务。")}</p>
+          </div>
         )}
       </div>
 
@@ -266,7 +286,7 @@ function BookServiceContent() {
             style={{ minHeight: "130px" }}>
             <span className="text-[42px] mb-2">{c.emoji}</span>
             <span className="text-[18px] font-semibold text-gray-900">{locale === "th" ? c.th : locale === "ko" ? c.ko : locale === "ja" ? c.ja : locale === "vi" ? c.vi : isZh ? c.zh : c.en}</span>
-            <span className="text-sm text-emerald-600 mt-1 font-medium">{isZh ? "从" : "from"} {country === "NZ" ? "NZ$" : "A$"}{country === "NZ" ? (NZ_CATEGORY_RATE[c.code] || HOURLY_RATE) : (CATEGORY_RATE[c.code] || HOURLY_RATE)}/hr</span>
+            <span className="text-sm text-emerald-600 mt-1 font-medium">{isZh ? "从" : "from"} {country === "NZ" ? "NZ$" : country === "CN" ? "¥" : "A$"}{country === "NZ" ? (NZ_CATEGORY_RATE[c.code] || HOURLY_RATE) : country === "CN" ? (CN_CATEGORY_RATE[c.code] || 120) : (CATEGORY_RATE[c.code] || HOURLY_RATE)}/hr</span>
           </button>
         ))}
       </div>
