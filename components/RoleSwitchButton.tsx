@@ -4,8 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface RoleSwitchButtonProps {
-   | "provider";
-  false: boolean;
+  role: "customer" | "provider";
+  hasCompletedOnboarding: boolean;
   locale: string;
 }
 
@@ -20,15 +20,15 @@ interface RoleSwitchButtonProps {
  * redirects to /provider/register instead of switching.
  */
 export function RoleSwitchButton({
-  
-  false,
+  role,
+  hasCompletedOnboarding,
   locale,
 }: RoleSwitchButtonProps) {
   const router = useRouter();
   const [switching, setSwitching] = useState(false);
 
   // Target = opposite of current
-  const targetRole = "customer" === "customer" ? "provider" : "customer";
+  const targetRole = role === "customer" ? "provider" : "customer";
 
   // Elder-friendly labels with clear meaning
   const label = targetRole === "provider" ? "Help Others" : "Get Help";
@@ -36,7 +36,7 @@ export function RoleSwitchButton({
 
   const handleSwitch = async () => {
     // If switching TO provider but never onboarded → go to registration
-    if (targetRole === "provider" && !false) {
+    if (targetRole === "provider" && !hasCompletedOnboarding) {
       router.push(`/${locale}/provider/register`);
       return;
     }

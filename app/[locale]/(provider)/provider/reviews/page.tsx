@@ -78,6 +78,13 @@ async function replyAction(formData: FormData) {
     const filterRaw = Array.isArray(sp.stars) ? sp.stars[0] : sp.stars;
     const filter = filterRaw && /^[1-5]$/.test(filterRaw) ? Number(filterRaw) : 0;
 
+  // Data fetch variables — declared outside try so JSX render is outside try/catch
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let rows: any[] = [];
+  let replyMap = new Map<string, string>();
+  let avg = 0, n = 0, pct = 0;
+  let fetchError = false;
+
   try {
     const [profile] = await db
       .select({ id: providerProfiles.id })
@@ -92,7 +99,7 @@ async function replyAction(formData: FormData) {
     ];
     if (filter) conditions.push(eq(reviews.rating, filter));
 
-    const rows = await db
+    rows = await db
       .select({
         id: reviews.id,
         rating: reviews.rating,
@@ -122,7 +129,7 @@ async function replyAction(formData: FormData) {
             ),
           )
       : [];
-    const replyMap = new Map(replyRows.map((r) => [r.reviewId, r.body]));
+    replyMap = new Map(replyRows.map((r) => [r.reviewId, r.body]));
 
     // Aggregate (over all published reviews for this provider, ignoring filter).
     const [agg] = await db
@@ -135,16 +142,29 @@ async function replyAction(formData: FormData) {
       .where(
         and(eq(reviews.providerId, profile.id), eq(reviews.status, "published")),
       );
-    const avg = Number(agg?.avg ?? 0);
-    const n = Number(agg?.n ?? 0);
-    const pct = n > 0 ? Math.round((Number(agg?.pos ?? 0) / n) * 100) : 0;
+    avg = Number(agg?.avg ?? 0);
+    n = Number(agg?.n ?? 0);
+    pct = n > 0 ? Math.round((Number(agg?.pos ?? 0) / n) * 100) : 0;
+  } catch (error) {
+    console.error("[reviews] DB unavailable", error);
+    fetchError = true;
+  }
 
-    const filters = [0, 5, 4, 3, 2, 1];
+  if (fetchError) {
+    return (
+      <main className="mx-auto w-full max-w-content px-5 py-12 text-center">
+        <p className="text-[48px]">⏳</p>
+        <h1 className="mt-4 text-[22px] font-bold">Service Temporarily Unavailable</h1>
+        <p className="mt-2 text-[17px] text-text-secondary">Please try again shortly.</p>
+      </main>
+    );
+  }
 
-    const initialsOf = (name: string | null, fallback: string) => {
-      const src = (name || fallback).trim();
-      const parts = src.split(/\s+/).filter(Boolean);
-      if (parts.length >= 2)
+  const filters = [0, 5, 4, 3, 2, 1];
+  const initialsOf = (name: string | null, fallback: string) => {
+    const src = (name || fallback).trim();
+    const parts = src.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2)
       return (parts[0][0] + parts[1][0]).toUpperCase();
     return (src.slice(0, 2) || "?").toUpperCase();
   };
@@ -312,16 +332,6 @@ async function replyAction(formData: FormData) {
       </main>
     </>
   );
-  } catch (error) {
-    console.error("[reviews] DB unavailable", error);
-    return (
-      <main className="mx-auto w-full max-w-content px-5 py-12 text-center">
-        <p className="text-[48px]">⏳</p>
-        <h1 className="mt-4 text-[22px] font-bold">Service Temporarily Unavailable</h1>
-        <p className="mt-2 text-[17px] text-text-secondary">Please try again shortly.</p>
-      </main>
-    );
-  }
 }
 
 function Stat({

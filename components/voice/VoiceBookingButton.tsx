@@ -17,6 +17,30 @@ export default function VoiceBookingButton() {
   const [response, setResponse] = useState("");
   const recognitionRef = useRef<any>(null);
 
+  const processVoiceInput = async (text: string) => {
+    try {
+      const res = await fetch("/api/bookings/voice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transcript: text }),
+      });
+      const data = await res.json();
+      setResponse(data.confirmation || data.message);
+      setState("confirming");
+
+      // TTS response at 0.8x speed
+      if ("speechSynthesis" in window) {
+        const utterance = new SpeechSynthesisUtterance(data.confirmation);
+        utterance.rate = 0.8;
+        utterance.volume = 1.0;
+        window.speechSynthesis.speak(utterance);
+      }
+    } catch {
+      setState("error");
+      setResponse("Something went wrong. Please try again.");
+    }
+  };
+
   const startListening = useCallback(() => {
     if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
       setState("error");
@@ -52,30 +76,6 @@ export default function VoiceBookingButton() {
   const stopListening = useCallback(() => {
     recognitionRef.current?.stop();
   }, []);
-
-  const processVoiceInput = async (text: string) => {
-    try {
-      const res = await fetch("/api/bookings/voice", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ transcript: text }),
-      });
-      const data = await res.json();
-      setResponse(data.confirmation || data.message);
-      setState("confirming");
-      
-      // TTS response at 0.8x speed
-      if ("speechSynthesis" in window) {
-        const utterance = new SpeechSynthesisUtterance(data.confirmation);
-        utterance.rate = 0.8;
-        utterance.volume = 1.0;
-        window.speechSynthesis.speak(utterance);
-      }
-    } catch {
-      setState("error");
-      setResponse("Something went wrong. Please try again.");
-    }
-  };
 
   return (
     <div className="flex flex-col items-center gap-6 p-6">

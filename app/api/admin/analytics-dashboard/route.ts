@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
     } catch {}
 
     // Prayer reports
-    let reportStats = { total: 0, followUps: 0, moods: {} as Record<string, number> };
+    const reportStats = { total: 0, followUps: 0, moods: {} as Record<string, number> };
     try {
       const [rs] = await sql`SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE follow_up_needed) as followups FROM faith_prayer_reports`;
       reportStats.total = Number(rs?.total || 0);
@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
     } catch {}
 
     // Achievements unlocked across all volunteers
-    let achievementStats = { totalUnlocked: 0, topAchievements: [] as { id: string; count: number }[] };
+    const achievementStats = { totalUnlocked: 0, topAchievements: [] as { id: string; count: number }[] };
     try {
       const [ac] = await sql`SELECT COUNT(*) as cnt FROM volunteer_achievements`;
       achievementStats.totalUnlocked = Number(ac?.cnt || 0);

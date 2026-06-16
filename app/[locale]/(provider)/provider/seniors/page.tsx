@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import { useParams, useRouter } from "next/navigation";
 
 const MOOD_EMOJI: Record<string, string> = { joyful: "\ud83d\ude0a", peaceful: "\u262e\ufe0f", struggling: "\ud83d\ude1f", grieving: "\ud83d\ude22" };
@@ -19,7 +19,16 @@ function SeniorsListContent() {
 
   if (loading) return <div className="p-6 text-center text-xl">{isZh ? "\u52a0\u8f7d\u4e2d..." : "Loading..."}</div>;
 
-  const filtered = filter === "followup" ? seniors.filter(s => s.needsFollowUp) : filter === "recent" ? seniors.filter(s => s.lastVisit && new Date(s.lastVisit) > new Date(Date.now() - 14*86400000)) : seniors;
+  const recentCount = useMemo(() => {
+    const cutoff = new Date(Date.now() - 14 * 86400000);
+    return seniors.filter(s => s.lastVisit && new Date(s.lastVisit) > cutoff).length;
+  }, [seniors]);
+  const filtered = useMemo(() => {
+    const cutoff = new Date(Date.now() - 14 * 86400000);
+    if (filter === "followup") return seniors.filter(s => s.needsFollowUp);
+    if (filter === "recent") return seniors.filter(s => s.lastVisit && new Date(s.lastVisit) > cutoff);
+    return seniors;
+  }, [filter, seniors]);
 
   return (
     <main className="max-w-lg mx-auto p-6">
@@ -30,7 +39,7 @@ function SeniorsListContent() {
         {([["all","\u5168\u90e8","All"],["followup","\u9700\u8ddf\u8fdb","Follow-up"],["recent","\u8fd1\u671f","Recent"]] as const).map(([key,zh,en]) => (
           <button key={key} onClick={() => setFilter(key as "all"|"followup"|"recent")}
             className={"px-4 py-2 rounded-full text-base font-medium whitespace-nowrap " + (filter === key ? "bg-purple-100 text-purple-700 border-2 border-purple-300" : "bg-gray-100 text-gray-600 border-2 border-transparent")}>
-            {isZh ? zh : en} ({key === "followup" ? seniors.filter(s=>s.needsFollowUp).length : key === "recent" ? seniors.filter(s=>s.lastVisit && new Date(s.lastVisit)>new Date(Date.now()-14*86400000)).length : seniors.length})
+            {isZh ? zh : en} ({key === "followup" ? seniors.filter(s=>s.needsFollowUp).length : key === "recent" ? recentCount : seniors.length})
           </button>
         ))}
       </div>
