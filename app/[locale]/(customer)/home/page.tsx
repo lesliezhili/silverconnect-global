@@ -44,6 +44,11 @@ const CAT_ICON_BG: Record<string, { bg: string; fg: string; emoji: string }> = {
   musicLesson:     { bg: "#FFF0F5", fg: "#C2185B", emoji: "🎵" },
   artClass:        { bg: "#F3E5F5", fg: "#6A1B9A", emoji: "🎨" },
   digitalLiteracy: { bg: "#E8F5E9", fg: "#1B5E20", emoji: "🤖" },
+  ndisSetup: { bg: "#E0F2FE", fg: "#0369A1", emoji: "🪦" },
+  ndisRegistration: { bg: "#DBEAFE", fg: "#1D4ED8", emoji: "📋" },
+  agedCareProvider: { bg: "#FEF3C7", fg: "#B45309", emoji: "🏡" },
+  dvaProvider: { bg: "#ECFCCB", fg: "#4D7C0F", emoji: "🏖️" },
+  tacWorkSafe: { bg: "#FEE2E2", fg: "#B91C1C", emoji: "🚑" },
 };
 
 const FALLBACK_CATEGORIES = [
@@ -57,6 +62,11 @@ const FALLBACK_CATEGORIES = [
   { code: "musicLesson",     sortOrder: 80 },
   { code: "artClass",        sortOrder: 90 },
   { code: "digitalLiteracy", sortOrder: 100 },
+  { code: "ndisSetup", sortOrder: 110 },
+  { code: "ndisRegistration", sortOrder: 120 },
+  { code: "agedCareProvider", sortOrder: 130 },
+  { code: "dvaProvider", sortOrder: 140 },
+  { code: "tacWorkSafe", sortOrder: 150 },
 ];
 
 const FALLBACK_HOURLY: Record<CountryCode, Record<string, number>> = {
