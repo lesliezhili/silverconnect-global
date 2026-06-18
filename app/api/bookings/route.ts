@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+import { db } from '@/lib/db'
+import { bookingRequests } from '@/lib/db/schema/bookings'
 
 export async function POST(req: Request) {
   try {
@@ -10,11 +12,18 @@ export async function POST(req: Request) {
     }
 
     const ref = `BK-${Date.now().toString(36).toUpperCase()}`
-    console.log('[booking-request]', { ref, service, name, email, phone, date, message,
-                                       ts: new Date().toISOString() })
-    // TODO: persist to xinyuzhe_sessions or booking_requests table
-    // TODO: send confirmation email via SMTP/Resend
 
+    await db.insert(bookingRequests).values({
+      ref,
+      service:       service || 'xinyuzhe',
+      name:          name.trim(),
+      email:         email.trim().toLowerCase(),
+      phone:         phone?.trim()    || null,
+      preferredDate: date             || null,
+      message:       message?.trim()  || null,
+    })
+
+    console.log('[booking-created]', { ref, service, email: email.trim().toLowerCase() })
     return NextResponse.json({ success: true, ref })
   } catch (err) {
     console.error('[booking-api]', err)
