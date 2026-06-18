@@ -455,7 +455,7 @@ export default async function CustomerHomePage({
         ) : null}
 
         {/* ── 和润心语者 (Aged Mental Health) — CN platform only ── */}
-        {country === "CN" && (
+        {isZh && (
           <section className="mx-5 mt-5 mb-3">
             <Link
               href="/xinyuzhe"
