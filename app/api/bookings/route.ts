@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { bookingRequests } from '@/lib/db/schema/bookings'
+import { bookingRequests } from '@/lib/db/schema/booking-requests'
 
 export async function POST(req: Request) {
   try {

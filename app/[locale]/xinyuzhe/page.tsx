@@ -101,7 +101,7 @@ export default function XinyuzhePage() {
               <div className="flex items-center justify-between pt-2 border-t border-gray-100">
                 <span className="font-bold text-rose-600 text-sm">{pkg.price}</span>
                 <Link
-                  href={`/${locale}/bookings/new?service=xinyuzhe`}
+                  href={`/${locale}/xinyuzhe/book?service=xinyuzhe`}
                   className="bg-rose-500 text-white text-xs px-4 py-2 rounded-full font-medium hover:bg-rose-600 active:scale-95 transition-all"
                 >
                   立即预约

@@ -16,4 +16,6 @@ export * from "./safety";
 export * from "./notifications";
 export * from "./ai";
 export * from "./admin";
-export * from './bookings'
+
+// Xinyuzhe intake: unauthenticated booking requests
+export * from "./booking-requests";
