@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { xinyuzheFeedback, xinyuzheSessions } from '@/lib/db/schema/xinyuzhe'
-import { getCurrentUser } from '@/lib/auth/session'
+import { getCurrentUser } from '@/lib/auth/server'
 import { eq } from 'drizzle-orm'
 
 export async function POST(req: Request) {
