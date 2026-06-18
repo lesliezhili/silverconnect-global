@@ -34,50 +34,40 @@ type CatKey =
   | "itSupport";
 
 const CAT_ICON_BG: Record<string, { bg: string; fg: string; emoji: string }> = {
-  cleaning:     { bg: "#E8F0FE", fg: "#1F6FEB", emoji: "🧹" },
-  garden:       { bg: "#DCFCE7", fg: "#16A34A", emoji: "🌿" },
-  repair:       { bg: "#EDE9FE", fg: "#7C3AED", emoji: "🔧" },
-  personalCare: { bg: "#FCE7F3", fg: "#DB2777", emoji: "💊" },
-  companion:    { bg: "#FEF3C7", fg: "#F59E0B", emoji: "👋" },
-  transport:    { bg: "#FFF7ED", fg: "#EA580C", emoji: "🚗" },
+  cleaning:        { bg: "#E8F0FE", fg: "#1F6FEB", emoji: "🧹" },
+  garden:          { bg: "#DCFCE7", fg: "#16A34A", emoji: "🌿" },
+  repair:          { bg: "#EDE9FE", fg: "#7C3AED", emoji: "🔧" },
+  personalCare:    { bg: "#FCE7F3", fg: "#DB2777", emoji: "💊" },
+  companion:       { bg: "#FEF3C7", fg: "#F59E0B", emoji: "👋" },
+  transport:       { bg: "#FFF7ED", fg: "#EA580C", emoji: "🚗" },
   itSupport:       { bg: "#EFF6FF", fg: "#2563EB", emoji: "💻" },
   musicLesson:     { bg: "#FFF0F5", fg: "#C2185B", emoji: "🎵" },
   artClass:        { bg: "#F3E5F5", fg: "#6A1B9A", emoji: "🎨" },
   digitalLiteracy: { bg: "#E8F5E9", fg: "#1B5E20", emoji: "🤖" },
-  ndisSetup: { bg: "#E0F2FE", fg: "#0369A1", emoji: "🪦" },
-  ndisRegistration: { bg: "#DBEAFE", fg: "#1D4ED8", emoji: "📋" },
-  agedCareProvider: { bg: "#FEF3C7", fg: "#B45309", emoji: "🏡" },
-  dvaProvider: { bg: "#ECFCCB", fg: "#4D7C0F", emoji: "🏖️" },
-  tacWorkSafe: { bg: "#FEE2E2", fg: "#B91C1C", emoji: "🚑" },
 };
 
 const FALLBACK_CATEGORIES = [
-  { code: "cleaning", sortOrder: 10 },
-  { code: "garden", sortOrder: 20 },
-  { code: "repair", sortOrder: 30 },
-  { code: "personalCare", sortOrder: 40 },
-  { code: "companion", sortOrder: 50 },
-  { code: "transport", sortOrder: 60 },
+  { code: "cleaning",        sortOrder: 10 },
+  { code: "garden",          sortOrder: 20 },
+  { code: "repair",          sortOrder: 30 },
+  { code: "personalCare",    sortOrder: 40 },
+  { code: "companion",       sortOrder: 50 },
+  { code: "transport",       sortOrder: 60 },
   { code: "itSupport",       sortOrder: 70 },
   { code: "musicLesson",     sortOrder: 80 },
   { code: "artClass",        sortOrder: 90 },
   { code: "digitalLiteracy", sortOrder: 100 },
-  { code: "ndisSetup", sortOrder: 110 },
-  { code: "ndisRegistration", sortOrder: 120 },
-  { code: "agedCareProvider", sortOrder: 130 },
-  { code: "dvaProvider", sortOrder: 140 },
-  { code: "tacWorkSafe", sortOrder: 150 },
 ];
 
 const FALLBACK_HOURLY: Record<CountryCode, Record<string, number>> = {
-  AU: { cleaning: 49, garden: 53, repair: 65, personalCare: 57, companion: 48, transport: 50, itSupport: 55 },
-  CN: { cleaning: 25, garden: 22, repair: 35, personalCare: 30, companion: 22, transport: 28, itSupport: 30 },
-  CA: { cleaning: 42, garden: 45, repair: 55, personalCare: 50, companion: 42, transport: 44, itSupport: 48 },
-  US: { cleaning: 45, garden: 48, repair: 59, personalCare: 54, companion: 45, transport: 47, itSupport: 50 },
-  TW: { cleaning: 350, garden: 310, repair: 490, personalCare: 420, companion: 310, transport: 390, itSupport: 400 },
-  SG: { cleaning: 45, garden: 40, repair: 63, personalCare: 54, companion: 40, transport: 50, itSupport: 48 },
-  HK: { cleaning: 150, garden: 130, repair: 210, personalCare: 180, companion: 130, transport: 170, itSupport: 160 },
-  MY: { cleaning: 63, garden: 55, repair: 88, personalCare: 75, companion: 55, transport: 70, itSupport: 60 },
+  AU: { cleaning: 49, garden: 53, repair: 65, personalCare: 57, companion: 48, transport: 50, itSupport: 55, musicLesson: 60, artClass: 55, digitalLiteracy: 58 },
+  CN: { cleaning: 25, garden: 22, repair: 35, personalCare: 30, companion: 22, transport: 28, itSupport: 30, musicLesson: 80, artClass: 70, digitalLiteracy: 65 },
+  CA: { cleaning: 42, garden: 45, repair: 55, personalCare: 50, companion: 42, transport: 44, itSupport: 48, musicLesson: 55, artClass: 50, digitalLiteracy: 52 },
+  US: { cleaning: 45, garden: 48, repair: 59, personalCare: 54, companion: 45, transport: 47, itSupport: 50, musicLesson: 58, artClass: 52, digitalLiteracy: 55 },
+  TW: { cleaning: 350, garden: 310, repair: 490, personalCare: 420, companion: 310, transport: 390, itSupport: 400, musicLesson: 480, artClass: 420, digitalLiteracy: 450 },
+  SG: { cleaning: 45, garden: 40, repair: 63, personalCare: 54, companion: 40, transport: 50, itSupport: 48, musicLesson: 60, artClass: 55, digitalLiteracy: 58 },
+  HK: { cleaning: 150, garden: 130, repair: 210, personalCare: 180, companion: 130, transport: 170, itSupport: 160, musicLesson: 200, artClass: 180, digitalLiteracy: 190 },
+  MY: { cleaning: 63, garden: 55, repair: 88, personalCare: 75, companion: 55, transport: 70, itSupport: 60, musicLesson: 80, artClass: 70, digitalLiteracy: 75 },
 };
 
 function priceFromHourly(country: CountryCode, baseHr: number, locale: string) {
@@ -463,6 +453,29 @@ export default async function CustomerHomePage({
             <EmptyState title={t("noRecent").replace(/^· /, "")} />
           </div>
         ) : null}
+
+        {/* ── 和润心语者 (Aged Mental Health) — CN platform only ── */}
+        {country === "CN" && (
+          <section className="mx-5 mt-5 mb-3">
+            <Link
+              href={`/${locale}/xinyuzhe`}
+              className="flex items-start gap-4 rounded-2xl bg-gradient-to-r from-rose-50 to-amber-50 border border-rose-200 p-5 shadow-sm active:scale-[0.98] transition-transform"
+            >
+              <span className="text-[40px] shrink-0">🌸</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-elder-body font-bold text-gray-900">和润心语者</h3>
+                  <span className="text-xs bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full font-medium">老年心理健康</span>
+                </div>
+                <p className="text-[15px] text-gray-600 leading-relaxed">
+                  专属情感陊伴 · 数字生命服务 · 心理健康支持
+                </p>
+                <p className="text-[14px] text-rose-600 font-semibold mt-1.5">了解更多 →</p>
+              </div>
+            </Link>
+          </section>
+        )}
+
       </main>
       {showFaithContent && <ScriptureFooter />}
     </>
