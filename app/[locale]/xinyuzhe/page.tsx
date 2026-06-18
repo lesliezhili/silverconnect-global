@@ -1,4 +1,3 @@
-\
 'use client'
 
 import Link from 'next/link'
@@ -7,27 +6,27 @@ import { useState } from 'react'
 
 const PKGS = [
   {
-    icon: '\u{1F4AC}',
-    name: 'AI \u5fc3\u8bed\u964a\u4f34',
-    price: '\u00a5299/\u6708',
-    desc: '\u6bcf\u65e5\u8bed\u97f3\u964a\u4f34\u3001\u60c5\u7eea\u652f\u6301\u4e0e\u8bb0\u5fc6\u6fc0\u6d3b\uff0c\u7531 AI \u4e0e\u8ba4\u8bc1\u5fc3\u8bed\u8005\u5171\u540c\u63d0\u4f9b\u3002',
-    badge: '\u6700\u53d7\u6b22\u8fce',
+    icon: '💬',
+    name: 'AI 心语陊伴',
+    price: '¥299/月',
+    desc: '每日语音陊伴、情绪支持与记忆激活，由 AI 与认证心语者共同提供。',
+    badge: '最受欢迎',
     bcls: 'bg-rose-100 text-rose-700',
   },
   {
-    icon: '\u{1F4D6}',
-    name: '\u6570\u5b57\u4f20\u8bb0',
-    price: '\u8d77\u4ef7 \u00a530,000',
-    desc: '\u4e13\u4e1a\u56e2\u961f\u91c7\u96c6\u5e76\u5236\u4f5c\u60a8\u6216\u5bb6\u4eba\u7684\u4eba\u751f\u6545\u4e8b\u6570\u5b57\u6863\u6848\u3002',
-    badge: '\u5b9a\u5236\u670d\u52a1',
+    icon: '📖',
+    name: '数字传记',
+    price: '起价 ¥30,000',
+    desc: '专业团队采集并制作您或家人的人生故事数字档案。',
+    badge: '定制服务',
     bcls: 'bg-amber-100 text-amber-700',
   },
   {
-    icon: '\u{1F3E5}',
-    name: '\u60c5\u611f\u8bc4\u4f30\u548c\u8bfe',
-    price: '\u9996\u6b21\u514d\u8d39',
-    desc: '\u7531\u6301\u8bc1\u5fc3\u8bed\u8005\u8fdb\u884c\u9996\u6b21\u60c5\u611f\u5065\u5eb7\u8bc4\u4f30\uff0c\u5236\u5b9a\u4e2a\u6027\u5316\u964a\u4f34\u65b9\u6848\u3002',
-    badge: '\u65b0\u7528\u6237\u4e13\u4eab',
+    icon: '🏥',
+    name: '情感评估和课',
+    price: '首次免费',
+    desc: '由持证心语者进行首次情感健康评估，制定个性化陊伴方案。',
+    badge: '新用户专享',
     bcls: 'bg-green-100 text-green-700',
   },
 ]
@@ -46,19 +45,19 @@ export default function XinyuzhePage() {
           href={`/${locale}/home`}
           className="text-sm text-gray-500 hover:text-rose-600 transition-colors"
         >
-          \u2190 \u8fd4\u56de\u9996\u9875
+          ← 返回首页
         </Link>
         <span className="font-semibold text-gray-900 text-sm flex-1 text-center">
-          \u548c\u6da6\u5fc3\u8bed\u8005
+          和润心语者
         </span>
-        <span className="text-sm opacity-0">\u2190</span>
+        <span className="text-sm opacity-0">←</span>
       </div>
 
       {/* Hero */}
       <section className="px-4 py-6 text-center">
-        <div className="text-5xl mb-2">\u{1F338}</div>
-        <h1 className="text-xl font-bold text-gray-900 mb-1">\u548c\u6da6\u5fc3\u8bed\u8005</h1>
-        <p className="text-rose-600 text-sm font-medium">\u60c5\u611f\u667a\u80fd\u4e0e\u6570\u5b57\u751f\u547d\u670d\u52a1</p>
+        <div className="text-5xl mb-2">🌸</div>
+        <h1 className="text-xl font-bold text-gray-900 mb-1">和润心语者</h1>
+        <p className="text-rose-600 text-sm font-medium">情感智能与数字生命服务</p>
       </section>
 
       {/* Role toggle */}
@@ -70,7 +69,7 @@ export default function XinyuzhePage() {
               tab === 'customer' ? 'bg-white shadow-sm text-rose-600' : 'text-gray-500'
             }`}
           >
-            \u{1F6CE} \u9884\u7ea6\u670d\u52a1
+            🛎 预约服务
           </button>
           <button
             onClick={() => setTab('provider')}
@@ -78,7 +77,7 @@ export default function XinyuzhePage() {
               tab === 'provider' ? 'bg-white shadow-sm text-rose-600' : 'text-gray-500'
             }`}
           >
-            \u{1F33F} \u52a0\u5165\u56e2\u961f
+            🌿 加入团队
           </button>
         </div>
       </div>
@@ -105,49 +104,49 @@ export default function XinyuzhePage() {
                   href={`/${locale}/bookings/new?service=xinyuzhe`}
                   className="bg-rose-500 text-white text-xs px-4 py-2 rounded-full font-medium hover:bg-rose-600 active:scale-95 transition-all"
                 >
-                  \u7acb\u5373\u9884\u7ea6
+                  立即预约
                 </Link>
               </div>
             </div>
           ))}
           <p className="text-center text-xs text-gray-400 py-4">
-            \u548c\u8be2\u8bf7\u53d1\u90ae\u4ef6\u81f3 hello@silverconnect.app
+            和询请发邮件至 hello@silverconnect.app
           </p>
         </section>
       ) : (
         <section className="px-4 space-y-4">
           <div className="bg-rose-50 border border-rose-200 rounded-2xl p-5">
-            <h2 className="font-bold text-rose-800 mb-2 text-sm">\u{1F33F} \u6210\u4e3a\u5fc3\u8bed\u8005</h2>
+            <h2 className="font-bold text-rose-800 mb-2 text-sm">🌿 成为心语者</h2>
             <p className="text-xs text-gray-700 mb-4 leading-relaxed">
-              \u8bf8\u9080\u533b\u5b66\u3001\u62a4\u7406\u3001\u5fc3\u7406\u4e0e\u793e\u5de5\u5b66\u79d1\u5728\u6821\u751f\u53ca\u6bd5\u4e1a\u751f\uff0c
-              \u4e3a\u72ec\u5c45\u8001\u4eba\u4e0e\u6162\u75c5\u60a3\u8005\u63d0\u4f9b\u4e13\u4e1a\u60c5\u611f\u964a\u4f34\u670d\u52a1\u3002
+              诸邀医学、护理、心理与社工学科在校生及毕业生，
+              为独居老人与慢病患者提供专业情感陊伴服务。
             </p>
             <ul className="text-xs text-gray-600 space-y-2 mb-5">
-              <li>\u2705 \u5fc3\u8bed\u8005\u4e13\u4e1a\u8ba4\u8bc1\u8bc1\u4e66</li>
-              <li>\u2705 800 \uff5e 1,500 \u5143/\u671f\u5b9e\u4e60\u8865\u8d34</li>
-              <li>\u2705 \u5408\u4f5c\u4e09\u7532\u533b\u9662\u5b9e\u4e60\u673a\u4f1a</li>
-              <li>\u2705 5 \u5927\u6838\u5fc3\u6a21\u5757\uff0819 \u8bfe\u65f6\uff09</li>
+              <li>✅ 心语者专业认证证书</li>
+              <li>✅ 800 ～ 1,500 元/期实习补贴</li>
+              <li>✅ 合作三甲医院实习机会</li>
+              <li>✅ 5 大核心模块（19 课时）</li>
             </ul>
             <Link
               href={`/${locale}/xinyuzhe/register`}
               className="block bg-rose-600 text-white text-center py-3 rounded-xl text-sm font-semibold hover:bg-rose-700 transition-colors mb-3"
             >
-              \u{1F4DD} \u7533\u8bf7\u6ce8\u518c\u5fc3\u8bed\u8005
+              📝 申请注册心语者
             </Link>
             <Link
               href={`/${locale}/xinyuzhe/training`}
               className="block border border-rose-300 text-rose-600 text-center py-3 rounded-xl text-sm font-semibold hover:bg-rose-50 transition-colors"
             >
-              \u{1F393} \u67e5\u770b\u57f9\u8bad\u8bfe\u7a0b\uff0819 \u5c0f\u65f6\uff09
+              🎓 查看培训课程（19 小时）
             </Link>
           </div>
 
           <div className="border border-gray-200 rounded-2xl p-4">
-            <p className="text-xs text-gray-500 font-medium mb-2 px-1">\u5df2\u662f\u5fc3\u8bed\u8005\uff1f</p>
+            <p className="text-xs text-gray-500 font-medium mb-2 px-1">已是心语者？</p>
             {[
-              { href: `/${locale}/xinyuzhe/hub`,            label: '\u670d\u52a1\u8005\u7ba1\u7406\u4e2d\u5fc3' },
-              { href: `/${locale}/xinyuzhe/implementation`, label: '\u670d\u52a1\u5b9e\u65bd\u534f\u8bae' },
-              { href: `/${locale}/xinyuzhe/feedback`,       label: '\u63d0\u4ea4\u670d\u52a1\u53cd\u9988' },
+              { href: `/${locale}/xinyuzhe/hub`,            label: '服务者管理中心' },
+              { href: `/${locale}/xinyuzhe/implementation`, label: '服务实施协议' },
+              { href: `/${locale}/xinyuzhe/feedback`,       label: '提交服务反馈' },
             ].map((item, i) => (
               <div key={item.href}>
                 {i > 0 && <div className="border-t border-gray-100 my-0.5" />}
@@ -156,7 +155,7 @@ export default function XinyuzhePage() {
                   className="flex items-center justify-between py-2.5 px-1 text-gray-700 hover:text-rose-600 transition-colors"
                 >
                   <span className="text-sm">{item.label}</span>
-                  <span className="text-gray-300 text-xs">\u2192</span>
+                  <span className="text-gray-300 text-xs">→</span>
                 </Link>
               </div>
             ))}
