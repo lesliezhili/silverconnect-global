@@ -458,7 +458,7 @@ export default async function CustomerHomePage({
         {country === "CN" && (
           <section className="mx-5 mt-5 mb-3">
             <Link
-              href="/xinyuzhe"
+              href="/xinyuzhe/about"
               className="flex items-start gap-4 rounded-2xl bg-gradient-to-r from-rose-50 to-amber-50 border border-rose-200 p-5 shadow-sm active:scale-[0.98] transition-transform"
             >
               <span className="text-[40px] shrink-0">🌸</span>
