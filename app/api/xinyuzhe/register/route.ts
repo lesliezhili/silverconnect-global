@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { xinyuzheProviders } from '@/lib/db/schema/xinyuzhe'
-import { getCurrentUser } from '@/lib/auth/session'
+import { getCurrentUser } from '@/lib/auth/server'
 
 export async function POST(req: Request) {
   try {
