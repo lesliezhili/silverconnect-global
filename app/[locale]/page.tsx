@@ -228,7 +228,25 @@ export default async function LandingPage({
           </a>
         )}
 
-        {/* Fair Pricing — Visual comparison cards */}
+        {/* 和润心语者 — aged emotional companion, Chinese locale only */}
+        {zh && (
+          <a
+            href={`/${locale}/xinyuzhe`}
+            className="mb-10 flex items-start gap-4 rounded-2xl bg-gradient-to-r from-rose-50 to-amber-50 border-2 border-rose-200 p-5 shadow-sm active:scale-[0.98] transition-transform"
+          >
+            <span className="text-[42px] shrink-0">🌸</span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-[20px] font-bold text-gray-900">和润心语者</h3>
+                <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[12px] font-medium text-rose-700">老年心理健康</span>
+              </div>
+              <p className="text-[15px] text-gray-600 leading-relaxed">专属情感陞伴 · 数字生命传记 · 心理健康支持</p>
+              <p className="mt-1.5 text-[14px] font-semibold text-rose-600">立即预约 →</p>
+            </div>
+          </a>
+        )}
+
+                {/* Fair Pricing — Visual comparison cards */}
         <section className="mb-10">
           <h2 className="mb-4 text-[24px] font-bold text-gray-900">{t("pricingTitle")}</h2>
           <div className="grid grid-cols-2 gap-3">
