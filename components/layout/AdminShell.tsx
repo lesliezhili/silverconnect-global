@@ -16,6 +16,7 @@ import {
   Bot,
   Settings,
   Flag,
+  Heart,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
@@ -37,6 +38,7 @@ const NAV_SECONDARY = [
   { key: "navPayments", href: "/admin/payments", Icon: CreditCard, exact: false },
   { key: "navAi", href: "/admin/ai/conversations", Icon: Bot, exact: false },
   { key: "navSettings", href: "/admin/settings", Icon: Settings, exact: false },
+  { key: "navXinyuzhe", href: "/admin/xinyuzhe", Icon: Heart, exact: false },
 ] as const;
 
 export function AdminShell({

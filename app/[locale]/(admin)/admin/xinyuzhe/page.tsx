@@ -30,7 +30,7 @@ export default async function AdminXinyuzhePage({
   const rejected  = providers.filter(p => p.status === 'rejected' || p.status === 'suspended')
 
   return (
-    <AdminShell admin={admin}>
+    <AdminShell email={admin.email ?? ''}>
       <div className="p-6 max-w-5xl mx-auto">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">

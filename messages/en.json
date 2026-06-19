@@ -969,7 +969,8 @@
     "navAi": "AI",
     "navSettings": "Settings",
     "navReports": "Reports",
-    "alertSafetyOpen": "Open safety events need review"
+    "alertSafetyOpen": "Open safety events need review",
+    "navXinyuzhe": "心语者"
   },
   "family": {
     "title": "Family co-management",

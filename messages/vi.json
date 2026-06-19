@@ -1253,7 +1253,8 @@
     "disableMaintenance": "Tắt chế độ bảo trì",
     "featureFlags": "Cờ tính năng",
     "enable": "Bật",
-    "disable": "Tắt"
+    "disable": "Tắt",
+    "navXinyuzhe": "Xinyuzhe"
   },
   "aCustomers": {
     "title": "Khách hàng",
