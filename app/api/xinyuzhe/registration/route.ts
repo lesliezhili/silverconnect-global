@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { db } from '@/lib/db'
+import { xinyuzheProviders } from '@/lib/db/schema/xinyuzhe'
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,7 +16,6 @@ export async function POST(req: NextRequest) {
         )
       }
     }
-
     if (!body.agreeTerms || !body.agreeBackground) {
       return NextResponse.json(
         { error: '请同意服务协议和背景调查' },
@@ -22,25 +23,31 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // In production: insert into xinyuzhe_providers table
-    // For now: log and return success (migration Cell 23b will create the table)
-    console.log('[XinyuzheRegistration]', {
-      name: body.name,
-      phone: body.phone,
-      email: body.email,
-      city: body.city,
-      education: body.education,
-      serviceTypes: body.serviceTypes,
-      submittedAt: new Date().toISOString(),
-    })
-
-    // TODO: send confirmation email via Resend/Gmail
-    // TODO: notify admin via WeChat Work webhook
+    const [provider] = await db
+      .insert(xinyuzheProviders)
+      .values({
+        fullName:        body.name,
+        phone:           body.phone,
+        email:           body.email,
+        city:            body.city        || null,
+        education:       body.education   || null,
+        major:           body.major       || null,
+        university:      body.university  || null,
+        licenseType:     body.licenseType || null,
+        licenseNumber:   body.licenseNumber || null,
+        yearsExperience: Number(body.yearsExperience) || 0,
+        serviceTypes:    Array.isArray(body.serviceTypes) ? body.serviceTypes : [],
+        bio:             body.bio         || null,
+        agreeTerms:      Boolean(body.agreeTerms),
+        agreeBackground: Boolean(body.agreeBackground),
+        status:          'pending',
+      })
+      .returning()
 
     return NextResponse.json({
       success: true,
-      message: '申请已收到，我们将在 3～5 工作日内审核并通知您。',
-      refId: `XYZ-${Date.now()}`,
+      message: '申请已收到，我们将在3～5工作日内审核并通知您。',
+      refId:   provider.id,
     })
   } catch (err) {
     console.error('[XinyuzheRegistration] error:', err)

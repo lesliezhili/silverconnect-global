@@ -1,57 +1,62 @@
 import { pgTable, text, timestamp, integer, boolean } from 'drizzle-orm/pg-core'
 import { sql } from 'drizzle-orm'
 
-// ── 和润心语者 Database Schema ────────────────────────────────────────────────
+// 和润心语者 Database Schema — aligned with Cell 23b Supabase migration
 
-/** Registered 和润心语者 service providers (university students + trained volunteers) */
+/** Registered 心语者 service providers */
 export const xinyuzheProviders = pgTable('xinyuzhe_providers', {
-  id:                     text('id').primaryKey().default(sql`gen_random_uuid()::text`),
-  userId:                 text('user_id').notNull(),
-  fullName:               text('full_name').notNull(),
-  phone:                  text('phone').notNull(),
-  email:                  text('email').notNull(),
-  university:             text('university').notNull(),
-  department:             text('department').notNull(),
-  yearOfStudy:            integer('year_of_study'),
-  specializations:        text('specializations').array(), // ['aiCompanionship','digitalBiography',...]
-  status:                 text('status').default('pending'), // pending|active|suspended|graduated
-  backgroundCheckConsent: boolean('background_check_consent').default(false),
-  notes:                  text('notes'),
-  createdAt:              timestamp('created_at', { withTimezone: true }).defaultNow(),
-  updatedAt:              timestamp('updated_at', { withTimezone: true }).defaultNow(),
+  id:               text('id').primaryKey().default(sql`gen_random_uuid()::text`),
+  userId:           text('user_id'),                              // nullable — public registration, no account required
+  fullName:         text('full_name').notNull(),
+  phone:            text('phone').notNull(),
+  email:            text('email').notNull(),
+  city:             text('city'),
+  education:        text('education'),
+  major:            text('major'),
+  university:       text('university'),
+  licenseType:      text('license_type'),
+  licenseNumber:    text('license_number'),
+  yearsExperience:  integer('years_experience').default(0),
+  serviceTypes:     text('service_types').array(),
+  bio:              text('bio'),
+  status:           text('status').default('pending'),             // pending|approved|suspended
+  agreeTerms:       boolean('agree_terms').default(false),
+  agreeBackground:  boolean('agree_background').default(false),
+  createdAt:        timestamp('created_at', { withTimezone: true }).defaultNow(),
+  updatedAt:        timestamp('updated_at', { withTimezone: true }).defaultNow(),
 })
 
-/** Training progress per provider per module unit (m1..m5, unitIndex 0-based) */
+/** Training progress per provider per module */
 export const xinyuzheTrainingProgress = pgTable('xinyuzhe_training_progress', {
   id:          text('id').primaryKey().default(sql`gen_random_uuid()::text`),
   providerId:  text('provider_id').notNull(),
   moduleId:    text('module_id').notNull(),
-  unitIndex:   integer('unit_index').notNull(),
-  completedAt: timestamp('completed_at', { withTimezone: true }),
-  score:       integer('score'), // 0–100 for assessed units
+  lessonId:    text('lesson_id').notNull(),
+  completedAt: timestamp('completed_at', { withTimezone: true }).defaultNow(),
+  score:       integer('score'),
 })
 
-/** Service sessions delivered by 和润心语者 providers */
+/** Session logs */
 export const xinyuzheSessions = pgTable('xinyuzhe_sessions', {
   id:              text('id').primaryKey().default(sql`gen_random_uuid()::text`),
   providerId:      text('provider_id').notNull(),
-  clientName:      text('client_name').notNull(),
-  serviceType:     text('service_type').notNull(), // aiCompanionship|digitalBiography|...
+  clientAlias:     text('client_alias').notNull(),
+  serviceType:     text('service_type').notNull(),
   sessionDate:     timestamp('session_date', { withTimezone: true }).notNull(),
   durationMinutes: integer('duration_minutes'),
-  status:          text('status').default('scheduled'), // scheduled|completed|cancelled
-  notes:           text('notes'),
+  status:          text('status').default('scheduled'),
+  sessionNotes:    text('session_notes'),
   createdAt:       timestamp('created_at', { withTimezone: true }).defaultNow(),
 })
 
-/** Session-level feedback (from client + provider self-assessment) */
+/** Session feedback */
 export const xinyuzheFeedback = pgTable('xinyuzhe_feedback', {
   id:                  text('id').primaryKey().default(sql`gen_random_uuid()::text`),
   sessionId:           text('session_id'),
   providerId:          text('provider_id').notNull(),
-  clientSatisfaction:  integer('client_satisfaction'),   // 1–5
-  emotionalConnection: integer('emotional_connection'),  // 1–5
-  professionalism:     integer('professionalism'),       // 1–5
+  clientSatisfaction:  integer('client_satisfaction'),
+  emotionalConnection: integer('emotional_connection'),
+  professionalism:     integer('professionalism'),
   wouldRecommend:      boolean('would_recommend'),
   clientComment:       text('client_comment'),
   providerNotes:       text('provider_notes'),
