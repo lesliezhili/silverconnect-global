@@ -121,13 +121,16 @@ function BookServiceContent() {
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ bookingId?: string; total?: number } | null>(null);
   const [platformTier, setPlatformTier] = useState<"standard" | "premium" | "free">("standard");
-  const [country, setCountry] = useState<"AU" | "CN">(() => locale.startsWith("zh") ? "CN" : "AU");
+  const [country, setCountry] = useState<"AU" | "CN">("AU");
   const [region, setRegion] = useState("");
   const AU_REGIONS = ["NSW", "VIC", "QLD", "WA", "SA", "TAS", "NT", "ACT"];
   const CN_REGIONS = ["北京 Beijing", "上海 Shanghai", "广州 Guangzhou", "深圳 Shenzhen", "成都 Chengdu", "杭州 Hangzhou", "武汉 Wuhan", "西安 Xi'an", "南京 Nanjing", "重庆 Chongqing", "天津 Tianjin", "苏州 Suzhou", "青岛 Qingdao", "长沙 Changsha", "郑州 Zhengzhou"];
 
   // Auto-select China when viewing in Simplified Chinese
-  // locale->country handled in useState initializer above
+  // Sync country after SSR hydration (useParams=null inside Suspense during SSR)
+    useEffect(() => {
+      if (locale === "zh") { setCountry("CN"); setRegion(""); }
+    }, [locale]);
   const [showTierInfo, setShowTierInfo] = useState(false);
 
   const marketRate = subtype ? (SMART_RATE[subtype] || HOURLY_RATE) : (country === "CN" ? (CN_CATEGORY_RATE[category] || 120) : (CATEGORY_RATE[category] || HOURLY_RATE));

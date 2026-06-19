@@ -42,12 +42,19 @@ export default function XinyuzheTrainingPage() {
     setMounted(true)
   }, [])
 
-  function toggle(id: string) {
+  function toggle(id: string, moduleId: string) {
     setDone(prev => {
       const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
+      const adding = !next.has(id)
+      if (adding) next.add(id); else next.delete(id)
       try { localStorage.setItem(LS_KEY, JSON.stringify([...next])) } catch {}
+      // Sync to DB (fire-and-forget; fails gracefully if not authenticated)
+      if (adding) {
+        fetch('/api/xinyuzhe/training/progress', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lessonId: id, moduleId }),
+        }).catch(() => {})
+      }
       return next
     })
   }
