@@ -157,12 +157,17 @@ export default function XinyuzheTrainingPage() {
           <div className="text-3xl mb-2">\ud83c\udfc6</div>
           <h3 className="font-bold text-lg mb-2">\u548c\u6da6\u5fc3\u8bed\u8005\u8ba4\u8bc1\u8bc1\u4e66</h3>
           <p className="text-sm opacity-90 mb-4">5\u6a21\u5757 {TOTAL_HOURS}\u8bfe\u65f6\u5168\u90e8\u5b8c\u6210\u540e\uff0c\u7533\u8bf7\u5b98\u65b9\u8ba4\u8bc1\u8bc1\u4e66</p>
-          <Link
-            href={`/${locale}/xinyuzhe/registration`}
-            className="inline-block bg-white text-rose-600 px-6 py-2.5 rounded-xl font-semibold hover:bg-rose-50 transition-colors"
-          >
-            \u524d\u5f80\u6ce8\u518c\u7533\u8bf7
-          </Link>
+            {pct === 100 ? (
+              <Link href={`/${locale}/xinyuzhe/registration`}
+                className="inline-block bg-white text-rose-600 px-6 py-2.5 rounded-xl font-semibold hover:bg-rose-50 transition-colors"
+              >
+                前往注册申请 →
+              </Link>
+            ) : (
+              <span className="inline-block bg-white/30 text-white/70 px-6 py-2.5 rounded-xl font-semibold cursor-not-allowed">
+                还需完成 {TOTAL_LESSONS - (mounted ? completedCount : 0)} 课时
+              </span>
+            )}
         </div>
 
         {/* \u8fd4\u56de */}
