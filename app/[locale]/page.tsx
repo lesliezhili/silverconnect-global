@@ -16,7 +16,7 @@ export default async function LandingPage({
   const { locale } = await params;
   setRequestLocale(locale);
   const me = await getCurrentUser();
-  const country = await getCountry();
+  const country = await getCountry(locale);
   if (me) { redirect({ href: "/home", locale }); }
   const zh = locale === "zh" || locale === "zh_tw";
   const isCN = country === "CN";

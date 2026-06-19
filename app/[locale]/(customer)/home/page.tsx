@@ -96,7 +96,7 @@ export default async function CustomerHomePage({
   const t = await getTranslations("home");
   const tCat = await getTranslations("categories");
   const tCommon = await getTranslations("common");
-  const country = await getCountry();
+  const country = await getCountry(locale);
   const me = await getCurrentUser();
   if (!me) redirect({ href: "/auth/login", locale });
   const greetingName = me?.name ?? me?.email?.split("@")[0] ?? tCommon("guest");
