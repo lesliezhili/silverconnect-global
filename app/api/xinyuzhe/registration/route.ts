@@ -44,6 +44,23 @@ export async function POST(req: NextRequest) {
       })
       .returning()
 
+    // Fire-and-forget email notifications (don't block the response)
+    const BASE = process.env.NEXT_PUBLIC_APP_URL || 'https://silverconnect-global.vercel.app'
+    const ADMIN = process.env.ADMIN_NOTIFICATION_EMAIL || 'lesliezhi.li@gmail.com'
+    const emailPayload = (to: string, type: string) => ({
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to, type,
+        data: {
+          name: body.name, phone: body.phone, email: body.email,
+          city: body.city, education: body.education,
+          serviceTypes: body.serviceTypes, refId: provider.id,
+        },
+      }),
+    })
+    fetch(`${BASE}/api/notifications/email`, emailPayload(ADMIN, 'xinyuzhe_provider_registered')).catch(() => {})
+    fetch(`${BASE}/api/notifications/email`, emailPayload(body.email, 'xinyuzhe_registration_confirmed')).catch(() => {})
+
     return NextResponse.json({
       success: true,
       message: '申请已收到，我们将在3～5工作日内审核并通知您。',
