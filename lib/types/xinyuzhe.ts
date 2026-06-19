@@ -26,13 +26,13 @@ export interface TrainingModule {
 
 export const TRAINING_MODULES: TrainingModule[] = [
   {
-    id: 'M1', title: '情感陊伴基础',
-    description: '和润心语者的核心理念、职业伦理与基本陊伴框架。',
+    id: 'M1', title: '情感陪伴基础',
+    description: '和润心语者的核心理念、职业伦理与基本陪伴框架。',
     totalHours: 4, badge: '🌱', color: 'green',
     lessons: [
       { id: 'M1-1', title: '和润心语者的使命与价值观', duration: '45分钟', type: 'video' },
       { id: 'M1-2', title: '职业伦理与服务边界', duration: '60分钟', type: 'reading' },
-      { id: 'M1-3', title: '情感陊伴 vs. 心理治疗：区别与联系', duration: '45分钟', type: 'video' },
+      { id: 'M1-3', title: '情感陪伴 vs. 心理治疗：区别与联系', duration: '45分钟', type: 'video' },
       { id: 'M1-4', title: '基础理念评估测试', duration: '30分钟', type: 'quiz' },
     ],
   },
@@ -57,7 +57,7 @@ export const TRAINING_MODULES: TrainingModule[] = [
       { id: 'M3-2', title: '非暴力沟通（NVC）基础', duration: '60分钟', type: 'reading' },
       { id: 'M3-3', title: '情感反映与共情技术', duration: '60分钟', type: 'video' },
       { id: 'M3-4', title: '文化敏感性与多样性', duration: '45分钟', type: 'reading' },
-      { id: 'M3-5', title: '模拟陊伴会话角色演练', duration: '90分钟', type: 'practice' },
+      { id: 'M3-5', title: '模拟陪伴会话角色演练', duration: '90分钟', type: 'practice' },
       { id: 'M3-6', title: '沟通技巧综合评估测试', duration: '45分钟', type: 'quiz' },
     ],
   },
@@ -88,12 +88,12 @@ export const TOTAL_HOURS = TRAINING_MODULES.reduce((s, m) => s + m.totalHours, 0
 export const TOTAL_LESSONS = TRAINING_MODULES.reduce((s, m) => s + m.lessons.length, 0)
 
 export const SERVICE_TYPES = [
-  { id: 'ai_companion',       label: 'AI心语陊伴',  icon: '🤖', desc: '微信/电话情感陊伴服务' },
+  { id: 'ai_companion',       label: 'AI心语陪伴',  icon: '🤖', desc: '微信/电话情感陪伴服务' },
   { id: 'digital_biography',  label: '家庭数字传记', icon: '📖', desc: '人生故事整理与影像制作' },
   { id: 'grief_support',      label: '哀伤辅导',  icon: '🕊️', desc: '失亲失能后的心理支持' },
-  { id: 'dementia_companion', label: '认知症陊伴', icon: '🌸', desc: '轻中度认知退化长者陊伴' },
+  { id: 'dementia_companion', label: '认知症陪伴', icon: '🌸', desc: '轻中度认知退化长者陪伴' },
   { id: 'insurance_support',  label: '保险增值服务', icon: '🛡️', desc: '长者关怀与家属情感支持' },
-  { id: 'medical_liaison',    label: '医管协助',  icon: '🏥', desc: '医患沟通与就医陊伴' },
+  { id: 'medical_liaison',    label: '医管协助',  icon: '🏥', desc: '医患沟通与就医陪伴' },
 ]
 
 export const CITIES = [
@@ -121,7 +121,7 @@ export const IMPLEMENTATION_PROTOCOLS = [
     title: '情感支持会话框架',
     icon: '🗣️',
     color: 'green',
-    description: '每次陊伴会话的标准结构与边界管理。',
+    description: '每次陪伴会话的标准结构与边界管理。',
     steps: [
       '开场暖场：问候近况、天气、身体',
       '跟进上次会话内容（连续性建立信任）',
@@ -140,7 +140,7 @@ export const IMPLEMENTATION_PROTOCOLS = [
     description: '识别高风险信号并立即启动干预的步骤。',
     steps: [
       '保持关心冷静，使用SAFER评估框架',
-      '不挂断电话/微信，持续陊伴',
+      '不挂断电话/微信，持续陪伴',
       '评估立即风险等级（低/中/高）',
       '高风险：立即联系家属 + 拨打120',
       '中风险：升级至督导，24h内跟进',

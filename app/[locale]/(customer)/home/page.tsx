@@ -1,5 +1,5 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, and, desc, sql, lte } from "drizzle-orm";
 import { Header } from "@/components/layout/Header";
 import { Link, redirect } from "@/i18n/navigation";
 import { S1TeaTime } from "@/components/illustrations";
@@ -31,7 +31,10 @@ type CatKey =
   | "personalCare"
   | "companion"
   | "transport"
-  | "itSupport";
+  | "itSupport"
+  | "musicLesson"
+  | "artClass"
+  | "digitalLiteracy";
 
 const CAT_ICON_BG: Record<string, { bg: string; fg: string; emoji: string }> = {
   cleaning:        { bg: "#E8F0FE", fg: "#1F6FEB", emoji: "🧹" },
@@ -129,7 +132,7 @@ export default async function CustomerHomePage({
         sortOrder: serviceCategories.sortOrder,
       })
       .from(serviceCategories)
-      .where(eq(serviceCategories.enabled, true))
+      .where(and(eq(serviceCategories.enabled, true), lte(serviceCategories.sortOrder, 100)))
       .orderBy(serviceCategories.sortOrder);
 
     // Cheapest hourly rate per category for the user's country.
@@ -468,7 +471,7 @@ export default async function CustomerHomePage({
                   <span className="text-xs bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full font-medium">老年心理健康</span>
                 </div>
                 <p className="text-[15px] text-gray-600 leading-relaxed">
-                  专属情感陊伴 · 数字生命服务 · 心理健康支持
+                  专属情感陪伴 · 数字生命服务 · 心理健康支持
                 </p>
                 <p className="text-[14px] text-rose-600 font-semibold mt-1.5">了解更多 →</p>
               </div>

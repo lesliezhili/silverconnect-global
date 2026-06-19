@@ -50,7 +50,7 @@ export default async function XinyuzheImplementationPage({
           <p className="text-rose-800 text-sm font-medium">💗 和润心语者的使命：</p>
           <p className="text-rose-700 text-sm mt-1 leading-relaxed">
             我们不是其他任何人的替代品——我们是长者信任的那个声音。
-            我们不提供诊断，不给建议，只是指引和陊伴。
+            我们不提供诊断，不给建议，只是指引和陪伴。
           </p>
         </div>
 

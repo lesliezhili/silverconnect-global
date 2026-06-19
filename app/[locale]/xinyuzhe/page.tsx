@@ -7,9 +7,9 @@ import { useState } from 'react'
 const PKGS = [
   {
     icon: '💬',
-    name: 'AI 心语陊伴',
+    name: 'AI 心语陪伴',
     price: '¥299/月',
-    desc: '每日语音陊伴、情绪支持与记忆激活，由 AI 与认证心语者共同提供。',
+    desc: '每日语音陪伴、情绪支持与记忆激活，由 AI 与认证心语者共同提供。',
     badge: '最受欢迎',
     bcls: 'bg-rose-100 text-rose-700',
   },
@@ -25,7 +25,7 @@ const PKGS = [
     icon: '🏥',
     name: '情感评估和课',
     price: '首次免费',
-    desc: '由持证心语者进行首次情感健康评估，制定个性化陊伴方案。',
+    desc: '由持证心语者进行首次情感健康评估，制定个性化陪伴方案。',
     badge: '新用户专享',
     bcls: 'bg-green-100 text-green-700',
   },
@@ -119,7 +119,7 @@ export default function XinyuzhePage() {
             <h2 className="font-bold text-rose-800 mb-2 text-sm">🌿 成为心语者</h2>
             <p className="text-xs text-gray-700 mb-4 leading-relaxed">
               诸邀医学、护理、心理与社工学科在校生及毕业生，
-              为独居老人与慢病患者提供专业情感陊伴服务。
+              为独居老人与慢病患者提供专业情感陪伴服务。
             </p>
             <ul className="text-xs text-gray-600 space-y-2 mb-5">
               <li>✅ 心语者专业认证证书</li>
