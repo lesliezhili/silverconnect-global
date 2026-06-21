@@ -30,6 +30,34 @@ export async function POST(req: NextRequest) {
       subject = "Payment: " + (d?.amount || ""); body = html("Released!", "<p>Payment of " + (d?.amount || "") + " on the way.</p>", BASE + "/en/provider/earnings", "Earnings"); break;
     case "reminder":
       subject = "Service Tomorrow"; body = html("Reminder", "<p>Your service is scheduled for tomorrow.</p>", BASE + "/en/bookings/" + (d?.bookingId || ""), "View"); break;
+      case 'xinyuzhe_provider_registered':
+        subject = '新心语者申请 — ' + (d?.name || '未知');
+        body = html(
+          '新心语者申请',
+          '<p>姓名： <b>' + (d?.name||'') + '</b></p>' + '<p>手机： ' + (d?.phone||'') + '</p>' + '<p>Email: ' + (d?.email||'') + '</p>' + '<p>城市： ' + (d?.city||'—') + '</p>' + '<p>服务类型： ' + (d?.serviceTypes?.join('，')||'—') + '</p>' + '<p>时间： ' + new Date().toLocaleString('zh-CN') + '</p>',
+          BASE + '/zh/admin/xinyuzhe', '审核申请'
+        ); break;
+      case 'xinyuzhe_registration_confirmed':
+        subject = '感谢您申请和润心语者';
+        body = html(
+          '申请已收到 🌸',
+          '<p>亲爱的 ' + (d?.name||'') + '，</p>' + '<p>感谢申请<b>和润心语者</b>认证，3～5工作日内审核并通知。</p>' + '<p>申请编号： <b>' + (d?.refId||'') + '</b></p>',
+          BASE + '/zh/xinyuzhe/training', '开始培训课程'
+        ); break;
+      case 'xinyuzhe_booking_admin':
+        subject = '新心语者预约 — ' + (d?.name || '未知');
+        body = html(
+          '新预约请求',
+          '<p>姓名： <b>' + (d?.name||'') + '</b></p>' + '<p>Email: ' + (d?.email||'') + '</p>' + '<p>手机： ' + (d?.phone||'—') + '</p>' + '<p>服务： ' + (d?.service||'xinyuzhe') + '</p>' + '<p>希望日期： ' + (d?.date||'未指定') + '</p>' + '<p>留言： ' + (d?.message||'—') + '</p>' + '<p>编号： <b>' + (d?.ref||'') + '</b></p>',
+          BASE + '/zh/admin/xinyuzhe', '查看预约'
+        ); break;
+      case 'xinyuzhe_booking_confirmed':
+        subject = '您的和润心语者预约已接收';
+        body = html(
+          '预约已接收 🌸',
+          '<p>亲爱的 ' + (d?.name||'') + '，</p>' + '<p>您的心灵陪伴服务预约已接收，我们将尽快为您安排合适的心语者。</p>' + '<p>预约编号： <b>' + (d?.ref||'') + '</b></p>' + '<p>希望服务日期： ' + (d?.date||'未指定') + '</p>',
+          BASE + '/zh/xinyuzhe/book', '修改预约'
+        ); break;
     default: return NextResponse.json({ error: "Unknown: " + type }, { status: 400 });
   }
 

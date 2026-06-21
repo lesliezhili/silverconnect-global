@@ -13,6 +13,7 @@ function BookingForm() {
 
   const [form, setForm] = useState({ name: '', email: '', phone: '', date: '', message: '' })
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
+  const [ref, setRef] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,7 +31,22 @@ function BookingForm() {
   }
 
   if (status === 'success') {
-    return (
+    if (ref) return (
+    <main className="min-h-screen bg-purple-50 flex items-center justify-center p-6">
+      <div className="bg-white rounded-2xl shadow-sm p-8 max-w-md w-full text-center">
+        <div className="text-5xl mb-4">🌸</div>
+        <h2 className="text-2xl font-bold text-purple-900 mb-2">预约已接收</h2>
+        <p className="text-gray-500 mb-4">我们将尽快为您安排合适的心语者并通知您。</p>
+        <div className="bg-purple-50 rounded-xl p-4 mb-6">
+          <p className="text-sm text-gray-500">预约编号</p>
+          <p className="text-xl font-bold text-purple-700">{ref}</p>
+        </div>
+        <p className="text-xs text-gray-400">确认邮件将发至您的邮笱。</p>
+      </div>
+    </main>
+  )
+
+  return (
       <main className="min-h-screen bg-white flex flex-col items-center justify-center px-4 text-center">
         <div className="text-6xl mb-4">🌸</div>
         <h1 className="text-xl font-bold text-gray-900 mb-2">预约申请已提交</h1>
