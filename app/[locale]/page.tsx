@@ -219,8 +219,7 @@ export default async function LandingPage({
         </section>
 
         {/* 基督徒互助平台 — teaser card linking to dedicated page */}
-        {zh && (
-          {faith === 'christian' && (
+        {zh && faith === 'christian' && (
             <a href={`/${locale}/christian`} className="mb-10 flex items-center gap-4 rounded-2xl border-2 border-amber-200 bg-amber-50 p-5 hover:bg-amber-100 transition-colors">
               <span className="text-3xl shrink-0">✝️</span>
               <div className="flex-1">
@@ -229,7 +228,6 @@ export default async function LandingPage({
               </div>
               <span className="text-amber-600 text-[20px] font-bold shrink-0">→</span>
             </a>
-          )}
         )}
 
         {/* 和润心语者 — aged emotional companion, Chinese locale only */}

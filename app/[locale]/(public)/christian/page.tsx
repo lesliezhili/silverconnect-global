@@ -1,96 +1,46 @@
-import { setRequestLocale } from "next-intl/server";
-import { landingT } from "@/lib/i18n/landing";
-import { Link } from "@/i18n/navigation";
-import { Header } from "@/components/layout/Header";
-import { getCountry } from "@/components/domain/countryCookie";
+'use client'
+import Link from 'next/link'
+import { useParams } from 'next/navigation'
 
-export const dynamic = "force-dynamic";
+const SERVICES = [
+  { icon: '📖', title: '免费查经', desc: '每周小组查经，资深导师带领，线上线下均可参加。', cta: '我要加入' },
+  { icon: '🙏', title: '祈祷小组', desc: '小型祈祷圈，信心相透，支持同行。', cta: '加入小组' },
+  { icon: '✝️', title: '牧师探访', desc: '有资质牧师上门探望老年教友，灵魂关怀。', cta: '预约探访' },
+]
 
-export default async function ChristianMembershipPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const country = await getCountry();
-  const t = (k: string) => landingT(locale, k);
-  const zh = locale === "zh" || locale === "zh_tw";
-  const registerHint = zh
-    ? "注册时选择基督徒会员选项，即可加入信仰社群"
-    : "Select the Christian member option when registering to join the faith community";
-
+export default function ChristianPage() {
+  const params = useParams()
+  const locale = (params?.locale as string) || 'zh'
   return (
-    <>
-      <Header country={country} signedIn={false} />
-      <main className="mx-auto w-full max-w-content px-5 pb-32 pt-8">
-
-        {/* Hero */}
-        <section className="mb-10 text-center">
-          <span className="text-6xl block mb-4">✝️</span>
-          <h1 className="text-[32px] font-bold leading-tight text-gray-900 sm:text-[40px]">
-            {t("christianTitle")}
-          </h1>
-          <p className="mx-auto mt-4 max-w-md text-[20px] text-gray-600 leading-relaxed">
-            {t("christianSub")}
-          </p>
-        </section>
-
-        {/* Ministry Services */}
-        <section className="mb-10 rounded-2xl border-2 border-amber-200 bg-amber-50 p-6">
-          <h2 className="mb-4 text-[22px] font-bold text-amber-900">
-            {zh ? "事工服务" : "Ministry Services"}
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {[
-              { emoji: "📖", title: zh ? "查经学习" : t("faithBible"), desc: zh ? "每周线上/线下小组查经，一起深入经文" : "Weekly online/offline Bible study groups" },
-              { emoji: "🙏", title: zh ? "祷告小组" : t("faithPrayer"), desc: zh ? "代祷支持、祷告分享，彼此守望" : "Prayer support, intercession, and fellowship" },
-              { emoji: "🎵", title: zh ? "赞美敬拜" : t("faithWorship"), desc: zh ? "诗歌敬拜，在音乐中感受平安与喜乐" : "Praise & worship sessions — peace through music" },
-              { emoji: "🏠", title: zh ? "牧师探访" : t("faithPastoral"), desc: zh ? "教会志愿者上门探访，陪伴与关怀" : "Home visits from trained church volunteers" },
-            ].map((item) => (
-              <div key={item.emoji} className="rounded-xl border border-amber-200 bg-white p-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="text-2xl">{item.emoji}</span>
-                  <h3 className="text-[18px] font-bold text-gray-900">{item.title}</h3>
-                </div>
-                <p className="text-[15px] text-gray-600 leading-relaxed">{item.desc}</p>
-              </div>
-            ))}
+    <main className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
+      <div className="bg-gradient-to-r from-amber-700 to-yellow-600 text-white px-6 py-12 text-center">
+        <div className="text-5xl mb-3">✝️</div>
+        <h1 className="text-3xl font-bold mb-2">基督徒互助平台</h1>
+        <p className="text-amber-100">山上之城，库不能被躅没。</p>
+      </div>
+      <div className="max-w-2xl mx-auto px-6 py-10 space-y-4">
+        <p className="text-center text-gray-500 text-sm mb-6">为老年基督徒提供灵魂关怀服务，免费参加</p>
+        {SERVICES.map((s) => (
+          <div key={s.title} className="bg-white rounded-2xl shadow-sm border border-amber-100 p-6 flex items-start gap-4">
+            <div className="text-4xl">{s.icon}</div>
+            <div className="flex-1">
+              <h2 className="font-bold text-amber-900 text-lg">{s.title}</h2>
+              <p className="text-gray-500 text-sm mt-1">{s.desc}</p>
+            </div>
+            <button className="text-amber-600 font-semibold text-sm whitespace-nowrap">{s.cta} →</button>
           </div>
-        </section>
-
-        {/* Free Declaration */}
-        <section className="mb-10 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 p-6 text-center">
-          <p className="text-[22px] font-bold text-amber-800 mb-2">
-            ✨ {zh ? "完全免费 — 事工服务无需付费" : t("faithFree")}
-          </p>
-          <p className="text-[16px] text-amber-700">
-            {zh ? "所有信仰事工由教会志愿者义务提供，不收取任何费用。" : "All ministry services are provided by church volunteers at no charge."}
-          </p>
-        </section>
-
-        {/* Register CTA */}
-        <section className="mb-10">
-          <Link
-            href="/auth/register"
-            className="flex w-full items-center justify-center rounded-xl bg-amber-600 px-6 py-5 text-center text-[22px] font-bold text-white shadow-lg"
-            style={{ minHeight: "64px" }}
-          >
-            {t("christianCTA")}
-          </Link>
-          <p className="mt-3 text-center text-[15px] text-gray-500">
-            {registerHint}
-          </p>
-        </section>
-
-        {/* Back link */}
-        <div className="text-center">
-          <Link href="/" className="text-[16px] text-blue-600 hover:underline">
-            ← {zh ? "返回首页" : "Back to home"}
-          </Link>
+        ))}
+        <div className="bg-amber-50 rounded-2xl p-6 text-center mt-6">
+          <p className="text-amber-800 font-medium">微信扫码加入社群</p>
+          <div className="w-24 h-24 bg-amber-200 rounded-xl mx-auto mt-3 flex items-center justify-center text-amber-600 text-sm">
+            WeChat QR
+          </div>
+          <p className="text-xs text-gray-400 mt-2">扫码后发送 "基督徒服务" 加入服务小组</p>
         </div>
-
-      </main>
-    </>
-  );
+        <div className="text-center pt-4">
+          <Link href={`/${locale}`} className="text-sm text-gray-400 hover:text-amber-700">← 返回首页</Link>
+        </div>
+      </div>
+    </main>
+  )
 }
