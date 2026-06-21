@@ -33,5 +33,18 @@ export async function PATCH(req: NextRequest) {
     .set({ status, updatedAt: new Date() })
     .where(eq(xinyuzheProviders.id, id))
     .returning()
+  // Notify provider on status change
+  if (updated?.email) {
+    const _et = status === 'approved' ? 'xinyuzhe_provider_approved'
+              : status === 'rejected' ? 'xinyuzhe_provider_rejected' : null
+    if (_et) {
+      const _b = process.env.NEXT_PUBLIC_APP_URL || 'https://silverconnect-global.vercel.app'
+      fetch(`${_b}/api/notifications/email`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: updated.email, type: _et,
+          data: { name: updated.fullName || updated.email } }),
+      }).catch(() => {})
+    }
+  }
   return NextResponse.json({ success: true, provider: updated })
 }
