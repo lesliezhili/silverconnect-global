@@ -58,6 +58,20 @@ export async function POST(req: NextRequest) {
           '<p>亲爱的 ' + (d?.name||'') + '，</p>' + '<p>您的心灵陪伴服务预约已接收，我们将尽快为您安排合适的心语者。</p>' + '<p>预约编号： <b>' + (d?.ref||'') + '</b></p>' + '<p>希望服务日期： ' + (d?.date||'未指定') + '</p>',
           BASE + '/zh/xinyuzhe/book', '修改预约'
         ); break;
+      case 'xinyuzhe_provider_approved':
+        subject = '恭喜！您已通过和润心语者审核';
+        body = html(
+          '审核通过 🎉',
+          '<p>亲爱的 ' + (d?.name||'') + '，</p>' + '<p>恭喜您正式成为<b>和润心语者</b>认证服务者！您现在可以登录服务者中心开始接单。</p>',
+          BASE + '/zh/xinyuzhe/hub', '进入服务者中心'
+        ); break;
+      case 'xinyuzhe_provider_rejected':
+        subject = '和润心语者申请结果通知';
+        body = html(
+          '申请结果',
+          '<p>亲爱的 ' + (d?.name||'') + '，</p>' + '<p>感谢您申请和润心语者认证服务者。经过审核，暂时无法批准您的申请。</p>' + '<p>您可在完善资料后重新提交申请。</p>',
+          BASE + '/zh/xinyuzhe/registration', '重新申请'
+        ); break;
     default: return NextResponse.json({ error: "Unknown: " + type }, { status: 400 });
   }
 

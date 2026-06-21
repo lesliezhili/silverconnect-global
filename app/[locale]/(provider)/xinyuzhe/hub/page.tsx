@@ -1,5 +1,8 @@
 import { setRequestLocale } from 'next-intl/server'
 import Link from 'next/link'
+import { getAuthSession } from '@/lib/auth/session'
+import { db } from '@/lib/db'
+import { xinyuzheProviders } from '@/lib/db/schema/xinyuzhe'
 
 export const metadata = {
   title: '\u548c\u6da6\u5fc3\u8bed\u8005 \u2014 \u670d\u52a1\u63d0\u4f9b\u8005\u4e2d\u5fc3',
@@ -50,6 +53,46 @@ const TILES = [
 ]
 
 export default async function XinyuzheProviderHubNavPage({
+  // Status gate: only approved providers can access hub
+  const session = await getAuthSession()
+  const localeStr = (await params as { locale: string }).locale || 'zh'
+  if (!session) {
+    const { redirect } = await import('next/navigation')
+    redirect(`/${localeStr}/login`)
+  }
+  const [providerRecord] = await db
+    .select({ status: xinyuzheProviders.status, fullName: xinyuzheProviders.fullName })
+    .from(xinyuzheProviders)
+    .where(eq(xinyuzheProviders.email, session!.email))
+    .limit(1)
+  if (!providerRecord) {
+    const { redirect } = await import('next/navigation')
+    redirect(`/${localeStr}/xinyuzhe/registration`)
+  }
+  if (providerRecord!.status !== 'approved') {
+    return (
+      <main className="min-h-screen bg-amber-50 flex items-center justify-center p-6">
+        <div className="bg-white rounded-2xl shadow-sm p-8 max-w-md w-full text-center">
+          <div className="text-5xl mb-4">{providerRecord!.status === 'pending' ? '⏳' : '❌'}</div>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">
+            {providerRecord!.status === 'pending' ? '申请审核中' : '申请未通过'}
+          </h2>
+          <p className="text-gray-500 text-sm">
+            {providerRecord!.status === 'pending'
+              ? '您的申请正在审核中，通常需需3～5个工作日。通过后将收到邮件通知。'
+              : '您可完善资料后重新提交申请。'}
+          </p>
+          {providerRecord!.status !== 'pending' && (
+            <a href={`/${localeStr}/xinyuzhe/registration`}
+               className="mt-4 inline-block bg-rose-500 text-white px-6 py-2.5 rounded-xl text-sm font-semibold">
+              重新申请
+            </a>
+          )}
+        </div>
+      </main>
+    )
+  }
+
   params,
 }: {
   params: Promise<{ locale: string }>
