@@ -2,6 +2,7 @@ import { setRequestLocale, getTranslations } from "next-intl/server";
 import { landingT } from "@/lib/i18n/landing";
 import { Link } from "@/i18n/navigation";
 import { Header } from "@/components/layout/Header";
+import { cookies } from 'next/headers'
 import { getCountry } from "@/components/domain/countryCookie";
 import { getCurrentUser } from "@/lib/auth/server";
 import { redirect } from "@/i18n/navigation";
@@ -17,6 +18,7 @@ export default async function LandingPage({
   setRequestLocale(locale);
   const me = await getCurrentUser();
   const country = await getCountry(locale);
+  const faith = (await cookies()).get('sc-faith')?.value
   if (me) { redirect({ href: "/home", locale }); }
   const zh = locale === "zh" || locale === "zh_tw";
   const isCN = country === "CN";
@@ -218,14 +220,16 @@ export default async function LandingPage({
 
         {/* 基督徒互助平台 — teaser card linking to dedicated page */}
         {zh && (
-          <a href={`/${locale}/christian`} className="mb-10 flex items-center gap-4 rounded-2xl border-2 border-amber-200 bg-amber-50 p-5 hover:bg-amber-100 transition-colors">
-            <span className="text-3xl shrink-0">✝️</span>
-            <div className="flex-1">
-              <h2 className="text-[20px] font-bold text-gray-900">{t("christianTitle")}</h2>
-              <p className="text-[15px] text-amber-700 mt-1">{zh ? "免费查经 · 祷告小组 · 牧师探访" : "Bible study · Prayer · Pastoral visits"}</p>
-            </div>
-            <span className="text-amber-600 text-[20px] font-bold shrink-0">→</span>
-          </a>
+          {faith === 'christian' && (
+            <a href={`/${locale}/christian`} className="mb-10 flex items-center gap-4 rounded-2xl border-2 border-amber-200 bg-amber-50 p-5 hover:bg-amber-100 transition-colors">
+              <span className="text-3xl shrink-0">✝️</span>
+              <div className="flex-1">
+                <h2 className="text-[20px] font-bold text-gray-900">{t("christianTitle")}</h2>
+                <p className="text-[15px] text-amber-700 mt-1">{zh ? "免费查经 · 祷告小组 · 牧师探访" : "Bible study · Prayer · Pastoral visits"}</p>
+              </div>
+              <span className="text-amber-600 text-[20px] font-bold shrink-0">→</span>
+            </a>
+          )}
         )}
 
         {/* 和润心语者 — aged emotional companion, Chinese locale only */}

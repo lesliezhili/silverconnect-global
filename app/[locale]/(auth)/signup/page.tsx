@@ -156,6 +156,22 @@ export default function SignupPage() {
               >
                 Back
               </button>
+
+              {/* 信仰选项 */}
+              <label className="flex items-center gap-3 text-[15px] text-gray-600 cursor-pointer mb-2">
+                <input
+                  type="checkbox"
+                  className="w-5 h-5 accent-amber-500"
+                  onChange={(e) => {
+                    fetch('/api/user/faith', {
+                      method: e.target.checked ? 'POST' : 'DELETE',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: e.target.checked ? JSON.stringify({ faith: 'christian' }) : undefined,
+                    })
+                  }}
+                />
+                ✝️ 我是基督徒，希望查看基督徒社区服务
+              </label>
               <button
                 onClick={handleSubmit}
                 disabled={loading}
