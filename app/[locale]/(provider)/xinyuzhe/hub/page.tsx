@@ -1,127 +1,123 @@
 import { setRequestLocale } from 'next-intl/server'
 import Link from 'next/link'
-import { getAuthSession } from '@/lib/auth/session'
+import { redirect } from 'next/navigation'
+import { getOptionalAuthSession } from '@/lib/auth/session'
 import { db } from '@/lib/db'
 import { xinyuzheProviders } from '@/lib/db/schema/xinyuzhe'
 import { eq } from 'drizzle-orm'
-import { redirect } from 'next/navigation'
 
 export const metadata = {
-  title: '\u548c\u6da6\u5fc3\u8bed\u8005 \u2014 \u670d\u52a1\u63d0\u4f9b\u8005\u4e2d\u5fc3',
-  description: '\u548c\u6da6\u5fc3\u8bed\u8005\u670d\u52a1\u63d0\u4f9b\u8005\u7ba1\u7406\u4e2d\u5fc3\uff1a\u6ce8\u518c\u3001\u57f9\u8bad\u3001\u670d\u52a1\u7ba1\u7406\u4e0e\u53cd\u9988\u8bc4\u4ef7',
+  title: '和润心语者 — 服务提供者中心',
+  description: '和润心语者服务提供者管理中心',
 }
 
 const TILES = [
   {
-    href:    'xinyuzhe/register',
-    icon:    '\ud83d\udcdd',
-    title:   '\u5fc3\u8bed\u8005\u7533\u8bf7\u6ce8\u518c',
-    desc:    '\u63d0\u4ea4\u60a8\u7684\u4e2a\u4eba\u4fe1\u606f\u3001\u5b66\u5386\u80cc\u666f\u4e0e\u670d\u52a1\u65b9\u5411\uff0c\u7533\u8bf7\u52a0\u5165\u548c\u6da6\u5fc3\u8bed\u8005\u56e2\u961f\u3002',
-    bg:      'bg-rose-50',
-    border:  'border-rose-200',
-    badge:   '\u5f00\u653e\u62db\u52df\u4e2d',
-    badgeCls:'bg-green-100 text-green-700',
+    href:     'xinyuzhe/register',
+    icon:     '📝',
+    title:    '心语者申请注册',
+    desc:     '提交您的个人信息、学历背景与服务方向，申请加入和润心语者团队。',
+    bg:       'bg-rose-50',
+    border:   'border-rose-200',
+    badge:    '开放招募中',
+    badgeCls: 'bg-green-100 text-green-700',
   },
   {
-    href:    'xinyuzhe/training',
-    icon:    '\ud83c\udf93',
-    title:   '\u5fc3\u8bed\u8005\u57f9\u8bad\u8bfe\u7a0b',
-    desc:    '5 \u5927\u6838\u5fc3\u6a21\u5757\uff1a\u60c5\u611f\u964a\u4f34\u3001\u6570\u5b57\u4f20\u8bb0\u3001\u8001\u5e74\u5fc3\u7406\u3001\u4fdd\u9669\u670d\u52a1\u3001\u5b89\u5168\u5408\u89c4\u3002\u7b80\u4e3b\u8bfe\u7a0b\u5e76\u83b7\u5f97\u8ba4\u8bc1\u3002',
-    bg:      'bg-amber-50',
-    border:  'border-amber-200',
-    badge:   '32 \u5c0f\u65f6',
-    badgeCls:'bg-amber-100 text-amber-700',
+    href:     'xinyuzhe/training',
+    icon:     '🎓',
+    title:    '心语者培训课程',
+    desc:     '5 大核心模块：情感陊伴、老年心理、数字传记、保险服务、安全合规。',
+    bg:       'bg-amber-50',
+    border:   'border-amber-200',
+    badge:    '32 小时',
+    badgeCls: 'bg-amber-100 text-amber-700',
   },
   {
-    href:    'xinyuzhe/implementation',
-    icon:    '\ud83d\uddd3\ufe0f',
-    title:   '\u670d\u52a1\u5b9e\u65bd\u7ba1\u7406',
-    desc:    '\u67e5\u770b\u5df2\u5206\u914d\u5ba2\u6237\u3001\u5b89\u6392\u670d\u52a1\u65f6\u95f4\u3001\u8bb0\u5f55\u670d\u52a1\u7b14\u8bb0\uff0c\u8ddf\u8e2a\u6bcf\u4e00\u6b21\u7684\u9646\u4f34\u8fdb\u5c55\u3002',
-    bg:      'bg-blue-50',
-    border:  'border-blue-200',
-    badge:   '\u670d\u52a1\u8bb0\u5f55',
-    badgeCls:'bg-blue-100 text-blue-700',
+    href:     'xinyuzhe/implementation',
+    icon:     '🗓️',
+    title:    '服务实施管理',
+    desc:     '查看已分配客户、安排服务时间、记录服务笔记。',
+    bg:       'bg-blue-50',
+    border:   'border-blue-200',
+    badge:    '服务记录',
+    badgeCls: 'bg-blue-100 text-blue-700',
   },
   {
-    href:    'xinyuzhe/feedback',
-    icon:    '\u2b50',
-    title:   '\u53cd\u9988\u4e0e\u8bc4\u4ef7',
-    desc:    '\u63d0\u4ea4\u6bcf\u6b21\u670d\u52a1\u7ed3\u675f\u540e\u7684\u5ba2\u6237\u53cd\u9988\uff0c\u5e2e\u52a9\u6211\u4eec\u6301\u7eed\u63d0\u5347\u548c\u6da6\u670d\u52a1\u8d28\u91cf\u3002',
-    bg:      'bg-purple-50',
-    border:  'border-purple-200',
-    badge:   '\u8d28\u91cf\u4fdd\u969c',
-    badgeCls:'bg-purple-100 text-purple-700',
+    href:     'xinyuzhe/feedback',
+    icon:     '⭐',
+    title:    '反馈与评价',
+    desc:     '提交服务结束后的客户反馈，持续提升和润服务质量。',
+    bg:       'bg-purple-50',
+    border:   'border-purple-200',
+    badge:    '质量保障',
+    badgeCls: 'bg-purple-100 text-purple-700',
   },
 ]
 
-export default async function XinyuzheProviderHubNavPage(
+export default async function XinyuzheProviderHubNavPage({
   params,
 }: {
   params: Promise<{ locale: string }>
 }) {
   // Status gate: only approved providers can access hub
-  const session = await getAuthSession()
-  const localeParam = ((await params) as {locale:string}).locale ?? 'zh'
-  if (!session) redirect(`/${localeParam}/login`)
+  // getOptionalAuthSession returns null when not logged in (getAuthSession never returns null)
+  const session = await getOptionalAuthSession()
+  const { locale } = await params
+  if (!session?.email) redirect(`/${locale}/login`)
+
   const [pr] = await db
     .select({ status: xinyuzheProviders.status })
     .from(xinyuzheProviders)
-    .where(eq(xinyuzheProviders.email, (session as any).email ?? ''))
+    .where(eq(xinyuzheProviders.email, session!.email!))
     .limit(1)
-  if (!pr) redirect(`/${localeParam}/xinyuzhe/registration`)
-  if (pr.status !== 'approved') {
+
+  if (!pr) redirect(`/${locale}/xinyuzhe/registration`)
+
+  if (pr!.status !== 'approved') {
     return (
       <main className="min-h-screen bg-amber-50 flex items-center justify-center p-6">
         <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center">
-          <div className="text-5xl mb-4">{pr.status==='pending'?'⏳':'❌'}</div>
+          <div className="text-5xl mb-4">{pr!.status === 'pending' ? '⏳' : '❌'}</div>
           <h2 className="text-xl font-bold mb-2">
-            {pr.status==='pending'?'申请审核中':'申请未通过'}
+            {pr!.status === 'pending' ? '申请审核中' : '申请未通过'}
           </h2>
           <p className="text-gray-500 text-sm mb-4">
-            {pr.status==='pending'
-              ?'您的申请正在审核中，通常需需3～5个工作日。'
-              :'您可完善资料后重新提交申请。'}
+            {pr!.status === 'pending'
+              ? '您的申请正在审核中，通常需需3～5个工作日。通过后将收到邮件通知。'
+              : '您可完善资料后重新提交申请。'}
           </p>
-          {pr.status!=='pending'&&(
-            <a href={`/${localeParam}/xinyuzhe/registration`}
+          {pr!.status !== 'pending' && (
+            <a href={`/${locale}/xinyuzhe/registration`}
                className="inline-block bg-rose-500 text-white px-6 py-2 rounded-xl text-sm font-semibold">
-              重新申请</a>
+              重新申请
+            </a>
           )}
         </div>
       </main>
     )
   }
+
   setRequestLocale(locale)
 
   return (
     <main className="min-h-screen bg-gray-50">
-
-      {/* Hero */}
       <section className="bg-gradient-to-r from-rose-600 to-amber-500 text-white py-12 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-4 mb-4">
-            <span className="text-5xl">\ud83c\udf38</span>
+            <span className="text-5xl">🌸</span>
             <div>
-              <h1 className="text-3xl font-bold">\u548c\u6da6\u5fc3\u8bed\u8005</h1>
-              <p className="text-rose-100 text-sm mt-1">\u670d\u52a1\u63d0\u4f9b\u8005\u7ba1\u7406\u4e2d\u5fc3 \u00b7 SilverConnect \u9280\u9f84\u667a\u8054</p>
+              <h1 className="text-3xl font-bold">和润心语者</h1>
+              <p className="text-rose-100 text-sm mt-1">服务提供者管理中心</p>
             </div>
           </div>
           <p className="text-white/90 max-w-2xl text-base leading-relaxed">
-            \u6b22\u8fce\u52a0\u5165\u548c\u6da6\u5fc3\u8bed\u8005\u56e2\u961f\u3002\u6211\u4eec\u7b2c\u4e00\u671f\u62db\u52df\u6765\u81ea\u533b\u5b66\u3001\u62a4\u7406\u3001\u5fc3\u7406\u548c\u793e\u5de5\u5b66\u9662\u7684\u5927\u5b66\u751f\uff0c\n            \u4e3a\u72ec\u5c45\u8001\u4eba\u3001\u6162\u75c5\u60a3\u8005\u63d0\u4f9b\u60c5\u611f\u964a\u4f34\u3001\u6570\u5b57\u4f20\u8bb0\u4e0e\u5fc3\u7406\u652f\u6301\u670d\u52a1\u3002
+            欢迎加入和润心语者团队，为独居老人提供情感陊伴服务。
           </p>
-          <div className="flex flex-wrap gap-3 mt-6">
-            <span className="bg-white/20 px-3 py-1.5 rounded-full text-sm">\ud83c\udf93 \u5b9e\u4e60\u8ba4\u8bc1</span>
-            <span className="bg-white/20 px-3 py-1.5 rounded-full text-sm">\ud83d\udcb0 800\uff5e1500 \u5143/\u671f</span>
-            <span className="bg-white/20 px-3 py-1.5 rounded-full text-sm">\ud83c\udfe5 \u5408\u4f5c\u533b\u9662\u5b9e\u4e60</span>
-            <span className="bg-white/20 px-3 py-1.5 rounded-full text-sm">\ud83d\udcdc \u5fc3\u8bed\u8005\u8bc1\u4e66</span>
-          </div>
         </div>
       </section>
-
-      {/* Navigation Tiles */}
       <section className="py-12 px-4">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">\u8bf7\u9009\u62e9\u60a8\u9700\u8981\u7684\u529f\u80fd</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-6">请选择您需要的功能</h2>
           <div className="grid md:grid-cols-2 gap-5">
             {TILES.map((t) => (
               <Link
@@ -137,47 +133,12 @@ export default async function XinyuzheProviderHubNavPage(
                   </div>
                   <p className="text-sm text-gray-600 leading-relaxed">{t.desc}</p>
                 </div>
-                <span className="text-gray-400 group-hover:text-rose-500 transition-colors self-center shrink-0">\u2192</span>
+                <span className="text-gray-400 group-hover:text-rose-500 transition-colors self-center shrink-0">→</span>
               </Link>
             ))}
           </div>
         </div>
       </section>
-
-      {/* Program Stats */}
-      <section className="py-8 px-4 bg-white border-t border-gray-100">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-lg font-bold text-gray-700 mb-6">\u548c\u6da6\u5fc3\u8bed\u8005\u9879\u76ee\u8fdb\u5c55</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { label: '\u6ce8\u518c\u5fc3\u8bed\u8005', val: '\u62db\u52df\u4e2d', icon: '\ud83d\udc65' },
-              { label: '\u5df2\u5b8c\u6210\u57f9\u8bad', val: '0 / 5 \u6a21\u5757', icon: '\ud83c\udf93' },
-              { label: '\u6670\u52a1\u5ba2\u6237', val: '\u5f85\u5206\u914d', icon: '\ud83d\udc64' },
-              { label: '\u670d\u52a1\u8bc4\u5206', val: '\u5f85\u53cd\u9988', icon: '\u2b50' },
-            ].map((s) => (
-              <div key={s.label} className="bg-gray-50 rounded-xl p-4 text-center">
-                <div className="text-2xl mb-1">{s.icon}</div>
-                <div className="text-lg font-bold text-gray-900">{s.val}</div>
-                <div className="text-xs text-gray-500 mt-0.5">{s.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Footer info */}
-      <section className="py-8 px-4">
-        <div className="max-w-4xl mx-auto bg-rose-50 rounded-2xl p-6">
-          <h3 className="font-bold text-rose-800 mb-3">\ud83d\udcac \u548c\u6da6\u5fc3\u8bed\u8005\u670d\u52a1\u627f\u8bfa</h3>
-          <ul className="text-sm text-gray-700 space-y-2">
-            <li>\u2705 \u6bcf\u6b21\u670d\u52a1\u5c06\u88ab\u5168\u8fc7\u7a0b\u8bb0\u5f55\uff0c\u4fdd\u969c\u5ba2\u6237\u5b89\u5168\u3002</li>
-            <li>\u2705 \u60a8\u7684\u670d\u52a1\u65f6\u95f4\u5c06\u6309 800\uff5e1500 \u5143/\u6708\u6807\u51c6\u53d1\u653e\u5b9e\u4e60\u8865\u8d34\u3002</li>
-            <li>\u2705 \u8fc7\u5173\u5168\u90e8\u57f9\u8bad\u6a21\u5757\u540e\uff0c\u5c06\u83b7\u5f97\u548c\u6da6\u5fc3\u8bed\u8005\u8ba4\u8bc1\u8bc1\u4e66\u3002</li>
-            <li>\u2705 \u4f18\u79c0\u5fc3\u8bed\u8005\u5c06\u88ab\u63a8\u8350\u81f3\u5408\u4f5c\u533b\u9662\u5168\u804c\u5c97\u4f4d\u3002</li>
-          </ul>
-        </div>
-      </section>
-
     </main>
   )
 }
