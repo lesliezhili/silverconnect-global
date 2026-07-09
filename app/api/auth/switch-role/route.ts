@@ -27,12 +27,7 @@ export async function POST() {
     .where(eq(users.id, me.id));
 
   // Refresh session
-  await signInUser({
-    id: me.id,
-    email: me.email,
-    name: me.name,
-    role: newRole,
-  });
+  await signInUser(me.id);
 
   return NextResponse.json({ success: true, role: newRole });
 }

@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { bookings } from "@/lib/db/schema/bookings";
 import { payments } from "@/lib/db/schema/payments";
 import { eq } from "drizzle-orm";
+import { getStripeClient, isStripeConfigured } from "@/lib/stripe/server";
 
 export const dynamic = "force-dynamic";
 
@@ -30,12 +31,9 @@ export async function POST(req: NextRequest) {
   const currency = (booking.currency || "AUD").toLowerCase();
   const platformFee = Math.round(amountCents * PLATFORM_FEE_PERCENT / 100);
 
-  const stripeKey = process.env.STRIPE_SECRET_KEY;
-
-  if (stripeKey && stripeKey.startsWith("sk_test_")) {
+  if (isStripeConfigured()) {
     // Real Stripe
-    const Stripe = (await import("stripe")).default;
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-02-24.acacia" as any });
+    const stripe = getStripeClient();
 
     const pi = await stripe.paymentIntents.create({
       amount: amountCents,

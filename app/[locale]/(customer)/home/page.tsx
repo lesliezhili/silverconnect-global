@@ -20,7 +20,7 @@ import { bookings } from "@/lib/db/schema/bookings";
 import { reviews } from "@/lib/db/schema/reviews";
 import { getCurrentUser } from "@/lib/auth/server";
 import { ScriptureBanner, ScriptureFooter } from "@/components/layout/ScriptureBanner";
-import { RoleSwitchButton } from "@/components/domain/RoleSwitchButton";
+import { RoleSwitchButton } from "@/components/RoleSwitchButton";
 
 export const dynamic = "force-dynamic";
 
@@ -98,8 +98,18 @@ export default async function CustomerHomePage({
   const tCommon = await getTranslations("common");
   const country = await getCountry(locale);
   const me = await getCurrentUser();
-  if (!me) redirect({ href: "/auth/login", locale });
+  if (!me) {
+    redirect({ href: "/auth/login", locale });
+    return null;
+  }
   const greetingName = me?.name ?? me?.email?.split("@")[0] ?? tCommon("guest");
+
+  const [myProviderProfile] = await db
+    .select({ id: providerProfiles.id })
+    .from(providerProfiles)
+    .where(and(eq(providerProfiles.userId, me.id), eq(providerProfiles.onboardingStatus, "approved")))
+    .limit(1);
+  const hasCompletedOnboarding = Boolean(myProviderProfile);
 
   // ── Faith content (prayer widget) — only for opted-in Christian users ──
   // Faith content disabled until DB migration adds faith_preference column
@@ -272,11 +282,9 @@ export default async function CustomerHomePage({
         initials={me?.initials}
       />
       
-      {me && (
-        <div className="mx-auto w-full max-w-content px-5 pt-3">
-          <RoleSwitchButton />
-        </div>
-      )}
+      <div className="mx-auto w-full max-w-content px-5 pt-3">
+        <RoleSwitchButton role="customer" hasCompletedOnboarding={hasCompletedOnboarding} locale={locale} />
+      </div>
       {showFaithContent && <ScriptureBanner />}
 <main
         id="main-content"

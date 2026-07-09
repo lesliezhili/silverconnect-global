@@ -41,7 +41,7 @@ export async function signUp(input: SignUpInput): Promise<SignUpResult> {
   const { email, password, name, selectedLanguage, country } = input;
 
   // Validate full name (mandatory per spec)
-  if (!fullName || fullName.trim().length < 2) {
+  if (!name || name.trim().length < 2) {
     return {
       success: false,
       error: "Full name is required to maintain platform trust."
@@ -87,8 +87,7 @@ export async function signUp(input: SignUpInput): Promise<SignUpResult> {
     .values({
       email: email.trim().toLowerCase(),
       passwordHash,
-      name: fullName.trim(),
-      name: fullName.trim(),
+      name: name.trim(),
       preferredLanguage: assignedLanguage,
       country: country ?? "AU",
       locale: assignedLanguage === "zh" || assignedLanguage === "zh_tw" ? "zh" : "en",
@@ -97,12 +96,7 @@ export async function signUp(input: SignUpInput): Promise<SignUpResult> {
     .returning({ id: users.id, email: users.email });
 
   // Sign in the new user immediately
-  await signInUser({
-    id: newUser.id,
-    email: newUser.email,
-    name: fullName.trim(),
-    role: "customer"
-  });
+  await signInUser(newUser.id);
 
   return {
     success: true,
@@ -113,7 +107,7 @@ export async function signUp(input: SignUpInput): Promise<SignUpResult> {
 // ─── Module 1: SwitchUserRole ─────────────────────────────────────
 export interface SwitchRoleInput {
   userId: string;
-  targetRole: "customer" | "provider" | "helper" | "admin";
+  targetRole: "customer" | "provider";
 }
 
 export interface SwitchRoleResult {
@@ -154,18 +148,13 @@ export async function switchUserRole(input: SwitchRoleInput): Promise<SwitchRole
     }
   }
 
-  // Admin role requires admin base role
-  if (targetRole === "admin" && user.role !== "admin") {
-    return { success: false, error: "Admin access not permitted." };
-  }
-
   const previousRole = user.role;
 
   // Update active role
   await db
     .update(users)
     .set({
-       targetRole,
+      role: targetRole,
       updatedAt: new Date()
     })
     .where(eq(users.id, userId));
@@ -191,7 +180,7 @@ export interface UpdatePreferencesInput {
 export async function updateUserPreferences(
   input: UpdatePreferencesInput,
 ): Promise<{ success: boolean; error?: string }> {
-  const { userId, preferredLanguage, largeTextMode, name } = input;
+  const { userId, preferredLanguage, largeTextMode, fullName } = input;
 
   const updates: Record<string, unknown> = { updatedAt: new Date() };
 
@@ -202,7 +191,6 @@ export async function updateUserPreferences(
     updates.largeTextMode = largeTextMode;
   }
   if (fullName !== undefined && fullName.trim().length >= 2) {
-    updates.fullName = fullName.trim();
     updates.name = fullName.trim();
   }
 

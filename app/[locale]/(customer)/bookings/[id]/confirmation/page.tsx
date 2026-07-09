@@ -5,14 +5,14 @@ import { Header } from "@/components/layout/Header";
 export default async function BookingConfirmationPage({
   params,
 }: {
-  params: Promise<{ locale: string; bookingId: string }>;
+  params: Promise<{ locale: string; id: string }>;
 }) {
-  const { locale, bookingId } = await params;
+  const { locale, id } = await params;
   setRequestLocale(locale);
 
   return (
     <>
-      <Header title="Booking Confirmed" />
+      <Header />
       <main className="max-w-lg mx-auto p-6 text-center">
         <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-8 mb-6">
           <div className="text-6xl mb-4">🎉</div>
@@ -23,14 +23,14 @@ export default async function BookingConfirmationPage({
             Your booking is confirmed. Your helper will be notified.
           </p>
           <p className="text-base text-gray-600">
-            Booking ref: {bookingId.slice(0, 8).toUpperCase()}
+            Booking ref: {id.slice(0, 8).toUpperCase()}
           </p>
         </div>
 
         <div className="space-y-4">
           <Link
             href="/home"
-            className="block w-full py-4 px-6 bg-green-600 text-white text-xl 
+            className="block w-full py-4 px-6 bg-green-600 text-white text-xl
                        font-bold rounded-xl text-center min-h-[56px]"
           >
             Back to Home

@@ -113,7 +113,7 @@ function CompleteFaithContent() {
             {MOODS.map(m => (
               <button key={m.code} onClick={() => setMood(m.code)}
                 className={"flex-1 p-3 rounded-xl text-center border-2 min-h-[56px] " +
-                  (mood === m.code ? "bg-blue-100 border-blue-400" : "bg-white border-gray-200")}>
+                  (mood === m.code ? "bg-teal-100 border-teal-400" : "bg-white border-gray-200")}>
                 <div className="text-2xl">{m.emoji}</div>
                 <div className="text-sm mt-1">{m.label}</div>
               </button>

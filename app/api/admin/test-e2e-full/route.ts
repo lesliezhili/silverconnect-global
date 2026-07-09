@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getPaymentProvider } from "@/lib/payments/provider-config";
 import postgres from "postgres";
 import { randomUUID } from "crypto";
+import { getStripeClient } from "@/lib/stripe/server";
 
 export const dynamic = "force-dynamic";
 
@@ -105,8 +106,7 @@ export async function POST() {
     let stripeResult: Record<string, unknown>;
 
     if (stripeKey && stripeKey.startsWith("sk_test_")) {
-      const Stripe = (await import("stripe")).default;
-      const stripe = new Stripe(stripeKey, { apiVersion: "2025-02-24.acacia" as any });
+      const stripe = getStripeClient();
 
       const amountCents = Math.round(totalPrice * 100);
       const pi = await stripe.paymentIntents.create({

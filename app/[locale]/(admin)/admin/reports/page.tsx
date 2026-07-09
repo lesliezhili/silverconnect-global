@@ -29,7 +29,7 @@ async function reportAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const action = String(formData.get("action") ?? "");
   const me = await getCurrentUser();
-  if (!me || me.role !== "admin") {
+  if (!me || !me.isAdmin) {
     nextRedirect(`/${locale}/admin/login`);
   }
   if (!id || !["keep", "delete", "warn"].includes(action)) {

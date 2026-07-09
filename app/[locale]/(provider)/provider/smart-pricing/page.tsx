@@ -109,7 +109,7 @@ export default function SmartPricingPage() {
             <button
               key={loc.code}
               onClick={() => setLocationTier(loc.code)}
-              className={`w-full flex items-center justify-between rounded-xl p-3 border ${locationTier === loc.code ? "border-blue-500 bg-blue-100" : "border-gray-200 bg-white"}`}
+              className={`w-full flex items-center justify-between rounded-xl p-3 border ${locationTier === loc.code ? "border-teal-600 bg-teal-100" : "border-gray-200 bg-white"}`}
             >
               <div className="text-left">
                 <p className="font-semibold text-gray-900">{isZh ? loc.zh : loc.en}</p>
@@ -201,7 +201,7 @@ export default function SmartPricingPage() {
                         <span className="text-xs text-gray-400">/hr</span>
                       </div>
                       {isCustom && (
-                        <button onClick={() => { const n = { ...overrides }; delete n[item.code]; setOverrides(n); }} className="text-xs text-blue-600 mt-0.5">
+                        <button onClick={() => { const n = { ...overrides }; delete n[item.code]; setOverrides(n); }} className="text-xs text-teal-700 mt-0.5">
                           {isZh ? "恢复" : "Reset"}
                         </button>
                       )}
@@ -226,7 +226,7 @@ export default function SmartPricingPage() {
 
       <button
         onClick={save}
-        className="w-full bg-blue-600 text-white text-xl font-bold rounded-xl py-4 active:scale-[0.97]"
+        className="w-full bg-teal-700 text-white text-xl font-bold rounded-xl py-4 active:scale-[0.97]"
       >
         {saved ? (isZh ? "✅ 已保存" : "✅ Saved!") : (isZh ? "保存我的定价" : "Save My Pricing")}
       </button>

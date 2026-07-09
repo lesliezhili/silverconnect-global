@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 
 const BASE = process.env.BASE_URL || 'https://silverconnect-global.vercel.app'
-const AI_ENDPOINT = `${BASE}/api/ai/inquiry`
+const AI_ENDPOINT = `${BASE}/api/ai/chat`
 
 test.describe('AI 聊天控件 (GROQ)', () => {
   test('responds to zh general query', async ({ request }) => {
@@ -29,7 +29,7 @@ test.describe('AI 聊天控件 (GROQ)', () => {
 
   test('handles emergency keywords in zh', async ({ request }) => {
     const res = await request.post(AI_ENDPOINT, {
-      data: { message: '我要报警，有人迟倒了', locale: 'zh', conversationId: 'e2e-003' },
+      data: { message: '救命，有人摔倒了', locale: 'zh', conversationId: 'e2e-003' },
       timeout: 15000,
     })
     expect(res.status()).not.toBe(500)

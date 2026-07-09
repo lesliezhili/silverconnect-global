@@ -155,8 +155,8 @@ export function FundingSetupForm({
 
       <form onSubmit={handleSubmit} className="mt-5 flex flex-col gap-5">
         {/* Step 1: Upload document FIRST (smart extraction) */}
-        <div className="rounded-2xl border-2 border-blue-200 bg-blue-50 p-5">
-          <p className="mb-3 text-[18px] font-semibold text-blue-800">
+        <div className="rounded-2xl border-2 border-teal-200 bg-teal-50 p-5">
+          <p className="mb-3 text-[18px] font-semibold text-teal-900">
             ✨ {zh ? "第1步：上传批准信" : "Step 1: Upload your approval letter"}
           </p>
           <div>
@@ -330,7 +330,7 @@ export function FundingSetupForm({
             )}
 
             <button type="submit" disabled={submitting || !claimNumber}
-              className="w-full rounded-2xl bg-blue-600 py-5 text-[22px] font-bold text-white disabled:opacity-50"
+              className="w-full rounded-2xl bg-teal-700 py-5 text-[22px] font-bold text-white disabled:opacity-50"
               style={{ minHeight: "64px" }}>
               {submitting ? (zh ? "提交中..." : "Submitting...") : (zh ? "提交" : "Submit Funding Claim")}
             </button>

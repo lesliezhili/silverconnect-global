@@ -60,7 +60,6 @@ export async function POST(req: NextRequest) {
         passwordHash,
         country: (country || "AU") as any,
         locale: "en" as any,
-        role: "customer" as any,
         role: "customer",
       })
       .returning({ id: users.id, email: users.email });

@@ -61,7 +61,7 @@ export function FavouriteProviderCard({
     <article className="rounded-lg border border-border bg-bg-base p-5 shadow-card">
       <div className="flex items-start gap-4">
         {/* Avatar */}
-        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-blue-100 text-[20px] font-bold text-blue-700">
+        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-teal-100 text-[20px] font-bold text-teal-800">
           {avatarUrl ? (
             <img src={avatarUrl} alt={name} className="h-16 w-16 rounded-full object-cover" />
           ) : (

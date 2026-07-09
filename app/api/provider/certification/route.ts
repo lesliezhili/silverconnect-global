@@ -3,7 +3,7 @@ import { getCurrentUser } from '@/lib/auth/server'
 
 export async function POST(req: NextRequest) {
   const session = await getCurrentUser()
-  if (!session.userId) {
+  if (!session) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const body = await req.json()
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
   //   submittedAt: new Date(),
   // })
 
-  console.log('[certification] provider', session.userId, 'submitted:', {
+  console.log('[certification] provider', session.id, 'submitted:', {
     qualifications: qualifications.length,
     schemes: schemes.length,
     mandatoryChecksConfirmed: MANDATORY.length,

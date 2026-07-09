@@ -1,14 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth/server";
 
 /**
  * GET /api/admin/providers — List all providers with onboarding status
  *   ?status=pending|docs_review|approved|rejected|suspended — filter
  *   ?country=AU|NZ — filter by country
- * 
+ *
  * PATCH /api/admin/providers — Approve/reject/suspend provider
  *   Body: { providerId, action: "approve"|"reject"|"suspend"|"docs_review", reason? }
  */
 export async function GET(req: NextRequest) {
+  const me = await getCurrentUser();
+  if (!me || !me.isAdmin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const status = req.nextUrl.searchParams.get("status");
   const country = req.nextUrl.searchParams.get("country");
   const { default: postgres } = await import("postgres");
@@ -64,6 +70,11 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const me = await getCurrentUser();
+  if (!me || !me.isAdmin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { providerId, action, reason } = await req.json();
   if (!providerId || !action) return NextResponse.json({ error: "providerId, action required" }, { status: 400 });
   if (!["approve", "reject", "suspend", "docs_review"].includes(action)) return NextResponse.json({ error: "Invalid action" }, { status: 400 });

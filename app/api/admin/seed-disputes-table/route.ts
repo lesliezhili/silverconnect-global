@@ -1,9 +1,17 @@
 import { NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth/server";
 
 /**
- * POST /api/admin/seed-disputes-table — Create disputes + cancellation tables
+ * POST /api/admin/seed-disputes-table — Create disputes + cancellation tables.
+ * DESTRUCTIVE: drops and recreates disputes/dispute_messages/cancellations —
+ * never call against an environment with real dispute data.
  */
 export async function POST() {
+  const me = await getCurrentUser();
+  if (!me || !me.isAdmin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { default: postgres } = await import("postgres");
   const sql = postgres(process.env.DATABASE_URL || "", { prepare: false, connect_timeout: 10 });
 

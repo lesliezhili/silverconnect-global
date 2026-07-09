@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
   const admins = await db
     .select({ id: users.id })
     .from(users)
-    .where(eq(users.role, "admin"));
+    .where(eq(users.isAdmin, true));
   if (admins.length === 0) {
     return NextResponse.json({ ok: true, overdue: overdue.length, notified: 0 });
   }

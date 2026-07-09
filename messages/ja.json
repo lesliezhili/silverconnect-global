@@ -132,7 +132,14 @@
   },
   "providers": {
     "title": "ケアラー",
-    "filters": "絞り込み",
+    "filters": {
+      "rating": "評価 4.5+",
+      "distance": "5km以内",
+      "language": "日本語",
+      "weekend": "週末対応可",
+      "female": "女性ヘルパー",
+      "firstAid": "応急処置資格"
+    },
     "sortRecommended": "おすすめ順",
     "noMatch": "条件に合うケアラーが見つかりません",
     "adjustFilters": "絞り込み条件を変更してください",
@@ -341,7 +348,12 @@
     "6pm-9pm": "18-21時"
   },
   "booking": {
-    "steps": "ステップ {current}/{total}",
+    "steps": {
+      "service": "サービス",
+      "time": "時間",
+      "address": "住所",
+      "confirm": "確認"
+    },
     "step1Title": "サービスを選ぶ",
     "step2Title": "日時を選ぶ",
     "step3Title": "住所を確認",

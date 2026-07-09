@@ -135,8 +135,8 @@ export default function CheckoutPage() {
 
       {!loading && clientSecret && (
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="bg-blue-50 rounded-xl p-4">
-            <p className="text-lg font-semibold text-blue-900">
+          <div className="bg-teal-50 rounded-xl p-4">
+            <p className="text-lg font-semibold text-teal-950">
               Total: ${(amount / 100).toFixed(2)} {currency.toUpperCase()}
             </p>
           </div>

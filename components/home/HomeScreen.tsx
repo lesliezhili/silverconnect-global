@@ -80,7 +80,7 @@ function QuickActionButton({ icon, label, href, primary, emergency }: {
   const classes = emergency
     ? `${baseClasses} bg-red-600 text-white shadow-lg border-2 border-red-700`
     : primary
-    ? `${baseClasses} bg-blue-600 text-white shadow-lg border-2 border-blue-700`
+    ? `${baseClasses} bg-teal-700 text-white shadow-lg border-2 border-teal-800`
     : `${baseClasses} bg-gray-50 text-gray-900 border-2 border-gray-200`;
 
   return (

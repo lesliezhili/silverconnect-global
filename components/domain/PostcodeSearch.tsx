@@ -119,12 +119,12 @@ export default function PostcodeSearch({ locale, country, serviceCategory, onPro
             value={postcode}
             onChange={(e) => setPostcode(e.target.value)}
             placeholder={postcodeConfig.placeholder}
-            className="flex-1 h-14 text-xl px-4 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            className="flex-1 h-14 text-xl px-4 border-2 border-gray-300 rounded-lg focus:border-teal-600 focus:ring-2 focus:ring-teal-200"
           />
           <button
             onClick={handleSearch}
             disabled={!postcode.trim() || searching}
-            className="h-14 px-8 bg-blue-600 text-white text-lg font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="h-14 px-8 bg-teal-700 text-white text-lg font-semibold rounded-lg hover:bg-teal-800 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {searching ? "..." : isZh ? "搜索" : "Search"}
           </button>
@@ -178,7 +178,7 @@ export default function PostcodeSearch({ locale, country, serviceCategory, onPro
             return (
               <div
                 key={prov.id}
-                className="bg-white rounded-xl border-2 border-gray-200 p-5 hover:border-blue-300 transition-all cursor-pointer"
+                className="bg-white rounded-xl border-2 border-gray-200 p-5 hover:border-teal-300 transition-all cursor-pointer"
                 onClick={() => onProviderSelect?.(prov.id)}
               >
                 {/* Distance badge — prominent */}
@@ -225,7 +225,7 @@ export default function PostcodeSearch({ locale, country, serviceCategory, onPro
                   <span className="text-xs text-gray-500">{isZh ? "匹配度" : "Match"}</span>
                   <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-blue-500 rounded-full"
+                      className="h-full bg-teal-600 rounded-full"
                       style={{ width: `${prov.matchScore}%` }}
                     />
                   </div>

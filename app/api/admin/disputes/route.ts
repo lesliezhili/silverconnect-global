@@ -1,14 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPaymentProvider, PHLEDGER_API_URL } from "@/lib/payments/provider-config";
+import { getStripeClient, isStripeConfigured } from "@/lib/stripe/server";
+import { getCurrentUser } from "@/lib/auth/server";
 
 /**
  * GET /api/admin/disputes — List all disputes (admin view)
  * POST /api/admin/disputes — Resolve a dispute
- * 
+ *
  * Body: { disputeId, resolution, refundType, refundAmount?, resolvedBy }
  * refundType: "full" | "partial" | "none"
  */
 export async function GET() {
+  const me = await getCurrentUser();
+  if (!me || !me.isAdmin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { default: postgres } = await import("postgres");
   const sql = postgres(process.env.DATABASE_URL || "", { prepare: false, connect_timeout: 10 });
 
@@ -50,6 +57,11 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const me = await getCurrentUser();
+  if (!me || !me.isAdmin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const body = await req.json();
   const { disputeId, resolution, refundType, refundAmount: customRefundAmount, resolvedBy } = body;
 
@@ -119,15 +131,19 @@ export async function POST(req: NextRequest) {
       } else {
         // Stripe refund
         try {
-          const [payment] = await sql`SELECT stripe_payment_intent_id FROM payments WHERE booking_id = ${dispute.booking_id} AND status = 'succeeded' LIMIT 1`;
-          if (payment?.stripe_payment_intent_id) {
-            const Stripe = (await import("stripe")).default;
-            const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", { apiVersion: "2024-06-20" as any });
+          const [payment] = await sql`SELECT id, stripe_payment_intent_id FROM payments WHERE booking_id = ${dispute.booking_id} AND status = 'captured' LIMIT 1`;
+          if (payment?.stripe_payment_intent_id && isStripeConfigured()) {
+            const stripe = getStripeClient();
             const refund = await stripe.refunds.create({
               payment_intent: payment.stripe_payment_intent_id,
               amount: Math.round(refundAmount * 100),
             });
             refundTransactionId = refund.id;
+            await sql`UPDATE payments SET status = 'refunded', updated_at = NOW() WHERE id = ${payment.id}`;
+            await sql`INSERT INTO refunds (payment_id, stripe_refund_id, amount, reason, status) VALUES (${payment.id}, ${refund.id}, ${refundAmount}, 'dispute', 'succeeded')`;
+          } else if (payment?.stripe_payment_intent_id) {
+            refundTransactionId = `STRIPE-SIM-${Date.now()}`;
+            await sql`INSERT INTO refunds (payment_id, amount, reason, status) VALUES (${payment.id}, ${refundAmount}, 'dispute', 'pending')`;
           }
         } catch (e: unknown) {
           refundTransactionId = "STRIPE-ERR-" + (e instanceof Error ? e.message.slice(0, 30) : "");

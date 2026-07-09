@@ -122,11 +122,11 @@ export default function PriceBreakdownCard({
   return (
     <div className="bg-white rounded-xl border-2 border-gray-200 overflow-hidden">
       {/* Header */}
-      <div className="bg-blue-50 px-5 py-3 border-b">
-        <h3 className="text-lg font-bold text-blue-900">
+      <div className="bg-teal-50 px-5 py-3 border-b">
+        <h3 className="text-lg font-bold text-teal-950">
           {isZh ? "💰 价格明细" : "💰 Price Breakdown"}
         </h3>
-        <p className="text-sm text-blue-700">
+        <p className="text-sm text-teal-800">
           {isZh ? "透明定价 — 让您了解每一分钱的去向" : "Transparent pricing — see where every dollar goes"}
         </p>
       </div>
@@ -166,7 +166,7 @@ export default function PriceBreakdownCard({
           <span className="text-base text-gray-600">
             {isZh ? `× ${durationHours}小时` : `× ${durationHours} hours`}
           </span>
-          <span className="text-xl font-bold text-blue-700">
+          <span className="text-xl font-bold text-teal-800">
             {sym}{totalCost.toFixed(2)}
           </span>
         </div>

@@ -39,7 +39,7 @@ export default function BookingWizard() {
       <div className="mb-6">
         <div className="h-3 w-full rounded-full bg-gray-200">
           <div
-            className="h-3 rounded-full bg-blue-600 transition-all duration-300"
+            className="h-3 rounded-full bg-teal-700 transition-all duration-300"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -52,7 +52,7 @@ export default function BookingWizard() {
       {currentIndex > 0 && (
         <button
           onClick={goBack}
-          className="mb-4 flex items-center gap-2 rounded-xl px-4 py-3 text-elder-body text-blue-600"
+          className="mb-4 flex items-center gap-2 rounded-xl px-4 py-3 text-elder-body text-teal-700"
           style={{ minHeight: "56px" }}
         >
           ← {t("back")}
@@ -107,7 +107,7 @@ function StepCategory({ onSelect }: { onSelect: (cat: string) => void }) {
           <button
             key={cat.id}
             onClick={() => onSelect(cat.id)}
-            className="flex w-full items-center gap-4 rounded-2xl border-2 border-gray-200 bg-white p-5 text-left transition-colors hover:border-blue-400 active:bg-blue-50"
+            className="flex w-full items-center gap-4 rounded-2xl border-2 border-gray-200 bg-white p-5 text-left transition-colors hover:border-teal-400 active:bg-teal-50"
             style={{ minHeight: "64px" }}
           >
             <span className="text-3xl">{cat.icon}</span>

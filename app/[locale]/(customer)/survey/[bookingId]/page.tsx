@@ -122,7 +122,7 @@ function SurveyContent() {
             <div className="grid grid-cols-2 gap-3">
               {EMOTIONS.map(e => (
                 <button key={e.code} onClick={() => setEmotional(e.code)}
-                  className={"p-4 rounded-2xl text-center border-2 min-h-[72px] " + (emotional === e.code ? "bg-blue-50 border-blue-400" : "bg-white border-gray-200")}>
+                  className={"p-4 rounded-2xl text-center border-2 min-h-[72px] " + (emotional === e.code ? "bg-teal-50 border-teal-400" : "bg-white border-gray-200")}>
                   <div className="text-3xl">{e.emoji}</div>
                   <div className="text-base mt-1">{isZh ? e.label_zh : e.label}</div>
                 </button>

@@ -27,7 +27,11 @@ export const users = pgTable(
     email: text("email").notNull(),
     passwordHash: text("password_hash").notNull(),
     emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
+    /** The user's operating mode — what they see in the app day-to-day. */
     role: roleEnum("role").notNull().default("customer"),
+    /** Orthogonal to `role`: grants access to /admin/* regardless of which
+     * role the user is currently operating as (customer or provider). */
+    isAdmin: boolean("is_admin").notNull().default(false),
     country: countryEnum("country").notNull().default("AU"),
     locale: localeEnum("locale").notNull().default("en"),
     name: text("name"),

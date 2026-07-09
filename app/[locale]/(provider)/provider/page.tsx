@@ -14,7 +14,7 @@ import { users } from "@/lib/db/schema/users";
 import { services } from "@/lib/db/schema/services";
 import { wallets } from "@/lib/db/schema/payments";
 import { getCurrentUser } from "@/lib/auth/server";
-import { RoleSwitchButton } from "@/components/domain/RoleSwitchButton";
+import { RoleSwitchButton } from "@/components/RoleSwitchButton";
 
 export const dynamic = "force-dynamic";
 
@@ -316,7 +316,7 @@ export default async function ProviderWorkbenchPage({
       </main>
       {me && (
         <div className="mx-auto w-full max-w-content px-5 pb-6">
-          <RoleSwitchButton role="provider" false={me.false} />
+          <RoleSwitchButton role="provider" hasCompletedOnboarding locale={locale} />
         </div>
       )}
     </>

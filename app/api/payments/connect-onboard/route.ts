@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/auth/server";
 import { db } from "@/lib/db";
 import { providerProfiles } from "@/lib/db/schema/providers";
 import { eq } from "drizzle-orm";
+import { getStripeClient, isStripeConfigured } from "@/lib/stripe/server";
 
 export const dynamic = "force-dynamic";
 
@@ -13,8 +14,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Provider account required" }, { status: 401 });
     }
 
-    const stripeKey = process.env.STRIPE_SECRET_KEY;
-    if (!stripeKey || !stripeKey.startsWith("sk_test_")) {
+    if (!isStripeConfigured()) {
       return NextResponse.json({
         simulated: true,
         accountId: `acct_sim_${Date.now()}`,
@@ -23,14 +23,13 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const Stripe = (await import("stripe")).default;
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-02-24.acacia" as any });
+    const stripe = getStripeClient();
 
     // Check if provider already has a Connect account stored
     const [profile] = await db.select().from(providerProfiles)
       .where(eq(providerProfiles.userId, user.id)).limit(1);
 
-    let accountId = (profile as any)?.stripeAccountId as string | null;
+    let accountId = profile?.stripeAccountId ?? null;
 
     if (!accountId) {
       // Create new Express Connect account
@@ -46,14 +45,9 @@ export async function POST(req: NextRequest) {
       });
       accountId = account.id;
 
-      // Try to store in provider profile (column may not exist in DB yet)
-      try {
-        await db.update(providerProfiles)
-          .set({ stripeAccountId: accountId } as any)
-          .where(eq(providerProfiles.userId, user.id));
-      } catch (dbErr) {
-        console.warn("[connect-onboard] Could not store stripeAccountId:", dbErr);
-      }
+      await db.update(providerProfiles)
+        .set({ stripeAccountId: accountId })
+        .where(eq(providerProfiles.userId, user.id));
     }
 
     // Generate onboarding link

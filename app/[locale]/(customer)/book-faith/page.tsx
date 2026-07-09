@@ -148,7 +148,7 @@ function BookFaithContent() {
                 {["09:00", "10:00", "11:00", "14:00", "15:00", "16:00"].map(t => (
                   <button key={t} onClick={() => setSelectedTime(t)}
                     className={"p-4 rounded-xl text-lg font-medium min-h-[56px] border-2 " +
-                      (selectedTime === t ? "bg-blue-100 border-blue-400 text-blue-800" : "bg-white border-gray-200 text-gray-700")}>
+                      (selectedTime === t ? "bg-teal-100 border-teal-400 text-teal-900" : "bg-white border-gray-200 text-gray-700")}>
                     {t}
                   </button>
                 ))}

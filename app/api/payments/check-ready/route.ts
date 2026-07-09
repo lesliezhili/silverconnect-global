@@ -30,7 +30,7 @@ export async function GET() {
   }
 
   // If user is also a provider, check BSB/account
-  if (me.false) {
+  if (me.role === "provider") {
     const [profile] = await db.select({
       id: providerProfiles.id,
       bsb: providerProfiles.bsb,
@@ -48,6 +48,6 @@ export async function GET() {
     ready: missing.length === 0,
     missing,
     hasCard: !!card,
-    hasBankAccount: me.false ? missing.length === 0 : null,
+    hasBankAccount: me.role === "provider" ? missing.length === 0 : null,
   });
 }

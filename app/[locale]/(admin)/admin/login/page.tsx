@@ -6,18 +6,30 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { getAdmin, setAdmin } from "@/components/domain/adminCookie";
+import { findUserByEmail, verifyPassword, signInUser } from "@/lib/auth/server";
 
 async function loginAction(formData: FormData) {
   "use server";
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
-  const totp = String(formData.get("totp") ?? "").trim();
   const locale = String(formData.get("locale") ?? "en");
-  if (!email.includes("@") || password.length < 8 || !/^\d{6}$/.test(totp)) {
+  if (!email.includes("@") || password.length < 8) {
     nextRedirect(`/${locale}/admin/login?error=invalid`);
   }
-  await setAdmin(email);
-  nextRedirect(`/${locale}/admin`);
+
+  const user = await findUserByEmail(email);
+  if (!user || !user.isAdmin || !(await verifyPassword(password, user.passwordHash))) {
+    nextRedirect(`/${locale}/admin/login?error=invalid`);
+  } else {
+    // Establish both the admin-panel session (sc-admin, gates /admin/* pages)
+    // and the regular session (reads via getCurrentUser(), which every admin
+    // server action/API route checks for isAdmin) — otherwise someone who
+    // authenticates only here, without a prior customer-facing login, would
+    // have every admin action silently fail for lack of a regular session.
+    await setAdmin(email);
+    await signInUser(user.id);
+    nextRedirect(`/${locale}/admin`);
+  }
 }
 
 export default async function AdminLoginPage({
@@ -87,22 +99,6 @@ export default async function AdminLoginPage({
               minLength={8}
               required
             />
-          </div>
-          <div>
-            <Label htmlFor="totp">{t("loginTotp")}</Label>
-            <Input
-              id="totp"
-              name="totp"
-              inputMode="numeric"
-              pattern="\d{6}"
-              maxLength={6}
-              autoComplete="one-time-code"
-              required
-              aria-describedby="totp-hint"
-            />
-            <p id="totp-hint" className="mt-1.5 text-[17px] text-text-tertiary">
-              {t("loginTotpHint")}
-            </p>
           </div>
           <Button type="submit" variant="primary" block size="md">
             {t("loginCta")}

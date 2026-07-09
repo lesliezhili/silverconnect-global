@@ -80,7 +80,7 @@ test.describe('心语者注册流程', () => {
 
   test('christian community page renders', async ({ page }) => {
     await page.goto(`${BASE}/zh/christian`)
-    await expect(page.locator('text=基督徒')).toBeVisible()
+    await expect(page.getByRole('heading', { name: /基督徒/ })).toBeVisible()
     await expect(page.locator('text=免费查经')).toBeVisible()
   })
 })

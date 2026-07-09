@@ -24,6 +24,8 @@ export default function proxy(request: NextRequest): NextResponse {
 
 export const config = {
   // Apply locale routing to everything except /api, /admin, /_next, /_vercel,
-  // and any path with a file extension (static assets like favicon.ico).
-  matcher: ["/((?!api|admin|_next|_vercel|.*\\..*).*)"],
+  // the icon/apple-icon metadata routes (no file extension in their URL,
+  // so they'd otherwise be caught by the locale matcher and 404), and any
+  // other path with a file extension (static assets like favicon.ico).
+  matcher: ["/((?!api|admin|_next|_vercel|icon$|apple-icon$|.*\\..*).*)"],
 };

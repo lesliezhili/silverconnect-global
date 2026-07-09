@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import postgres from "postgres";
+import { getCurrentUser } from "@/lib/auth/server";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
+  const me = await getCurrentUser();
+  if (!me || !me.isAdmin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const url = process.env.DATABASE_URL;
   if (!url) return NextResponse.json({ error: "No DATABASE_URL" }, { status: 500 });
   const sql = postgres(url, { prepare: false, connect_timeout: 15 });
@@ -53,6 +59,11 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
+  const me = await getCurrentUser();
+  if (!me || !me.isAdmin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const url = process.env.DATABASE_URL;
   if (!url) return NextResponse.json({ error: "No DATABASE_URL" }, { status: 500 });
   const sql = postgres(url, { prepare: false, connect_timeout: 15 });

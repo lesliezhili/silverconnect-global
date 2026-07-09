@@ -60,7 +60,7 @@ test.describe('Form labels — senior-friendly (WCAG 1.3.1)', () => {
 
   test('login password has associated label', async ({ page }) => {
     await page.goto('/' + L + '/auth/login')
-    await expect(page.getByLabel(/password/i)).toBeVisible()
+    await expect(page.getByLabel(/^password$/i)).toBeVisible()
   })
 
   test('register form has 3+ labelled inputs', async ({ page }) => {

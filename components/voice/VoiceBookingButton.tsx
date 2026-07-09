@@ -85,7 +85,7 @@ export default function VoiceBookingButton() {
         className={`relative flex items-center justify-center rounded-full transition-all ${
           state === "listening"
             ? "bg-red-600 voice-pulse shadow-2xl"
-            : "bg-blue-600 shadow-lg hover:bg-blue-700"
+            : "bg-teal-700 shadow-lg hover:bg-teal-800"
         }`}
         style={{ width: "128px", height: "128px" }}
         aria-label={state === "listening" ? "Stop listening" : "Start voice booking"}
@@ -115,8 +115,8 @@ export default function VoiceBookingButton() {
 
       {/* AI Response */}
       {response && (
-        <div className="w-full max-w-sm rounded-2xl border-2 border-blue-200 bg-blue-50 p-4">
-          <p className="text-sm text-blue-600">AI:</p>
+        <div className="w-full max-w-sm rounded-2xl border-2 border-teal-200 bg-teal-50 p-4">
+          <p className="text-sm text-teal-700">AI:</p>
           <p className="mt-1 text-elder-body text-gray-900">{response}</p>
         </div>
       )}

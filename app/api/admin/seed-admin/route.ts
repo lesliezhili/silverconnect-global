@@ -12,15 +12,16 @@ export async function POST() {
     const passwordHash = await bcrypt.hash("Admin1234!", 10);
     const adminId = "a0000000-0000-0000-0000-000000000001";
 
-    // Upsert admin user
+    // Upsert admin user — isAdmin is orthogonal to role (customer/provider);
+    // it grants /admin/* access regardless of which role the user operates as.
     await sql`
-      INSERT INTO users (id, email, name, phone, password_hash, current_active_role, is_provider_onboarded)
-      VALUES (${adminId}, 'admin.test@silverconnect.app', 'Platform Admin', '+61400000001', ${passwordHash}, 'admin', false)
+      INSERT INTO users (id, email, name, phone, password_hash, role, is_admin, email_verified_at)
+      VALUES (${adminId}, 'admin.test@silverconnect.app', 'Platform Admin', '+61400000001', ${passwordHash}, 'customer', true, NOW())
       ON CONFLICT (id) DO UPDATE SET
         email = EXCLUDED.email,
         name = EXCLUDED.name,
         password_hash = EXCLUDED.password_hash,
-        current_active_role = EXCLUDED.current_active_role
+        is_admin = true
     `;
 
     await sql.end();
@@ -31,7 +32,7 @@ export async function POST() {
         email: "admin.test@silverconnect.app",
         password: "Admin1234!",
         name: "Platform Admin",
-        role: "admin",
+        isAdmin: true,
         userId: adminId,
       },
       adminPages: {

@@ -6,6 +6,7 @@ import { providerProfiles } from "@/lib/db/schema/providers";
 import { services } from "@/lib/db/schema/services";
 import { eq, sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
+import { getStripeClient } from "@/lib/stripe/server";
 
 export const dynamic = "force-dynamic";
 
@@ -57,8 +58,7 @@ export async function POST() {
     let paymentResult: any;
 
     if (stripeKey && stripeKey.startsWith("sk_test_")) {
-      const Stripe = (await import("stripe")).default;
-      const stripe = new Stripe(stripeKey, { apiVersion: "2025-02-24.acacia" as any });
+      const stripe = getStripeClient();
 
       const amountCents = Math.round(Number(totalPrice) * 100);
       const platformFee = Math.round(amountCents * 0.15);

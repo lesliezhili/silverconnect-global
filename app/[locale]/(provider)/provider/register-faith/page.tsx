@@ -179,7 +179,7 @@ function FaithRegistrationForm() {
             {AVAILABILITY.map(a => (
               <button key={a.code} onClick={() => toggleAvailability(a.code)}
                 className={"px-4 py-3 rounded-full text-base font-medium min-h-[48px] " +
-                  (selectedAvailability.includes(a.code) ? "bg-blue-100 border-2 border-blue-300 text-blue-800" : "bg-gray-100 text-gray-700 border border-gray-200")}>
+                  (selectedAvailability.includes(a.code) ? "bg-teal-100 border-2 border-teal-300 text-teal-900" : "bg-gray-100 text-gray-700 border border-gray-200")}>
                 {a.label}
               </button>
             ))}

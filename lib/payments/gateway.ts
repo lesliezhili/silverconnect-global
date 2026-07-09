@@ -11,6 +11,7 @@
  */
 
 import { getPaymentProvider, PHLEDGER_API_URL, PaymentResult, InvoiceResult, PayoutResult } from "./provider-config";
+import { getStripeClient, isStripeLiveMode } from "@/lib/stripe/server";
 
 interface PaymentInput {
   amount: number;
@@ -63,8 +64,7 @@ export async function processPayment(input: PaymentInput): Promise<PaymentResult
 }
 
 async function processPaymentStripe(input: PaymentInput): Promise<PaymentResult> {
-  const Stripe = (await import("stripe")).default;
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", { apiVersion: "2024-06-20" as any });
+  const stripe = getStripeClient();
 
   const pi = await stripe.paymentIntents.create({
     amount: Math.round(input.amount * 100), // cents
@@ -73,8 +73,8 @@ async function processPaymentStripe(input: PaymentInput): Promise<PaymentResult>
     automatic_payment_methods: { enabled: true, allow_redirects: "never" },
   });
 
-  // Confirm with test card in test mode
-  if (process.env.STRIPE_SECRET_KEY?.startsWith("sk_test_")) {
+  // Confirm with Stripe's test card — only valid in test mode, live mode requires a real payment method.
+  if (!isStripeLiveMode()) {
     await stripe.paymentIntents.confirm(pi.id, {
       payment_method: "pm_card_visa",
       return_url: `${process.env.NEXT_PUBLIC_APP_URL || "https://silverconnect-global.vercel.app"}/en/book-service`,
@@ -240,7 +240,11 @@ export async function releasePayout(input: PayoutInput): Promise<PayoutResult> {
 }
 
 async function releasePayoutInternal(input: PayoutInput): Promise<PayoutResult> {
-  // Current Stripe mode: payout is tracked in wallet (no real Stripe Connect transfer yet)
+  // This gateway is only exercised by the admin test/e2e comparison routes
+  // (test-e2e-both, test-phledger), not the real booking flow, and this
+  // input has no Stripe Connect account id to transfer to — it only carries
+  // bank-detail fields for the PHLedger comparison. The real payout path
+  // with a live Stripe Connect transfer is app/api/payments/payout/route.ts.
   const feePercent = input.platformFeePercent || 15;
   const platformFee = Math.round(input.totalAmount * (feePercent / 100) * 100) / 100;
   const providerAmount = Math.round((input.totalAmount - platformFee) * 100) / 100;

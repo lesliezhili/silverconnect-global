@@ -18,7 +18,7 @@ export default function HomeError({
       </p>
       <button
         onClick={reset}
-        className="mt-6 rounded-2xl bg-blue-600 px-8 py-4 text-elder-body font-bold text-white"
+        className="mt-6 rounded-2xl bg-teal-700 px-8 py-4 text-elder-body font-bold text-white"
         style={{ minHeight: "56px" }}
       >
         Try Again

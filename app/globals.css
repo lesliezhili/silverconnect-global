@@ -9,9 +9,12 @@
 
 @layer base {
   :root {
-    /* Brand */
-    --brand-primary: #1858C4;
-    --brand-primary-hover: #0F47A6;
+    /* Brand — teal is the primary CTA/link color; the logo's second lobe
+       (blue) is reserved for the mark itself. --brand-accent stays amber:
+       it doubles as the star-rating color across provider cards/reviews,
+       which is a UX convention independent of brand identity. */
+    --brand-primary: #0F766E;
+    --brand-primary-hover: #115E56;
     --brand-accent: #F59E0B;
 
     /* Semantic — calibrated to pass WCAG AA (≥4.5:1) on their *-soft
@@ -30,7 +33,7 @@
     --text-primary: #0F172A;
     --text-secondary: #475569;
     --text-placeholder: #475569;
-    --text-link: #1858C4;
+    --text-link: #0F766E;
 
     /* Status badges — light surface */
     --badge-pending-bg: #FEF3C7;
@@ -47,7 +50,7 @@
     --badge-refunded-fg: #991B1B;
 
     /* Soft tints (used on category chips, recently-booked rows, etc.) */
-    --brand-primary-soft: #E8F0FE;
+    --brand-primary-soft: #CCFBF1;
     --brand-accent-soft: #FEF3C7;
     --success-soft: #DCFCE7;
     --warning-soft: #FEF3C7;
@@ -79,9 +82,9 @@
   /* Dark — follows system; never pushed */
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --brand-primary: #5B9CFF;
-      --brand-primary-hover: #3B82F6;
-      --brand-primary-soft: #1B2B4A;
+      --brand-primary: #2DD4BF;
+      --brand-primary-hover: #14B8A6;
+      --brand-primary-soft: #134E4A;
       --brand-accent-soft: #3A2E14;
       --success-soft: #14331E;
       --warning-soft: #3A2E14;
@@ -96,7 +99,7 @@
       --text-secondary: #CBD5E1;
       --text-tertiary: #94A3B8;
       --text-placeholder: #475569;
-      --text-link: #93C5FD;
+      --text-link: #5EEAD4;
       --badge-pending-bg: rgba(245, 158, 11, 0.18);
       --badge-pending-fg: #FCD34D;
       --badge-confirmed-bg: rgba(59, 130, 246, 0.18);
@@ -113,9 +116,9 @@
   }
 
   :root[data-theme="dark"] {
-    --brand-primary: #5B9CFF;
-    --brand-primary-hover: #3B82F6;
-    --brand-primary-soft: #1B2B4A;
+    --brand-primary: #2DD4BF;
+    --brand-primary-hover: #14B8A6;
+    --brand-primary-soft: #134E4A;
     --brand-accent-soft: #3A2E14;
     --success-soft: #14331E;
     --warning-soft: #3A2E14;
@@ -130,7 +133,7 @@
     --text-secondary: #CBD5E1;
     --text-tertiary: #94A3B8;
     --text-placeholder: #475569;
-    --text-link: #93C5FD;
+    --text-link: #5EEAD4;
     --badge-pending-bg: rgba(245, 158, 11, 0.18);
     --badge-pending-fg: #FCD34D;
     --badge-confirmed-bg: rgba(59, 130, 246, 0.18);

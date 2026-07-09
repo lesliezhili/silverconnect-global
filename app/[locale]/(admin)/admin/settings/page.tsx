@@ -25,7 +25,7 @@ async function saveSettings(formData: FormData) {
   const locale = String(formData.get("locale") ?? "en");
   const cancelRaw = String(formData.get("cancelHours") ?? "");
   const me = await getCurrentUser();
-  if (!me || me.role !== "admin") nextRedirect(`/${locale}/admin/login`);
+  if (!me || !me.isAdmin) nextRedirect(`/${locale}/admin/login`);
 
   const cancelHours = Number(cancelRaw);
   if (Number.isFinite(cancelHours) && cancelHours >= 0 && cancelHours <= 168) {
@@ -100,7 +100,7 @@ export default async function AdminSettingsPage({
         createdAt: users.createdAt,
       })
       .from(users)
-      .where(eq(users.role, "admin"))
+      .where(eq(users.isAdmin, true))
       .orderBy(desc(users.createdAt))
       .limit(20);
 

@@ -30,9 +30,9 @@ export async function POST(req: NextRequest) {
   const session = await getAuthSession();
   session.userId = user.id;
   session.email = user.email;
-  session.name = user.name ?? null;
-  session.role = user.role as "customer" | "provider" | "admin";
+  session.name = user.name ?? undefined;
+  session.role = user.role === "admin" ? "customer" : (user.role as "customer" | "provider");
   await session.save();
 
-  return NextResponse.json({ success: true, role: session.role });
+  return NextResponse.json({ success: true, role: session.role, isAdmin: user.isAdmin });
 }

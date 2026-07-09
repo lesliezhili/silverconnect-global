@@ -75,6 +75,8 @@ export default async function ServicesPage({
       .orderBy(serviceCategories.sortOrder);
 
     if (dbCats.length > 0) cats = dbCats;
+    // Faith services are opt-in and shown only to signed-in users.
+    if (!session.signedIn) cats = cats.filter((c) => c.code !== "faith");
 
     // Hourly rate window per category (this country)
     const priceRows = await db

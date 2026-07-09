@@ -1,15 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth/server";
 
 /**
  * GET /api/admin/payment-provider — Check current payment provider
  * POST /api/admin/payment-provider — Switch payment provider
- * 
+ *
  * Providers:
  *   "stripe_xero" = Stripe (payments) + Xero (invoicing) — PAID
  *   "phledger"    = PHLedger PayTo + Native Invoicing — FREE
  */
 
 export async function GET() {
+  const me = await getCurrentUser();
+  if (!me || !me.isAdmin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const provider = process.env.PAYMENT_PROVIDER || "stripe_xero";
   const phledgerUrl = process.env.PHLEDGER_API_URL || "https://phledgertax.vercel.app";
 
@@ -52,6 +58,11 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const me = await getCurrentUser();
+  if (!me || !me.isAdmin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { provider } = await req.json();
   
   if (!["stripe_xero", "phledger"].includes(provider)) {

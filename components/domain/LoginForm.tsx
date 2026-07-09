@@ -79,13 +79,15 @@ export function LoginForm({
         return;
       }
 
-      const data: { success: boolean; role?: string } = await res.json();
+      const data: { success: boolean; role?: string; isAdmin?: boolean } = await res.json();
       const role = data.role ?? "customer";
 
       // router.push triggers a full navigation — the browser sends the
       // freshly-set sc-session cookie on the next server request.
-      if (role === "provider") router.push(`/${locale}/provider`);
-      else if (role === "admin") router.push(`/${locale}/admin`);
+      // Admins land on the dashboard by default; they still need the
+      // separate /admin/login re-auth to actually get past its gate.
+      if (data.isAdmin) router.push(`/${locale}/admin`);
+      else if (role === "provider") router.push(`/${locale}/provider`);
       else router.push(`/${locale}/home`);
     } catch {
       setError(labels.errorGeneric);

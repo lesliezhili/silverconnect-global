@@ -269,7 +269,7 @@ function BookServiceContent() {
       <div className="grid grid-cols-2 gap-4">
         {CATEGORIES.map(c => (
           <button key={c.code} onClick={() => { setCategory(c.code); setSubtype(""); (c.code === "repair" || c.code === "cleaning") ? setStep(15) : setStep(2); }}
-            className="flex flex-col items-center justify-center rounded-2xl border-2 border-gray-200 bg-white p-6 shadow-sm active:scale-[0.96] active:bg-blue-50"
+            className="flex flex-col items-center justify-center rounded-2xl border-2 border-gray-200 bg-white p-6 shadow-sm active:scale-[0.96] active:bg-teal-50"
             style={{ minHeight: "130px" }}>
             <span className="text-[42px] mb-2">{c.emoji}</span>
             <span className="text-[18px] font-semibold text-gray-900">{locale === "th" ? c.th : locale === "ko" ? c.ko : locale === "ja" ? c.ja : locale === "vi" ? c.vi : isZh ? c.zh : c.en}</span>
@@ -288,13 +288,13 @@ function BookServiceContent() {
       : t("What type of cleaning?", "需要什么清洁?", "ต้องการทำความสะอาดแบบไหน?", "어떤 청소가 필요하세요?", "どのような清掃ですか?", "Loại dọn dẹp nào?");
     return (
       <main className="max-w-lg mx-auto p-6">
-        <button onClick={() => setStep(1)} className="text-blue-600 text-lg mb-4">← {t("Back", "返回", "กลับ", "뒤로", "戻る")}</button>
+        <button onClick={() => setStep(1)} className="text-teal-700 text-lg mb-4">← {t("Back", "返回", "กลับ", "뒤로", "戻る")}</button>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">{title}</h2>
         <p className="text-lg text-gray-500 mb-6">{category === "repair" ? t("Select repair type", "选择维修类型", "เลือกประเภทการซ่อม", "수리 유형 선택", "修理タイプを選択") : t("Select cleaning level", "选择清洁类型", "เลือกระดับความสะอาด", "청소 유형 선택", "清掃レベルを選択")}</p>
         <div className="grid grid-cols-2 gap-4">
           {subtypes.map(s => (
             <button key={s.code} onClick={() => { setSubtype(s.code); setStep(2); }}
-              className="flex flex-col items-center justify-center rounded-2xl border-2 border-gray-200 bg-white p-5 shadow-sm active:scale-[0.96] active:bg-blue-50"
+              className="flex flex-col items-center justify-center rounded-2xl border-2 border-gray-200 bg-white p-5 shadow-sm active:scale-[0.96] active:bg-teal-50"
               style={{ minHeight: "110px" }}>
               <span className="text-[36px] mb-2">{s.emoji}</span>
               <span className="text-[16px] font-semibold text-gray-900">{locale === "zh" || locale === "zh_tw" ? s.zh : locale === "th" ? s.th : locale === "ko" ? s.ko : locale === "ja" ? s.ja : locale === "vi" ? (s as any).vi || s.en : s.en}</span>
@@ -309,7 +309,7 @@ function BookServiceContent() {
   if (step === 2) return (
     <main className="max-w-lg mx-auto p-6">
         <TierInfoModal />
-      <button onClick={() => setStep(1)} className="text-blue-600 text-lg mb-4">← {t("Back", "返回", "กลับ", "뒤로", "戻る")}</button>
+      <button onClick={() => setStep(1)} className="text-teal-700 text-lg mb-4">← {t("Back", "返回", "กลับ", "뒤로", "戻る")}</button>
       <h2 className="text-2xl font-bold text-gray-900 mb-4">{t("Choose Date & Time", "选择时间", "เลือกวันและเวลา", "날짜 및 시간 선택", "日時を選択")}</h2>
       <div className="space-y-4">
         <div>
@@ -328,7 +328,7 @@ function BookServiceContent() {
           <div className="grid grid-cols-3 gap-3">
             {[60, 90, 120, 480, 720, 1440].map(d => (
               <button key={d} onClick={() => setDuration(d)}
-                className={"rounded-xl border-2 p-4 text-center text-lg font-semibold " + (duration === d ? "border-blue-500 bg-blue-50 text-blue-700" : "border-gray-200 text-gray-600")}>
+                className={"rounded-xl border-2 p-4 text-center text-lg font-semibold " + (duration === d ? "border-teal-600 bg-teal-50 text-teal-800" : "border-gray-200 text-gray-600")}>
                 {d >= 480 ? (d/60) + (isZh ? "小时（换班制）" : "hr (shifts)") : d + " " + t("min", "分钟", "นาที", "분", "分")}
               </button>
             ))}
@@ -344,7 +344,7 @@ function BookServiceContent() {
       
       {/* Live Price Display */}
       {category && (
-        <div className="mt-6 bg-gradient-to-b from-blue-50 to-white border-2 border-blue-200 rounded-2xl p-5">
+        <div className="mt-6 bg-gradient-to-b from-teal-50 to-white border-2 border-teal-200 rounded-2xl p-5">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-lg font-bold text-gray-900">{t("✨ Smart Price", "✨ 智能定价", "✨ ราคาอัจฉริยะ", "✨ 스마트 가격", "✨ スマート価格", "✨ Giá thông minh")}</h3>
             {calInfo.mult > 1 && (
@@ -417,7 +417,7 @@ function BookServiceContent() {
                 <span>${cloudFee.toFixed(2)}</span>
               </div>
             )}
-            <div className="flex justify-between text-xl font-bold text-blue-700 border-t pt-2 mt-2">
+            <div className="flex justify-between text-xl font-bold text-teal-800 border-t pt-2 mt-2">
               <span>{t("Total", "总计", "ทั้งหมด", "합계", "合計", "Tổng")}</span>
               <span>{country === "CN" ? "¥" : "A$"}{totalPrice.toFixed(2)}</span>
             </div>
@@ -432,7 +432,7 @@ function BookServiceContent() {
       )}
 
       <button onClick={() => setStep(3)} disabled={!date}
-        className="mt-6 w-full py-4 bg-blue-600 text-white text-xl font-bold rounded-xl disabled:opacity-50">
+        className="mt-6 w-full py-4 bg-teal-700 text-white text-xl font-bold rounded-xl disabled:opacity-50">
         {t("Next → Review", "下一步", "ถัดไป → ตรวจสอบ", "다음 → 확인", "次へ → 確認")}
       </button>
     </main>
@@ -443,7 +443,7 @@ function BookServiceContent() {
     const cat = CATEGORIES.find(c => c.code === category);
     return (
       <main className="max-w-lg mx-auto p-6">
-        <button onClick={() => setStep(2)} className="text-blue-600 text-lg mb-4">← {t("Back", "返回", "กลับ", "뒤로", "戻る")}</button>
+        <button onClick={() => setStep(2)} className="text-teal-700 text-lg mb-4">← {t("Back", "返回", "กลับ", "뒤로", "戻る")}</button>
         <h2 className="text-2xl font-bold text-gray-900 mb-4">{t("Review Booking", "确认预约", "ตรวจสอบการจอง", "예약 확인", "予約確認")}</h2>
         <div className="bg-white border-2 border-gray-200 rounded-2xl p-6 space-y-4">
           <div className="flex items-center gap-3">
@@ -485,7 +485,7 @@ function BookServiceContent() {
           )}
           <div className="flex justify-between text-xl font-bold border-t pt-3">
             <span>{t("Total", "总计", "ทั้งหมด", "합계", "合計")}</span>
-            <span className="text-blue-700">{country === "CN" ? "¥" : "A$"}{totalPrice.toFixed(2)}</span>
+            <span className="text-teal-800">{country === "CN" ? "¥" : "A$"}{totalPrice.toFixed(2)}</span>
           </div>
         </div>
         <p className="mt-3 text-center text-sm text-gray-400">
@@ -509,7 +509,7 @@ function BookServiceContent() {
         <p className="text-green-700">{t("Your verified helper will contact you shortly", "您的专业服务人员将很快联系您", "ผู้ช่วยที่ผ่านการตรวจสอบจะติดต่อคุณเร็วๆ นี้", "인증된 도우미가 곧 연락드립니다", "認定ヘルパーがまもなくご連絡します")}</p>
       </div>
       <button onClick={() => router.push("/" + locale + "/dashboard")}
-        className="w-full py-4 bg-blue-600 text-white text-lg font-bold rounded-xl">
+        className="w-full py-4 bg-teal-700 text-white text-lg font-bold rounded-xl">
         {t("Go to Dashboard", "返回首页", "กลับหน้าหลัก", "대시보드로", "ダッシュボードへ")}
       </button>
     </main>

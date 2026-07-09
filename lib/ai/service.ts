@@ -1,7 +1,10 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { sql } from "drizzle-orm";
+import { sql, eq, desc } from "drizzle-orm";
+import { aiConversations, aiMessages } from "@/lib/db/schema/ai";
+import { isBusinessHours } from "@/lib/support/businessHours";
+import { notifyAdmins } from "@/lib/support/notifyAdmins";
 
 // ═══════════════════════════════════════════════════════════════
 // FREE AI STACK: Hugging Face Inference API (no cost, rate-limited)
@@ -70,6 +73,13 @@ const EMERGENCY_RESPONSES: Record<string, { en: string; zh: string }> = {
   },
 };
 
+// ─── Business-Hours Holding Response (human takes over 9am-6pm AEST) ────
+
+const BUSINESS_HOURS_HOLDING_RESPONSE: { en: string; zh: string } = {
+  en: "Thanks for reaching out! Our team is online now and will reply here shortly.",
+  zh: "感谢您的留言！我们的团队现在在线，稍后会在这里回复您。",
+};
+
 // ─── Free LLM Call (Hugging Face Inference API) ─────────────────
 
 async function callFreeLLM(systemPrompt: string, userMessage: string): Promise<string> {
@@ -126,6 +136,8 @@ export async function processAIIncomingInquiry(
   conversationId?: string,
 ): Promise<{ response: string; intent: string; handedOff: boolean; conversationId: string | null }> {
   const { intent, confidence } = await classifyIntent(incomingMessage);
+  const lang = incomingMessage.match(/[一-鿿]/) ? "zh" : "en";
+  const clientToken = conversationId || crypto.randomUUID();
 
   // Log intent (best-effort)
   try {
@@ -135,26 +147,90 @@ export async function processAIIncomingInquiry(
     `);
   } catch {}
 
-  // Emergency/dispute → immediate handoff (no LLM needed)
-  if (intent === "emergency_safety" || intent === "severe_dispute") {
-    const lang = incomingMessage.match(/[一-鿿]/) ? "zh" : "en";
-    return {
-      response: EMERGENCY_RESPONSES[intent][lang],
-      intent,
-      handedOff: true,
-      conversationId: conversationId || null,
-    };
+  // Find or create the conversation this message belongs to.
+  let convoId: string;
+  try {
+    const [existing] = await db
+      .select({ id: aiConversations.id })
+      .from(aiConversations)
+      .where(eq(aiConversations.clientToken, clientToken))
+      .orderBy(desc(aiConversations.createdAt))
+      .limit(1);
+
+    if (existing) {
+      convoId = existing.id;
+    } else {
+      const [created] = await db
+        .insert(aiConversations)
+        .values({ userId, clientToken, locale: lang === "zh" ? "zh" : "en" })
+        .returning({ id: aiConversations.id });
+      convoId = created.id;
+    }
+
+    await db.insert(aiMessages).values({
+      conversationId: convoId,
+      role: "user",
+      content: incomingMessage,
+    });
+  } catch (e) {
+    console.error("[ai] Failed to persist conversation/message:", e);
+    convoId = clientToken;
   }
 
-  // Normal inquiry → free LLM with compassionate prompt
-  const systemPrompt = `You are HeRun (和润), a compassionate AI companion for SilverConnect Global, 
-an elder care platform. You help seniors and their families with care services. 
+  const isEmergency = intent === "emergency_safety" || intent === "severe_dispute";
+  const needsHuman = isEmergency || isBusinessHours();
+
+  let response: string;
+  let handedOff: boolean;
+
+  if (isEmergency) {
+    response = EMERGENCY_RESPONSES[intent][lang];
+    handedOff = true;
+    await notifyAdmins({
+      kind: intent === "emergency_safety" ? "safety" : "dispute",
+      title: intent === "emergency_safety" ? "🚨 Emergency chat message" : "Dispute flagged in chat",
+      body: incomingMessage.slice(0, 200),
+      link: `/admin/ai/conversations?id=${convoId}`,
+    }).catch(() => {});
+  } else if (isBusinessHours()) {
+    // Business hours: a human takes it from here — don't spend an LLM call.
+    response = BUSINESS_HOURS_HOLDING_RESPONSE[lang];
+    handedOff = true;
+    await notifyAdmins({
+      kind: "system",
+      title: "New support chat message",
+      body: incomingMessage.slice(0, 200),
+      link: `/admin/ai/conversations?id=${convoId}`,
+    }).catch(() => {});
+  } else {
+    // After-hours: AI covers it.
+    const systemPrompt = `You are HeRun (和润), a compassionate AI companion for SilverConnect Global,
+an elder care platform. You help seniors and their families with care services.
 Be warm, clear, patient. Use simple language. If unsure, suggest contacting support.
 Ethics: empathy, dignity, protection of vulnerable, honesty.`;
+    response = await callFreeLLM(systemPrompt, incomingMessage);
+    handedOff = false;
+  }
 
-  const response = await callFreeLLM(systemPrompt, incomingMessage);
+  try {
+    await db.insert(aiMessages).values({
+      conversationId: convoId,
+      role: "assistant",
+      content: response,
+    });
+    await db
+      .update(aiConversations)
+      .set({
+        updatedAt: new Date(),
+        ...(isEmergency ? { emergencyTriggeredAt: new Date() } : {}),
+        ...(needsHuman ? { awaitingHumanAt: new Date() } : {}),
+      })
+      .where(eq(aiConversations.id, convoId));
+  } catch (e) {
+    console.error("[ai] Failed to persist assistant reply:", e);
+  }
 
-  return { response, intent, handedOff: false, conversationId: conversationId || crypto.randomUUID() };
+  return { response, intent, handedOff, conversationId: clientToken };
 }
 
 // ─── Biography Engine (Free LLM-powered) ────────────────────────

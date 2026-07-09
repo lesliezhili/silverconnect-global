@@ -1150,7 +1150,15 @@
     "kbQuestion": "Question",
     "kbAnswer": "Answer",
     "kbDeleted": "Deleted",
-    "kbSaved": "Saved"
+    "kbSaved": "Saved",
+    "awaitingHuman": "Awaiting reply",
+    "businessHoursOn": "Business hours — human support online",
+    "businessHoursOff": "After hours — AI is covering support",
+    "replyPlaceholder": "Type a reply to the customer…",
+    "replySend": "Send reply",
+    "replySent": "Reply sent",
+    "isHuman": "Human",
+    "isAi": "AI"
   },
   "aSettings": {
     "title": "System settings",

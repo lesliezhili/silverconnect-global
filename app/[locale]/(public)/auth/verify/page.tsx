@@ -63,12 +63,7 @@ async function verifyCodeAction(formData: FormData) {
     .update(users)
     .set({ emailVerifiedAt: new Date(), updatedAt: new Date() })
     .where(eq(users.id, user.id));
-  await signInUser({
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    role: user.role,
-  });
+  await signInUser(user.id);
   nextRedirect(`/${locale}/auth/verify?state=success&role=${user.role}`);
 }
 

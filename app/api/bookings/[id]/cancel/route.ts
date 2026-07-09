@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
  *   - Faith bookings: Always free cancellation (no payment involved)
  */
 import { getPaymentProvider, PHLEDGER_API_URL } from "@/lib/payments/provider-config";
+import { getStripeClient, isStripeConfigured } from "@/lib/stripe/server";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id: bookingId } = await params;
@@ -96,15 +97,19 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       } else {
         // Stripe refund
         try {
-          const [payment] = await sql`SELECT stripe_payment_intent_id FROM payments WHERE booking_id = ${bookingId} AND status = 'succeeded' LIMIT 1`;
-          if (payment?.stripe_payment_intent_id) {
-            const Stripe = (await import("stripe")).default;
-            const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", { apiVersion: "2024-06-20" as any });
+          const [payment] = await sql`SELECT id, stripe_payment_intent_id FROM payments WHERE booking_id = ${bookingId} AND status = 'captured' LIMIT 1`;
+          if (payment?.stripe_payment_intent_id && isStripeConfigured()) {
+            const stripe = getStripeClient();
             const refund = await stripe.refunds.create({
               payment_intent: payment.stripe_payment_intent_id,
               amount: Math.round(refundAmount * 100),
             });
             refundTransactionId = refund.id;
+            await sql`UPDATE payments SET status = 'refunded', updated_at = NOW() WHERE id = ${payment.id}`;
+            await sql`INSERT INTO refunds (payment_id, stripe_refund_id, amount, reason, status) VALUES (${payment.id}, ${refund.id}, ${refundAmount}, 'cancellation', 'succeeded')`;
+          } else if (payment?.stripe_payment_intent_id) {
+            refundTransactionId = `STRIPE-SIM-${Date.now()}`;
+            await sql`INSERT INTO refunds (payment_id, amount, reason, status) VALUES (${payment.id}, ${refundAmount}, 'cancellation', 'pending')`;
           }
         } catch (e: unknown) {
           refundTransactionId = "STRIPE-FAILED-" + (e instanceof Error ? e.message.slice(0, 30) : "unknown");

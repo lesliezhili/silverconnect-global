@@ -5,6 +5,7 @@ import { ChevronLeft, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useLocale } from "next-intl";
+import { SilverConnectMark } from "@/components/brand/Logo";
 import { type CountryCode } from "./CountrySelector";
 import { CountrySwitcher } from "./CountrySwitcher";
 import { DesktopNav } from "./DesktopNav";
@@ -56,21 +57,22 @@ export function Header({
         ) : (
           <Link
             href="/"
-            className="flex items-baseline gap-1.5 text-[20px] font-extrabold tracking-tight text-brand sm:text-[24px]"
+            className="flex items-center gap-1.5 text-[20px] font-extrabold tracking-tight text-brand sm:text-[24px]"
             aria-label={country === "CN" ? "九鼎银联" : "SilverConnect home"}
           >
+            <SilverConnectMark size={26} className="shrink-0 sm:h-[30px] sm:w-[30px]" />
             {country === "CN" ? (
-              <>
+              <span className="flex items-baseline gap-1.5">
                 <span className="text-[24px] sm:text-[28px]">九鼎银联</span>
                 <span className="text-[12px] font-bold text-brand/60 sm:text-[14px]">非营利互助平台</span>
-              </>
+              </span>
             ) : (
-              <>
+              <span className="flex items-baseline gap-1.5">
                 SilverConnect
                 {isChinese && (
                   <span className="text-[14px] font-bold text-brand/70 sm:text-[16px]">和润</span>
                 )}
-              </>
+              </span>
             )}
           </Link>
         )}

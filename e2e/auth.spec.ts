@@ -31,16 +31,18 @@ test.describe('Login page (/{locale}/auth/login)', () => {
   test('has labelled email + password inputs', async ({ page }) => {
     await page.goto('/' + L + '/auth/login')
     await expect(page.getByLabel(/email/i)).toBeVisible()
-    await expect(page.getByLabel(/password/i)).toBeVisible()
+    await expect(page.getByLabel(/^password$/i)).toBeVisible()
   })
 
   test('shows error for wrong credentials', async ({ page }) => {
     await page.goto('/' + L + '/auth/login')
     await page.getByLabel(/email/i).fill('wrong@example.com')
-    await page.getByLabel(/password/i).fill('wrongpassword')
+    await page.getByLabel(/^password$/i).fill('wrongpassword')
     await page.getByRole('button', { name: /sign.?in|log.?in/i }).click()
-    // Next.js server action redirects to ?error=credentials
-    await expect(page).toHaveURL(/error=credentials/)
+    // LoginForm is a client component that POSTs to /api/auth/login and
+    // shows the error inline (role="alert") rather than via a URL redirect
+    // — see the comment at the top of components/domain/LoginForm.tsx.
+    await expect(page.getByRole('alert')).toBeVisible()
   })
 
   test('forgot password link navigates to /auth/forgot', async ({ page }) => {

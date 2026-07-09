@@ -112,7 +112,17 @@
     "personalCareDesc": "Tắm rửa, thay đồ, dùng thuốc, hỗ trợ di chuyển",
     "companionDesc": "Thăm hỏi, đi dạo, đọc sách, đi chơi",
     "transportDesc": "Đưa đón đi khám, mua sắm, việc vặt",
-    "itSupportDesc": "Hỗ trợ điện thoại/máy tính bảng, email, gọi video, an toàn trực tuyến, in ấn"
+    "itSupportDesc": "Hỗ trợ điện thoại/máy tính bảng, email, gọi video, an toàn trực tuyến, in ấn",
+    "ndisSetup": "Thiết lập nhà cung cấp độc lập NDIS",
+    "ndisSetupDesc": "ABN, bảo hiểm, Sàng lọc Nhân viên NDIS, lý lịch tư pháp & chính sách — nhanh chóng nhận khách hàng tự quản lý/có kế hoạch quản lý",
+    "ndisRegistration": "Nhà cung cấp đã đăng ký NDIS",
+    "ndisRegistrationDesc": "Đăng ký đầy đủ với Ủy ban NDIS: nhóm đăng ký, nhân sự chủ chốt, tự đánh giá & chuẩn bị kiểm toán",
+    "agedCareProvider": "Lộ trình nhà cung cấp chăm sóc người cao tuổi",
+    "agedCareProviderDesc": "Hướng dẫn My Aged Care & GPMS, tuân thủ Ủy ban Chất lượng Chăm sóc Người cao tuổi, thiết lập nhà cung cấp chăm sóc tại nhà",
+    "dvaProvider": "Đăng ký nhà cung cấp DVA",
+    "dvaProviderDesc": "Điều dưỡng cộng đồng cho cựu chiến binh, chăm sóc cá nhân & gia đình — tham gia hoặc làm nhà thầu phụ với các nhà cung cấp DVA được phê duyệt",
+    "tacWorkSafe": "Thiết lập nhà cung cấp TAC & WorkSafe",
+    "tacWorkSafeDesc": "Chăm sóc hộ lý & cá nhân cho khách hàng bị tai nạn giao thông và thương tích tại nơi làm việc — đáp ứng quy định yêu cầu bồi thường của TAC/WorkSafe Victoria"
   },
   "services": {
     "title": "Choose a service",

@@ -134,7 +134,14 @@
   },
   "providers": {
     "title": "服務人員",
-    "filters": "篩選",
+    "filters": {
+      "rating": "評分 4.5+",
+      "distance": "距離 5km",
+      "language": "國語",
+      "weekend": "週末可用",
+      "female": "女性服務者",
+      "firstAid": "急救資質"
+    },
     "sortRecommended": "推薦排序",
     "noMatch": "沒有符合條件的服務人員",
     "adjustFilters": "調整篩選條件再試試",
@@ -343,7 +350,12 @@
     "6pm-9pm": "18-21點"
   },
   "booking": {
-    "steps": "步驟 {current}/{total}",
+    "steps": {
+      "service": "服務",
+      "time": "時間",
+      "address": "地址",
+      "confirm": "確認"
+    },
     "step1Title": "選擇服務",
     "step2Title": "選擇時間",
     "step3Title": "確認地址",

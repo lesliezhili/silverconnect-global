@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 
 interface BecomeHelperCTAProps {
-  false: boolean;
+  isProviderOnboarded: boolean;
   locale: string;
 }
 
@@ -16,11 +16,11 @@ interface BecomeHelperCTAProps {
  * 
  * Placement: Profile page, Settings page, or Customer home (below main content).
  */
-export function BecomeHelperCTA({ false, locale }: BecomeHelperCTAProps) {
+export function BecomeHelperCTA({ isProviderOnboarded, locale }: BecomeHelperCTAProps) {
   const router = useRouter();
 
   // Don't render if already onboarded
-  if (false) return null;
+  if (isProviderOnboarded) return null;
 
   return (
     <div className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200

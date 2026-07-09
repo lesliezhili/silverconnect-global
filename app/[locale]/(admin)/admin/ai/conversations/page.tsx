@@ -1,14 +1,43 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
-import { X, ShieldAlert, Check } from "lucide-react";
+import { redirect as nextRedirect } from "next/navigation";
+import { X, ShieldAlert, Check, Clock } from "lucide-react";
 import { eq, desc, sql, asc } from "drizzle-orm";
 import { Link, redirect } from "@/i18n/navigation";
 import { AdminShell } from "@/components/layout/AdminShell";
 import { getAdmin } from "@/components/domain/adminCookie";
+import { getCurrentUser } from "@/lib/auth/server";
+import { isBusinessHours } from "@/lib/support/businessHours";
 import { db } from "@/lib/db";
 import { aiConversations, aiMessages } from "@/lib/db/schema/ai";
 import { users } from "@/lib/db/schema/users";
 
 export const dynamic = "force-dynamic";
+
+async function replyToConversation(formData: FormData) {
+  "use server";
+  const locale = String(formData.get("locale") ?? "en");
+  const conversationId = String(formData.get("conversationId") ?? "");
+  const content = String(formData.get("content") ?? "").trim();
+
+  const me = await getCurrentUser();
+  if (!me || !me.isAdmin) nextRedirect(`/${locale}/admin/login`);
+  if (!conversationId || !content) {
+    nextRedirect(`/${locale}/admin/ai/conversations?id=${conversationId}&error=invalid`);
+  }
+
+  await db.insert(aiMessages).values({
+    conversationId,
+    role: "assistant",
+    content,
+    isHuman: true,
+  });
+  await db
+    .update(aiConversations)
+    .set({ awaitingHumanAt: null, updatedAt: new Date() })
+    .where(eq(aiConversations.id, conversationId));
+
+  nextRedirect(`/${locale}/admin/ai/conversations?id=${conversationId}&sent=1`);
+}
 
 export default async function AdminAiConversationsPage({
   params,
@@ -37,6 +66,7 @@ export default async function AdminAiConversationsPage({
         locale: aiConversations.locale,
         closedAt: aiConversations.closedAt,
         emergencyTriggeredAt: aiConversations.emergencyTriggeredAt,
+        awaitingHumanAt: aiConversations.awaitingHumanAt,
         createdAt: aiConversations.createdAt,
         msgCount: (sql<number>`(SELECT COUNT(*)::int FROM ${aiMessages} WHERE ${aiMessages.conversationId} = ${aiConversations.id})`),
       })
@@ -52,7 +82,8 @@ export default async function AdminAiConversationsPage({
           locale: string;
           emergency: boolean;
           closed: boolean;
-          messages: { role: string; content: string; createdAt: Date }[];
+          awaitingHuman: boolean;
+          messages: { role: string; content: string; isHuman: boolean; createdAt: Date }[];
         }
       | null = null;
 
@@ -63,6 +94,7 @@ export default async function AdminAiConversationsPage({
           .select({
             role: aiMessages.role,
             content: aiMessages.content,
+            isHuman: aiMessages.isHuman,
             createdAt: aiMessages.createdAt,
           })
           .from(aiMessages)
@@ -77,18 +109,33 @@ export default async function AdminAiConversationsPage({
           locale: target.locale,
           emergency: !!target.emergencyTriggeredAt,
           closed: !!target.closedAt,
+          awaitingHuman: !!target.awaitingHumanAt,
           messages: msgs.map((m) => ({
             role: m.role,
             content: m.content,
+            isHuman: m.isHuman,
             createdAt: m.createdAt,
           })),
         };
       }
     }
 
+    const onDuty = isBusinessHours();
+
     return (
       <AdminShell email={admin.email ?? ""}>
-        <h1 className="text-h2">{tA("convTitle")}</h1>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h1 className="text-h2">{tA("convTitle")}</h1>
+          <span
+            className={
+              "inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-[14px] font-bold " +
+              (onDuty ? "bg-brand-soft text-brand" : "bg-warning-soft text-warning")
+            }
+          >
+            <Clock size={13} aria-hidden />
+            {onDuty ? tA("businessHoursOn") : tA("businessHoursOff")}
+          </span>
+        </div>
         <p className="mt-1 text-[17px] text-text-secondary">{tA("convSub")}</p>
 
         <div className="mt-5 overflow-hidden rounded-lg border border-border bg-bg-base">
@@ -151,6 +198,12 @@ export default async function AdminAiConversationsPage({
                             {tA("emergency")}
                           </span>
                         )}
+                        {c.awaitingHumanAt && !c.closedAt && (
+                          <span className="inline-flex h-6 items-center gap-1 rounded-sm bg-warning-soft px-2 text-[11px] font-bold uppercase text-warning">
+                            <Clock size={11} aria-hidden />{" "}
+                            {tA("awaitingHuman")}
+                          </span>
+                        )}
                         {c.closedAt && (
                           <span className="inline-flex h-6 items-center gap-1 rounded-sm bg-success-soft px-2 text-[11px] font-bold uppercase text-success">
                             <Check size={11} aria-hidden /> {tA("resolved")}
@@ -199,16 +252,23 @@ export default async function AdminAiConversationsPage({
                     <li
                       key={i}
                       className={
-                        "flex " +
-                        (m.role === "user" ? "justify-end" : "justify-start")
+                        "flex flex-col gap-1 " +
+                        (m.role === "user" ? "items-end" : "items-start")
                       }
                     >
+                      {m.role === "assistant" && (
+                        <span className="px-1 text-[12px] font-bold uppercase text-text-tertiary">
+                          {m.isHuman ? tA("isHuman") : tA("isAi")}
+                        </span>
+                      )}
                       <p
                         className={
                           "max-w-[80%] rounded-md px-3 py-2 text-[16px] whitespace-pre-wrap " +
                           (m.role === "user"
                             ? "bg-brand text-white"
-                            : "bg-bg-surface-2 text-text-primary")
+                            : m.isHuman
+                              ? "bg-brand-soft text-text-primary"
+                              : "bg-bg-surface-2 text-text-primary")
                         }
                       >
                         {m.content}
@@ -217,6 +277,28 @@ export default async function AdminAiConversationsPage({
                   ))}
                 </ol>
               </div>
+              {!drawer.closed && (
+                <form
+                  action={replyToConversation}
+                  className="sticky bottom-0 flex items-end gap-2 border-t border-border bg-bg-base px-5 py-3"
+                >
+                  <input type="hidden" name="locale" value={locale} />
+                  <input type="hidden" name="conversationId" value={drawer.id} />
+                  <textarea
+                    name="content"
+                    required
+                    rows={2}
+                    placeholder={tA("replyPlaceholder")}
+                    className="flex-1 resize-none rounded-md border border-border bg-bg-base px-3 py-2 text-[16px]"
+                  />
+                  <button
+                    type="submit"
+                    className="inline-flex h-11 shrink-0 items-center rounded-md bg-brand px-4 text-[16px] font-bold text-white"
+                  >
+                    {tA("replySend")}
+                  </button>
+                </form>
+              )}
             </aside>
           </>
         )}

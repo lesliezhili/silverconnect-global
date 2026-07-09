@@ -97,13 +97,13 @@ export function buildVerifyEmail(
     ? `<div style="font-family:system-ui,Helvetica,Arial,sans-serif;line-height:1.6">
 <h2 style="margin:0 0 12px">SilverConnect 验证码</h2>
 <p>您的验证码是：</p>
-<p style="font-size:28px;font-weight:bold;letter-spacing:6px;background:#E8F0FE;color:#1858C4;padding:12px 16px;border-radius:6px;display:inline-block;font-family:ui-monospace,monospace">${code}</p>
+<p style="font-size:28px;font-weight:bold;letter-spacing:6px;background:#CCFBF1;color:#0F766E;padding:12px 16px;border-radius:6px;display:inline-block;font-family:ui-monospace,monospace">${code}</p>
 <p>10 分钟内有效。如果不是您本人操作，请忽略此邮件。</p>
 </div>`
     : `<div style="font-family:system-ui,Helvetica,Arial,sans-serif;line-height:1.6">
 <h2 style="margin:0 0 12px">Your verification code</h2>
 <p>Use this code to finish signing in to SilverConnect:</p>
-<p style="font-size:28px;font-weight:bold;letter-spacing:6px;background:#E8F0FE;color:#1858C4;padding:12px 16px;border-radius:6px;display:inline-block;font-family:ui-monospace,monospace">${code}</p>
+<p style="font-size:28px;font-weight:bold;letter-spacing:6px;background:#CCFBF1;color:#0F766E;padding:12px 16px;border-radius:6px;display:inline-block;font-family:ui-monospace,monospace">${code}</p>
 <p>The code expires in 10 minutes. Ignore this email if you didn't request it.</p>
 </div>`;
   return { subject, text, html };
@@ -113,7 +113,7 @@ type Built = { subject: string; text: string; html: string };
 
 function frame(title: string, body: string, ctaLabel?: string, ctaUrl?: string): string {
   const button = ctaLabel && ctaUrl
-    ? `<p style="margin:24px 0"><a href="${ctaUrl}" style="display:inline-block;background:#2D6A5E;color:#fff;text-decoration:none;font-weight:bold;padding:12px 24px;border-radius:6px">${ctaLabel}</a></p>`
+    ? `<p style="margin:24px 0"><a href="${ctaUrl}" style="display:inline-block;background:#0F766E;color:#fff;text-decoration:none;font-weight:bold;padding:12px 24px;border-radius:6px">${ctaLabel}</a></p>`
     : "";
   return `<div style="font-family:system-ui,Helvetica,Arial,sans-serif;line-height:1.6;max-width:560px;margin:0 auto;padding:24px;color:#1A2D2A">
 <h2 style="margin:0 0 12px;font-size:20px">${title}</h2>

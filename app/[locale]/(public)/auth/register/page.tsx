@@ -142,7 +142,7 @@ export default async function RegisterPage({
             id="faithPreference"
             name="faithPreference"
             value="christian"
-            className="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            className="mt-1 h-5 w-5 rounded border-gray-300 text-teal-700 focus:ring-teal-600"
           />
           <label htmlFor="faithPreference" className="text-[16px] text-gray-700 leading-snug">
             I follow the Christian faith and would like to see daily prayer &amp; devotional content

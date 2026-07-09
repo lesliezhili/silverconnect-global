@@ -6,7 +6,7 @@ import { hashPassword as rawHash, verifyPassword } from "./password";
 
 export { rawHash as hashPassword, verifyPassword };
 
-export type Role = "customer" | "provider" | "admin";
+export type Role = "customer" | "provider";
 
 function deriveInitials(name: string | null | undefined, email: string): string {
   if (name) return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
@@ -32,6 +32,8 @@ export interface CurrentUser {
   email: string;
   name: string | null;
   role: Role;
+  /** Orthogonal to `role` — grants /admin/* access regardless of operating role. */
+  isAdmin: boolean;
   emailVerified: boolean;
   initials: string;
 }
@@ -52,7 +54,10 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     id: u.id,
     email: u.email,
     name: u.name,
-    role: u.role,
+    // Defensive: `role` is a legacy Postgres enum that still technically
+    // permits "admin" — admin-ness is now tracked via isAdmin instead.
+    role: u.role === "admin" ? "customer" : u.role,
+    isAdmin: u.isAdmin,
     emailVerified: u.emailVerifiedAt !== null,
     initials: deriveInitials(u.name, u.email),
   };

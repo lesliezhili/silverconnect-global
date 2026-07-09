@@ -132,7 +132,14 @@
   },
   "providers": {
     "title": "케어러",
-    "filters": "필터",
+    "filters": {
+      "rating": "평점 4.5+",
+      "distance": "5km 이내",
+      "language": "한국어",
+      "weekend": "주말 가능",
+      "female": "여성 도우미",
+      "firstAid": "응급처치 자격"
+    },
     "sortRecommended": "추천순",
     "noMatch": "결과 없음",
     "adjustFilters": "필터를 조정하세요",
@@ -341,7 +348,12 @@
     "6pm-9pm": "18-21시"
   },
   "booking": {
-    "steps": "{current}/{total}",
+    "steps": {
+      "service": "서비스",
+      "time": "시간",
+      "address": "주소",
+      "confirm": "확인"
+    },
     "step1Title": "서비스 선택",
     "step2Title": "날짜/시간",
     "step3Title": "주소 확인",

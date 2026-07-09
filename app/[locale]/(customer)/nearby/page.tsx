@@ -40,11 +40,11 @@ export default async function NearbyPage({ params, searchParams }: Props) {
         </div>
 
         {/* How it works — elder-friendly explainer */}
-        <div className="mb-6 bg-blue-50 rounded-xl border border-blue-200 p-5">
-          <h2 className="text-lg font-semibold text-blue-900 mb-3">
+        <div className="mb-6 bg-teal-50 rounded-xl border border-teal-200 p-5">
+          <h2 className="text-lg font-semibold text-teal-950 mb-3">
             {isZh ? "💡 省钱小贴士" : "💡 Save Money Tips"}
           </h2>
-          <ul className="space-y-2 text-base text-blue-800">
+          <ul className="space-y-2 text-base text-teal-900">
             <li className="flex items-start gap-2">
               <span className="text-xl">🚶</span>
               <span>{isZh ? "步行距离的服务者：节省15%（无出行费）" : "Walking distance provider: Save 15% (no travel cost)"}</span>
@@ -62,7 +62,7 @@ export default async function NearbyPage({ params, searchParams }: Props) {
               <span>{isZh ? "重复预约同一服务者：节省5%" : "Rebook same provider: Save 5%"}</span>
             </li>
           </ul>
-          <p className="mt-3 text-sm text-blue-600 font-medium">
+          <p className="mt-3 text-sm text-teal-700 font-medium">
             {isZh ? "💚 最多可节省40%！（步行+自备工具+非高峰+老客户）" : "💚 Stack up to 40% savings! (walk + tools + off-peak + loyalty)"}
           </p>
         </div>

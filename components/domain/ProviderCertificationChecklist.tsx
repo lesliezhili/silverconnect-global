@@ -98,17 +98,17 @@ export default function ProviderCertificationChecklist() {
           <div key={label} className='flex items-center flex-1 last:flex-none'>
             <div className='flex flex-col items-center'>
               <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold border-2 ${
-                step > i  ? 'bg-blue-600 border-blue-600 text-white' :
-                step === i ? 'bg-white border-blue-600 text-blue-600' :
+                step > i  ? 'bg-teal-700 border-teal-700 text-white' :
+                step === i ? 'bg-white border-teal-700 text-teal-700' :
                                  'bg-white border-gray-300 text-gray-400'
               }`}>{step > i ? '✓' : i + 1}</div>
               <span className={`text-xs mt-1 hidden sm:block ${
-                step === i ? 'text-blue-600 font-medium' : 'text-gray-400'
+                step === i ? 'text-teal-700 font-medium' : 'text-gray-400'
               }`}>{label}</span>
             </div>
             {i < steps.length - 1 && (
               <div className={`flex-1 h-0.5 mx-2 ${
-                step > i ? 'bg-blue-600' : 'bg-gray-200'
+                step > i ? 'bg-teal-700' : 'bg-gray-200'
               }`} />
             )}
           </div>
@@ -122,7 +122,7 @@ export default function ProviderCertificationChecklist() {
           <p className='text-sm text-gray-500 mb-2'>
             This determines your compliance checklist and which NDIS participants you can serve.
           </p>
-          <div className='bg-blue-50 border border-blue-200 rounded-xl p-3 mb-5 text-sm text-blue-800'>
+          <div className='bg-teal-50 border border-teal-200 rounded-xl p-3 mb-5 text-sm text-teal-900'>
             <strong>Not sure?</strong> Start as an <em>Unregistered Sole Trader</em> — serve
             self-managed and plan-managed participants immediately, no audit. Upgrade to registered
             provider later once your client base is stable.
@@ -133,8 +133,8 @@ export default function ProviderCertificationChecklist() {
                 key={path.id}
                 type='button'
                 onClick={() => { setForm(f => ({ ...f, ndisPath: path.id })); setStep(1) }}
-                className={`w-full text-left p-5 rounded-2xl border-2 transition-all hover:border-blue-400 ${
-                  form.ndisPath === path.id ? 'border-blue-600 bg-blue-50' : 'border-gray-200 bg-white'
+                className={`w-full text-left p-5 rounded-2xl border-2 transition-all hover:border-teal-400 ${
+                  form.ndisPath === path.id ? 'border-teal-700 bg-teal-50' : 'border-gray-200 bg-white'
                 }`}
               >
                 <div className='flex items-start justify-between gap-4 mb-2'>
@@ -158,7 +158,7 @@ export default function ProviderCertificationChecklist() {
                     ✅ No audit required — start serving clients within weeks
                   </div>
                 )}
-                <p className='mt-3 text-xs text-blue-700 italic'>{path.practicalTip}</p>
+                <p className='mt-3 text-xs text-teal-800 italic'>{path.practicalTip}</p>
               </button>
             ))}
           </div>
@@ -180,11 +180,11 @@ export default function ProviderCertificationChecklist() {
               const selected = form.qualifications.includes(q.id)
               return (
                 <label key={q.id} className={`flex gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                  selected ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-200 bg-white'
+                  selected ? 'border-teal-600 bg-teal-50' : 'border-gray-200 hover:border-teal-200 bg-white'
                 }`}>
                   <input
                     type='checkbox'
-                    className='mt-1 w-5 h-5 accent-blue-600 flex-shrink-0 cursor-pointer'
+                    className='mt-1 w-5 h-5 accent-teal-700 flex-shrink-0 cursor-pointer'
                     checked={selected}
                     onChange={() => toggleQual(q.id)}
                   />
@@ -212,7 +212,7 @@ export default function ProviderCertificationChecklist() {
                     {q.streams && (
                       <div className='flex flex-wrap gap-1 mt-2'>
                         {q.streams.map(s => (
-                          <span key={s} className='text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full'>
+                          <span key={s} className='text-xs bg-teal-50 text-teal-700 px-2 py-0.5 rounded-full'>
                             {s}
                           </span>
                         ))}
@@ -226,7 +226,7 @@ export default function ProviderCertificationChecklist() {
           <button
             onClick={() => setStep(2)}
             disabled={form.qualifications.length === 0}
-            className='mt-8 w-full py-3.5 bg-blue-600 text-white rounded-xl font-semibold text-lg disabled:opacity-40 hover:bg-blue-700 active:bg-blue-800 transition-colors'
+            className='mt-8 w-full py-3.5 bg-teal-700 text-white rounded-xl font-semibold text-lg disabled:opacity-40 hover:bg-teal-800 active:bg-teal-900 transition-colors'
           >
             {form.qualifications.length > 0
               ? `Next: Required Checks → (${form.qualifications.length} selected)`
@@ -289,7 +289,7 @@ export default function ProviderCertificationChecklist() {
                               ...f,
                               checkDates: { ...f.checkDates, [c.id]: e.target.value },
                             }))}
-                            className='text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500'
+                            className='text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-teal-600'
                           />
                         </div>
                       )}
@@ -298,7 +298,7 @@ export default function ProviderCertificationChecklist() {
                           href={c.link}
                           target='_blank'
                           rel='noopener noreferrer'
-                          className='text-xs text-blue-600 hover:underline pb-1.5'
+                          className='text-xs text-teal-700 hover:underline pb-1.5'
                         >
                           Apply / Renew ↗
                         </a>
@@ -317,7 +317,7 @@ export default function ProviderCertificationChecklist() {
             <button
               onClick={() => setStep(3)}
               disabled={!allMandatoryConfirmed}
-              className='flex-[2] py-3 bg-blue-600 text-white rounded-xl font-semibold text-lg disabled:opacity-40 hover:bg-blue-700 transition-colors'
+              className='flex-[2] py-3 bg-teal-700 text-white rounded-xl font-semibold text-lg disabled:opacity-40 hover:bg-teal-800 transition-colors'
             >
               {allMandatoryConfirmed ? 'Next: Government Schemes →' : 'Confirm all mandatory checks first'}
             </button>
@@ -359,7 +359,7 @@ export default function ProviderCertificationChecklist() {
                         )}
                         <p className='text-sm text-gray-600 leading-relaxed mb-2'>{scheme.description}</p>
                         <div className='flex flex-wrap gap-2 text-xs'>
-                          <span className='bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full'>
+                          <span className='bg-teal-50 text-teal-800 px-2.5 py-1 rounded-full'>
                              {scheme.forGroup.split('—')[0].trim()}
                           </span>
                           <span className='bg-amber-50 text-amber-700 px-2.5 py-1 rounded-full'>
@@ -371,7 +371,7 @@ export default function ProviderCertificationChecklist() {
                             href={scheme.registrationLink}
                             target='_blank'
                             rel='noopener noreferrer'
-                            className='text-xs text-blue-600 hover:underline mt-2 inline-block'
+                            className='text-xs text-teal-700 hover:underline mt-2 inline-block'
                           >
                             Register as provider ↗
                           </a>
@@ -385,7 +385,7 @@ export default function ProviderCertificationChecklist() {
           ))}
           <div className='flex gap-3'>
             <button onClick={() => setStep(2)} className='flex-1 py-3 border-2 border-gray-300 text-gray-600 rounded-xl font-semibold hover:bg-gray-50'>← Back</button>
-            <button onClick={() => setStep(4)} className='flex-[2] py-3 bg-blue-600 text-white rounded-xl font-semibold text-lg hover:bg-blue-700 transition-colors'>
+            <button onClick={() => setStep(4)} className='flex-[2] py-3 bg-teal-700 text-white rounded-xl font-semibold text-lg hover:bg-teal-800 transition-colors'>
               Next: Review &amp; Submit →
             </button>
           </div>
@@ -397,14 +397,14 @@ export default function ProviderCertificationChecklist() {
         <div>
           <h2 className='text-xl font-bold text-gray-900 mb-6'>Review Your Registration</h2>
 
-          <div className='bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4'>
-            <h3 className='font-semibold text-blue-800 mb-2'>
+          <div className='bg-teal-50 border border-teal-200 rounded-xl p-4 mb-4'>
+            <h3 className='font-semibold text-teal-900 mb-2'>
                Qualifications ({form.qualifications.length})
             </h3>
             {form.qualifications.map(id => {
               const q = QUALIFICATIONS.find(x => x.id === id)
               return q ? (
-                <div key={id} className='text-sm text-blue-700'>✓ {q.label} <span className='text-blue-400'>({q.code})</span></div>
+                <div key={id} className='text-sm text-teal-800'>✓ {q.label} <span className='text-teal-400'>({q.code})</span></div>
               ) : null
             })}
           </div>
@@ -444,7 +444,7 @@ export default function ProviderCertificationChecklist() {
               onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
               rows={3}
               placeholder='E.g. languages spoken, years of experience, areas of specialisation, availability...'
-              className='w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none bg-white'
+              className='w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600 resize-none bg-white'
             />
           </div>
 

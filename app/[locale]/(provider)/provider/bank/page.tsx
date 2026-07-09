@@ -80,7 +80,7 @@ function BankContent() {
       <button
         onClick={startOnboarding}
         disabled={loading}
-        className="w-full py-4 px-6 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400
+        className="w-full py-4 px-6 bg-teal-700 hover:bg-teal-800 disabled:bg-gray-400
                    text-white text-xl font-bold rounded-xl transition-colors min-h-[56px] shadow-lg"
       >
         {loading ? "Setting up..." : "Connect Bank Account"}

@@ -59,7 +59,7 @@ export default function ProviderOnboardingPage() {
             \ud83c\uddf3\ud83c\uddff New Zealand
           </button>
         </div>
-        {country === "NZ" && <p className="text-xs text-blue-600 mt-2">\u2139\ufe0f NZ providers need Police Vetting, IRD number, and ACC registration</p>}
+        {country === "NZ" && <p className="text-xs text-teal-700 mt-2">\u2139\ufe0f NZ providers need Police Vetting, IRD number, and ACC registration</p>}
       </div>
 
       {/* Progress Bar */}
@@ -148,7 +148,7 @@ export default function ProviderOnboardingPage() {
         <div className="space-y-2">
           {training.map((t, i) => (
             <div key={i} className="flex items-center gap-2 text-sm text-gray-700">
-              <span className="text-blue-500">\ud83d\udcd6</span> {t}
+              <span className="text-teal-600">\ud83d\udcd6</span> {t}
             </div>
           ))}
         </div>

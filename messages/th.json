@@ -132,7 +132,14 @@
   },
   "providers": {
     "title": "ผู้ดูแล",
-    "filters": "กรอง",
+    "filters": {
+      "rating": "เรตติ้ง 4.5+",
+      "distance": "ภายใน 5 กม.",
+      "language": "ไทย",
+      "weekend": "ว่างวันหยุด",
+      "female": "ผู้ให้บริการหญิง",
+      "firstAid": "ปฐมพยาบาล"
+    },
     "sortRecommended": "แนะนำ",
     "noMatch": "ไม่พบ",
     "adjustFilters": "ปรับตัวกรอง",
@@ -341,7 +348,12 @@
     "6pm-9pm": "18-21น."
   },
   "booking": {
-    "steps": "{current}/{total}",
+    "steps": {
+      "service": "บริการ",
+      "time": "เวลา",
+      "address": "ที่อยู่",
+      "confirm": "ยืนยัน"
+    },
     "step1Title": "เลือกบริการ",
     "step2Title": "เลือกเวลา",
     "step3Title": "ยืนยันที่อยู่",

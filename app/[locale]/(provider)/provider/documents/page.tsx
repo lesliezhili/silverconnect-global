@@ -99,7 +99,7 @@ function DocumentsContent() {
                   {existing.rejection_reason && <p className="text-base text-red-600">Reason: {existing.rejection_reason}</p>}
                   {existing.status === "rejected" && (
                     <button onClick={() => setActiveUpload(dt.type)}
-                      className="mt-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-base font-medium">
+                      className="mt-2 px-4 py-2 bg-teal-50 text-teal-800 rounded-lg text-base font-medium">
                       Re-upload
                     </button>
                   )}

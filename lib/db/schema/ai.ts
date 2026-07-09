@@ -22,17 +22,24 @@ export const aiConversations = pgTable(
     /** Null for anonymous chat (pre-login Q&A). Cascades on account
      * deletion so chat history is purged with the user (privacy). */
     userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
+    /** Opaque client-generated session token used to group messages into
+     * a conversation across requests — not a foreign key. */
+    clientToken: text("client_token"),
     locale: localeEnum("locale").notNull().default("en"),
     closedAt: timestamp("closed_at", { withTimezone: true }),
     /** Set when AI detects emergency keywords. */
     emergencyTriggeredAt: timestamp("emergency_triggered_at", {
       withTimezone: true,
     }),
+    /** Set when this conversation needs a human admin reply (business
+     * hours or an emergency/dispute) — cleared once an admin responds. */
+    awaitingHumanAt: timestamp("awaiting_human_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => ({
     userIdx: index("ai_conversations_user_idx").on(t.userId),
+    clientTokenIdx: index("ai_conversations_client_token_idx").on(t.clientToken),
   }),
 );
 
@@ -46,6 +53,9 @@ export const aiMessages = pgTable(
     role: aiMessageRoleEnum("role").notNull(),
     content: text("content").notNull(),
     tokens: integer("tokens"),
+    /** True for a message actually typed by a human admin, as opposed to
+     * an AI-generated "assistant" reply. */
+    isHuman: boolean("is_human").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => ({

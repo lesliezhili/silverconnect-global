@@ -44,7 +44,7 @@ export default async function LandingPage({
             {t("heroSub")}
           </p>
           {/* Visual warmth — illustration placeholder */}
-          <div className="mx-auto mt-6 flex h-[180px] max-w-[320px] items-center justify-center rounded-3xl bg-gradient-to-br from-blue-50 to-amber-50 border-2 border-blue-100">
+          <div className="mx-auto mt-6 flex h-[180px] max-w-[320px] items-center justify-center rounded-3xl bg-gradient-to-br from-teal-50 to-amber-50 border-2 border-teal-100">
             <div className="text-center">
               <img
                 src="https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=400&h=240&fit=crop&crop=faces"
@@ -61,7 +61,7 @@ export default async function LandingPage({
 
         {/* Primary CTA */}
         <section className="mb-10 space-y-4">
-          <Link href="/auth/register" className="flex w-full items-center justify-center rounded-2xl bg-blue-600 px-6 py-6 text-center text-[22px] font-bold text-white shadow-lg active:scale-[0.98]" style={{ minHeight: "72px" }}>
+          <Link href="/auth/register" className="flex w-full items-center justify-center rounded-2xl bg-teal-700 px-6 py-6 text-center text-[22px] font-bold text-white shadow-lg active:scale-[0.98]" style={{ minHeight: "72px" }}>
             {t("joinNow")}
           </Link>
           <Link href="/auth/login" className="flex w-full items-center justify-center rounded-2xl border-2 border-gray-300 bg-white px-6 py-5 text-center text-[20px] font-semibold text-gray-700 active:scale-[0.98]" style={{ minHeight: "64px" }}>
@@ -80,15 +80,15 @@ export default async function LandingPage({
             {/* Pillar 1: Home-Based Care */}
             <Link
               href="/services"
-              className="group relative flex flex-col rounded-2xl border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white p-6 shadow-sm transition-all hover:border-blue-400 hover:shadow-lg active:scale-[0.98]"
+              className="group relative flex flex-col rounded-2xl border-2 border-teal-200 bg-gradient-to-br from-teal-50 to-white p-6 shadow-sm transition-all hover:border-teal-400 hover:shadow-lg active:scale-[0.98]"
               style={{ minHeight: "260px" }}
             >
-              <span className="absolute top-3 right-3 rounded-full bg-blue-100 px-3 py-1 text-[12px] font-bold text-blue-700">{tCare("homeBadge")}</span>
+              <span className="absolute top-3 right-3 rounded-full bg-teal-100 px-3 py-1 text-[12px] font-bold text-teal-800">{tCare("homeBadge")}</span>
               <span className="text-[48px] mb-3">🏠</span>
               <h3 className="text-[20px] font-bold text-gray-900 mb-2">{tCare("homeTitle")}</h3>
               <p className="text-[15px] text-gray-600 mb-3">{tCare("homeSub")}</p>
               <p className="text-[13px] text-gray-400 mb-4">{tCare("homeFeatures")}</p>
-              <span className="mt-auto inline-flex items-center text-[16px] font-semibold text-blue-600 group-hover:text-blue-800">
+              <span className="mt-auto inline-flex items-center text-[16px] font-semibold text-teal-700 group-hover:text-teal-900">
                 {tCare("homeCTA")} →
               </span>
             </Link>
@@ -122,7 +122,7 @@ export default async function LandingPage({
               { n: "4", e: "⭐", label: t("step4") },
             ].map((i) => (
               <div key={i.n} className="flex items-center gap-4 rounded-2xl border-2 border-gray-200 bg-white p-5">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-blue-100 text-[24px] font-bold text-blue-600">{i.n}</div>
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-teal-100 text-[24px] font-bold text-teal-700">{i.n}</div>
                 <span className="text-[20px] font-semibold text-gray-900">{i.e} {i.label}</span>
               </div>
             ))}
@@ -148,7 +148,7 @@ export default async function LandingPage({
               <Link
                 key={s.cat}
                 href="/book-service"
-                className="flex flex-col items-center justify-center rounded-2xl border-2 border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-blue-400 hover:bg-blue-50 hover:shadow-lg active:scale-[0.96] active:bg-blue-100"
+                className="flex flex-col items-center justify-center rounded-2xl border-2 border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-teal-400 hover:bg-teal-50 hover:shadow-lg active:scale-[0.96] active:bg-teal-100"
                 style={{ minHeight: "130px" }}
               >
                 <span className="mb-2 text-[42px]">{s.e}</span>
@@ -295,14 +295,14 @@ export default async function LandingPage({
         
 
         {/* For Helpers */}
-        <section className="mb-10 rounded-2xl border-2 border-blue-200 bg-blue-50 p-6">
+        <section className="mb-10 rounded-2xl border-2 border-teal-200 bg-teal-50 p-6">
           <h2 className="mb-3 text-[24px] font-bold text-gray-900">{t("helperWant")}</h2>
           <ul className="space-y-3 text-[20px] text-gray-700">
             <li>{"💰"} {t("helperEarn")}</li>
             <li>{"📅"} {t("helperFlex2")}</li>
             <li>{"🏦"} {t("helperPay2")}</li>
           </ul>
-          <Link href="/auth/register" className="mt-5 flex w-full items-center justify-center rounded-xl bg-blue-600 px-6 py-5 text-center text-[22px] font-bold text-white" style={{ minHeight: "64px" }}>
+          <Link href="/auth/register" className="mt-5 flex w-full items-center justify-center rounded-xl bg-teal-700 px-6 py-5 text-center text-[22px] font-bold text-white" style={{ minHeight: "64px" }}>
             {t("becomeHelper")}
           </Link>
         </section>
@@ -312,13 +312,13 @@ export default async function LandingPage({
         {/* Footer */}
         <footer className="mt-8 border-t border-gray-200 pt-8 text-center">
           <div className="flex flex-wrap items-center justify-center gap-4 text-[18px]">
-            <Link href="/cancellation-policy" className="text-gray-500 hover:text-blue-600">{t("cancelPolicy")}</Link>
+            <Link href="/cancellation-policy" className="text-gray-500 hover:text-teal-700">{t("cancelPolicy")}</Link>
             <span className="text-gray-300">|</span>
-            <Link href="/terms" className="text-gray-500 hover:text-blue-600">{t("terms")}</Link>
+            <Link href="/terms" className="text-gray-500 hover:text-teal-700">{t("terms")}</Link>
             <span className="text-gray-300">|</span>
-            <Link href="/privacy-policy" className="text-gray-500 hover:text-blue-600">{t("privacy")}</Link>
+            <Link href="/privacy-policy" className="text-gray-500 hover:text-teal-700">{t("privacy")}</Link>
             <span className="text-gray-300">|</span>
-            <Link href="/help" className="text-gray-500 hover:text-blue-600">{t("help")}</Link>
+            <Link href="/help" className="text-gray-500 hover:text-teal-700">{t("help")}</Link>
           </div>
           <p className="mt-4 text-[16px] text-gray-400">{t("footerBrand")}</p>
           <p className="mt-1 text-[14px] text-gray-400">{isCN ? "© 2026 九鼎银联 · SilverConnect Global（和润）" : "© 2026 SilverConnect Global"}</p>

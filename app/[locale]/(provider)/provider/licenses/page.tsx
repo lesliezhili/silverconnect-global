@@ -148,7 +148,7 @@ export default function LicensesPage() {
 
       <button
         onClick={save}
-        className="w-full bg-blue-600 text-white text-xl font-bold rounded-xl py-4 active:scale-[0.97]"
+        className="w-full bg-teal-700 text-white text-xl font-bold rounded-xl py-4 active:scale-[0.97]"
       >
         {saved ? (isZh ? "✅ 已保存" : "✅ Saved!") : (isZh ? "保存执照与保险信息" : isVi ? "Lưu Giấy Phép & Bảo Hiểm" : "Save License & Insurance")}
       </button>

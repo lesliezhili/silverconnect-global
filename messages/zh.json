@@ -1152,7 +1152,15 @@
     "kbQuestion": "问题",
     "kbAnswer": "回答",
     "kbDeleted": "已删除",
-    "kbSaved": "已保存"
+    "kbSaved": "已保存",
+    "awaitingHuman": "待回复",
+    "businessHoursOn": "工作时间 — 人工客服在线",
+    "businessHoursOff": "非工作时间 — AI 正在为您服务",
+    "replyPlaceholder": "输入回复内容…",
+    "replySend": "发送回复",
+    "replySent": "回复已发送",
+    "isHuman": "人工",
+    "isAi": "AI"
   },
   "aSettings": {
     "title": "系统设置",

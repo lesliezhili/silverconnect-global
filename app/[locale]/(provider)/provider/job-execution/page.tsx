@@ -260,7 +260,7 @@ export default function JobExecutionPage() {
               <button
                 onClick={completeJob}
                 disabled={loading}
-                className="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl shadow hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full py-3 bg-teal-700 text-white font-semibold rounded-xl shadow hover:bg-teal-800 disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 <span>&#9989;</span> {loading ? "Completing..." : "Complete Job"}
               </button>
@@ -322,7 +322,7 @@ export default function JobExecutionPage() {
                 )}
                 {execution.completedAt && (
                   <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5"></div>
+                    <div className="w-2 h-2 rounded-full bg-teal-600 mt-1.5"></div>
                     <div>
                       <p className="text-sm font-medium text-gray-900">Job Completed</p>
                       <p className="text-xs text-gray-500">{new Date(execution.completedAt).toLocaleString()}</p>

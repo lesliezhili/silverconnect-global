@@ -26,7 +26,7 @@ async function saveKb(formData: FormData) {
   const question = String(formData.get("question") ?? "").trim();
   const answer = String(formData.get("answer") ?? "").trim();
   const me = await getCurrentUser();
-  if (!me || me.role !== "admin") nextRedirect(`/${locale}/admin/login`);
+  if (!me || !me.isAdmin) nextRedirect(`/${locale}/admin/login`);
   if (!question || !answer || !CATEGORY_VALUES.includes(category)) {
     nextRedirect(`/${locale}/admin/ai/kb?error=invalid`);
   }
@@ -44,7 +44,7 @@ async function deleteKb(formData: FormData) {
   const locale = String(formData.get("locale") ?? "en");
   const id = String(formData.get("id") ?? "");
   const me = await getCurrentUser();
-  if (!me || me.role !== "admin") nextRedirect(`/${locale}/admin/login`);
+  if (!me || !me.isAdmin) nextRedirect(`/${locale}/admin/login`);
   if (id) await db.delete(aiKb).where(eq(aiKb.id, id));
   nextRedirect(`/${locale}/admin/ai/kb?deleted=1`);
 }

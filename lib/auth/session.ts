@@ -6,7 +6,7 @@ import {
   SESSION_COOKIE_NAME,
 } from "./session-config";
 
-export type Role = "customer" | "provider" | "admin";
+export type Role = "customer" | "provider";
 
 export interface BookingDraft {
   serviceId?: string;

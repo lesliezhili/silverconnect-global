@@ -73,7 +73,7 @@ export default async function FundingPage({
                   )}
                   {claim.approval_letter_url && (
                     <a href={claim.approval_letter_url} target="_blank" rel="noopener"
-                      className="mt-2 inline-flex items-center text-[17px] text-blue-600 font-medium">
+                      className="mt-2 inline-flex items-center text-[17px] text-teal-700 font-medium">
                       📄 {t("viewLetter")}
                     </a>
                   )}

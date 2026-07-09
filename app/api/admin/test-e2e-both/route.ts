@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { processPayment, createInvoice, releasePayout } from "@/lib/payments/gateway";
 import { getPaymentProvider, PHLEDGER_API_URL } from "@/lib/payments/provider-config";
+import { getStripeClient } from "@/lib/stripe/server";
 
 /**
  * POST /api/admin/test-e2e-both — Complete E2E running BOTH providers
@@ -40,24 +41,21 @@ export async function POST() {
   try {
     // Step 1A: Stripe Payment
     const stripeKey = process.env.STRIPE_SECRET_KEY;
-    if (stripeKey) {
-      const Stripe = (await import("stripe")).default;
-      const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" as any });
-      
+    if (stripeKey && stripeKey.startsWith("sk_test_")) {
+      const stripe = getStripeClient();
+
       const pi = await stripe.paymentIntents.create({
         amount: 11000,
         currency: "aud",
         metadata: { bookingId, test: "e2e-both" },
         automatic_payment_methods: { enabled: true, allow_redirects: "never" },
       });
-      
-      if (stripeKey.startsWith("sk_test_")) {
-        await stripe.paymentIntents.confirm(pi.id, {
-          payment_method: "pm_card_visa",
-          return_url: "https://silverconnect-global.vercel.app/en/book-service",
-        });
-      }
-      
+
+      await stripe.paymentIntents.confirm(pi.id, {
+        payment_method: "pm_card_visa",
+        return_url: "https://silverconnect-global.vercel.app/en/book-service",
+      });
+
       const confirmed = await stripe.paymentIntents.retrieve(pi.id);
       stripeXeroResult.payment = {
         status: confirmed.status === "succeeded" ? "✅ PASS" : "❌ " + confirmed.status,
@@ -67,7 +65,7 @@ export async function POST() {
         fee: "$2.17 (1.7% + 30c)",
       };
     } else {
-      stripeXeroResult.payment = { status: "⚠️ SKIPPED — no STRIPE_SECRET_KEY" };
+      stripeXeroResult.payment = { status: "⚠️ SKIPPED — no test-mode STRIPE_SECRET_KEY (this endpoint refuses to run against a live key)" };
     }
 
     // Step 1B: Xero Invoice

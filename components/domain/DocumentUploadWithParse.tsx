@@ -80,7 +80,7 @@ export function DocumentUploadWithParse({
         {zh ? "上传批准信 (PDF/图片)" : "Upload Approval Letter (PDF/Image)"} *
       </label>
       
-      <div className="rounded-xl border-2 border-dashed border-gray-300 p-6 text-center transition-colors hover:border-blue-400 hover:bg-blue-50/50">
+      <div className="rounded-xl border-2 border-dashed border-gray-300 p-6 text-center transition-colors hover:border-teal-400 hover:bg-teal-50/50">
         <input
           type="file"
           accept=".pdf,.jpg,.jpeg,.png"
@@ -99,10 +99,10 @@ export function DocumentUploadWithParse({
 
       {/* File selected */}
       {file && (
-        <div className="mt-3 flex items-center gap-2 rounded-lg bg-blue-50 border border-blue-200 px-4 py-3">
-          <FileText size={20} className="text-blue-600 shrink-0" />
-          <span className="text-[17px] text-blue-800 font-medium truncate">{file.name}</span>
-          <span className="text-[15px] text-blue-600 ml-auto shrink-0">
+        <div className="mt-3 flex items-center gap-2 rounded-lg bg-teal-50 border border-teal-200 px-4 py-3">
+          <FileText size={20} className="text-teal-700 shrink-0" />
+          <span className="text-[17px] text-teal-900 font-medium truncate">{file.name}</span>
+          <span className="text-[15px] text-teal-700 ml-auto shrink-0">
             {(file.size / 1024).toFixed(0)} KB
           </span>
         </div>

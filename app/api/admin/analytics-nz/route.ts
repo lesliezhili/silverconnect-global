@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth/server";
 
 /**
  * GET /api/admin/analytics-nz — NZ vs AU analytics comparison
  * Returns: provider counts, booking volume, revenue, avg ratings, growth by country
  */
 export async function GET() {
+  const me = await getCurrentUser();
+  if (!me || !me.isAdmin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { default: postgres } = await import("postgres");
   const sql = postgres(process.env.DATABASE_URL || "", { prepare: false, connect_timeout: 10 });
   try {

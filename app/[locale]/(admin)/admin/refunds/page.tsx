@@ -10,6 +10,7 @@ import { db } from "@/lib/db";
 import { refunds, payments } from "@/lib/db/schema/payments";
 import { bookings } from "@/lib/db/schema/bookings";
 import { users } from "@/lib/db/schema/users";
+import { getStripeClient, isStripeConfigured } from "@/lib/stripe/server";
 
 export const dynamic = "force-dynamic";
 
@@ -18,16 +19,33 @@ async function processRefund(formData: FormData) {
   const locale = String(formData.get("locale") ?? "en");
   const id = String(formData.get("id") ?? "");
   const me = await getCurrentUser();
-  if (!me || me.role !== "admin") nextRedirect(`/${locale}/admin/login`);
+  if (!me || !me.isAdmin) nextRedirect(`/${locale}/admin/login`);
   if (!id) nextRedirect(`/${locale}/admin/refunds?error=invalid`);
-  // Mark as processing. The actual Stripe refund call is handled by the
-  // Stripe integration (lib/stripe + /api/refunds) — see UNFINISHED.md.
-  // For now this just flips the status so admins can track manual
-  // resolutions.
-  await db
-    .update(refunds)
-    .set({ status: "processing" })
-    .where(eq(refunds.id, id));
+
+  const [refund] = await db.select().from(refunds).where(eq(refunds.id, id)).limit(1);
+  if (!refund || refund.status === "succeeded") {
+    nextRedirect(`/${locale}/admin/refunds?error=invalid`);
+  }
+
+  const [payment] = await db.select().from(payments).where(eq(payments.id, refund.paymentId)).limit(1);
+
+  if (payment?.stripePaymentIntentId && isStripeConfigured()) {
+    try {
+      const stripe = getStripeClient();
+      const stripeRefund = await stripe.refunds.create({
+        payment_intent: payment.stripePaymentIntentId,
+        amount: Math.round(Number(refund.amount) * 100),
+      });
+      await db
+        .update(refunds)
+        .set({ status: "succeeded", stripeRefundId: stripeRefund.id })
+        .where(eq(refunds.id, id));
+      await db.update(payments).set({ status: "refunded" }).where(eq(payments.id, payment.id));
+    } catch {
+      // Leave status as "pending" so it stays in the queue for a retry.
+    }
+  }
+
   nextRedirect(`/${locale}/admin/refunds?applied=${id}`);
 }
 

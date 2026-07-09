@@ -193,12 +193,7 @@ async function finishWizard(formData: FormData) {
     .set({ role: "provider", updatedAt: new Date() })
     .where(eq(users.id, me.id));
   // Re-issue session with provider role so /provider/* unlocks immediately.
-  await signInUser({
-    id: me.id,
-    email: me.email,
-    name: me.name,
-    role: "provider",
-  });
+  await signInUser(me.id);
   nextRedirect(`/${locale}/provider/onboarding-status`);
 }
 
