@@ -22,9 +22,9 @@ import { reviews } from "@/lib/db/schema/reviews";
 
 export const dynamic = "force-dynamic";
 
-type CatKey = "cleaning" | "companion" | "garden" | "personalCare" | "repair" | "transport";
+type CatKey = "cleaning" | "companion" | "garden" | "personalCare" | "repair" | "transport" | "faith";
 
-const VALID_CATS = ["cleaning", "companion", "garden", "personalCare", "repair", "transport"];
+const VALID_CATS = ["cleaning", "companion", "garden", "personalCare", "repair", "transport", "faith"];
 
 const CAT_EMOJI: Record<string, string> = {
   cleaning: "🧹",
@@ -33,6 +33,7 @@ const CAT_EMOJI: Record<string, string> = {
   personalCare: "💊",
   companion: "👋",
   transport: "🚗",
+  faith: "🙏",
 };
 
 function initialsOf(name: string | null, fallback: string): string {
