@@ -104,10 +104,6 @@ export default async function AdminLoginPage({
             {t("loginCta")}
           </Button>
         </form>
-
-        <p className="mt-6 border-t border-border pt-4 text-[16px] text-text-tertiary">
-          {t("loginIpHint")} · {t("loginLockHint")}
-        </p>
       </div>
     </main>
   );
