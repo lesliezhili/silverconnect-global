@@ -1,7 +1,10 @@
 export type QualificationId =
-  | 'cert3_individual_support' | 'cert3_allied_health'
-  | 'cert4_disability'         | 'cert4_ageing'
-  | 'diploma_community'
+  | 'cert3_individual_support' | 'cert3_allied_health' | 'cert3_health_services_assistance'
+  | 'cert4_disability'         | 'cert4_ageing'        | 'cert4_allied_health_assistance'
+  | 'cert4_community_services' | 'cert4_leisure_health' | 'cert4_mental_health'
+  | 'cert4_mental_health_peer_work' | 'cert4_youth_work'
+  | 'diploma_community'        | 'diploma_emergency_health_care' | 'diploma_youth_work'
+  | 'grad_cert_client_assessment_case_management'
   | 'enrolled_nurse'           | 'registered_nurse'
   | 'allied_physio'            | 'allied_ot'
   | 'allied_speech'            | 'allied_podiatry'
@@ -11,6 +14,13 @@ export type SchemeId =
   | 'ndis' | 'mac_hcp' | 'chsp' | 'dva' | 'tac'
   | 'worksafe' | 'icare' | 'comcare'
   | 'ltci_cn' | 'bmi_cn' | 'civil_cn' | 'disability_cn' | 'elderly_cn'
+
+export interface CurriculumUnit {
+  code: string
+  name: string
+  isCore: boolean
+  teachingPeriod: number
+}
 
 export interface Qualification {
   id: QualificationId
@@ -23,6 +33,8 @@ export interface Qualification {
   assoc?: string
   requiredDocs: string[]
   description: string
+  /** Curriculum breakdown, where available — units of study grouped by teaching period. */
+  units?: CurriculumUnit[]
 }
 
 export interface RequiredCheck {
@@ -66,6 +78,15 @@ export const QUALIFICATIONS: Qualification[] = [
     description: 'Assists physiotherapists, OTs and other allied health professionals in therapy delivery.',
   },
   {
+    id: 'cert3_health_services_assistance',
+    label: 'Certificate III in Health Services Assistance',
+    code: 'HLT33115',
+    streams: ['Health Services'],
+    level: 'entry', ahpra: false,
+    requiredDocs: ['certificate', 'transcript'],
+    description: 'Entry-level assistant role supporting nursing and allied health staff with basic client care in health and hospital settings.',
+  },
+  {
     id: 'cert4_disability',
     label: 'Certificate IV in Disability Support',
     code: 'CHC43121',
@@ -84,6 +105,60 @@ export const QUALIFICATIONS: Qualification[] = [
     description: 'Senior aged care qualification. Required for supervisory and team leader roles in aged care.',
   },
   {
+    id: 'cert4_allied_health_assistance',
+    label: 'Certificate IV in Allied Health Assistance',
+    code: 'HLT43021',
+    streams: ['Therapy Support'],
+    level: 'advanced', ahpra: false,
+    requiredDocs: ['certificate', 'transcript'],
+    description: 'Advanced allied health assistant role — works more independently under an allied health professional’s delegation and supervision plan.',
+  },
+  {
+    id: 'cert4_community_services',
+    label: 'Certificate IV in Community Services',
+    code: 'CHC42021',
+    streams: ['Community Services'],
+    level: 'advanced', ahpra: false,
+    requiredDocs: ['certificate', 'transcript'],
+    description: 'Case work and community-sector service coordination for individuals, families and community groups.',
+  },
+  {
+    id: 'cert4_leisure_health',
+    label: 'Certificate IV in Leisure and Health',
+    code: 'HLT47321',
+    streams: ['Aged Care', 'Community Services'],
+    level: 'advanced', ahpra: false,
+    requiredDocs: ['certificate', 'transcript'],
+    description: 'Plans and delivers leisure, lifestyle and diversional therapy programs for seniors and people with disability.',
+  },
+  {
+    id: 'cert4_mental_health',
+    label: 'Certificate IV in Mental Health',
+    code: 'CHC43315',
+    streams: ['Mental Health'],
+    level: 'advanced', ahpra: false,
+    requiredDocs: ['certificate', 'transcript'],
+    description: 'Supports people living with mental health conditions using a recovery-oriented, trauma-informed approach.',
+  },
+  {
+    id: 'cert4_mental_health_peer_work',
+    label: 'Certificate IV in Mental Health Peer Work',
+    code: 'CHC43515',
+    streams: ['Mental Health'],
+    level: 'advanced', ahpra: false,
+    requiredDocs: ['certificate', 'transcript'],
+    description: 'For workers drawing on their own lived experience of mental health challenges to support others in recovery.',
+  },
+  {
+    id: 'cert4_youth_work',
+    label: 'Certificate IV in Youth Work',
+    code: 'CHC40421',
+    streams: ['Youth Work'],
+    level: 'advanced', ahpra: false,
+    requiredDocs: ['certificate', 'transcript'],
+    description: 'Works with young people and their families across community, welfare and case-support settings.',
+  },
+  {
     id: 'diploma_community',
     label: 'Diploma of Community Services',
     code: 'CHC52021',
@@ -93,13 +168,71 @@ export const QUALIFICATIONS: Qualification[] = [
     description: 'Case management and complex disability coordination. Pathway to Support Coordinator (NDIS).',
   },
   {
+    id: 'diploma_emergency_health_care',
+    label: 'Diploma of Emergency Health Care',
+    code: 'HLT51020',
+    streams: ['Emergency Care'],
+    level: 'diploma', ahpra: false,
+    requiredDocs: ['certificate', 'transcript'],
+    description: 'Prepares graduates for pre-hospital emergency and out-of-hospital care roles (e.g. patient transport, community first response).',
+  },
+  {
+    id: 'diploma_youth_work',
+    label: 'Diploma of Youth Work',
+    code: 'CHC50421',
+    streams: ['Youth Work'],
+    level: 'diploma', ahpra: false,
+    requiredDocs: ['certificate', 'transcript'],
+    description: 'Advanced, autonomous youth work practice including program design and supervision of other youth workers.',
+  },
+  {
+    id: 'grad_cert_client_assessment_case_management',
+    label: 'Graduate Certificate in Client Assessment and Case Management',
+    code: 'Graduate Certificate (higher education)',
+    streams: ['Community Services', 'Aged Care'],
+    level: 'diploma', ahpra: false,
+    requiredDocs: ['certificate', 'transcript'],
+    description: 'University-level graduate certificate (not an ASQA-coded VET qualification) in structured client assessment and case-management practice, often taken by workers with an existing Diploma or degree.',
+  },
+  {
     id: 'enrolled_nurse',
-    label: 'Enrolled Nurse (EN)',
+    label: 'Enrolled Nurse (EN) — Diploma of Nursing',
     code: 'HLT54121',
     streams: ['Nursing'],
     level: 'diploma', ahpra: true, ahpraCategory: 'Nursing',
     requiredDocs: ['certificate', 'ahpra_cert', 'indemnity_insurance'],
-    description: 'AHPRA registered EN. Can administer medications under supervision, wound care, clinical assessments.',
+    description: 'AHPRA registered EN, awarded on completion of the Diploma of Nursing (Online) — HLT54121. Focus on acute care, disease processes and advanced nursing management, integrating skills for patient safety and responding to deterioration. Can administer medications under supervision, wound care, clinical assessments. Delivered in four 10-week teaching periods with Week 9 exams (where applicable), simulation labs, clinical placements, and online learning advisor support — recommended 6–8 hrs/unit/week.',
+    units: [
+      // Teaching Period 1
+      { code: 'HLTAAP002', name: 'Confirm physical health status', isCore: true, teachingPeriod: 1 },
+      { code: 'HLTAAP003', name: 'Analyse and respond to client health information', isCore: true, teachingPeriod: 1 },
+      { code: 'HLTENN035', name: 'Practise nursing within the Australian health care system', isCore: true, teachingPeriod: 1 },
+      { code: 'HLTENN036', name: 'Apply communication skills in nursing practice', isCore: true, teachingPeriod: 1 },
+      { code: 'HLTENN037', name: 'Perform clinical assessment and contribute to planning nursing care', isCore: true, teachingPeriod: 1 },
+      { code: 'HLTENN038', name: 'Implement, monitor and evaluate nursing care', isCore: true, teachingPeriod: 1 },
+      { code: 'HLTENN041', name: 'Apply legal and ethical parameters to nursing practice', isCore: true, teachingPeriod: 1 },
+      { code: 'HLTENN045', name: 'Implement and monitor care of the older person', isCore: true, teachingPeriod: 1 },
+      { code: 'HLTINF006', name: 'Apply basic principles and practices of infection prevention and control', isCore: true, teachingPeriod: 1 },
+      { code: 'HLTWHS002', name: 'Follow safe work practices for direct client care', isCore: true, teachingPeriod: 1 },
+      { code: 'BSBMED301', name: 'Interpret and apply medical terminology appropriately', isCore: false, teachingPeriod: 1 },
+      { code: 'HLTAID011', name: 'Provide First Aid', isCore: false, teachingPeriod: 1 },
+      // Teaching Period 2
+      { code: 'CHCDIV001', name: 'Work with diverse people', isCore: true, teachingPeriod: 2 },
+      { code: 'CHCDIV002', name: 'Promote Aboriginal and/or Torres Strait Islander cultural safety', isCore: true, teachingPeriod: 2 },
+      { code: 'HLTENN040', name: 'Administer and monitor medicines and intravenous therapy', isCore: true, teachingPeriod: 2 },
+      { code: 'HLTENN042', name: 'Implement and monitor care for a person with mental health conditions', isCore: true, teachingPeriod: 2 },
+      { code: 'HLTENN047', name: 'Apply nursing practice in the primary health care setting', isCore: true, teachingPeriod: 2 },
+      // Teaching Period 3
+      { code: 'CHCPRP003', name: 'Reflect on and improve own professional practice', isCore: true, teachingPeriod: 3 },
+      { code: 'HLTENN039', name: 'Apply principles of wound management', isCore: true, teachingPeriod: 3 },
+      { code: 'HLTENN043', name: 'Implement and monitor care for a person with acute health conditions', isCore: true, teachingPeriod: 3 },
+      { code: 'HLTENN044', name: 'Implement and monitor care for a person with chronic health conditions', isCore: true, teachingPeriod: 3 },
+      // Teaching Period 4
+      { code: 'HLTENN068', name: 'Provide end of life care and a palliative approach in nursing practice', isCore: true, teachingPeriod: 4 },
+      { code: 'CHCPOL003', name: 'Research and apply evidence to practice', isCore: false, teachingPeriod: 4 },
+      { code: 'HLTENN057', name: 'Contribute to the nursing care of a person with diabetes', isCore: false, teachingPeriod: 4 },
+      { code: 'HLTWHS006', name: 'Manage personal stressors in the work environment', isCore: false, teachingPeriod: 4 },
+    ],
   },
   {
     id: 'registered_nurse',

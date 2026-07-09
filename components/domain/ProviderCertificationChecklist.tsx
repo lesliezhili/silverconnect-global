@@ -36,6 +36,7 @@ export default function ProviderCertificationChecklist() {
   })
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [expandedUnits, setExpandedUnits] = useState<QualificationId | null>(null)
 
   const toggleQual = (id: QualificationId) =>
     setForm(f => ({
@@ -216,6 +217,44 @@ export default function ProviderCertificationChecklist() {
                             {s}
                           </span>
                         ))}
+                      </div>
+                    )}
+                    {q.units && q.units.length > 0 && (
+                      <div className='mt-2'>
+                        <button
+                          type='button'
+                          onClick={(e) => {
+                            e.preventDefault()
+                            setExpandedUnits(id => id === q.id ? null : q.id)
+                          }}
+                          className='text-xs font-medium text-teal-700 hover:underline'
+                        >
+                          {expandedUnits === q.id ? '▲ Hide' : '▼ View'} {q.units.length} units of study
+                        </button>
+                        {expandedUnits === q.id && (
+                          <div className='mt-2 space-y-3'>
+                            {Array.from(new Set(q.units.map(u => u.teachingPeriod))).sort((a, b) => a - b).map(period => (
+                              <div key={period}>
+                                <p className='text-xs font-bold text-gray-500 uppercase tracking-wide mb-1'>
+                                  Teaching Period {period}
+                                </p>
+                                <ul className='space-y-1'>
+                                  {q.units!.filter(u => u.teachingPeriod === period).map(u => (
+                                    <li key={u.code} className='flex items-start gap-2 text-xs text-gray-600'>
+                                      <span className='font-mono text-gray-400 shrink-0'>{u.code}</span>
+                                      <span className='flex-1'>{u.name}</span>
+                                      <span className={`shrink-0 px-1.5 py-0.5 rounded-full font-medium ${
+                                        u.isCore ? 'bg-teal-50 text-teal-700' : 'bg-gray-100 text-gray-500'
+                                      }`}>
+                                        {u.isCore ? 'Core' : 'Elective'}
+                                      </span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
