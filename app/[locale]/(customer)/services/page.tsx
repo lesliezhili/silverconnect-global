@@ -28,6 +28,7 @@ type CatKey =
   | "transport";
 
 const CAT_EMOJI: Record<string, string> = {
+  faith: "🙏",
   cleaning: "🧹",
   garden: "🌿",
   repair: "🔧",

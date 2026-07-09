@@ -37,6 +37,7 @@ type CatKey =
   | "digitalLiteracy";
 
 const CAT_ICON_BG: Record<string, { bg: string; fg: string; emoji: string }> = {
+  faith:           { bg: "#FEF3E2", fg: "#C2790C", emoji: "🙏" },
   cleaning:        { bg: "#E8F0FE", fg: "#1F6FEB", emoji: "🧹" },
   garden:          { bg: "#DCFCE7", fg: "#16A34A", emoji: "🌿" },
   repair:          { bg: "#EDE9FE", fg: "#7C3AED", emoji: "🔧" },
