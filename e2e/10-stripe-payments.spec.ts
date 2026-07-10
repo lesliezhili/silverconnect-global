@@ -107,6 +107,7 @@ test.describe('Stripe payment routes', () => {
   // customer, logs in, then confirms create-intent gets past auth (hits the
   // real "booking not found" 404, not the 401 an unauthenticated call gets).
   test('authenticated user gets past the create-intent auth gate', async ({ page }) => {
+    test.skip(!!process.env.CI, 'creates a real production user account — run manually with BASE_URL set')
     const email = `e2e-payauth-${Date.now()}@example.com`
     const password = 'TestPass1234!'
 

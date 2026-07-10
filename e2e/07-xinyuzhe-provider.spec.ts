@@ -21,6 +21,9 @@ const TEST_PROVIDER = {
 
 test.describe('心语者注册流程', () => {
   test('registration API accepts valid payload', async ({ request }) => {
+    // Writes a real row to production (BASE defaults to prod when
+    // BASE_URL isn't set, which CI never sets). Run manually only.
+    test.skip(!!process.env.CI, 'creates a real production DB row — run manually with BASE_URL set')
     const res = await request.post(`${BASE}/api/xinyuzhe/registration`, {
       data: {
         name:            TEST_PROVIDER.fullName,
@@ -61,6 +64,7 @@ test.describe('心语者注册流程', () => {
   })
 
   test('booking intake API creates request', async ({ request }) => {
+    test.skip(!!process.env.CI, 'creates a real production DB row — run manually with BASE_URL set')
     const res = await request.post(`${BASE}/api/bookings`, {
       data: {
         name:    'E2E Test User',

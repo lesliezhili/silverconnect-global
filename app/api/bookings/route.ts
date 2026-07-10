@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { bookingRequests } from '@/lib/db/schema/booking-requests'
+import { isUnroutableTestDomain } from '@/lib/notifications/testDomain'
 
 export async function POST(req: Request) {
   try {
@@ -35,8 +36,10 @@ export async function POST(req: Request) {
         message: message?.trim() || null, ref,
       } }),
     })
-    fetch(`${BASE}/api/notifications/email`, mkPayload(ADMIN, 'xinyuzhe_booking_admin')).catch(() => {})
-    fetch(`${BASE}/api/notifications/email`, mkPayload(email.trim().toLowerCase(), 'xinyuzhe_booking_confirmed')).catch(() => {})
+    if (!isUnroutableTestDomain(email)) {
+      fetch(`${BASE}/api/notifications/email`, mkPayload(ADMIN, 'xinyuzhe_booking_admin')).catch(() => {})
+      fetch(`${BASE}/api/notifications/email`, mkPayload(email.trim().toLowerCase(), 'xinyuzhe_booking_confirmed')).catch(() => {})
+    }
     return NextResponse.json({ success: true, ref })
   } catch (err) {
     console.error('[booking-api]', err)

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { xinyuzheProviders } from '@/lib/db/schema/xinyuzhe'
+import { isUnroutableTestDomain } from '@/lib/notifications/testDomain'
 
 export async function POST(req: NextRequest) {
   try {
@@ -58,8 +59,10 @@ export async function POST(req: NextRequest) {
         },
       }),
     })
-    fetch(`${BASE}/api/notifications/email`, emailPayload(ADMIN, 'xinyuzhe_provider_registered')).catch(() => {})
-    fetch(`${BASE}/api/notifications/email`, emailPayload(body.email, 'xinyuzhe_registration_confirmed')).catch(() => {})
+    if (!isUnroutableTestDomain(body.email)) {
+      fetch(`${BASE}/api/notifications/email`, emailPayload(ADMIN, 'xinyuzhe_provider_registered')).catch(() => {})
+      fetch(`${BASE}/api/notifications/email`, emailPayload(body.email, 'xinyuzhe_registration_confirmed')).catch(() => {})
+    }
 
     return NextResponse.json({
       success: true,
