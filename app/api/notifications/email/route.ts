@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isUnroutableTestDomain } from "@/lib/notifications/testDomain";
 
 export const dynamic = "force-dynamic";
 
@@ -73,6 +74,11 @@ export async function POST(req: NextRequest) {
           BASE + '/zh/xinyuzhe/registration', '重新申请'
         ); break;
     default: return NextResponse.json({ error: "Unknown: " + type }, { status: 400 });
+  }
+
+  if (isUnroutableTestDomain(to)) {
+    console.log("[email] skipped -- unroutable test domain", subject, "->", to);
+    return NextResponse.json({ success: true, sent: false, reason: "test-domain-skipped" });
   }
 
   if (process.env.SMTP_USER) {

@@ -1,5 +1,7 @@
 "use server";
 
+import { isUnroutableTestDomain } from "@/lib/notifications/testDomain";
+
 /**
  * FREE Notification Stack for SilverConnect Global (Non-Profit)
  * 
@@ -82,6 +84,11 @@ export async function sendEmail(params: {
   text?: string;
 }): Promise<{ success: boolean }> {
   const { to, subject, html, text } = params;
+
+  if (isUnroutableTestDomain(to)) {
+    console.log(`📧 EMAIL skipped (test domain) → ${to}: ${subject}`);
+    return { success: false };
+  }
 
   // Use Resend free tier (100 emails/day) if RESEND_API_KEY set
   const resendKey = process.env.RESEND_API_KEY;

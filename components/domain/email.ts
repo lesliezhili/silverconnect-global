@@ -20,6 +20,7 @@
  */
 import "server-only";
 import nodemailer, { type Transporter } from "nodemailer";
+import { isUnroutableTestDomain } from "@/lib/notifications/testDomain";
 
 const env = (...names: string[]) => {
   for (const n of names) {
@@ -59,6 +60,9 @@ export async function sendEmail(opts: {
   text: string;
   html?: string;
 }): Promise<SendResult> {
+  if (isUnroutableTestDomain(opts.to)) {
+    return { ok: false, reason: "test-domain-skipped" };
+  }
   const t = getTransport();
   if (!t) {
     return { ok: false, reason: "smtp-not-configured" };

@@ -6,7 +6,7 @@ const PROV_EP  = `${BASE}/api/xinyuzhe/providers`
 
 async function postEmail(request: any, type: string, extra: object = {}) {
   return request.post(EMAIL_EP, {
-    data: { to: `e2e-${type}@test.sc.app`, type, data: { name: '测试', ...extra } },
+    data: { to: `e2e-${type}@example.com`, type, data: { name: '测试', ...extra } },
     timeout: 10_000,
   })
 }

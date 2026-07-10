@@ -4,7 +4,7 @@ const BASE = process.env.BASE_URL || 'https://silverconnect-global.vercel.app'
 
 const TEST_PROVIDER = {
   fullName:       '测试心语者',
-  email:          `e2e-provider-${Date.now()}@test.silverconnect.app`,
+  email:          `e2e-provider-${Date.now()}@example.com`,
   phone:          '13800138000',
   city:           '北京',
   education:      '本科',
@@ -64,7 +64,7 @@ test.describe('心语者注册流程', () => {
     const res = await request.post(`${BASE}/api/bookings`, {
       data: {
         name:    'E2E Test User',
-        email:   `e2e-book-${Date.now()}@test.silverconnect.app`,
+        email:   `e2e-book-${Date.now()}@example.com`,
         phone:   '13800138001',
         date:    '2026-08-01',
         message: 'E2E 测试预约',
