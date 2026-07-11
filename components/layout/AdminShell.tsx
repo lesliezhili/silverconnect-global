@@ -17,6 +17,7 @@ import {
   Settings,
   Flag,
   Heart,
+  Building2,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
@@ -27,6 +28,7 @@ const NAV_PRIMARY = [
   { key: "navDisputes", href: "/admin/disputes", Icon: Scale, exact: false },
   { key: "navSafety", href: "/admin/safety", Icon: ShieldAlert, exact: false },
   { key: "navProviders", href: "/admin/providers", Icon: Users, exact: false },
+  { key: "navOrganizations", href: "/admin/organizations", Icon: Building2, exact: false },
   { key: "navRefunds", href: "/admin/refunds", Icon: RotateCcw, exact: false },
   { key: "navAnalytics", href: "/admin/analytics", Icon: BarChart3, exact: false },
 ] as const;

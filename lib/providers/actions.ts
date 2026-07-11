@@ -14,7 +14,7 @@ import { users } from "@/lib/db/schema/users";
  * In production, calls the ABR (Australian Business Register) API.
  * Currently implements format validation + stub for API integration.
  */
-async function validateABN(abn: string): Promise<{ valid: boolean; error?: string }> {
+export async function validateABN(abn: string): Promise<{ valid: boolean; error?: string }> {
   // Strip whitespace
   const cleaned = abn.replace(/\s/g, "");
 

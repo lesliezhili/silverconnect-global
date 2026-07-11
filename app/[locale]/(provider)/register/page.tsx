@@ -13,9 +13,35 @@ export default async function ProviderRegisterPage({
       <div className="max-w-3xl mx-auto px-4">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Government Scheme Registration
+            Provider Registration
           </h1>
           <p className="text-gray-500 text-lg">
+            Are you an individual carer or a business? Choose the path that fits you.
+          </p>
+        </div>
+
+        <div className="grid gap-4 mb-10">
+          <Link href="/register/day-care-centre"
+            className="flex items-center gap-4 p-5 rounded-xl border-2 border-gray-900 bg-white hover:shadow-md transition-shadow group">
+            <span className="text-3xl w-14 h-14 flex items-center justify-center rounded-xl flex-shrink-0"
+              style={{ background: '#F3F4F6' }}>
+              🏢
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-base leading-tight text-gray-900">Day Care Centre (business)</p>
+              <p className="text-sm text-gray-500 mt-0.5">
+                Register your organisation — ABN, address, capacity &amp; contact details for admin review
+              </p>
+            </div>
+            <span className="text-gray-400 text-xl group-hover:text-gray-600 flex-shrink-0">›</span>
+          </Link>
+        </div>
+
+        <div className="text-center mb-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-1">
+            Home-based Care (individual carer)
+          </h2>
+          <p className="text-gray-500 text-base">
             SilverConnect guides you through registration as an approved government scheme provider
           </p>
           <p className="text-sm text-gray-400 mt-1">

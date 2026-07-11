@@ -19,3 +19,6 @@ export * from "./admin";
 
 // Xinyuzhe intake: unauthenticated booking requests
 export * from "./booking-requests";
+
+// Phase 4: B2B day care centre registration
+export * from "./organizations";

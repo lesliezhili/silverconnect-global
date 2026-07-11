@@ -890,6 +890,24 @@
     "bannerTitle": "Dịch vụ tại 8 quốc gia",
     "bannerDesc": "AU · CN · CA · US · TW · SG · HK · MY — Chăm sóc nói tiếng Trung"
   },
+  "organization": {
+    "registerTitle": "Register your day care centre",
+    "registerSubtitle": "Apply as a business to list your day care centre on SilverConnect.",
+    "submittedTitle": "Application submitted",
+    "submittedBody": "Thanks — our team will review your application and get back to you soon.",
+    "fieldName": "Organisation name",
+    "fieldAbn": "ABN",
+    "fieldAddress": "Address",
+    "fieldRegion": "State / territory",
+    "fieldRegionPlaceholder": "Select a state or territory",
+    "fieldContactPhone": "Contact phone",
+    "fieldContactEmail": "Contact email",
+    "fieldCapacity": "Capacity (places)",
+    "fieldOperatingHours": "Operating hours",
+    "fieldDescription": "Description",
+    "fieldAgreeTerms": "I agree to SilverConnect's terms and confirm the information provided is accurate.",
+    "submitButton": "Submit application"
+  },
   "pProfile": {
     "title": "Hồ sơ công khai",
     "avatar": "Ảnh",
