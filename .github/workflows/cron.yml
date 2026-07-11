@@ -1,0 +1,54 @@
+name: Scheduled Cron Jobs
+
+# Vercel's Hobby (free) plan caps native Cron Jobs at 2, running at most
+# once/day — too coarse for the 30-min safety check-ins and hourly
+# reminders below. This workflow calls each /api/cron/* route directly on
+# its real cadence instead, authenticating with the same CRON_SECRET the
+# routes already check via Authorization: Bearer.
+#
+# auto-release and daily are intentionally not wired here — both are
+# unimplemented stubs in the app code (no real DB work), so there's
+# nothing useful to call yet.
+
+on:
+  schedule:
+    - cron: '*/30 * * * *' # checkins — emergency wellness dispatch (Module 6)
+    - cron: '0 * * * *' # reminders — 24h/12h/8h/4h pre-service reminders
+    - cron: '0 16 * * *' # daily bundle — ~2am AEST, low-traffic window
+    - cron: '0 22 * * 0' # weekly ministry summary — ~Mon 8am AEST
+  workflow_dispatch: {}
+
+env:
+  BASE_URL: https://silverconnect-global.vercel.app
+
+jobs:
+  run-crons:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkins (every 30 min)
+        if: github.event.schedule == '*/30 * * * *' || github.event_name == 'workflow_dispatch'
+        run: curl -sS --fail -X GET "$BASE_URL/api/cron/checkins" -H "Authorization: Bearer $CRON_SECRET"
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+
+      - name: Reminders (hourly)
+        if: github.event.schedule == '0 * * * *' || github.event_name == 'workflow_dispatch'
+        run: curl -sS --fail -X GET "$BASE_URL/api/cron/reminders" -H "Authorization: Bearer $CRON_SECRET"
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+
+      - name: Daily bundle (release-funds, sla-disputes, cancel-stale, recurring-bookings)
+        if: github.event.schedule == '0 16 * * *' || github.event_name == 'workflow_dispatch'
+        run: |
+          curl -sS --fail -X POST "$BASE_URL/api/cron/release-funds" -H "Authorization: Bearer $CRON_SECRET"
+          curl -sS --fail -X GET "$BASE_URL/api/cron/sla-disputes" -H "Authorization: Bearer $CRON_SECRET"
+          curl -sS --fail -X GET "$BASE_URL/api/cron/cancel-stale" -H "Authorization: Bearer $CRON_SECRET"
+          curl -sS --fail -X GET "$BASE_URL/api/cron/recurring-bookings" -H "Authorization: Bearer $CRON_SECRET"
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+
+      - name: Weekly ministry summary
+        if: github.event.schedule == '0 22 * * 0' || github.event_name == 'workflow_dispatch'
+        run: curl -sS --fail -X POST "$BASE_URL/api/cron/weekly-ministry-summary" -H "Authorization: Bearer $CRON_SECRET"
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}

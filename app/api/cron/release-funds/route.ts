@@ -3,14 +3,14 @@ import postgres from "postgres";
 
 export const dynamic = "force-dynamic";
 
-/** 
- * POST /api/cron/release-funds?key=SESSION_SECRET
+/**
+ * POST /api/cron/release-funds
  * Moves balance_pending → balance_available for completed jobs older than 48h.
- * Run via Vercel Cron or manual trigger.
+ * Protected by `Authorization: Bearer ${CRON_SECRET}`, same as the other cron routes.
  */
 export async function POST(req: Request) {
-  const { searchParams } = new URL(req.url);
-  if (searchParams.get("key") !== process.env.SESSION_SECRET)
+  const authHeader = req.headers.get("authorization");
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const url = process.env.DATABASE_URL;
