@@ -870,6 +870,8 @@
       "favouritesDesc": "快速找到信賴的人",
       "funding": "政府資助",
       "fundingDesc": "NDIS、TAC、WorkSafe、DVA、養老金",
+      "referrals": "邀請好友",
+      "referralsDesc": "分享推薦碼，好友預約後你們都能獲得獎勵",
       "notifications": "通知設定",
       "notificationsDesc": "郵件、簡訊和推播偏好",
       "help": "幫助與支持",
@@ -1216,6 +1218,20 @@
     "fieldDescription": "Description",
     "fieldAgreeTerms": "I agree to SilverConnect's terms and confirm the information provided is accurate.",
     "submitButton": "Submit application"
+  },
+  "referrals": {
+    "title": "邀請好友",
+    "subtitle": "分享您的推薦碼 — 好友完成首次預約後，您和好友都將獲得獎勵。",
+    "yourCode": "您的推薦碼",
+    "shareHint": "將此連結分享給親友：",
+    "copyLink": "複製連結",
+    "copied": "已複製！",
+    "balance": "您的推薦獎勵",
+    "noBalance": "暫無獎勵 — 邀請好友即可開始賺取獎勵。",
+    "history": "您的推薦紀錄",
+    "noHistory": "您還沒有推薦任何人。",
+    "statusRewarded": "已獎勵",
+    "statusPending": "待完成"
   },
   "pProfile": {
     "title": "服務人員資料",

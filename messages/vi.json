@@ -635,7 +635,9 @@
       "helpDesc": "FAQ, liên hệ chúng tôi, cơ sở kiến thức",
       "signOut": "Đăng xuất",
       "funding": "Tài trợ chính phủ",
-      "fundingDesc": "NDIS, TAC, WorkSafe, DVA, trợ cấp hưu trí"
+      "fundingDesc": "NDIS, TAC, WorkSafe, DVA, trợ cấp hưu trí",
+      "referrals": "Mời bạn bè",
+      "referralsDesc": "Chia sẻ mã giới thiệu, nhận tín dụng khi bạn bè đặt lịch"
     },
     "funding": "Tài trợ chính phủ"
   },
@@ -907,6 +909,20 @@
     "fieldDescription": "Description",
     "fieldAgreeTerms": "I agree to SilverConnect's terms and confirm the information provided is accurate.",
     "submitButton": "Submit application"
+  },
+  "referrals": {
+    "title": "Mời bạn bè",
+    "subtitle": "Chia sẻ mã giới thiệu của bạn — cả bạn và bạn bè đều nhận được tín dụng khi họ hoàn thành lượt đặt lịch đầu tiên.",
+    "yourCode": "Mã giới thiệu của bạn",
+    "shareHint": "Chia sẻ liên kết này với bạn bè và gia đình:",
+    "copyLink": "Sao chép liên kết",
+    "copied": "Đã sao chép!",
+    "balance": "Tín dụng giới thiệu của bạn",
+    "noBalance": "Chưa có tín dụng nào — mời bạn bè để bắt đầu.",
+    "history": "Lịch sử giới thiệu của bạn",
+    "noHistory": "Bạn chưa giới thiệu ai.",
+    "statusRewarded": "Đã thưởng",
+    "statusPending": "Đang chờ"
   },
   "pProfile": {
     "title": "Hồ sơ công khai",

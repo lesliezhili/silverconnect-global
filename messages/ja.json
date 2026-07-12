@@ -868,6 +868,8 @@
       "favouritesDesc": "信頼できる人に素早くアクセス",
       "funding": "政府助成金",
       "fundingDesc": "NDIS、TAC、WorkSafe、DVA、年金",
+      "referrals": "友達を招待",
+      "referralsDesc": "紹介コードをシェアして、予約時にクレジットを獲得",
       "notifications": "通知設定",
       "notificationsDesc": "メール、SMS、プッシュ通知",
       "help": "ヘルプ",
@@ -1208,6 +1210,20 @@
     "fieldDescription": "Description",
     "fieldAgreeTerms": "I agree to SilverConnect's terms and confirm the information provided is accurate.",
     "submitButton": "Submit application"
+  },
+  "referrals": {
+    "title": "友達を招待",
+    "subtitle": "紹介コードをシェアしましょう — 友達が初回予約を完了すると、お二人ともクレジットを獲得できます。",
+    "yourCode": "あなたの紹介コード",
+    "shareHint": "このリンクを友達や家族にシェアしてください：",
+    "copyLink": "リンクをコピー",
+    "copied": "コピーしました！",
+    "balance": "あなたの紹介クレジット",
+    "noBalance": "まだクレジットはありません — 友達を招待して始めましょう。",
+    "history": "あなたの紹介履歴",
+    "noHistory": "まだ誰も紹介していません。",
+    "statusRewarded": "獲得済み",
+    "statusPending": "保留中"
   },
   "pProfile": {
     "title": "ケアラープロフィール",

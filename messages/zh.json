@@ -753,6 +753,8 @@
       "favouritesDesc": "快速找到信赖的人",
       "funding": "政府资助",
       "fundingDesc": "NDIS、TAC、WorkSafe、DVA、养老金",
+      "referrals": "邀请好友",
+      "referralsDesc": "分享推荐码，好友预约后你们都能获得奖励",
       "notifications": "通知设置",
       "notificationsDesc": "邮件、短信和推送偏好",
       "help": "帮助与支持",
@@ -1049,6 +1051,20 @@
     "fieldDescription": "简介",
     "fieldAgreeTerms": "我同意 SilverConnect 的条款，并确认所提供信息真实准确。",
     "submitButton": "提交申请"
+  },
+  "referrals": {
+    "title": "邀请好友",
+    "subtitle": "分享您的推荐码 — 好友完成首次预约后，您和好友都将获得奖励。",
+    "yourCode": "您的推荐码",
+    "shareHint": "将此链接分享给亲友：",
+    "copyLink": "复制链接",
+    "copied": "已复制！",
+    "balance": "您的推荐奖励",
+    "noBalance": "暂无奖励 — 邀请好友即可开始赚取奖励。",
+    "history": "您的推荐记录",
+    "noHistory": "您还没有推荐任何人。",
+    "statusRewarded": "已奖励",
+    "statusPending": "待完成"
   },
   "pProfile": {
     "title": "公开资料",

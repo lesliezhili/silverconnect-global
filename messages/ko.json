@@ -868,6 +868,8 @@
       "favouritesDesc": "신뢰하는 분께 빠른 접근",
       "funding": "정부 지원금",
       "fundingDesc": "NDIS, TAC, WorkSafe, DVA, 연금",
+      "referrals": "친구 초대",
+      "referralsDesc": "추천 코드를 공유하고 예약 시 크레딧 받기",
       "notifications": "알림 설정",
       "notificationsDesc": "이메일, SMS, 푸시 알림",
       "help": "도움말",
@@ -1208,6 +1210,20 @@
     "fieldDescription": "Description",
     "fieldAgreeTerms": "I agree to SilverConnect's terms and confirm the information provided is accurate.",
     "submitButton": "Submit application"
+  },
+  "referrals": {
+    "title": "친구 초대",
+    "subtitle": "추천 코드를 공유하세요 — 친구가 첫 예약을 완료하면 두 분 모두 크레딧을 받습니다.",
+    "yourCode": "나의 추천 코드",
+    "shareHint": "이 링크를 친구와 가족에게 공유하세요:",
+    "copyLink": "링크 복사",
+    "copied": "복사됨!",
+    "balance": "나의 추천 크레딧",
+    "noBalance": "아직 적립된 크레딧이 없습니다 — 친구를 초대해 보세요.",
+    "history": "나의 추천 내역",
+    "noHistory": "아직 초대한 친구가 없습니다.",
+    "statusRewarded": "지급 완료",
+    "statusPending": "대기 중"
   },
   "pProfile": {
     "title": "케어러 프로필",

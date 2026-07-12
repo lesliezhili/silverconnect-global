@@ -4,8 +4,72 @@ import { bookings } from "@/lib/db/schema/bookings";
 import { reviews } from "@/lib/db/schema/reviews";
 import { providerProfiles } from "@/lib/db/schema/providers";
 import { wallets } from "@/lib/db/schema/payments";
+import { referrals, referralCredits } from "@/lib/db/schema/referrals";
 import { getCurrentUser } from "@/lib/auth/server";
+import { notifyAndEmail } from "@/lib/notifications/server";
 import { eq, and, sql } from "drizzle-orm";
+
+const REFERRAL_REWARD_AMOUNT = "25.00";
+
+/**
+ * Pays out a pending referral if this is the referee's first-ever
+ * released booking. Never throws — a referral hiccup must not block the
+ * customer's feedback submission or the provider's payout.
+ */
+async function maybeRewardReferral(customerId: string, currency: string) {
+  try {
+    const [pending] = await db
+      .select()
+      .from(referrals)
+      .where(and(eq(referrals.refereeUserId, customerId), eq(referrals.status, "pending")))
+      .limit(1);
+    if (!pending) return;
+
+    const countResult = await db.execute(sql`
+      SELECT COUNT(*)::int AS "releasedCount" FROM bookings
+      WHERE customer_id = ${customerId} AND status = 'released'
+    `);
+    const countRows = Array.isArray(countResult) ? countResult : (countResult as unknown as { rows: { releasedCount: number }[] }).rows;
+    if (countRows[0]?.releasedCount !== 1) return; // not their first released booking
+
+    await db
+      .update(referrals)
+      .set({ status: "rewarded", rewardAmount: REFERRAL_REWARD_AMOUNT, rewardCurrency: currency, rewardedAt: new Date() })
+      .where(eq(referrals.id, pending.id));
+
+    await db.insert(referralCredits).values([
+      { userId: pending.referrerUserId, amount: REFERRAL_REWARD_AMOUNT, currency, reason: "referrer_bonus", referralId: pending.id },
+      { userId: pending.refereeUserId, amount: REFERRAL_REWARD_AMOUNT, currency, reason: "referee_bonus", referralId: pending.id },
+    ]);
+
+    await notifyAndEmail({
+      userId: pending.referrerUserId,
+      kind: "system",
+      title: "You earned a referral bonus! 🎉",
+      body: `Your friend completed their first booking — ${currency} ${REFERRAL_REWARD_AMOUNT} has been added to your referral credit.`,
+      link: "/profile/referrals",
+      email: {
+        subject: "You earned a referral bonus!",
+        text: `Your friend completed their first booking. ${currency} ${REFERRAL_REWARD_AMOUNT} has been added to your referral credit.`,
+        html: `<p>Your friend completed their first booking on SilverConnect.</p><p><strong>${currency} ${REFERRAL_REWARD_AMOUNT}</strong> has been added to your referral credit.</p>`,
+      },
+    });
+    await notifyAndEmail({
+      userId: pending.refereeUserId,
+      kind: "system",
+      title: "Welcome bonus earned! 🎉",
+      body: `Thanks for completing your first booking — ${currency} ${REFERRAL_REWARD_AMOUNT} referral credit has been added to your account.`,
+      link: "/profile/referrals",
+      email: {
+        subject: "Your welcome bonus has landed",
+        text: `Thanks for completing your first booking. ${currency} ${REFERRAL_REWARD_AMOUNT} has been added to your referral credit.`,
+        html: `<p>Thanks for completing your first booking on SilverConnect.</p><p><strong>${currency} ${REFERRAL_REWARD_AMOUNT}</strong> has been added to your referral credit.</p>`,
+      },
+    });
+  } catch (e) {
+    console.error("[feedback] referral reward failed:", e);
+  }
+}
 
 export const dynamic = "force-dynamic";
 
@@ -92,6 +156,8 @@ export async function POST(
         console.warn("[feedback] Wallet upsert failed (table may not exist):", walletErr);
       }
     }
+
+    await maybeRewardReferral(booking.customerId, booking.currency || "AUD");
   }
 
   return NextResponse.json({

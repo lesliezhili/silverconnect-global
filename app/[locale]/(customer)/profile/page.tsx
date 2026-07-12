@@ -9,7 +9,7 @@ import {
   ChevronRight,
   LogOut,
   Pencil,
-  ShieldCheck, FileText } from "lucide-react";
+  ShieldCheck, FileText, Gift } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Link, redirect } from "@/i18n/navigation";
 import { getCountry } from "@/components/domain/countryCookie";
@@ -24,6 +24,7 @@ const ITEMS = [
   { key: "emergency",     href: "/profile/emergency",     Icon: PhoneCall },
   { key: "favourites",    href: "/profile/favourites",    Icon: Heart },
   { key: "funding",       href: "/profile/funding",       Icon: FileText },
+  { key: "referrals",     href: "/profile/referrals",     Icon: Gift },
     { key: "notifications", href: "/profile/notifications", Icon: Bell },
   { key: "help",          href: "/help",                  Icon: HelpCircle },
 ] as const;

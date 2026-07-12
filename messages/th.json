@@ -816,6 +816,8 @@
       "favouritesDesc": "เข้าถึงคนที่ไว้วางใจ",
       "funding": "เงินทุนภาครัฐ",
       "fundingDesc": "NDIS, TAC, WorkSafe, DVA, เงินบำนาญ",
+      "referrals": "ชวนเพื่อน",
+      "referralsDesc": "แชร์รหัสแนะนำ รับเครดิตเมื่อเพื่อนจองบริการ",
       "notifications": "การแจ้งเตือน",
       "notificationsDesc": "อีเมล SMS และพุชแจ้งเตือน",
       "help": "ช่วยเหลือ",
@@ -1116,6 +1118,20 @@
     "fieldDescription": "Description",
     "fieldAgreeTerms": "I agree to SilverConnect's terms and confirm the information provided is accurate.",
     "submitButton": "Submit application"
+  },
+  "referrals": {
+    "title": "ชวนเพื่อน",
+    "subtitle": "แชร์รหัสแนะนำของคุณ — คุณและเพื่อนจะได้รับเครดิตเมื่อเพื่อนทำการจองครั้งแรกสำเร็จ",
+    "yourCode": "รหัสแนะนำของคุณ",
+    "shareHint": "แชร์ลิงก์นี้กับเพื่อนและครอบครัว:",
+    "copyLink": "คัดลอกลิงก์",
+    "copied": "คัดลอกแล้ว!",
+    "balance": "เครดิตแนะนำของคุณ",
+    "noBalance": "ยังไม่มีเครดิต — ชวนเพื่อนเพื่อเริ่มรับเครดิต",
+    "history": "รายการแนะนำของคุณ",
+    "noHistory": "คุณยังไม่ได้แนะนำใครเลย",
+    "statusRewarded": "ได้รับเครดิตแล้ว",
+    "statusPending": "รอดำเนินการ"
   },
   "pProfile": {
     "title": "Public profile",

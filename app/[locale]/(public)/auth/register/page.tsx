@@ -14,6 +14,7 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema/users";
 import { findUserByEmail, getCurrentUser } from "@/lib/auth/server";
 import { hashPassword } from "@/lib/auth/password";
+import { attributeReferral } from "@/lib/referrals/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +26,7 @@ async function registerAction(formData: FormData) {
   const password = String(formData.get("password") ?? "");
   const locale = String(formData.get("locale") ?? "en");
   const faithPreference = formData.get("faithPreference") === "christian" ? "christian" : null;
+  const referralCode = String(formData.get("ref") ?? "").trim();
 
   // Unified signup: everyone is customer. No role selection.
   const role = "customer";
@@ -62,15 +64,26 @@ async function registerAction(formData: FormData) {
   }
 
   // Auto-verify email
+  let newUserId: string | undefined;
   try {
     const newUser = await findUserByEmail(email);
     if (newUser) {
+      newUserId = newUser.id;
       await db
         .update(users)
         .set({ emailVerifiedAt: new Date(), updatedAt: new Date() })
         .where(eq(users.id, newUser.id));
     }
   } catch { /* emailVerifiedAt column might not exist — non-critical */ }
+
+  // Record referral attribution — never blocks signup on failure.
+  if (newUserId && referralCode) {
+    try {
+      await attributeReferral(newUserId, referralCode);
+    } catch (e) {
+      console.error("[register] referral attribution failed:", e);
+    }
+  }
 
   // Send confirmation email in background (non-blocking)
   after(async () => {
@@ -102,6 +115,7 @@ export default async function RegisterPage({
   const t = await getTranslations("auth");
   const tCommon = await getTranslations("common");
   const error = typeof sp.error === "string" ? sp.error : undefined;
+  const ref = typeof sp.ref === "string" ? sp.ref : "";
 
   const errorMsg =
     error === "name" ? "Please enter your name"
@@ -121,6 +135,7 @@ export default async function RegisterPage({
       )}
       <form className="flex flex-col gap-4" action={registerAction}>
         <input type="hidden" name="locale" value={locale} />
+        <input type="hidden" name="ref" value={ref} />
         {/* Name field — required for elder dignity */}
         <div>
           <Label htmlFor="fullName">Your name</Label>

@@ -755,7 +755,9 @@
       "helpDesc": "FAQ, contact us, knowledge base",
       "signOut": "Sign out",
       "funding": "Government Funding",
-      "fundingDesc": "NDIS, TAC, WorkSafe, DVA, Aged Pension claims"
+      "fundingDesc": "NDIS, TAC, WorkSafe, DVA, Aged Pension claims",
+      "referrals": "Invite friends",
+      "referralsDesc": "Share your code, earn credit when they book"
     },
     "funding": "Government Funding"
   },
@@ -1047,6 +1049,20 @@
     "fieldDescription": "Description",
     "fieldAgreeTerms": "I agree to SilverConnect's terms and confirm the information provided is accurate.",
     "submitButton": "Submit application"
+  },
+  "referrals": {
+    "title": "Invite friends",
+    "subtitle": "Share your code — you and your friend both earn credit when they complete their first booking.",
+    "yourCode": "Your referral code",
+    "shareHint": "Share this link with friends and family:",
+    "copyLink": "Copy link",
+    "copied": "Copied!",
+    "balance": "Your referral credit",
+    "noBalance": "No credit earned yet — invite a friend to get started.",
+    "history": "Your referrals",
+    "noHistory": "You haven't referred anyone yet.",
+    "statusRewarded": "Rewarded",
+    "statusPending": "Pending"
   },
   "pProfile": {
     "title": "Public profile",
