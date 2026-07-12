@@ -27,13 +27,15 @@ jobs:
     steps:
       - name: Checkins (every 30 min)
         if: github.event.schedule == '*/30 * * * *' || github.event_name == 'workflow_dispatch'
-        run: curl -sS --fail -X GET "$BASE_URL/api/cron/checkins" -H "Authorization: Bearer $CRON_SECRET"
+        run: |
+          curl -sS --fail -X GET "$BASE_URL/api/cron/checkins" -H "Authorization: Bearer $CRON_SECRET"
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
 
       - name: Reminders (hourly)
         if: github.event.schedule == '0 * * * *' || github.event_name == 'workflow_dispatch'
-        run: curl -sS --fail -X GET "$BASE_URL/api/cron/reminders" -H "Authorization: Bearer $CRON_SECRET"
+        run: |
+          curl -sS --fail -X GET "$BASE_URL/api/cron/reminders" -H "Authorization: Bearer $CRON_SECRET"
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
 
@@ -49,6 +51,7 @@ jobs:
 
       - name: Weekly ministry summary
         if: github.event.schedule == '0 22 * * 0' || github.event_name == 'workflow_dispatch'
-        run: curl -sS --fail -X POST "$BASE_URL/api/cron/weekly-ministry-summary" -H "Authorization: Bearer $CRON_SECRET"
+        run: |
+          curl -sS --fail -X POST "$BASE_URL/api/cron/weekly-ministry-summary" -H "Authorization: Bearer $CRON_SECRET"
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
