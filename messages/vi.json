@@ -637,7 +637,9 @@
       "funding": "Tài trợ chính phủ",
       "fundingDesc": "NDIS, TAC, WorkSafe, DVA, trợ cấp hưu trí",
       "referrals": "Mời bạn bè",
-      "referralsDesc": "Chia sẻ mã giới thiệu, nhận tín dụng khi bạn bè đặt lịch"
+      "referralsDesc": "Chia sẻ mã giới thiệu, nhận tín dụng khi bạn bè đặt lịch",
+      "support": "Ủng hộ SilverConnect",
+      "supportDesc": "Quyên góp một lần cho sứ mệnh của chúng tôi"
     },
     "funding": "Tài trợ chính phủ"
   },
@@ -923,6 +925,26 @@
     "noHistory": "Bạn chưa giới thiệu ai.",
     "statusRewarded": "Đã thưởng",
     "statusPending": "Đang chờ"
+  },
+  "donate": {
+    "title": "Ủng hộ SilverConnect",
+    "subtitle": "Khoản quyên góp của bạn giúp chúng tôi kết nối nhiều người cao tuổi hơn với dịch vụ chăm sóc và sự đồng hành đáng tin cậy.",
+    "amountLabel": "Số tiền (AUD)",
+    "customAmountPlaceholder": "Số tiền tùy chọn",
+    "fieldName": "Họ tên (không bắt buộc)",
+    "fieldEmail": "Email (không bắt buộc — để nhận biên lai)",
+    "fieldMessage": "Lời nhắn (không bắt buộc)",
+    "fieldAnonymous": "Quyên góp ẩn danh",
+    "donateButton": "Quyên góp ${amount}",
+    "loading": "Đang tải…",
+    "processing": "Đang xử lý…",
+    "confirmButton": "Xác nhận quyên góp",
+    "testMode": "Chế độ thử nghiệm — sẽ không có khoản phí thực nào được tính.",
+    "thankYouTitle": "Cảm ơn bạn! 🙏",
+    "thankYouBody": "Tấm lòng hảo tâm của bạn có ý nghĩa vô cùng lớn với chúng tôi.",
+    "errorAmount": "Vui lòng chọn hoặc nhập số tiền quyên góp",
+    "errorGeneric": "Đã có lỗi xảy ra",
+    "paymentFailed": "Thanh toán không thành công. Vui lòng thử lại."
   },
   "pProfile": {
     "title": "Hồ sơ công khai",

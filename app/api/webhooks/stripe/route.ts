@@ -5,8 +5,10 @@ import { payments, refunds } from "@/lib/db/schema/payments";
 import { bookings } from "@/lib/db/schema/bookings";
 import { providerProfiles } from "@/lib/db/schema/providers";
 import { notifications } from "@/lib/db/schema/notifications";
+import { donations } from "@/lib/db/schema/donations";
 import { eq } from "drizzle-orm";
 import { getStripeClient } from "@/lib/stripe/server";
+import { notifyAndEmail } from "@/lib/notifications/server";
 
 export const dynamic = "force-dynamic";
 
@@ -59,6 +61,32 @@ async function handleEvent(event: any) {
     case "payment_intent.succeeded": {
       const pi = event.data?.object || event;
       const piId = pi.id;
+      const donationId = pi.metadata?.donation_id;
+
+      if (donationId) {
+        console.log(`[Stripe] Donation succeeded: ${piId} (${donationId})`);
+        const [donation] = await db
+          .update(donations)
+          .set({ status: "succeeded", succeededAt: new Date() })
+          .where(eq(donations.id, donationId))
+          .returning();
+
+        if (donation?.donorUserId) {
+          await notifyAndEmail({
+            userId: donation.donorUserId,
+            kind: "payment",
+            title: "Thank you for your donation! 🙏",
+            body: `Your ${donation.currency} ${donation.amount} donation to SilverConnect has been received.`,
+            email: {
+              subject: "Thank you for your donation",
+              text: `Your ${donation.currency} ${donation.amount} donation to SilverConnect has been received. Thank you for your support!`,
+              html: `<p>Your <strong>${donation.currency} ${donation.amount}</strong> donation to SilverConnect has been received.</p><p>Thank you for your support!</p>`,
+            },
+          });
+        }
+        break;
+      }
+
       const bookingId = pi.metadata?.booking_id;
 
       console.log(`[Stripe] Payment succeeded: ${piId} for booking ${bookingId}`);
@@ -80,6 +108,13 @@ async function handleEvent(event: any) {
     case "payment_intent.payment_failed": {
       const pi = event.data?.object || event;
       const piId = pi.id;
+      const donationId = pi.metadata?.donation_id;
+
+      if (donationId) {
+        console.log(`[Stripe] Donation failed: ${piId} (${donationId})`);
+        await db.update(donations).set({ status: "failed" }).where(eq(donations.id, donationId));
+        break;
+      }
 
       console.log(`[Stripe] Payment failed: ${piId}`);
       await db.update(payments)

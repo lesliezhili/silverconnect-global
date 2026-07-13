@@ -757,7 +757,9 @@
       "funding": "Government Funding",
       "fundingDesc": "NDIS, TAC, WorkSafe, DVA, Aged Pension claims",
       "referrals": "Invite friends",
-      "referralsDesc": "Share your code, earn credit when they book"
+      "referralsDesc": "Share your code, earn credit when they book",
+      "support": "Support SilverConnect",
+      "supportDesc": "Make a one-time donation to our mission"
     },
     "funding": "Government Funding"
   },
@@ -834,6 +836,7 @@
     "navSafety": "Safety",
     "navProviders": "Providers",
     "navOrganizations": "Day Care Centres",
+    "navDonations": "Donations",
     "navRefunds": "Refunds",
     "navAnalytics": "Analytics",
     "sidebar": "Admin navigation",
@@ -938,6 +941,10 @@
     "organizationDrawer": "Day care centre review",
     "colOrganization": "Organisation",
     "colRegion": "Region",
+    "donationsTitle": "Donations",
+    "donationsNoneYet": "No donations yet",
+    "donationsAnonymous": "Anonymous",
+    "colDonor": "Donor",
     "refundsTitle": "Refund queue",
     "refundProcess": "Process refund",
     "refundEmpty": "No refunds queued.",
@@ -1063,6 +1070,26 @@
     "noHistory": "You haven't referred anyone yet.",
     "statusRewarded": "Rewarded",
     "statusPending": "Pending"
+  },
+  "donate": {
+    "title": "Support SilverConnect",
+    "subtitle": "Your donation helps us connect more seniors with trusted care and companionship.",
+    "amountLabel": "Amount (AUD)",
+    "customAmountPlaceholder": "Custom amount",
+    "fieldName": "Your name (optional)",
+    "fieldEmail": "Email (optional — for a receipt)",
+    "fieldMessage": "Message (optional)",
+    "fieldAnonymous": "Donate anonymously",
+    "donateButton": "Donate ${amount}",
+    "loading": "Loading…",
+    "processing": "Processing…",
+    "confirmButton": "Confirm donation",
+    "testMode": "Test mode — no real charge will be made.",
+    "thankYouTitle": "Thank you! 🙏",
+    "thankYouBody": "Your generosity means the world to us.",
+    "errorAmount": "Please choose or enter a donation amount",
+    "errorGeneric": "Something went wrong",
+    "paymentFailed": "Payment failed. Please try again."
   },
   "pProfile": {
     "title": "Public profile",

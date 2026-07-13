@@ -25,3 +25,6 @@ export * from "./organizations";
 
 // Phase 5: referral program
 export * from "./referrals";
+
+// Phase 6: general platform donations
+export * from "./donations";
