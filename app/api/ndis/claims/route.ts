@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateClaim, submitBatchToPRODA } from "@/lib/ndis/claim-lodgement";
+import { getCurrentUser } from "@/lib/auth/server";
+import { hasGovtFundingAccess } from "@/lib/auth/govtFundingAccess";
 
 export async function POST(req: NextRequest) {
+  const me = await getCurrentUser();
+  if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!hasGovtFundingAccess(me.email)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
   const body = await req.json();
   if (body.action === "submit") {
     const validation = validateClaim(body.claim);
@@ -13,6 +19,10 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
+  const me = await getCurrentUser();
+  if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!hasGovtFundingAccess(me.email)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
   const claimId = req.nextUrl.searchParams.get("claimId");
   return NextResponse.json({ claimId, status: "pending" });
 }

@@ -1,5 +1,8 @@
 import { setRequestLocale } from 'next-intl/server'
 import ProviderCertificationChecklist from '@/components/domain/ProviderCertificationChecklist'
+import { getCurrentUser } from '@/lib/auth/server'
+import { hasGovtFundingAccess } from '@/lib/auth/govtFundingAccess'
+import { redirect } from '@/i18n/navigation'
 
 export default async function CertificationPage({
   params,
@@ -8,6 +11,10 @@ export default async function CertificationPage({
 }) {
   const { locale } = await params
   setRequestLocale(locale)
+  const me = await getCurrentUser()
+  if (!hasGovtFundingAccess(me?.email)) {
+    redirect({ href: '/provider/register', locale })
+  }
   return (
     <main className='min-h-screen bg-gray-50 py-8'>
       <div className='max-w-3xl mx-auto px-4'>

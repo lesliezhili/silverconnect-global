@@ -5,6 +5,7 @@ import { Header } from "@/components/layout/Header";
 import { cookies } from 'next/headers'
 import { getCountry } from "@/components/domain/countryCookie";
 import { getCurrentUser } from "@/lib/auth/server";
+import { hasGovtFundingAccess } from "@/lib/auth/govtFundingAccess";
 import { redirect } from "@/i18n/navigation";
 
 // No forced Bible content on public landing — faith content is opt-in after login
@@ -192,31 +193,38 @@ export default async function LandingPage({
           </ul>
         </section>
 
-        {/* Government Funding — country-adaptive */}
-        <section className="mb-10 rounded-2xl border-2 border-purple-200 bg-purple-50 p-6">
-          <h2 className="mb-3 text-[24px] font-bold text-gray-900">{t("fundingTitle2")}</h2>
-          <div className="flex flex-wrap gap-2">
-            {(isCN
-              ? ["民政救助", "基本养老险", "基本医保", "长期护理险", "残障补贴", "高龄津贴", "医疗救助"]
-              : ["NDIS", "TAC", "WorkSafe", "DVA", "My Aged Care", "Aged Pension", "Super"]
-            ).map((s) => (
-              <span key={s} className="rounded-full border border-purple-200 bg-white px-4 py-2 text-[18px] font-semibold text-purple-700">{s}</span>
-            ))}
-          </div>
-          <p className="mt-4 text-[18px] text-gray-700 leading-relaxed">
-            {isCN
-              ? "提供您的参保号 + 用手机拍照批准信或上传PDF = 即可使用政府资助"
-              : zh
-              ? "提供您的索赔号 + 用手机拍照批准信或上传PDF = 即可使用政府资助"
-              : "Claim number + a photo of your approval letter (or PDF) = funded care"}
-          </p>
-          <p className="mt-2 text-[16px] text-purple-600 font-medium">
-            {t("fundingExtract")}
-          </p>
-          <p className="text-[15px] text-gray-400 mt-1 px-4">
-            {t("fundingReassure")}
-          </p>
-        </section>
+        {/* Government Funding — country-adaptive. Gated to the govt-funding
+            allowlist; note this route redirects signed-in users to /home
+            (see `if (me) redirect(...)` above), so in practice this only
+            ever evaluates against an anonymous visitor (always false) —
+            correct, since we can't identify an anonymous visitor as
+            allowlisted before they sign in. */}
+        {hasGovtFundingAccess(me?.email) && (
+          <section className="mb-10 rounded-2xl border-2 border-purple-200 bg-purple-50 p-6">
+            <h2 className="mb-3 text-[24px] font-bold text-gray-900">{t("fundingTitle2")}</h2>
+            <div className="flex flex-wrap gap-2">
+              {(isCN
+                ? ["民政救助", "基本养老险", "基本医保", "长期护理险", "残障补贴", "高龄津贴", "医疗救助"]
+                : ["NDIS", "TAC", "WorkSafe", "DVA", "My Aged Care", "Aged Pension", "Super"]
+              ).map((s) => (
+                <span key={s} className="rounded-full border border-purple-200 bg-white px-4 py-2 text-[18px] font-semibold text-purple-700">{s}</span>
+              ))}
+            </div>
+            <p className="mt-4 text-[18px] text-gray-700 leading-relaxed">
+              {isCN
+                ? "提供您的参保号 + 用手机拍照批准信或上传PDF = 即可使用政府资助"
+                : zh
+                ? "提供您的索赔号 + 用手机拍照批准信或上传PDF = 即可使用政府资助"
+                : "Claim number + a photo of your approval letter (or PDF) = funded care"}
+            </p>
+            <p className="mt-2 text-[16px] text-purple-600 font-medium">
+              {t("fundingExtract")}
+            </p>
+            <p className="text-[15px] text-gray-400 mt-1 px-4">
+              {t("fundingReassure")}
+            </p>
+          </section>
+        )}
 
         {/* 基督徒互助平台 — teaser card linking to dedicated page */}
         {zh && faith === 'christian' && (

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/server";
+import { hasGovtFundingAccess } from "@/lib/auth/govtFundingAccess";
 import { db } from "@/lib/db";
 import { sql } from "drizzle-orm";
 
@@ -15,6 +16,7 @@ export const dynamic = "force-dynamic";
 export async function POST(req: NextRequest) {
   const me = await getCurrentUser();
   if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!hasGovtFundingAccess(me.email)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const body = await req.json();
   const { bookingId, scheme, claimNumber } = body;
@@ -88,6 +90,7 @@ export async function POST(req: NextRequest) {
 export async function GET() {
   const me = await getCurrentUser();
   if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!hasGovtFundingAccess(me.email)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   try {
     const result = await db.execute(sql`

@@ -3,6 +3,7 @@ import { Header } from "@/components/layout/Header";
 import { redirect } from "@/i18n/navigation";
 import { getCountry } from "@/components/domain/countryCookie";
 import { getCurrentUser } from "@/lib/auth/server";
+import { hasGovtFundingAccess } from "@/lib/auth/govtFundingAccess";
 import { db } from "@/lib/db";
 import { sql } from "drizzle-orm";
 import { FundingSetupForm } from "./FundingSetupForm";
@@ -18,6 +19,7 @@ export default async function FundingPage({
   setRequestLocale(locale);
   const me = await getCurrentUser();
   if (!me) redirect({ href: "/auth/login", locale });
+  if (!hasGovtFundingAccess(me!.email)) redirect({ href: "/profile", locale });
   const country = await getCountry();
   const t = await getTranslations("funding");
 

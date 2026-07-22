@@ -15,20 +15,22 @@ import { Link, redirect } from "@/i18n/navigation";
 import { getCountry } from "@/components/domain/countryCookie";
 import { getSession } from "@/components/domain/sessionCookie";
 import { ProviderAvatar } from "@/components/domain/ProviderAvatar";
+import { hasGovtFundingAccess } from "@/lib/auth/govtFundingAccess";
 
-const ITEMS = [
+const BASE_ITEMS = [
   { key: "edit",          href: "/profile/edit",          Icon: Pencil },
   { key: "security",      href: "/profile/security",      Icon: ShieldCheck },
   { key: "addresses",     href: "/profile/addresses",     Icon: MapPin },
   { key: "payment",       href: "/profile/payment",       Icon: CreditCard },
   { key: "emergency",     href: "/profile/emergency",     Icon: PhoneCall },
   { key: "favourites",    href: "/profile/favourites",    Icon: Heart },
-  { key: "funding",       href: "/profile/funding",       Icon: FileText },
   { key: "referrals",     href: "/profile/referrals",     Icon: Gift },
   { key: "support",       href: "/donate",                Icon: HeartHandshake },
     { key: "notifications", href: "/profile/notifications", Icon: Bell },
   { key: "help",          href: "/help",                  Icon: HelpCircle },
 ] as const;
+
+const FUNDING_ITEM = { key: "funding", href: "/profile/funding", Icon: FileText } as const;
 
 export default async function ProfilePage({
   params,
@@ -44,6 +46,10 @@ export default async function ProfilePage({
   const country = await getCountry();
   const t = await getTranslations("profile");
   const tItems = await getTranslations("profile.items");
+
+  const ITEMS = hasGovtFundingAccess(session.email)
+    ? [...BASE_ITEMS, FUNDING_ITEM]
+    : BASE_ITEMS;
 
   const initials =
     session.initials ?? session.name?.slice(0, 1).toUpperCase() ?? "?";
