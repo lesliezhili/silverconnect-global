@@ -42,6 +42,7 @@ const CATEGORIES: Cat[] = [
   { code: "garden", iconKey: "sprout", sortOrder: 3 },
   { code: "personalCare", iconKey: "heart-pulse", sortOrder: 4 },
   { code: "repair", iconKey: "wrench", sortOrder: 5 },
+  { code: "mealDelivery", iconKey: "utensils", sortOrder: 16 },
 ];
 
 // AU=10% GST, CN=0% VAT, CA=13% HST, US=8.25%, TW=5% VAT, SG=9% GST, HK=0%, MY=6% SST.
@@ -209,6 +210,39 @@ const SERVICES: Svc[] = [
       { country: "SG", basePrice: "326.03", taxRate: "0.0900", currency: "SGD" },
       { country: "HK", basePrice: "1883.70", taxRate: "0.0000", currency: "HKD" },
       { country: "MY", basePrice: "1086.75", taxRate: "0.0600", currency: "MYR" },
+    ],
+  },
+  {
+    // Senior-care meal service: helper sources + delivers the meal and
+    // stays to visit — priced as a 60-min companion-style visit, not a
+    // per-item menu. Speculative catalog; no real restaurant partners yet.
+    code: "mealDelivery_sushi",
+    categoryCode: "mealDelivery",
+    durationMin: 60,
+    prices: [
+      { country: "AU", basePrice: "45.00", taxRate: "0.1000", currency: "AUD" },
+      { country: "CN", basePrice: "75.00", taxRate: "0.0000", currency: "CNY" },
+      { country: "CA", basePrice: "48.75", taxRate: "0.1300", currency: "CAD" },
+      { country: "US", basePrice: "51.19", taxRate: "0.0825", currency: "USD" },
+      { country: "TW", basePrice: "358.25", taxRate: "0.0500", currency: "TWD" },
+      { country: "SG", basePrice: "69.11", taxRate: "0.0900", currency: "SGD" },
+      { country: "HK", basePrice: "399.25", taxRate: "0.0000", currency: "HKD" },
+      { country: "MY", basePrice: "230.34", taxRate: "0.0600", currency: "MYR" },
+    ],
+  },
+  {
+    code: "mealDelivery_chinese",
+    categoryCode: "mealDelivery",
+    durationMin: 60,
+    prices: [
+      { country: "AU", basePrice: "50.00", taxRate: "0.1000", currency: "AUD" },
+      { country: "CN", basePrice: "83.35", taxRate: "0.0000", currency: "CNY" },
+      { country: "CA", basePrice: "54.15", taxRate: "0.1300", currency: "CAD" },
+      { country: "US", basePrice: "56.88", taxRate: "0.0825", currency: "USD" },
+      { country: "TW", basePrice: "398.13", taxRate: "0.0500", currency: "TWD" },
+      { country: "SG", basePrice: "76.79", taxRate: "0.0900", currency: "SGD" },
+      { country: "HK", basePrice: "443.63", taxRate: "0.0000", currency: "HKD" },
+      { country: "MY", basePrice: "255.94", taxRate: "0.0600", currency: "MYR" },
     ],
   },
 ];

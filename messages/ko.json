@@ -124,7 +124,9 @@
     "tacWorkSafe": "TAC·WorkSafe 제공자 설정",
     "tacWorkSafeDesc": "교통사고·산재 고객 대상 동행 및 신변 돌봐 — TAC/WorkSafe Victoria 청구 요건 충족",
     "faith": "신앙 서비스",
-    "faithDesc": "무료 영적 돌봄 및 동행"
+    "faithDesc": "무료 영적 돌봄 및 동행",
+    "mealDelivery": "식사 배달",
+    "mealDeliveryDesc": "초밥, 중식 등 — 도우미가 음식을 픽업, 배달하고 함께 시간을 보냅니다"
   },
   "services": {
     "title": "서비스",

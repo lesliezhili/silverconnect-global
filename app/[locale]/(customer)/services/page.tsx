@@ -35,6 +35,7 @@ const CAT_EMOJI: Record<string, string> = {
   personalCare: "💊",
   companion: "👋",
   transport: "🚗",
+  mealDelivery: "🍱",
 };
 
 const FALLBACK_CATS = [

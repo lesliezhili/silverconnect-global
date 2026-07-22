@@ -117,7 +117,9 @@
     "tacWorkSafe": "TAC & WorkSafe Provider Setup",
     "tacWorkSafeDesc": "Attendant & personal care for road-accident and workplace-injury clients — meet TAC/WorkSafe Victoria claiming rules",
     "faith": "Faith Services",
-    "faithDesc": "Free spiritual care & companionship for seniors"
+    "faithDesc": "Free spiritual care & companionship for seniors",
+    "mealDelivery": "Meal Delivery",
+    "mealDeliveryDesc": "Sushi, Chinese takeaway & more — a helper picks up your meal, delivers it, and stays to visit"
   },
   "services": {
     "title": "Choose a service",

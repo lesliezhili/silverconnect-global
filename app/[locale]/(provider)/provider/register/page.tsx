@@ -39,6 +39,7 @@ const CATEGORY_KEYS = [
   "repair",
   "itSupport",
   "transport",
+  "mealDelivery",
 ] as const;
 type CategoryKey = (typeof CATEGORY_KEYS)[number];
 

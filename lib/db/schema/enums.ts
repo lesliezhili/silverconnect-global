@@ -20,6 +20,7 @@ export const serviceCategoryEnum = pgEnum("service_category", [
   "agedCareProvider",
   "dvaProvider",
   "tacWorkSafe",
+  "mealDelivery",
 ]);
 
 export const onboardingStatusEnum = pgEnum("onboarding_status", [

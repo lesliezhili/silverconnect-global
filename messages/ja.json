@@ -124,7 +124,9 @@
     "tacWorkSafe": "TAC・WorkSafe事業者設定",
     "tacWorkSafeDesc": "交通事故・労災クライアント向け付き添い・身体介護 — TAC/WorkSafe Victoriaの請求要件に対応",
     "faith": "信仰サービス",
-    "faithDesc": "高齢者向け無料スピリチュアルケア"
+    "faithDesc": "高齢者向け無料スピリチュアルケア",
+    "mealDelivery": "食事宅配",
+    "mealDeliveryDesc": "寿司、中華料理など — ヘルパーが食事を受け取り、届けて、そのままご一緒に過ごします"
   },
   "services": {
     "title": "サービス一覧",

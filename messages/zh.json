@@ -119,7 +119,9 @@
     "tacWorkSafe": "TAC 与 WorkSafe 服务商设立",
     "tacWorkSafeDesc": "为交通事故与工伤客户提供陪护与个人照护 — 符合维州 TAC/WorkSafe 报销要求",
     "faith": "信仰服务",
-    "faithDesc": "免费的精神关怀与陪伴"
+    "faithDesc": "免费的精神关怀与陪伴",
+    "mealDelivery": "餐食配送",
+    "mealDeliveryDesc": "寿司、中餐外卖及更多 — 服务者代为取餐、送达并陪伴聊天"
   },
   "services": {
     "title": "选择服务类别",

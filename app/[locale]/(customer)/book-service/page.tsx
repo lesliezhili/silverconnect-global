@@ -15,10 +15,11 @@ const CATEGORIES = [
   { code: "companion", emoji: "👋", en: "Companion", zh: "陪伴", th: "เพื่อนคู่ใจ", ko: "동행", ja: "付き添い", vi: "Bầu bạn" },
   { code: "transport", emoji: "🚗", en: "Transport", zh: "接送", th: "รับ-ส่ง", ko: "교통", ja: "送迎", vi: "Đưa đón" },
   { code: "itSupport", emoji: "💻", en: "IT Help", zh: "电脑培训", th: "ช่วยไอที", ko: "IT 지원", ja: "ITサポート", vi: "Hỗ trợ IT" },
+  { code: "mealDelivery", emoji: "🍱", en: "Meal Delivery", zh: "餐食配送", th: "จัดส่งอาหาร", ko: "식사 배달", ja: "食事宅配", vi: "Giao đồ ăn" },
 ];
 
 const HOURLY_RATE = 45; // AUD base
-const CN_CATEGORY_RATE: Record<string, number> = { cleaning: 120, repair: 200, garden: 100, personalCare: 150, companion: 100, transport: 80, itSupport: 200 }; // CNY/hr
+const CN_CATEGORY_RATE: Record<string, number> = { cleaning: 120, repair: 200, garden: 100, personalCare: 150, companion: 100, transport: 80, itSupport: 200, mealDelivery: 130 }; // CNY/hr
 
 // Smart Price — market rate recommendations ($/hr AUD)
 const SMART_RATE: Record<string, number> = {
@@ -27,7 +28,7 @@ const SMART_RATE: Record<string, number> = {
   garden_general: 50, personal_care: 55, companion: 40, transport: 45, it_support: 65,
 };
 const CATEGORY_RATE: Record<string, number> = {
-  cleaning: 50, repair: 65, garden: 50, personalCare: 55, companion: 40, transport: 45, itSupport: 65,
+  cleaning: 50, repair: 65, garden: 50, personalCare: 55, companion: 40, transport: 45, itSupport: 65, mealDelivery: 45,
 };
 
 // Calendar surcharges (AU Fair Work Act)
