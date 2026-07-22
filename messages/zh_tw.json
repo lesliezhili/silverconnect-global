@@ -882,7 +882,9 @@
       "helpDesc": "常見問題、聯繫我們",
       "signOut": "登出",
       "products": "輔助產品",
-      "productsDesc": "養老機器人、監控設備、輪椅及行動輔助器材"
+      "productsDesc": "養老機器人、監控設備、輪椅及行動輔助器材",
+      "coins": "銀連積分",
+      "coinsDesc": "賺取並兌換您的忠誠積分"
     },
     "funding": "Government Funding"
   },
@@ -1918,5 +1920,42 @@
       "desc": "手動及電動輪椅、助行器及代步車"
     },
     "contact": "聯繫 SilverConnect 了解詳情"
+  },
+  "coins": {
+    "title": "銀連積分",
+    "subtitle": "註冊並完成預約即可賺取積分，兌換專屬認可禮遇。非金融性質：不可提現，不可轉讓。",
+    "balance": "您的積分餘額",
+    "balanceUnit": "積分",
+    "chainValid": "帳本已驗證 — 已核對 {count} 條記錄，無篡改",
+    "chainInvalid": "帳本完整性校驗失敗 — 請聯繫客服",
+    "redeemTitle": "兌換您的積分",
+    "redeem": "兌換",
+    "redeeming": "兌換中…",
+    "unlocked": "已解鎖",
+    "redeemFailed": "兌換失敗，請重試。",
+    "history": "交易記錄",
+    "noHistory": "暫無交易記錄",
+    "receipt": "憑證",
+    "perks": {
+      "founding_badge": {
+        "title": "創始會員徽章",
+        "desc": "在您的個人主頁永久展示，標誌您是銀連的早期會員。"
+      },
+      "priority_support": {
+        "title": "優先客服標識",
+        "desc": "您的客服請求將被優先處理。"
+      },
+      "wall_of_honor": {
+        "title": "榮譽牆展示",
+        "desc": "您的名字（自願選擇）將展示在銀連社區榮譽牆上。"
+      }
+    },
+    "reasons": {
+      "registration_bonus": "註冊歡迎禮",
+      "booking_completed": "完成預約",
+      "redeem_founding_badge": "兌換：創始會員徽章",
+      "redeem_priority_support": "兌換：優先客服標識",
+      "redeem_wall_of_honor": "兌換：榮譽牆展示"
+    }
   }
 }

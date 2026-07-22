@@ -880,7 +880,9 @@
       "helpDesc": "FAQ, 문의하기",
       "signOut": "로그아웃",
       "products": "보조 제품",
-      "productsDesc": "케어 로봇, 모니터링 기기, 휠체어 및 이동 보조기구"
+      "productsDesc": "케어 로봇, 모니터링 기기, 휠체어 및 이동 보조기구",
+      "coins": "실버커넥트 포인트",
+      "coinsDesc": "적립 및 교환 가능한 포인트"
     },
     "funding": "Government Funding"
   },
@@ -1910,5 +1912,42 @@
       "desc": "수동 및 전동 휠체어, 보행기 및 이동 스쿠터"
     },
     "contact": "자세한 내용은 SilverConnect에 문의하세요"
+  },
+  "coins": {
+    "title": "실버커넥트 포인트",
+    "subtitle": "가입 및 예약 완료 시 포인트를 적립하고, 인정 혜택으로 교환하세요. 비금융성: 현금화 및 양도가 불가능합니다.",
+    "balance": "보유 포인트",
+    "balanceUnit": "포인트",
+    "chainValid": "원장 검증 완료 — {count}건의 기록을 확인, 위변조 없음",
+    "chainInvalid": "원장 무결성 검증 실패 — 고객센터에 문의해 주세요",
+    "redeemTitle": "포인트 교환하기",
+    "redeem": "교환",
+    "redeeming": "교환 중…",
+    "unlocked": "잠금 해제됨",
+    "redeemFailed": "교환에 실패했습니다. 다시 시도해 주세요.",
+    "history": "거래 내역",
+    "noHistory": "아직 거래 내역이 없습니다",
+    "receipt": "영수증",
+    "perks": {
+      "founding_badge": {
+        "title": "창립 멤버 배지",
+        "desc": "프로필에 영구적으로 표시되어 실버커넥트 초기 회원임을 나타냅니다."
+      },
+      "priority_support": {
+        "title": "우선 지원 플래그",
+        "desc": "고객 지원 요청이 우선적으로 검토됩니다."
+      },
+      "wall_of_honor": {
+        "title": "명예의 벽 등재",
+        "desc": "회원님의 이름(선택 동의 시)이 실버커넥트 커뮤니티 명예의 벽에 소개됩니다."
+      }
+    },
+    "reasons": {
+      "registration_bonus": "가입 축하 보너스",
+      "booking_completed": "예약 완료",
+      "redeem_founding_badge": "교환: 창립 멤버 배지",
+      "redeem_priority_support": "교환: 우선 지원 플래그",
+      "redeem_wall_of_honor": "교환: 명예의 벽 등재"
+    }
   }
 }

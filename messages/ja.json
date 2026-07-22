@@ -880,7 +880,9 @@
       "helpDesc": "FAQ、お問い合わせ",
       "signOut": "ログアウト",
       "products": "介護用品",
-      "productsDesc": "介護ロボット、モニタリング機器、車椅子・移動補助具"
+      "productsDesc": "介護ロボット、モニタリング機器、車椅子・移動補助具",
+      "coins": "シルバーコネクトポイント",
+      "coinsDesc": "ポイントの獲得と交換"
     },
     "funding": "Government Funding"
   },
@@ -1910,5 +1912,42 @@
       "desc": "手動・電動車椅子、歩行器、電動スクーター"
     },
     "contact": "詳細はSilverConnectまでお問い合わせください"
+  },
+  "coins": {
+    "title": "シルバーコネクトポイント",
+    "subtitle": "登録や予約完了でポイントを獲得し、特典と交換できます。非金融性: 現金化・譲渡はできません。",
+    "balance": "保有ポイント",
+    "balanceUnit": "ポイント",
+    "chainValid": "台帳を検証済み — {count} 件のレコードを確認、改ざんなし",
+    "chainInvalid": "台帳の整合性チェックに失敗しました — サポートにお問い合わせください",
+    "redeemTitle": "ポイントを交換する",
+    "redeem": "交換する",
+    "redeeming": "交換中…",
+    "unlocked": "解除済み",
+    "redeemFailed": "交換に失敗しました。もう一度お試しください。",
+    "history": "取引履歴",
+    "noHistory": "取引履歴はまだありません",
+    "receipt": "レシート",
+    "perks": {
+      "founding_badge": {
+        "title": "創業メンバーバッジ",
+        "desc": "プロフィールに常時表示され、シルバーコネクトの初期メンバーであることを示します。"
+      },
+      "priority_support": {
+        "title": "優先サポートフラグ",
+        "desc": "サポートリクエストが優先的に確認されます。"
+      },
+      "wall_of_honor": {
+        "title": "名誉の壁への掲載",
+        "desc": "お名前（任意）がシルバーコネクトのコミュニティ名誉の壁に掲載されます。"
+      }
+    },
+    "reasons": {
+      "registration_bonus": "ご登録ボーナス",
+      "booking_completed": "予約完了",
+      "redeem_founding_badge": "交換済み：創業メンバーバッジ",
+      "redeem_priority_support": "交換済み：優先サポートフラグ",
+      "redeem_wall_of_honor": "交換済み：名誉の壁への掲載"
+    }
   }
 }

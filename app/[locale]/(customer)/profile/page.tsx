@@ -9,7 +9,7 @@ import {
   ChevronRight,
   LogOut,
   Pencil,
-  ShieldCheck, FileText, Gift, HeartHandshake, PackageSearch } from "lucide-react";
+  ShieldCheck, FileText, Gift, HeartHandshake, PackageSearch, Coins } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Link, redirect } from "@/i18n/navigation";
 import { getCountry } from "@/components/domain/countryCookie";
@@ -32,6 +32,7 @@ const BASE_ITEMS = [
 ] as const;
 
 const FUNDING_ITEM = { key: "funding", href: "/profile/funding", Icon: FileText } as const;
+const COINS_ITEM = { key: "coins", href: "/profile/coins", Icon: Coins } as const;
 
 export default async function ProfilePage({
   params,
@@ -48,9 +49,12 @@ export default async function ProfilePage({
   const t = await getTranslations("profile");
   const tItems = await getTranslations("profile.items");
 
-  const ITEMS = hasGovtFundingAccess(session.email)
-    ? [...BASE_ITEMS, FUNDING_ITEM]
-    : BASE_ITEMS;
+  const ITEMS = [
+    ...BASE_ITEMS,
+    ...(hasGovtFundingAccess(session.email) ? [FUNDING_ITEM] : []),
+    // Internal non-financial coin ledger — Australia only.
+    ...(country === "AU" ? [COINS_ITEM] : []),
+  ];
 
   const initials =
     session.initials ?? session.name?.slice(0, 1).toUpperCase() ?? "?";

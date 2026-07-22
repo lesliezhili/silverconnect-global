@@ -28,3 +28,6 @@ export * from "./referrals";
 
 // Phase 6: general platform donations
 export * from "./donations";
+
+// Phase 7: internal non-financial coin ledger (AU only)
+export * from "./coins";

@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { users, verificationCodes } from "@/lib/db/schema/users";
 import { sql } from "drizzle-orm";
 import bcrypt from "bcryptjs";
+import { mintCoins, REGISTRATION_BONUS } from "@/lib/coins/ledger";
 
 const sessionOptions = {
   password: process.env.SESSION_SECRET || "fallback-session-secret-minimum-32-characters-long",
@@ -72,6 +73,16 @@ export async function POST(req: NextRequest) {
       purpose: "email_verify" as any,
       expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 min
     });
+
+    // Welcome coin bonus — Australia only, non-financial loyalty ledger.
+    // Best-effort: a ledger hiccup must never block signup.
+    if ((country || "AU") === "AU") {
+      try {
+        await mintCoins(newUser.id, REGISTRATION_BONUS, "registration_bonus", "system:registration_pool");
+      } catch (coinErr) {
+        console.error("[signup] coin mint failed:", coinErr);
+      }
+    }
 
     // Auto-sign in after signup
     const cookieStore = await cookies();

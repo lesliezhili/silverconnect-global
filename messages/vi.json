@@ -643,7 +643,9 @@
       "support": "Ủng hộ SilverConnect",
       "supportDesc": "Quyên góp một lần cho sứ mệnh của chúng tôi",
       "products": "Sản phẩm hỗ trợ",
-      "productsDesc": "Robot chăm sóc, thiết bị giám sát, xe lăn và dụng cụ hỗ trợ di chuyển"
+      "productsDesc": "Robot chăm sóc, thiết bị giám sát, xe lăn và dụng cụ hỗ trợ di chuyển",
+      "coins": "Điểm SilverConnect",
+      "coinsDesc": "Kiếm và đổi điểm thân thiết của bạn"
     },
     "funding": "Tài trợ chính phủ"
   },
@@ -1704,5 +1706,42 @@
       "desc": "Xe lăn tay và điện, khung tập đi và xe scooter hỗ trợ di chuyển"
     },
     "contact": "Liên hệ SilverConnect để biết chi tiết"
+  },
+  "coins": {
+    "title": "Điểm SilverConnect",
+    "subtitle": "Kiếm điểm khi đăng ký và hoàn tất đặt lịch — đổi lấy các đặc quyền ghi nhận. Phi tài chính: không thể quy đổi thành tiền mặt, không thể chuyển nhượng.",
+    "balance": "Số dư điểm của bạn",
+    "balanceUnit": "điểm",
+    "chainValid": "Sổ cái đã được xác minh — đã kiểm tra {count} bản ghi, không bị can thiệp",
+    "chainInvalid": "Kiểm tra tính toàn vẹn của sổ cái thất bại — vui lòng liên hệ hỗ trợ",
+    "redeemTitle": "Đổi điểm của bạn",
+    "redeem": "Đổi",
+    "redeeming": "Đang đổi…",
+    "unlocked": "Đã mở khóa",
+    "redeemFailed": "Đổi điểm thất bại. Vui lòng thử lại.",
+    "history": "Lịch sử giao dịch",
+    "noHistory": "Chưa có giao dịch nào",
+    "receipt": "Biên nhận",
+    "perks": {
+      "founding_badge": {
+        "title": "Huy hiệu Thành viên Sáng lập",
+        "desc": "Huy hiệu vĩnh viễn trên hồ sơ của bạn, đánh dấu bạn là thành viên đầu tiên của SilverConnect."
+      },
+      "priority_support": {
+        "title": "Cờ Hỗ trợ Ưu tiên",
+        "desc": "Yêu cầu hỗ trợ của bạn sẽ được xem xét ưu tiên."
+      },
+      "wall_of_honor": {
+        "title": "Xuất hiện trên Bức tường Vinh danh",
+        "desc": "Tên của bạn (tùy chọn) sẽ được giới thiệu trên Bức tường Vinh danh cộng đồng của SilverConnect."
+      }
+    },
+    "reasons": {
+      "registration_bonus": "Thưởng chào mừng",
+      "booking_completed": "Hoàn tất đặt lịch",
+      "redeem_founding_badge": "Đã đổi: Huy hiệu Thành viên Sáng lập",
+      "redeem_priority_support": "Đã đổi: Cờ Hỗ trợ Ưu tiên",
+      "redeem_wall_of_honor": "Đã đổi: Xuất hiện trên Bức tường Vinh danh"
+    }
   }
 }

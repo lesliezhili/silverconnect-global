@@ -765,7 +765,9 @@
       "helpDesc": "常见问题、联系我们",
       "signOut": "退出登录",
       "products": "辅助产品",
-      "productsDesc": "养老机器人、监控设备、轮椅及行动辅助器材"
+      "productsDesc": "养老机器人、监控设备、轮椅及行动辅助器材",
+      "coins": "银连积分",
+      "coinsDesc": "赚取并兑换您的忠诚积分"
     },
     "funding": "政府资助"
   },
@@ -1712,5 +1714,42 @@
       "desc": "手动及电动轮椅、助行器及代步车"
     },
     "contact": "联系 SilverConnect 了解详情"
+  },
+  "coins": {
+    "title": "银连积分",
+    "subtitle": "注册并完成预约即可赚取积分，兑换专属认可礼遇。非金融性质：不可提现，不可转让。",
+    "balance": "您的积分余额",
+    "balanceUnit": "积分",
+    "chainValid": "账本已验证 — 已核对 {count} 条记录，无篡改",
+    "chainInvalid": "账本完整性校验失败 — 请联系客服",
+    "redeemTitle": "兑换您的积分",
+    "redeem": "兑换",
+    "redeeming": "兑换中…",
+    "unlocked": "已解锁",
+    "redeemFailed": "兑换失败，请重试。",
+    "history": "交易记录",
+    "noHistory": "暂无交易记录",
+    "receipt": "凭证",
+    "perks": {
+      "founding_badge": {
+        "title": "创始会员徽章",
+        "desc": "在您的个人主页永久展示，标志您是银连的早期会员。"
+      },
+      "priority_support": {
+        "title": "优先客服标识",
+        "desc": "您的客服请求将被优先处理。"
+      },
+      "wall_of_honor": {
+        "title": "荣誉墙展示",
+        "desc": "您的名字（自愿选择）将展示在银连社区荣誉墙上。"
+      }
+    },
+    "reasons": {
+      "registration_bonus": "注册欢迎礼",
+      "booking_completed": "完成预约",
+      "redeem_founding_badge": "兑换：创始会员徽章",
+      "redeem_priority_support": "兑换：优先客服标识",
+      "redeem_wall_of_honor": "兑换：荣誉墙展示"
+    }
   }
 }

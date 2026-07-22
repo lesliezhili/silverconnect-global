@@ -763,7 +763,9 @@
       "support": "Support SilverConnect",
       "supportDesc": "Make a one-time donation to our mission",
       "products": "Assistive products",
-      "productsDesc": "Care robots, monitors, wheelchairs & mobility aids"
+      "productsDesc": "Care robots, monitors, wheelchairs & mobility aids",
+      "coins": "SilverCoins",
+      "coinsDesc": "Earn & redeem your loyalty coins"
     },
     "funding": "Government Funding"
   },
@@ -1710,5 +1712,42 @@
       "desc": "Manual and electric wheelchairs, walkers and mobility scooters"
     },
     "contact": "Contact SilverConnect for details"
+  },
+  "coins": {
+    "title": "SilverCoins",
+    "subtitle": "Earn coins by joining SilverConnect and completing bookings — redeem them for recognition perks. Non-financial: never cash-out, never transferable.",
+    "balance": "Your balance",
+    "balanceUnit": "coins",
+    "chainValid": "Ledger verified — {count} records checked, tamper-free",
+    "chainInvalid": "Ledger integrity check failed — please contact support",
+    "redeemTitle": "Redeem your coins",
+    "redeem": "Redeem",
+    "redeeming": "Redeeming…",
+    "unlocked": "Unlocked",
+    "redeemFailed": "Redemption failed. Please try again.",
+    "history": "Transaction history",
+    "noHistory": "No transactions yet",
+    "receipt": "Receipt",
+    "perks": {
+      "founding_badge": {
+        "title": "Founding Member badge",
+        "desc": "A permanent badge on your profile marking you as an early SilverConnect member."
+      },
+      "priority_support": {
+        "title": "Priority Support flag",
+        "desc": "Your support requests get a priority flag reviewed first."
+      },
+      "wall_of_honor": {
+        "title": "Wall of Honor listing",
+        "desc": "Your name (opt-in) featured on SilverConnect's community Wall of Honor."
+      }
+    },
+    "reasons": {
+      "registration_bonus": "Welcome bonus",
+      "booking_completed": "Booking completed",
+      "redeem_founding_badge": "Redeemed: Founding Member badge",
+      "redeem_priority_support": "Redeemed: Priority Support flag",
+      "redeem_wall_of_honor": "Redeemed: Wall of Honor listing"
+    }
   }
 }

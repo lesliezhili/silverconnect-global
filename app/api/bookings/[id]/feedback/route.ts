@@ -8,8 +8,22 @@ import { referrals, referralCredits } from "@/lib/db/schema/referrals";
 import { getCurrentUser } from "@/lib/auth/server";
 import { notifyAndEmail } from "@/lib/notifications/server";
 import { eq, and, sql } from "drizzle-orm";
+import { mintCoins, isAuUser, BOOKING_COMPLETED_REWARD } from "@/lib/coins/ledger";
 
 const REFERRAL_REWARD_AMOUNT = "25.00";
+
+/**
+ * Mints the non-financial coin reward for a completed, paid booking —
+ * Australia only. Never throws, mirroring maybeRewardReferral above.
+ */
+async function maybeRewardCoins(customerId: string) {
+  try {
+    if (!(await isAuUser(customerId))) return;
+    await mintCoins(customerId, BOOKING_COMPLETED_REWARD, "booking_completed", "system:booking_reward_pool");
+  } catch (e) {
+    console.error("[feedback] coin reward failed:", e);
+  }
+}
 
 /**
  * Pays out a pending referral if this is the referee's first-ever
@@ -158,6 +172,7 @@ export async function POST(
     }
 
     await maybeRewardReferral(booking.customerId, booking.currency || "AUD");
+    await maybeRewardCoins(booking.customerId);
   }
 
   return NextResponse.json({
