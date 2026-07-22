@@ -121,6 +121,16 @@ function BookServiceContent() {
   }, [category, subtype, date, time]);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ bookingId?: string; total?: number } | null>(null);
+  const [govtFundingAllowed, setGovtFundingAllowed] = useState(false);
+  const [fundingScheme, setFundingScheme] = useState<string>("");
+  const GOVT_SCHEMES = ["ndis", "dva", "tac", "worksafe", "my_aged_care", "hcp", "aged_pension", "super"];
+
+  useEffect(() => {
+    fetch("/api/auth/govt-funding-access")
+      .then(r => r.json())
+      .then(d => setGovtFundingAllowed(Boolean(d.allowed)))
+      .catch(() => setGovtFundingAllowed(false));
+  }, []);
   const [platformTier, setPlatformTier] = useState<"standard" | "premium" | "free">("standard");
   const [country, setCountry] = useState<"AU" | "CN">("AU");
   const [region, setRegion] = useState("");
@@ -158,7 +168,7 @@ function BookServiceContent() {
       const resp = await fetch("/api/bookings/charged", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ categoryCode: category, durationMin: duration, scheduledAt, notes: subtypeNote + notes, basePrice, taxAmount, bankFee, cloudFee, platformTier, totalPrice, country, region, currency: country === "CN" ? "CNY" : "AUD" }),
+        body: JSON.stringify({ categoryCode: category, durationMin: duration, scheduledAt, notes: subtypeNote + notes, basePrice, taxAmount, bankFee, cloudFee, platformTier, totalPrice, country, region, currency: country === "CN" ? "CNY" : "AUD", fundingScheme: govtFundingAllowed && fundingScheme ? fundingScheme : null }),
       });
       const d = await resp.json();
       if (d.bookingId) { setResult({ bookingId: d.bookingId, total: totalPrice }); setStep(4); }
@@ -492,6 +502,28 @@ function BookServiceContent() {
         <p className="mt-3 text-center text-sm text-gray-400">
           {t("Funds held securely until service is completed", "资金安全保管至服务完成", "เงินถูกเก็บอย่างปลอดภัยจนกว่าบริการจะเสร็จสิ้น", "서비스 완료까지 안전하게 보관됩니다", "サービス完了まで安全に保管されます")}
         </p>
+
+        {govtFundingAllowed && (
+          <div className="mt-6 bg-white border-2 border-gray-200 rounded-2xl p-5">
+            <p className="text-lg font-bold text-gray-900 mb-1">
+              {t("Funding", "资金来源", "แหล่งทุน", "자금 출처", "資金源")}
+            </p>
+            <p className="text-sm text-gray-500 mb-3">
+              {t("Only providers registered for the selected scheme will be matched.", "只会匹配已注册相应计划的服务者。", "จะจับคู่เฉพาะผู้ให้บริการที่ลงทะเบียนในโครงการที่เลือก", "선택한 제도에 등록된 제공자만 매칭됩니다.", "選択した制度に登録済みの提供者のみマッチングされます。")}
+            </p>
+            <select
+              value={fundingScheme}
+              onChange={(e) => setFundingScheme(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-xl text-lg"
+            >
+              <option value="">{t("Self-funded", "自费", "จ่ายเอง", "자비 부담", "自己負担")}</option>
+              {GOVT_SCHEMES.map((s) => (
+                <option key={s} value={s}>{s.toUpperCase()}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <button onClick={submit} disabled={submitting}
           className="mt-6 w-full py-5 bg-green-600 text-white text-xl font-bold rounded-xl disabled:opacity-50 active:scale-[0.98]">
           {submitting ? "..." : (t("Confirm & Pay", "确认并支付", "ยืนยันและชำระเงิน", "확인 및 결제", "確認して支払う"))}

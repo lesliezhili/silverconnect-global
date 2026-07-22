@@ -641,7 +641,9 @@
       "referrals": "Mời bạn bè",
       "referralsDesc": "Chia sẻ mã giới thiệu, nhận tín dụng khi bạn bè đặt lịch",
       "support": "Ủng hộ SilverConnect",
-      "supportDesc": "Quyên góp một lần cho sứ mệnh của chúng tôi"
+      "supportDesc": "Quyên góp một lần cho sứ mệnh của chúng tôi",
+      "products": "Sản phẩm hỗ trợ",
+      "productsDesc": "Robot chăm sóc, thiết bị giám sát, xe lăn và dụng cụ hỗ trợ di chuyển"
     },
     "funding": "Tài trợ chính phủ"
   },
@@ -1685,5 +1687,22 @@
     "done": "Hoàn tất",
     "back": "Quay lại",
     "next": "Tiếp theo"
+  },
+  "products": {
+    "title": "Sản phẩm hỗ trợ",
+    "subtitle": "Xem robot chăm sóc, thiết bị giám sát và dụng cụ hỗ trợ di chuyển. Liên hệ với chúng tôi để biết chi tiết và đặt hàng.",
+    "robot": {
+      "title": "Robot chăm sóc",
+      "desc": "Robot đồng hành và hỗ trợ cho việc hỗ trợ và nhắc nhở hàng ngày"
+    },
+    "monitoring": {
+      "title": "Thiết bị giám sát & an toàn",
+      "desc": "Phát hiện té ngã, theo dõi sức khỏe và thiết bị cảnh báo khẩn cấp"
+    },
+    "wheelchair": {
+      "title": "Xe lăn & dụng cụ hỗ trợ di chuyển",
+      "desc": "Xe lăn tay và điện, khung tập đi và xe scooter hỗ trợ di chuyển"
+    },
+    "contact": "Liên hệ SilverConnect để biết chi tiết"
   }
 }

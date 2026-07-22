@@ -36,6 +36,10 @@ export const providerProfiles = pgTable(
     accountNumber: text("account_number"),
     accountName: text("account_name"),
     onboardingStatus: onboardingStatusEnum("onboarding_status").notNull().default("pending"),
+    /** 'sole_trader' | 'registered_provider' | null (not NDIS-registered) — set when the provider completes the NDIS registration wizard. */
+    ndisPath: text("ndis_path"),
+    /** Government schemes this provider is registered to serve (ndis, dva, tac, worksafe, etc). */
+    govtSchemes: text("govt_schemes").array(),
     stripeAccountId: text("stripe_account_id"),
     submittedAt: timestamp("submitted_at", { withTimezone: true }),
     approvedAt: timestamp("approved_at", { withTimezone: true }),

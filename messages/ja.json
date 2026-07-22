@@ -878,7 +878,9 @@
       "notificationsDesc": "メール、SMS、プッシュ通知",
       "help": "ヘルプ",
       "helpDesc": "FAQ、お問い合わせ",
-      "signOut": "ログアウト"
+      "signOut": "ログアウト",
+      "products": "介護用品",
+      "productsDesc": "介護ロボット、モニタリング機器、車椅子・移動補助具"
     },
     "funding": "Government Funding"
   },
@@ -1891,5 +1893,22 @@
     "verified": "Verified",
     "pending": "Pending Verification",
     "rejected": "Rejected"
+  },
+  "products": {
+    "title": "介護用品",
+    "subtitle": "介護ロボット、モニタリング機器、移動補助具をご覧ください。詳細・ご注文はお問い合わせください。",
+    "robot": {
+      "title": "介護ロボット",
+      "desc": "日常のサポートとリマインドのためのコンパニオン・介助ロボット"
+    },
+    "monitoring": {
+      "title": "モニタリング・安全機器",
+      "desc": "転倒検知、健康モニター、緊急通報機器"
+    },
+    "wheelchair": {
+      "title": "車椅子・移動補助具",
+      "desc": "手動・電動車椅子、歩行器、電動スクーター"
+    },
+    "contact": "詳細はSilverConnectまでお問い合わせください"
   }
 }

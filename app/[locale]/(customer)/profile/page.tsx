@@ -9,7 +9,7 @@ import {
   ChevronRight,
   LogOut,
   Pencil,
-  ShieldCheck, FileText, Gift, HeartHandshake } from "lucide-react";
+  ShieldCheck, FileText, Gift, HeartHandshake, PackageSearch } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Link, redirect } from "@/i18n/navigation";
 import { getCountry } from "@/components/domain/countryCookie";
@@ -24,6 +24,7 @@ const BASE_ITEMS = [
   { key: "payment",       href: "/profile/payment",       Icon: CreditCard },
   { key: "emergency",     href: "/profile/emergency",     Icon: PhoneCall },
   { key: "favourites",    href: "/profile/favourites",    Icon: Heart },
+  { key: "products",      href: "/products",              Icon: PackageSearch },
   { key: "referrals",     href: "/profile/referrals",     Icon: Gift },
   { key: "support",       href: "/donate",                Icon: HeartHandshake },
     { key: "notifications", href: "/profile/notifications", Icon: Bell },

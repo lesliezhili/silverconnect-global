@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { eq } from 'drizzle-orm'
 import { getCurrentUser } from '@/lib/auth/server'
+import { db } from '@/lib/db'
+import { providerProfiles } from '@/lib/db/schema/providers'
 
 export async function POST(req: NextRequest) {
   const session = await getCurrentUser()
@@ -7,7 +10,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const body = await req.json()
-  const { qualifications = [], checkDates = {}, checkConfirmed = {}, schemes = [], notes = '' } = body
+  const { ndisPath = '', qualifications = [], checkDates = {}, checkConfirmed = {}, schemes = [], notes = '' } = body
 
   // Validate mandatory checks confirmed
   const MANDATORY = ['ndis_screening', 'police_check', 'wwvp', 'ndis_orientation', 'first_aid', 'cpr']
@@ -19,19 +22,32 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  // TODO: persist to provider_certifications table via Drizzle ORM
-  // Example:
-  // await db.insert(providerCertifications).values({
-  //   providerId: session.userId,
-  //   qualifications: JSON.stringify(qualifications),
-  //   schemes: JSON.stringify(schemes),
-  //   checkDates: JSON.stringify(checkDates),
-  //   notes,
-  //   status: 'pending_review',
-  //   submittedAt: new Date(),
-  // })
+  const [existing] = await db
+    .select({ id: providerProfiles.id })
+    .from(providerProfiles)
+    .where(eq(providerProfiles.userId, session.id))
+    .limit(1)
+
+  if (existing) {
+    await db
+      .update(providerProfiles)
+      .set({
+        ndisPath: ndisPath || null,
+        govtSchemes: schemes,
+        updatedAt: new Date(),
+      })
+      .where(eq(providerProfiles.id, existing.id))
+  } else {
+    await db.insert(providerProfiles).values({
+      userId: session.id,
+      ndisPath: ndisPath || null,
+      govtSchemes: schemes,
+      onboardingStatus: 'pending',
+    })
+  }
 
   console.log('[certification] provider', session.id, 'submitted:', {
+    ndisPath,
     qualifications: qualifications.length,
     schemes: schemes.length,
     mandatoryChecksConfirmed: MANDATORY.length,

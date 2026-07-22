@@ -878,7 +878,9 @@
       "notificationsDesc": "이메일, SMS, 푸시 알림",
       "help": "도움말",
       "helpDesc": "FAQ, 문의하기",
-      "signOut": "로그아웃"
+      "signOut": "로그아웃",
+      "products": "보조 제품",
+      "productsDesc": "케어 로봇, 모니터링 기기, 휠체어 및 이동 보조기구"
     },
     "funding": "Government Funding"
   },
@@ -1891,5 +1893,22 @@
     "verified": "Verified",
     "pending": "Pending Verification",
     "rejected": "Rejected"
+  },
+  "products": {
+    "title": "보조 제품",
+    "subtitle": "케어 로봇, 모니터링 기기 및 이동 보조기구를 둘러보세요. 자세한 내용 및 주문은 문의해 주세요.",
+    "robot": {
+      "title": "케어 로봇",
+      "desc": "일상 지원과 알림을 위한 동반 및 보조 로봇"
+    },
+    "monitoring": {
+      "title": "모니터링 및 안전 기기",
+      "desc": "낙상 감지, 건강 모니터 및 긴급 알림 기기"
+    },
+    "wheelchair": {
+      "title": "휠체어 및 이동 보조기구",
+      "desc": "수동 및 전동 휠체어, 보행기 및 이동 스쿠터"
+    },
+    "contact": "자세한 내용은 SilverConnect에 문의하세요"
   }
 }

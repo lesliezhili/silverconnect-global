@@ -761,7 +761,9 @@
       "referrals": "Invite friends",
       "referralsDesc": "Share your code, earn credit when they book",
       "support": "Support SilverConnect",
-      "supportDesc": "Make a one-time donation to our mission"
+      "supportDesc": "Make a one-time donation to our mission",
+      "products": "Assistive products",
+      "productsDesc": "Care robots, monitors, wheelchairs & mobility aids"
     },
     "funding": "Government Funding"
   },
@@ -1691,5 +1693,22 @@
     "facilityCTA": "Explore Day Care",
     "facilityBadge": "Membership",
     "homeBadge": "Pay-per-visit"
+  },
+  "products": {
+    "title": "Assistive Products",
+    "subtitle": "Browse care robots, monitoring devices and mobility aids. Contact us for details and ordering.",
+    "robot": {
+      "title": "Care Robots",
+      "desc": "Companion and assistance robots for daily support and reminders"
+    },
+    "monitoring": {
+      "title": "Monitoring & Safety Devices",
+      "desc": "Fall detection, health monitors and emergency alert devices"
+    },
+    "wheelchair": {
+      "title": "Wheelchairs & Mobility Aids",
+      "desc": "Manual and electric wheelchairs, walkers and mobility scooters"
+    },
+    "contact": "Contact SilverConnect for details"
   }
 }

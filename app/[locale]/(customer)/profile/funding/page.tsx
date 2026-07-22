@@ -27,7 +27,7 @@ export default async function FundingPage({
   let claims: any[] = [];
   try {
     const result = await db.execute(sql`
-      SELECT * FROM funding_claims
+      SELECT * FROM customer_funding_claims
       WHERE customer_id = ${me!.id}
       ORDER BY created_at DESC
     `);

@@ -68,6 +68,8 @@ export const bookings = pgTable(
     scheduledAt: timestamp("scheduled_at", { withTimezone: true }).notNull(),
     durationMin: integer("duration_min").notNull(),
     status: bookingStatusEnum("status").notNull().default("pending"),
+    /** Null = self-funded. Otherwise a government scheme id (ndis, dva, tac, ...) — set at booking time by govt-funding-allowlisted customers only. */
+    fundingScheme: text("funding_scheme"),
     notes: text("notes"),
     basePrice: decimal("base_price", { precision: 10, scale: 2 }).notNull(),
     taxAmount: decimal("tax_amount", { precision: 10, scale: 2 }).notNull(),

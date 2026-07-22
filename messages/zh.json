@@ -763,7 +763,9 @@
       "notificationsDesc": "邮件、短信和推送偏好",
       "help": "帮助与支持",
       "helpDesc": "常见问题、联系我们",
-      "signOut": "退出登录"
+      "signOut": "退出登录",
+      "products": "辅助产品",
+      "productsDesc": "养老机器人、监控设备、轮椅及行动辅助器材"
     },
     "funding": "政府资助"
   },
@@ -1693,5 +1695,22 @@
     "facilityCTA": "了解日间照护",
     "facilityBadge": "会员制",
     "homeBadge": "按次付费"
+  },
+  "products": {
+    "title": "辅助产品",
+    "subtitle": "浏览养老机器人、监控设备和行动辅助器材。详情及订购请联系我们。",
+    "robot": {
+      "title": "养老机器人",
+      "desc": "陪伴与协助机器人，提供日常支持与提醒"
+    },
+    "monitoring": {
+      "title": "监控与安全设备",
+      "desc": "跌倒侦测、健康监测及紧急报警设备"
+    },
+    "wheelchair": {
+      "title": "轮椅及行动辅助器材",
+      "desc": "手动及电动轮椅、助行器及代步车"
+    },
+    "contact": "联系 SilverConnect 了解详情"
   }
 }

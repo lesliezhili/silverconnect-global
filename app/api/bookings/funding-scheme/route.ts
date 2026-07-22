@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const result = await db.execute(sql`
-      INSERT INTO funding_claims (
+      INSERT INTO customer_funding_claims (
         booking_id, customer_id, scheme, claim_number,
         participant_number, plan_number, approval_letter_url,
         approval_date, service_scope, funding_amount, notes, status
@@ -94,7 +94,7 @@ export async function GET() {
 
   try {
     const result = await db.execute(sql`
-      SELECT * FROM funding_claims
+      SELECT * FROM customer_funding_claims
       WHERE customer_id = ${me.id}
       ORDER BY created_at DESC
     `);

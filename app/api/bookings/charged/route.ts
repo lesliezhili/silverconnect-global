@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import postgres from "postgres";
+import { hasGovtFundingAccess } from "@/lib/auth/govtFundingAccess";
 
 export const dynamic = "force-dynamic";
+
+const VALID_SCHEMES = ["tac", "worksafe", "ndis", "my_aged_care", "dva", "hcp", "aged_pension", "super"];
 
 function getSession() {
   return { password: process.env.SESSION_SECRET || "fallback-session-secret-minimum-32-characters-long", cookieName: "sc-session", cookieOptions: { secure: process.env.NODE_ENV === "production", httpOnly: true, sameSite: "lax" as const } };
@@ -32,7 +35,7 @@ export async function POST(req: NextRequest) {
     const { getIronSession } = await import("iron-session");
     const { cookies } = await import("next/headers");
     const cookieStore = await cookies();
-    const session = await getIronSession<{ userId?: string }>(cookieStore, getSession());
+    const session = await getIronSession<{ userId?: string; email?: string }>(cookieStore, getSession());
     if (!session.userId) { await sql.end(); return NextResponse.json({ error: "Please sign in to book" }, { status: 401 }); }
 
     const body = await req.json();
@@ -43,6 +46,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    // A funding scheme is only honored for allowlisted accounts — a
+    // client-side toggle is UX only, this is the real boundary. Anyone
+    // else (or an invalid scheme id) silently falls back to self-funded,
+    // matching today's existing behavior rather than hard-failing.
+    const requestedScheme = typeof body.fundingScheme === "string" ? body.fundingScheme : null;
+    const fundingScheme =
+      requestedScheme && VALID_SCHEMES.includes(requestedScheme) && hasGovtFundingAccess(session.email)
+        ? requestedScheme
+        : null;
+
     // Find a service in this category
     const [service] = await sql`
       SELECT s.id FROM services s
@@ -50,18 +63,37 @@ export async function POST(req: NextRequest) {
       WHERE s.category_code = ${categoryCode} AND s.enabled = true
       ORDER BY s.sort_order ASC LIMIT 1`;
 
-    // Find available charged provider
-    const [provider] = await sql`
-      SELECT pp.id FROM provider_profiles pp
-      WHERE pp.onboarding_status = 'approved'
-        AND pp.notes LIKE '%charged_provider%'
-      ORDER BY RANDOM() LIMIT 1`;
+    // Find an available provider — scheme-registered only when a
+    // government funding scheme was selected, otherwise any approved
+    // provider (existing behavior, unchanged).
+    let providerId: string | undefined;
+    if (fundingScheme) {
+      const [schemeProvider] = await sql`
+        SELECT pp.id FROM provider_profiles pp
+        WHERE pp.onboarding_status = 'approved'
+          AND pp.govt_schemes IS NOT NULL
+          AND ${fundingScheme} = ANY(pp.govt_schemes)
+        ORDER BY RANDOM() LIMIT 1`;
+      providerId = schemeProvider?.id;
+      if (!providerId) {
+        await sql.end();
+        return NextResponse.json({
+          error: `No providers currently registered for ${fundingScheme.toUpperCase()} are available. Please try again later or choose self-funded.`,
+        }, { status: 404 });
+      }
+    } else {
+      const [provider] = await sql`
+        SELECT pp.id FROM provider_profiles pp
+        WHERE pp.onboarding_status = 'approved'
+          AND pp.notes LIKE '%charged_provider%'
+        ORDER BY RANDOM() LIMIT 1`;
 
-    // Fallback: any approved provider
-    let providerId = provider?.id;
-    if (!providerId) {
-      const [any] = await sql`SELECT id FROM provider_profiles WHERE onboarding_status = 'approved' LIMIT 1`;
-      providerId = any?.id;
+      // Fallback: any approved provider
+      providerId = provider?.id;
+      if (!providerId) {
+        const [any] = await sql`SELECT id FROM provider_profiles WHERE onboarding_status = 'approved' LIMIT 1`;
+        providerId = any?.id;
+      }
     }
 
     if (!providerId) { await sql.end(); return NextResponse.json({ error: "No available providers" }, { status: 404 }); }
@@ -107,8 +139,8 @@ export async function POST(req: NextRequest) {
 
     // Create booking with price
     const [booking] = await sql`
-      INSERT INTO bookings (customer_id, provider_id, service_id, status, scheduled_at, duration_min, base_price, tax_amount, total_price, currency, notes)
-      VALUES (${session.userId}, ${providerId}, ${service?.id || null}, 'confirmed', ${scheduledAt}, ${durationMin || 60}, ${basePrice}, ${taxAmount}, ${totalPrice}, 'AUD', ${notes || ''})
+      INSERT INTO bookings (customer_id, provider_id, service_id, status, scheduled_at, duration_min, base_price, tax_amount, total_price, currency, notes, funding_scheme)
+      VALUES (${session.userId}, ${providerId}, ${service?.id || null}, 'confirmed', ${scheduledAt}, ${durationMin || 60}, ${basePrice}, ${taxAmount}, ${totalPrice}, 'AUD', ${notes || ''}, ${fundingScheme})
       RETURNING id, status, total_price`;
 
     // Create payment intent (mock for now)
