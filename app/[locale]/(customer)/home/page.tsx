@@ -467,8 +467,8 @@ export default async function CustomerHomePage({
           </div>
         ) : null}
 
-        {/* ── 和润心语者 (Aged Mental Health) — CN platform only ── */}
-        {isZh && (
+        {/* ── 和润心语者 (Aged Mental Health) — CN platform only, hidden in Australia ── */}
+        {isZh && country !== "AU" && (
           <section className="mx-5 mt-5 mb-3">
             <Link
               href="/xinyuzhe"

@@ -238,8 +238,8 @@ export default async function LandingPage({
             </a>
         )}
 
-        {/* 和润心语者 — aged emotional companion, Chinese locale only */}
-        {zh && (
+        {/* 和润心语者 — aged emotional companion, Chinese locale only, hidden in Australia */}
+        {zh && country !== "AU" && (
           <a
             href={`/${locale}/xinyuzhe`}
             className="mb-10 flex items-start gap-4 rounded-2xl bg-gradient-to-r from-rose-50 to-amber-50 border-2 border-rose-200 p-5 shadow-sm active:scale-[0.98] transition-transform"
