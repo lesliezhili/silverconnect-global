@@ -1287,7 +1287,15 @@
     "kbQuestion": "Question",
     "kbAnswer": "Answer",
     "kbDeleted": "Deleted",
-    "kbSaved": "Saved"
+    "kbSaved": "Saved",
+    "awaitingHuman": "รอการตอบกลับ",
+    "businessHoursOff": "นอกเวลาทำการ — AI กำลังดูแลการสนับสนุน",
+    "businessHoursOn": "เวลาทำการ — เจ้าหน้าที่พร้อมให้บริการ",
+    "isAi": "AI",
+    "isHuman": "เจ้าหน้าที่",
+    "replyPlaceholder": "พิมพ์ข้อความตอบกลับลูกค้า…",
+    "replySend": "ส่งข้อความตอบกลับ",
+    "replySent": "ส่งข้อความตอบกลับแล้ว"
   },
   "aSettings": {
     "title": "System settings",

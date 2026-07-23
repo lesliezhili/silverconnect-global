@@ -1424,7 +1424,15 @@
     "kbQuestion": "Question",
     "kbAnswer": "Answer",
     "kbDeleted": "Deleted",
-    "kbSaved": "Saved"
+    "kbSaved": "Saved",
+    "awaitingHuman": "等待回覆",
+    "businessHoursOff": "非營業時間 — 由AI提供支援",
+    "businessHoursOn": "營業時間 — 真人客服在線",
+    "isAi": "AI",
+    "isHuman": "真人",
+    "replyPlaceholder": "輸入回覆給客戶…",
+    "replySend": "傳送回覆",
+    "replySent": "回覆已傳送"
   },
   "aSettings": {
     "title": "系統設定",

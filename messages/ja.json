@@ -1416,7 +1416,15 @@
     "kbQuestion": "Question",
     "kbAnswer": "Answer",
     "kbDeleted": "Deleted",
-    "kbSaved": "Saved"
+    "kbSaved": "Saved",
+    "awaitingHuman": "返信待ち",
+    "businessHoursOff": "営業時間外 — AIがサポート対応中",
+    "businessHoursOn": "営業時間内 — 有人サポート対応中",
+    "isAi": "AI",
+    "isHuman": "スタッフ",
+    "replyPlaceholder": "お客様への返信を入力…",
+    "replySend": "返信を送信",
+    "replySent": "返信を送信しました"
   },
   "aSettings": {
     "title": "システム設定",
