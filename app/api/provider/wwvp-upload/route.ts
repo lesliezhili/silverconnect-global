@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import postgres from "postgres";
+import { uploadFile } from "@/lib/storage/gateway";
 
 export const dynamic = "force-dynamic";
 
@@ -44,21 +45,12 @@ export async function POST(req: NextRequest) {
       if (!file) { await sql.end(); return NextResponse.json({ error: "No file provided" }, { status: 400 }); }
       if (file.size > 10 * 1024 * 1024) { await sql.end(); return NextResponse.json({ error: "File too large (max 10MB)" }, { status: 400 }); }
 
-      // Upload to Supabase or simulate
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      if (supabaseUrl && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-        const { createClient } = await import("@supabase/supabase-js");
-        const supabase = createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY);
-        const ext = file.name.split(".").pop() || "pdf";
-        const path = "documents/" + profile.id + "/" + documentType + "_" + Date.now() + "." + ext;
-        const buffer = Buffer.from(await file.arrayBuffer());
-        const { error } = await supabase.storage.from("documents").upload(path, buffer, { contentType: file.type });
-        if (error) { await sql.end(); return NextResponse.json({ error: "Upload failed: " + error.message }, { status: 500 }); }
-        const { data: urlData } = supabase.storage.from("documents").getPublicUrl(path);
-        fileUrl = urlData.publicUrl;
-      } else {
-        fileUrl = "https://storage.silverconnect.app/documents/" + profile.id + "/" + documentType + "_" + Date.now() + ".pdf";
-      }
+      const ext = file.name.split(".").pop() || "pdf";
+      const path = "documents/" + profile.id + "/" + documentType + "_" + Date.now() + "." + ext;
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const result = await uploadFile({ bucket: "documents", path, buffer, contentType: file.type });
+      if (!result.success) { await sql.end(); return NextResponse.json({ error: "Upload failed: " + result.error }, { status: 500 }); }
+      fileUrl = result.url!;
     } else {
       const body = await req.json();
       documentType = body.documentType || "wwvp";

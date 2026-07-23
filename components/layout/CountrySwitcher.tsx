@@ -12,7 +12,10 @@ const COOKIE_NAME = "sc-country";
 const ONE_YEAR = 60 * 60 * 24 * 365;
 
 /**
- * Compact country chip — AU and CN only.
+ * Compact country chip — AU always, CN only for the small internal
+ * allowlist previewing the future mainland deployment (see
+ * lib/auth/chinaSiteAccess.ts — the current CN option runs on the
+ * AU-hosted stack, which doesn't actually work for mainland users yet).
  * Persists choice to cookie and refreshes route.
  */
 export function CountrySwitcher({
@@ -24,6 +27,14 @@ export function CountrySwitcher({
 }) {
   const t = useTranslations("country");
   const router = useRouter();
+  const [chinaSiteAllowed, setChinaSiteAllowed] = React.useState(false);
+
+  React.useEffect(() => {
+    fetch("/api/auth/china-site-access")
+      .then((r) => r.json())
+      .then((d) => setChinaSiteAllowed(Boolean(d.allowed)))
+      .catch(() => setChinaSiteAllowed(false));
+  }, []);
 
   const onSelect = (next: CountryCode) => {
     if (next === value) return;
@@ -62,17 +73,19 @@ export function CountrySwitcher({
             <span>{t("AU")}</span>
           </Dropdown.Item>
 
-          {/* 🇨🇳 China / 九鼎 */}
-          <Dropdown.Item
-            onSelect={() => onSelect("CN")}
-            className={cn(
-              "flex cursor-pointer items-center gap-3 rounded-sm px-3 py-2 text-body text-text-primary outline-none hover:bg-bg-surface focus:bg-bg-surface",
-              value === "CN" && "bg-bg-surface-2 font-semibold"
-            )}
-          >
-            <span aria-hidden>🇨🇳</span>
-            <span>{t("CN")}</span>
-          </Dropdown.Item>
+          {/* 🇨🇳 China / 九鼎 — internal preview only, see chinaSiteAccess.ts */}
+          {chinaSiteAllowed && (
+            <Dropdown.Item
+              onSelect={() => onSelect("CN")}
+              className={cn(
+                "flex cursor-pointer items-center gap-3 rounded-sm px-3 py-2 text-body text-text-primary outline-none hover:bg-bg-surface focus:bg-bg-surface",
+                value === "CN" && "bg-bg-surface-2 font-semibold"
+              )}
+            >
+              <span aria-hidden>🇨🇳</span>
+              <span>{t("CN")}</span>
+            </Dropdown.Item>
+          )}
         </Dropdown.Content>
       </Dropdown.Portal>
     </Dropdown.Root>
