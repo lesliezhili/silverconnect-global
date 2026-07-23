@@ -45,7 +45,8 @@ for (const path of PUBLIC_PAGES) {
 }
 
 test.describe('Keyboard navigation', () => {
-  test('Tab moves focus without trapping on landing', async ({ page }) => {
+  test('Tab moves focus without trapping on landing', async ({ page, browserName }) => {
+    test.skip(browserName === 'webkit', 'iOS/iPadOS Safari disables Tab-key focus navigation unless Full Keyboard Access is manually enabled in device settings — not something Playwright can toggle.')
     await page.goto('/' + L)
     for (let i = 0; i < 5; i++) await page.keyboard.press('Tab')
     await expect(page.locator(':focus')).toBeVisible()

@@ -22,7 +22,8 @@ test.describe('Landing page — senior-first UX', () => {
     if (box) expect(box.height).toBeGreaterThanOrEqual(40)
   })
 
-  test('keyboard Tab navigates without trapping', async ({ page }) => {
+  test('keyboard Tab navigates without trapping', async ({ page, browserName }) => {
+    test.skip(browserName === 'webkit', 'iOS/iPadOS Safari disables Tab-key focus navigation unless Full Keyboard Access is manually enabled in device settings — not something Playwright can toggle.')
     await page.goto(BASE)
     for (let i = 0; i < 5; i++) await page.keyboard.press('Tab')
     await expect(page.locator(':focus')).toBeVisible()

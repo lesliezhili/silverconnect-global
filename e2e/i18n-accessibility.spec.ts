@@ -49,7 +49,8 @@ for (const locale of LOCALES) {
       });
     }
 
-    test(`/${locale} — focus visible on Tab`, async ({ page }) => {
+    test(`/${locale} — focus visible on Tab`, async ({ page, browserName }) => {
+      test.skip(browserName === 'webkit', 'iOS/iPadOS Safari disables Tab-key focus navigation unless Full Keyboard Access is manually enabled in device settings — not something Playwright can toggle.');
       await page.goto('/' + locale);
       await page.keyboard.press('Tab');
       await page.keyboard.press('Tab');

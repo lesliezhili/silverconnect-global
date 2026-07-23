@@ -19,8 +19,24 @@ export default defineConfig({
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
     // iPad Gen 7 — most common senior device (10.2" screen)
     { name: 'iPad', use: { ...devices['iPad (gen 7)'] } },
-    // Pixel 5 — large Android phone
-    { name: 'Mobile Chrome', use: { ...devices['Pixel 5'] } },
+    // Pixel — Google Android phone
+    { name: 'Pixel', use: { ...devices['Pixel 5'] } },
+    // Galaxy — Samsung Android phone, most common Android brand globally
+    { name: 'Galaxy', use: { ...devices['Galaxy S24'] } },
+    // Huawei — no official Playwright device profile (Huawei isn't in
+    // Chrome DevTools' device list); modeled on a Huawei P40 Pro using a
+    // real Huawei device UA string over an Android Chrome viewport.
+    {
+      name: 'Huawei',
+      use: {
+        ...devices['Galaxy S24'],
+        userAgent:
+          'Mozilla/5.0 (Linux; Android 10; ELS-NX9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Mobile Safari/537.36',
+      },
+    },
+    // iPhone — real Safari/WebKit engine, since every iOS browser (incl.
+    // "Chrome" on iPhone) runs on WebKit per Apple's platform rules.
+    { name: 'iPhone', use: { ...devices['iPhone 14'] } },
   ],
 
   webServer: process.env.CI ? undefined : {
