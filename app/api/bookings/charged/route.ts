@@ -63,17 +63,53 @@ export async function POST(req: NextRequest) {
       WHERE s.category_code = ${categoryCode} AND s.enabled = true
       ORDER BY s.sort_order ASC LIMIT 1`;
 
+    // Customer's default saved address (if any) drives distance-based
+    // ranking below — best-effort, no new UI needed. Customers without a
+    // saved default just fall back to rating-only ranking (distance_km
+    // is NULL, so it naturally sorts last / doesn't exclude anyone).
+    const [defaultAddress] = await sql`
+      SELECT lat, lng FROM addresses WHERE user_id = ${session.userId} AND is_default = true LIMIT 1`;
+    const customerLat = defaultAddress?.lat != null ? Number(defaultAddress.lat) : null;
+    const customerLng = defaultAddress?.lng != null ? Number(defaultAddress.lng) : null;
+
+    // Ranks candidate providers who offer this category by: rating (desc),
+    // then distance from the customer's default address (asc, unknown
+    // distances sort last), then review count as a confidence tie-break.
+    // Replaces the previous ORDER BY RANDOM() — which also never checked
+    // category at all, so a customer could be matched to a provider who
+    // doesn't even offer the requested service.
+    async function rankedProviders(schemeFilter: string | null) {
+      return sql`
+        WITH scored AS (
+          SELECT pp.id, pp.service_radius_km,
+            COALESCE(AVG(r.rating), 0) AS avg_rating,
+            COUNT(r.id) AS review_count,
+            CASE WHEN pp.service_lat IS NOT NULL AND pp.service_lng IS NOT NULL
+                 AND ${customerLat}::float IS NOT NULL AND ${customerLng}::float IS NOT NULL THEN
+              6371 * acos(LEAST(1, GREATEST(-1,
+                cos(radians(${customerLat}::float)) * cos(radians(pp.service_lat::float)) * cos(radians(pp.service_lng::float) - radians(${customerLng}::float)) +
+                sin(radians(${customerLat}::float)) * sin(radians(pp.service_lat::float))
+              )))
+            ELSE NULL END AS distance_km
+          FROM provider_profiles pp
+          JOIN provider_categories pc ON pc.provider_id = pp.id AND pc.category = ${categoryCode}
+          LEFT JOIN reviews r ON r.provider_id = pp.id AND r.status = 'published'
+          WHERE pp.onboarding_status = 'approved'
+            ${schemeFilter ? sql`AND pp.govt_schemes IS NOT NULL AND ${schemeFilter} = ANY(pp.govt_schemes)` : sql``}
+          GROUP BY pp.id
+        )
+        SELECT id FROM scored
+        WHERE distance_km IS NULL OR distance_km <= service_radius_km
+        ORDER BY avg_rating DESC, distance_km ASC NULLS LAST, review_count DESC
+        LIMIT 1`;
+    }
+
     // Find an available provider — scheme-registered only when a
     // government funding scheme was selected, otherwise any approved
-    // provider (existing behavior, unchanged).
+    // provider offering this category.
     let providerId: string | undefined;
     if (fundingScheme) {
-      const [schemeProvider] = await sql`
-        SELECT pp.id FROM provider_profiles pp
-        WHERE pp.onboarding_status = 'approved'
-          AND pp.govt_schemes IS NOT NULL
-          AND ${fundingScheme} = ANY(pp.govt_schemes)
-        ORDER BY RANDOM() LIMIT 1`;
+      const [schemeProvider] = await rankedProviders(fundingScheme);
       providerId = schemeProvider?.id;
       if (!providerId) {
         await sql.end();
@@ -82,14 +118,11 @@ export async function POST(req: NextRequest) {
         }, { status: 404 });
       }
     } else {
-      const [provider] = await sql`
-        SELECT pp.id FROM provider_profiles pp
-        WHERE pp.onboarding_status = 'approved'
-          AND pp.notes LIKE '%charged_provider%'
-        ORDER BY RANDOM() LIMIT 1`;
-
-      // Fallback: any approved provider
+      const [provider] = await rankedProviders(null);
       providerId = provider?.id;
+
+      // Fallback: any approved provider, regardless of category — only
+      // reached if literally no one offers this category yet.
       if (!providerId) {
         const [any] = await sql`SELECT id FROM provider_profiles WHERE onboarding_status = 'approved' LIMIT 1`;
         providerId = any?.id;
