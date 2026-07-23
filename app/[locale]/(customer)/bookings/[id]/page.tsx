@@ -21,9 +21,10 @@ import { users } from "@/lib/db/schema/users";
 import { addresses } from "@/lib/db/schema/customer-data";
 import { services } from "@/lib/db/schema/services";
 import { getCurrentUser } from "@/lib/auth/server";
-import { notify, notifyAndEmail } from "@/lib/notifications/server";
+import { notifyAndEmail } from "@/lib/notifications/server";
 import { buildBookingStatusEmail } from "@/components/domain/email";
 import { RescheduleModal } from "@/components/domain/RescheduleModal";
+import { cancelBooking, CancelBookingError } from "@/lib/bookings/cancelBooking";
 
 export const dynamic = "force-dynamic";
 
@@ -170,21 +171,19 @@ async function cancelBookingAction(formData: FormData) {
     .where(and(eq(bookings.id, id), eq(bookings.customerId, me.id)))
     .limit(1);
   if (!row) nextRedirect(`/${locale}/bookings`);
-  const cancellable: DbStatus[] = ["pending", "confirmed"];
+  // in_progress is included so a customer can end an already-started
+  // service early — lib/bookings/cancelBooking.ts prorates that case by
+  // elapsed time instead of applying the pre-service notice-period tiers.
+  const cancellable: DbStatus[] = ["pending", "confirmed", "in_progress"];
   if (!(cancellable as string[]).includes(row.status)) {
     nextRedirect(`/${locale}/bookings/${id}?error=not_cancellable`);
   }
-  await db.transaction(async (tx) => {
-    await tx
-      .update(bookings)
-      .set({
-        status: "cancelled",
-        cancelledAt: new Date(),
-        cancelReason: "customer",
-        updatedAt: new Date(),
-      })
-      .where(eq(bookings.id, id));
-    await tx.insert(bookingChanges).values({
+
+  const { default: postgres } = await import("postgres");
+  const sql = postgres(process.env.DATABASE_URL || "", { prepare: false, connect_timeout: 10 });
+  try {
+    await cancelBooking(sql, { bookingId: id, cancelledBy: me.id, reason: "customer_request", notes: "Customer cancellation" });
+    await db.insert(bookingChanges).values({
       bookingId: id,
       type: "cancel",
       fromStatus: row.status as DbStatus,
@@ -192,32 +191,12 @@ async function cancelBookingAction(formData: FormData) {
       actorId: me.id,
       note: "Customer cancellation",
     });
-  });
-  after(async () => {
-    // Find the provider's user_id and notify them.
-    const [b] = await db
-      .select({ providerId: bookings.providerId })
-      .from(bookings)
-      .where(eq(bookings.id, id))
-      .limit(1);
-    if (b?.providerId) {
-      const [p] = await db
-        .select({ userId: providerProfiles.userId })
-        .from(providerProfiles)
-        .where(eq(providerProfiles.id, b.providerId))
-        .limit(1);
-      if (p?.userId) {
-        await notify({
-          userId: p.userId,
-          kind: "booking_update",
-          title: "Booking cancelled",
-          body: "The customer cancelled this booking.",
-          link: `/${locale}/provider/jobs/${id}`,
-          relatedBookingId: id,
-        });
-      }
-    }
-  });
+  } catch (e) {
+    await sql.end().catch(() => {});
+    const message = e instanceof CancelBookingError ? e.message : "Cancellation failed";
+    nextRedirect(`/${locale}/bookings/${id}?error=${encodeURIComponent(message)}`);
+  }
+  await sql.end();
   nextRedirect(`/${locale}/bookings`);
 }
 

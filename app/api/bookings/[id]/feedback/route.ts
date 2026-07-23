@@ -163,7 +163,7 @@ export async function POST(
           VALUES (gen_random_uuid(), ${booking.providerId}, ${providerEarning}, '0', ${booking.currency || 'AUD'}, NOW())
           ON CONFLICT (provider_id)
           DO UPDATE SET
-            balance_available = (CAST(wallets.balance_available AS DECIMAL) + ${Number(providerEarning)})::TEXT,
+            balance_available = wallets.balance_available + ${Number(providerEarning)},
             updated_at = NOW()
         `);
       } catch (walletErr) {

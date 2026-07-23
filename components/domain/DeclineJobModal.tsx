@@ -17,11 +17,14 @@ type Strings = {
 
 export function DeclineJobModal({
   action,
+  actionValue = "decline",
   locale,
   jobId,
   strings,
 }: {
   action: (formData: FormData) => void | Promise<void>;
+  /** Which jobAction transition this modal submits — "decline" (pre-acceptance) or "cancel" (already accepted/in progress). */
+  actionValue?: "decline" | "cancel";
   locale: string;
   jobId: string;
   strings: Strings;
@@ -41,7 +44,7 @@ export function DeclineJobModal({
         <form action={action} className="flex flex-col gap-4">
           <input type="hidden" name="locale" value={locale} />
           <input type="hidden" name="id" value={jobId} />
-          <input type="hidden" name="action" value="decline" />
+          <input type="hidden" name="action" value={actionValue} />
           <p className="text-[16px] text-text-secondary">{strings.hint}</p>
           <fieldset>
             <legend className="text-[16px] font-bold">

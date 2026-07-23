@@ -325,7 +325,9 @@
     "9am-12pm": "9am–12pm",
     "12pm-3pm": "12pm–3pm",
     "3pm-6pm": "3pm–6pm",
-    "6pm-9pm": "6pm–9pm"
+    "6pm-9pm": "6pm–9pm",
+    "jobCancelBooking": "Cancel booking",
+    "cancelJobTitle": "Cancel this booking?"
   },
   "booking": {
     "steps": {

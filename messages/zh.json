@@ -327,7 +327,9 @@
     "9am-12pm": "9-12点",
     "12pm-3pm": "12-15点",
     "3pm-6pm": "15-18点",
-    "6pm-9pm": "18-21点"
+    "6pm-9pm": "18-21点",
+    "jobCancelBooking": "取消预约",
+    "cancelJobTitle": "要取消此预约吗？"
   },
   "booking": {
     "steps": {

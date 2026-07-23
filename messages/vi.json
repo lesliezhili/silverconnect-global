@@ -1196,7 +1196,9 @@
     "9am-12pm": "9 sáng–12 trưa",
     "12pm-3pm": "12 trưa–3 chiều",
     "3pm-6pm": "3 chiều–6 chiều",
-    "6pm-9pm": "6 chiều–9 tối"
+    "6pm-9pm": "6 chiều–9 tối",
+    "jobCancelBooking": "Hủy đặt lịch",
+    "cancelJobTitle": "Hủy đặt lịch này?"
   },
   "admin": {
     "title": "Bảng quản trị",
