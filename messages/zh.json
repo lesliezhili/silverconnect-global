@@ -1768,5 +1768,28 @@
       "redeem_priority_support": "兑换：优先客服标识",
       "redeem_wall_of_honor": "兑换：荣誉墙展示"
     }
+  },
+  "guaranteedWage": {
+    "title": "保底最低收入保障",
+    "subtitle": "承诺每周可提供的服务时间，我们将保证您每周的最低收入——如果实际完成的预约收入不足，SilverConnect 会补足差额。您仍然是独立承包商，发票开具方式不变。",
+    "statusPending": "审核中",
+    "statusApproved": "已生效",
+    "statusRejected": "未通过",
+    "statusSuspended": "已暂停",
+    "committedHours": "已承诺每周 {hours} 小时",
+    "perCycle": "每周",
+    "cancelEnrollment": "取消申请",
+    "enrollTitle": "申请最低收入保障",
+    "enrollBody": "告诉我们您每周可提供的服务时间，我们会建议一个每周最低保障金额，您可以在提交审核前调整。",
+    "committedHoursLabel": "每周可提供小时数",
+    "guaranteedAmountLabel": "每周最低保障金额（$）",
+    "guaranteedAmountHint": "如果您当周的实际预约收入低于此金额，我们将补足差额；收入更高时不会扣回。",
+    "enrollCta": "提交审核",
+    "enrolling": "提交中…",
+    "enrollFailed": "提交失败，请重试。",
+    "cancelFailed": "取消失败，请重试。",
+    "history": "每周周期记录",
+    "noHistory": "暂无周期记录",
+    "toppedUp": "已补足 ${amount}"
   }
 }

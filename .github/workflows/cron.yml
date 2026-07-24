@@ -16,6 +16,7 @@ on:
     - cron: '0 * * * *' # reminders — 24h/12h/8h/4h pre-service reminders
     - cron: '0 16 * * *' # daily bundle — ~2am AEST, low-traffic window
     - cron: '0 22 * * 0' # weekly ministry summary — ~Mon 8am AEST
+    - cron: '0 21 * * 0' # guaranteed-wage weekly top-up — ~Mon 7am AEST
   workflow_dispatch: {}
 
 env:
@@ -53,5 +54,12 @@ jobs:
         if: github.event.schedule == '0 22 * * 0' || github.event_name == 'workflow_dispatch'
         run: |
           curl -sS --fail -X POST "$BASE_URL/api/cron/weekly-ministry-summary" -H "Authorization: Bearer $CRON_SECRET"
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+
+      - name: Guaranteed wage weekly top-up
+        if: github.event.schedule == '0 21 * * 0' || github.event_name == 'workflow_dispatch'
+        run: |
+          curl -sS --fail -X POST "$BASE_URL/api/cron/guaranteed-wage-topup" -H "Authorization: Bearer $CRON_SECRET"
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}

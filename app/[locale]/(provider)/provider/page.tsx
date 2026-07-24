@@ -290,6 +290,31 @@ export default async function ProviderWorkbenchPage({
           </div>
         </section>
 
+        {/* Guaranteed Wage — opt-in income floor, AU only */}
+        {country === "AU" && (
+          <section className="mt-6 rounded-xl border-2 border-dashed border-brand bg-brand-primary-soft p-5">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🛡️</span>
+              <div className="flex-1">
+                <h2 className="text-[18px] font-bold text-text-primary">
+                  {locale === "zh" ? "保底收入保障" : "Guaranteed Minimum Payment"}
+                </h2>
+                <p className="mt-0.5 text-[16px] text-text-secondary">
+                  {locale === "zh"
+                    ? "承诺每周可用时间，收入不足时由维家补足差额"
+                    : "Commit to weekly hours — we top up your pay if bookings fall short"}
+                </p>
+              </div>
+              <Link
+                href="/provider/guaranteed-wage"
+                className="inline-flex h-10 items-center rounded-md bg-brand px-4 text-[16px] font-bold text-white"
+              >
+                {locale === "zh" ? "了解详情" : "Learn More"}
+              </Link>
+            </div>
+          </section>
+        )}
+
         {/* Training & Certification */}
         <section className="mt-8 rounded-xl border-2 border-dashed border-brand bg-brand-primary-soft p-5">
           <div className="flex items-center gap-3">

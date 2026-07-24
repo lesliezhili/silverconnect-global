@@ -1997,5 +1997,28 @@
       "redeem_priority_support": "Đã đổi: Cờ Hỗ trợ Ưu tiên",
       "redeem_wall_of_honor": "Đã đổi: Xuất hiện trên Bức tường Vinh danh"
     }
+  },
+  "guaranteedWage": {
+    "title": "Bảo Đảm Thu Nhập Tối Thiểu",
+    "subtitle": "Cam kết số giờ sẵn sàng làm việc mỗi tuần, chúng tôi sẽ đảm bảo mức thu nhập tối thiểu hàng tuần cho bạn — nếu thu nhập từ các lịch hẹn đã hoàn thành thấp hơn mức này, SilverConnect sẽ bù phần chênh lệch. Bạn vẫn là nhà thầu độc lập, cách xuất hóa đơn không thay đổi.",
+    "statusPending": "Đang chờ duyệt",
+    "statusApproved": "Đang áp dụng",
+    "statusRejected": "Không được duyệt",
+    "statusSuspended": "Đã tạm ngưng",
+    "committedHours": "Đã cam kết {hours} giờ/tuần",
+    "perCycle": "mỗi tuần",
+    "cancelEnrollment": "Hủy đăng ký",
+    "enrollTitle": "Đăng ký thu nhập tối thiểu",
+    "enrollBody": "Cho chúng tôi biết số giờ bạn sẵn sàng làm việc mỗi tuần. Chúng tôi sẽ đề xuất mức tối thiểu hàng tuần — bạn có thể điều chỉnh trước khi gửi duyệt.",
+    "committedHoursLabel": "Số giờ sẵn sàng mỗi tuần",
+    "guaranteedAmountLabel": "Mức tối thiểu mỗi tuần ($)",
+    "guaranteedAmountHint": "Nếu thu nhập thực tế trong tuần thấp hơn mức này, chúng tôi sẽ bù phần chênh lệch — không thu lại nếu bạn kiếm được nhiều hơn.",
+    "enrollCta": "Gửi duyệt",
+    "enrolling": "Đang gửi…",
+    "enrollFailed": "Không thể gửi đăng ký. Vui lòng thử lại.",
+    "cancelFailed": "Không thể hủy. Vui lòng thử lại.",
+    "history": "Lịch sử chu kỳ hàng tuần",
+    "noHistory": "Chưa có chu kỳ nào",
+    "toppedUp": "Đã bù ${amount}"
   }
 }

@@ -1974,5 +1974,28 @@
       "redeem_priority_support": "交換済み：優先サポートフラグ",
       "redeem_wall_of_honor": "交換済み：名誉の壁への掲載"
     }
+  },
+  "guaranteedWage": {
+    "title": "最低保証収入",
+    "subtitle": "週あたりの対応可能時間を約束すると、毎週の最低収入を保証します——完了した予約による収入が不足する場合、SilverConnectが差額を補填します。独立請負業者としての立場は変わらず、請求書の発行方法もそのままです。",
+    "statusPending": "審査中",
+    "statusApproved": "有効",
+    "statusRejected": "未承認",
+    "statusSuspended": "停止中",
+    "committedHours": "週{hours}時間を約束済み",
+    "perCycle": "週あたり",
+    "cancelEnrollment": "申請を取り消す",
+    "enrollTitle": "最低保証収入に申し込む",
+    "enrollBody": "週に対応可能な時間数を教えてください。週ごとの最低保証額を提案します。承認申請前に調整できます。",
+    "committedHoursLabel": "週の対応可能時間",
+    "guaranteedAmountLabel": "週の最低保証額（$）",
+    "guaranteedAmountHint": "その週の実際の予約収入がこの金額を下回った場合、差額を補填します——多く稼いだ場合の回収はありません。",
+    "enrollCta": "承認を申請",
+    "enrolling": "送信中…",
+    "enrollFailed": "申請の送信に失敗しました。もう一度お試しください。",
+    "cancelFailed": "取り消しに失敗しました。もう一度お試しください。",
+    "history": "週次サイクル履歴",
+    "noHistory": "まだサイクル履歴がありません",
+    "toppedUp": "${amount} を補填しました"
   }
 }

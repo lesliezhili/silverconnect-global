@@ -216,3 +216,39 @@ export async function toggleEmergencyOptIn(
   `);
   return { success: true };
 }
+
+// ─── Guaranteed Wage: opt-in income floor for AU providers ───────
+// Providers stay independent contractors (unchanged ABN/invoicing path);
+// this only sets a minimum payment floor the guaranteed-wage-topup cron
+// tops up to if actual booking earnings fall short of a cycle.
+export async function requestGuaranteedWage(
+  providerId: string,
+  committedHours: number,
+  guaranteedAmount: number,
+): Promise<{ success: boolean }> {
+  await db
+    .update(providerProfiles)
+    .set({
+      payArrangement: "guaranteed_minimum",
+      guaranteedWageStatus: "pending",
+      guaranteedCommittedHours: committedHours,
+      guaranteedMinCycleAmount: String(guaranteedAmount),
+      updatedAt: new Date(),
+    })
+    .where(eq(providerProfiles.id, providerId));
+  return { success: true };
+}
+
+export async function cancelGuaranteedWage(
+  providerId: string,
+): Promise<{ success: boolean }> {
+  await db
+    .update(providerProfiles)
+    .set({
+      payArrangement: "contractor",
+      guaranteedWageStatus: null,
+      updatedAt: new Date(),
+    })
+    .where(eq(providerProfiles.id, providerId));
+  return { success: true };
+}

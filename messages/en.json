@@ -1766,5 +1766,28 @@
       "redeem_priority_support": "Redeemed: Priority Support flag",
       "redeem_wall_of_honor": "Redeemed: Wall of Honor listing"
     }
+  },
+  "guaranteedWage": {
+    "title": "Guaranteed Minimum Payment",
+    "subtitle": "Commit to weekly available hours and we'll guarantee a minimum payment each week — if your completed bookings fall short, SilverConnect tops up the difference. You stay an independent contractor; nothing else about how you invoice changes.",
+    "statusPending": "Pending review",
+    "statusApproved": "Active",
+    "statusRejected": "Not approved",
+    "statusSuspended": "Suspended",
+    "committedHours": "Committed to {hours} hours/week",
+    "perCycle": "per week",
+    "cancelEnrollment": "Cancel enrollment",
+    "enrollTitle": "Enroll in the guaranteed minimum",
+    "enrollBody": "Tell us how many hours a week you're available. We'll suggest a guaranteed weekly minimum — you can adjust it before submitting for approval.",
+    "committedHoursLabel": "Hours available per week",
+    "guaranteedAmountLabel": "Guaranteed minimum per week ($)",
+    "guaranteedAmountHint": "If your actual bookings earn less than this in a week, we top up the difference — no clawback if you earn more.",
+    "enrollCta": "Submit for approval",
+    "enrolling": "Submitting…",
+    "enrollFailed": "Couldn't submit your enrollment. Please try again.",
+    "cancelFailed": "Couldn't cancel. Please try again.",
+    "history": "Weekly cycle history",
+    "noHistory": "No cycles yet",
+    "toppedUp": "Topped up ${amount}"
   }
 }

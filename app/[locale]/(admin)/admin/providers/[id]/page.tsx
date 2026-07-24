@@ -38,7 +38,9 @@ type UiAction =
   | "hold"
   | "reject"
   | "suspend"
-  | "resume";
+  | "resume"
+  | "approveGuaranteedWage"
+  | "rejectGuaranteedWage";
 
 function statusBadgeClass(s: DbStatus): string {
   switch (s) {
@@ -79,6 +81,8 @@ async function providerDecisionAction(formData: FormData) {
       approvedAt: Date | null;
       rejectedAt: Date | null;
       rejectionReason: string | null;
+      guaranteedWageStatus: string | null;
+      guaranteedWageEnrolledAt: Date | null;
     }>
   > = {
     approve: {
@@ -102,6 +106,13 @@ async function providerDecisionAction(formData: FormData) {
       onboardingStatus: "approved",
       approvedAt: new Date(),
       rejectionReason: null,
+    },
+    approveGuaranteedWage: {
+      guaranteedWageStatus: "approved",
+      guaranteedWageEnrolledAt: new Date(),
+    },
+    rejectGuaranteedWage: {
+      guaranteedWageStatus: "rejected",
     },
   };
   const patch = patches[action];
@@ -130,6 +141,8 @@ async function providerDecisionAction(formData: FormData) {
       reject: "Your provider application was declined",
       suspend: "Your provider account has been suspended",
       resume: "Your provider account has been reinstated",
+      approveGuaranteedWage: "Your guaranteed wage enrollment is approved",
+      rejectGuaranteedWage: "Your guaranteed wage request was declined",
     };
     const link = `/${locale}/provider/onboarding-status`;
 
@@ -200,6 +213,9 @@ export default async function AdminProviderDetailPage({
         rejectedAt: providerProfiles.rejectedAt,
         rejectionReason: providerProfiles.rejectionReason,
         createdAt: providerProfiles.createdAt,
+        guaranteedWageStatus: providerProfiles.guaranteedWageStatus,
+        guaranteedCommittedHours: providerProfiles.guaranteedCommittedHours,
+        guaranteedMinCycleAmount: providerProfiles.guaranteedMinCycleAmount,
         providerName: users.name,
         providerEmail: users.email,
         providerCountry: users.country,
@@ -413,6 +429,28 @@ export default async function AdminProviderDetailPage({
           )}
         </section>
 
+        {row.guaranteedWageStatus && (
+          <section className="mt-5 rounded-lg border border-border bg-bg-base p-5">
+            <p className="text-[16px] font-bold">Guaranteed wage</p>
+            <p className="mt-2 text-[17px]">
+              <span
+                className={
+                  "inline-flex h-6 items-center rounded-sm px-2 text-[13px] font-bold uppercase " +
+                  (row.guaranteedWageStatus === "approved"
+                    ? "bg-success-soft text-success"
+                    : row.guaranteedWageStatus === "rejected" || row.guaranteedWageStatus === "suspended"
+                      ? "bg-danger-soft text-danger"
+                      : "bg-warning-soft text-warning")
+                }
+              >
+                {row.guaranteedWageStatus}
+              </span>{" "}
+              {row.guaranteedCommittedHours ?? "—"}h/week · $
+              {row.guaranteedMinCycleAmount ?? "—"} per cycle
+            </p>
+          </section>
+        )}
+
         <section className="mt-5 rounded-lg border border-border bg-bg-base p-5">
           <p className="text-[16px] font-bold">Compliance documents</p>
           {docs.length === 0 ? (
@@ -536,6 +574,16 @@ export default async function AdminProviderDetailPage({
                   { key: "reject", label: t("provReject"), show: status !== "rejected" },
                   { key: "suspend", label: "Suspend", show: isApproved },
                   { key: "resume", label: "Resume", show: isSuspended },
+                  {
+                    key: "approveGuaranteedWage",
+                    label: "Approve guaranteed wage",
+                    show: row.guaranteedWageStatus === "pending",
+                  },
+                  {
+                    key: "rejectGuaranteedWage",
+                    label: "Reject guaranteed wage",
+                    show: row.guaranteedWageStatus === "pending",
+                  },
                 ] as const
               )
                 .filter((a) => a.show)

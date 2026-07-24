@@ -1982,5 +1982,28 @@
       "redeem_priority_support": "兌換：優先客服標識",
       "redeem_wall_of_honor": "兌換：榮譽牆展示"
     }
+  },
+  "guaranteedWage": {
+    "title": "保底最低收入保障",
+    "subtitle": "承諾每週可提供的服務時間，我們將保證您每週的最低收入——如果實際完成的預約收入不足，SilverConnect 會補足差額。您仍然是獨立承包商，發票開立方式不變。",
+    "statusPending": "審核中",
+    "statusApproved": "已生效",
+    "statusRejected": "未通過",
+    "statusSuspended": "已暫停",
+    "committedHours": "已承諾每週 {hours} 小時",
+    "perCycle": "每週",
+    "cancelEnrollment": "取消申請",
+    "enrollTitle": "申請最低收入保障",
+    "enrollBody": "告訴我們您每週可提供的服務時間，我們會建議一個每週最低保障金額，您可以在提交審核前調整。",
+    "committedHoursLabel": "每週可提供小時數",
+    "guaranteedAmountLabel": "每週最低保障金額（$）",
+    "guaranteedAmountHint": "如果您當週的實際預約收入低於此金額，我們將補足差額；收入更高時不會扣回。",
+    "enrollCta": "提交審核",
+    "enrolling": "提交中…",
+    "enrollFailed": "提交失敗，請重試。",
+    "cancelFailed": "取消失敗，請重試。",
+    "history": "每週週期記錄",
+    "noHistory": "暫無週期記錄",
+    "toppedUp": "已補足 ${amount}"
   }
 }

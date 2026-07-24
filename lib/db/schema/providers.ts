@@ -6,6 +6,7 @@ import {
   boolean,
   integer,
   decimal,
+  date,
   primaryKey,
   index,
   uniqueIndex,
@@ -43,6 +44,15 @@ export const providerProfiles = pgTable(
     /** Government schemes this provider is registered to serve (ndis, dva, tac, worksafe, etc). */
     govtSchemes: text("govt_schemes").array(),
     stripeAccountId: text("stripe_account_id"),
+    /** 'contractor' (default, per-booking ABN invoicing, unchanged) | 'guaranteed_minimum' (opt-in income floor, see guaranteedWageStatus). */
+    payArrangement: text("pay_arrangement").notNull().default("contractor"),
+    /** null (never applied) | 'pending' | 'approved' | 'rejected' | 'suspended' — mirrors onboardingStatus shape. */
+    guaranteedWageStatus: text("guaranteed_wage_status"),
+    /** Weekly hours the provider commits to being available for, set at enrollment. */
+    guaranteedCommittedHours: integer("guaranteed_committed_hours"),
+    /** Agreed dollar floor per weekly pay cycle (guaranteed-wage-topup cron runs weekly). */
+    guaranteedMinCycleAmount: decimal("guaranteed_min_cycle_amount", { precision: 10, scale: 2 }),
+    guaranteedWageEnrolledAt: timestamp("guaranteed_wage_enrolled_at", { withTimezone: true }),
     submittedAt: timestamp("submitted_at", { withTimezone: true }),
     approvedAt: timestamp("approved_at", { withTimezone: true }),
     rejectedAt: timestamp("rejected_at", { withTimezone: true }),
@@ -150,6 +160,32 @@ export const providerBadges = pgTable(
   }),
 );
 
+/** Audit ledger for the guaranteed-wage top-up cron: one row per pay cycle per enrolled provider. */
+export const guaranteedWageCycles = pgTable(
+  "guaranteed_wage_cycles",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    providerId: uuid("provider_id")
+      .notNull()
+      .references(() => providerProfiles.id, { onDelete: "cascade" }),
+    cycleStart: date("cycle_start").notNull(),
+    cycleEnd: date("cycle_end").notNull(),
+    actualEarnings: decimal("actual_earnings", { precision: 10, scale: 2 }).notNull(),
+    guaranteedAmount: decimal("guaranteed_amount", { precision: 10, scale: 2 }).notNull(),
+    topupAmount: decimal("topup_amount", { precision: 10, scale: 2 }).notNull().default("0"),
+    status: text("status").notNull().default("calculated"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    paidAt: timestamp("paid_at", { withTimezone: true }),
+  },
+  (t) => ({
+    providerIdx: index("guaranteed_wage_cycles_provider_idx").on(t.providerId),
+    providerCycleUq: uniqueIndex("guaranteed_wage_cycles_provider_cycle_uq").on(
+      t.providerId,
+      t.cycleStart,
+    ),
+  }),
+);
+
 export type ProviderProfile = typeof providerProfiles.$inferSelect;
 export type NewProviderProfile = typeof providerProfiles.$inferInsert;
 export type ProviderDocument = typeof providerDocuments.$inferSelect;
@@ -157,3 +193,4 @@ export type ProviderAvailability = typeof providerAvailability.$inferSelect;
 export type ProviderBlockedTime = typeof providerBlockedTimes.$inferSelect;
 export type ProviderCategory = typeof providerCategories.$inferSelect;
 export type ProviderBadge = typeof providerBadges.$inferSelect;
+export type GuaranteedWageCycle = typeof guaranteedWageCycles.$inferSelect;
