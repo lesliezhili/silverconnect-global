@@ -28,6 +28,8 @@ export const providerProfiles = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     bio: text("bio"),
+    /** Collected + format-validated at registration (lib/providers/actions.ts validateABN) — required on every compliant invoice. */
+    abn: text("abn"),
     addressLine: text("address_line"),
     serviceLat: decimal("service_lat", { precision: 9, scale: 6 }),
     serviceLng: decimal("service_lng", { precision: 9, scale: 6 }),

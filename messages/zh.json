@@ -334,7 +334,11 @@
     "3pm-6pm": "15-18点",
     "6pm-9pm": "18-21点",
     "jobCancelBooking": "取消预约",
-    "cancelJobTitle": "要取消此预约吗？"
+    "cancelJobTitle": "要取消此预约吗？",
+    "generateInvoice": "生成账单",
+    "generatingInvoice": "生成中…",
+    "viewInvoice": "查看账单",
+    "alreadyInvoiced": "账单已生成"
   },
   "booking": {
     "steps": {
@@ -1602,7 +1606,13 @@
     "loading": "加载中...",
     "notFound": "发票未找到",
     "paySuccess": "发票已支付",
-    "poweredBy": "由 PHLedger 提供技术支持"
+    "poweredBy": "由 PHLedger 提供技术支持",
+    "complianceTitle": "账单详情",
+    "abn": "ABN",
+    "serviceCode": "服务代码",
+    "clientRegisteredName": "客户姓名",
+    "serviceDate": "服务日期",
+    "serviceTime": "服务时间"
   },
   "cancellation": {
     "title": "取消预约",

@@ -354,7 +354,11 @@
     "3pm-6pm": "15-18時",
     "6pm-9pm": "18-21時",
     "jobCancelBooking": "予約をキャンセル",
-    "cancelJobTitle": "この予約をキャンセルしますか？"
+    "cancelJobTitle": "この予約をキャンセルしますか？",
+    "generateInvoice": "請求書を発行",
+    "generatingInvoice": "発行中…",
+    "viewInvoice": "請求書を見る",
+    "alreadyInvoiced": "請求書は発行済みです"
   },
   "booking": {
     "steps": {
@@ -1797,7 +1801,13 @@
     "loading": "読み込み中...",
     "notFound": "請求書が見つかりません",
     "paySuccess": "支払い完了",
-    "poweredBy": "PHLedger 技術提供"
+    "poweredBy": "PHLedger 技術提供",
+    "complianceTitle": "請求書詳細",
+    "abn": "ABN",
+    "serviceCode": "サービスコード",
+    "clientRegisteredName": "お客様氏名",
+    "serviceDate": "サービス日",
+    "serviceTime": "サービス時間"
   },
   "cancellation": {
     "title": "予約キャンセル",

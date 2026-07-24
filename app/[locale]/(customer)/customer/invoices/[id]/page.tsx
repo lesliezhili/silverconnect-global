@@ -29,6 +29,14 @@ interface Invoice {
   isOverdue: boolean;
   viewedAt: string | null;
   paidAt: string | null;
+  compliance: {
+    providerAbn: string | null;
+    clientRegisteredName: string | null;
+    serviceDate: string | null;
+    serviceStartTime: string | null;
+    serviceEndTime: string | null;
+    serviceCode: string | null;
+  };
 }
 
 export default function InvoiceViewPage() {
@@ -77,6 +85,31 @@ export default function InvoiceViewPage() {
           <div><span className="text-gray-500">{t("dueDate")}:</span> <span className={`font-medium ${invoice.isOverdue ? "text-red-600" : ""}`}>{invoice.dueDate}</span></div>
         </div>
       </div>
+
+      {/* Compliance details — matches the standard sole-trader invoice
+          requirements checklist (ABN, service code, official client
+          name, service date/time). Only shown when populated, since
+          older/manual invoices won't have these. */}
+      {invoice.compliance?.providerAbn && (
+        <div className="bg-white rounded-xl shadow-sm border p-6 mb-4">
+          <h2 className="text-lg font-semibold mb-3">{t("complianceTitle")}</h2>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div><span className="text-gray-500">{t("abn")}:</span> <span className="font-medium">{invoice.compliance.providerAbn}</span></div>
+            {invoice.compliance.serviceCode && (
+              <div><span className="text-gray-500">{t("serviceCode")}:</span> <span className="font-medium">{invoice.compliance.serviceCode}</span></div>
+            )}
+            {invoice.compliance.clientRegisteredName && (
+              <div className="col-span-2"><span className="text-gray-500">{t("clientRegisteredName")}:</span> <span className="font-medium">{invoice.compliance.clientRegisteredName}</span></div>
+            )}
+            {invoice.compliance.serviceDate && (
+              <div><span className="text-gray-500">{t("serviceDate")}:</span> <span className="font-medium">{invoice.compliance.serviceDate}</span></div>
+            )}
+            {invoice.compliance.serviceStartTime && invoice.compliance.serviceEndTime && (
+              <div><span className="text-gray-500">{t("serviceTime")}:</span> <span className="font-medium">{invoice.compliance.serviceStartTime}–{invoice.compliance.serviceEndTime}</span></div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Line Items */}
       <div className="bg-white rounded-xl shadow-sm border p-6 mb-4">

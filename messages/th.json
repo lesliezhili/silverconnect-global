@@ -354,7 +354,11 @@
     "3pm-6pm": "15-18น.",
     "6pm-9pm": "18-21น.",
     "jobCancelBooking": "ยกเลิกการจอง",
-    "cancelJobTitle": "ยกเลิกการจองนี้ใช่หรือไม่?"
+    "cancelJobTitle": "ยกเลิกการจองนี้ใช่หรือไม่?",
+    "generateInvoice": "สร้างใบแจ้งหนี้",
+    "generatingInvoice": "กำลังสร้าง…",
+    "viewInvoice": "ดูใบแจ้งหนี้",
+    "alreadyInvoiced": "สร้างใบแจ้งหนี้แล้ว"
   },
   "booking": {
     "steps": {
@@ -1659,7 +1663,13 @@
     "loading": "กำลังโหลด...",
     "notFound": "ไม่พบใบแจ้งหนี้",
     "paySuccess": "ชำระเรียบร้อย",
-    "poweredBy": "ขับเคลื่อนโดย PHLedger"
+    "poweredBy": "ขับเคลื่อนโดย PHLedger",
+    "complianceTitle": "รายละเอียดใบแจ้งหนี้",
+    "abn": "ABN",
+    "serviceCode": "รหัสบริการ",
+    "clientRegisteredName": "ชื่อลูกค้า",
+    "serviceDate": "วันที่ให้บริการ",
+    "serviceTime": "เวลาให้บริการ"
   },
   "cancellation": {
     "title": "ยกเลิกการจอง",

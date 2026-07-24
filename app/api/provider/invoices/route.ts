@@ -1,16 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPaymentProvider, PHLEDGER_API_URL } from "@/lib/payments/provider-config";
+import { getCurrentUser } from "@/lib/auth/server";
 
 /**
  * GET /api/provider/invoices?providerId=xxx — List provider's invoices
  * POST /api/provider/invoices — Provider creates an invoice for customer
- * 
+ *
  * Body: {
  *   providerId, customerId, bookingId?,
  *   items: [{ description, quantity, unitPrice, taxRate? }],
- *   notes?, dueInDays?
+ *   notes?, dueInDays?, clientRegisteredName?
  * }
- * 
+ *
+ * When `bookingId` is given and `items` is omitted, every compliance
+ * field a provider invoice needs (ABN, service code, service date/
+ * start/end time, hours, rate, GST) is derived from the real booking
+ * instead of being hand-typed — modelled on a real sole-trader invoice
+ * requirements checklist (provider name+ABN, invoice number+date,
+ * client's officially-registered name, service date, start/end time or
+ * total hours, service description, Service Code, rate, total+GST).
+ * Manual free-text invoices (no bookingId) still work exactly as before.
+ *
  * Automatically:
  *   - Generates sequential invoice number (SC-INV-YYYY-NNNN)
  *   - Calculates subtotal, GST, total
@@ -18,8 +28,11 @@ import { getPaymentProvider, PHLEDGER_API_URL } from "@/lib/payments/provider-co
  *   - Notifies customer
  */
 export async function GET(req: NextRequest) {
+  const me = await getCurrentUser();
+  if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const providerId = req.nextUrl.searchParams.get("providerId");
   if (!providerId) return NextResponse.json({ error: "providerId required" }, { status: 400 });
+  if (providerId !== me.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const { default: postgres } = await import("postgres");
   const sql = postgres(process.env.DATABASE_URL || "", { prepare: false, connect_timeout: 10 });
@@ -42,17 +55,91 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const { providerId, customerId, bookingId, items, notes = "", dueInDays = 14 } = body;
+  const me = await getCurrentUser();
+  if (!me) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (!providerId || !customerId || !items || !Array.isArray(items) || items.length === 0) {
-    return NextResponse.json({ error: "providerId, customerId, and items[] required" }, { status: 400 });
-  }
+  const body = await req.json();
+  const { bookingId, notes = "", dueInDays = 14, clientRegisteredName } = body;
+  let providerId = body.providerId;
+  let customerId = body.customerId;
+  let items = body.items;
 
   const { default: postgres } = await import("postgres");
   const sql = postgres(process.env.DATABASE_URL || "", { prepare: false, connect_timeout: 10 });
 
   try {
+    let compliance: {
+      providerAbn: string | null;
+      serviceDate: string | null;
+      serviceStartTime: string | null;
+      serviceEndTime: string | null;
+      serviceCode: string | null;
+    } = { providerAbn: null, serviceDate: null, serviceStartTime: null, serviceEndTime: null, serviceCode: null };
+
+    if (bookingId && (!items || items.length === 0)) {
+      // Auto-derive everything from the booking — the whole point of
+      // this path (see file header). bookings.provider_id points at
+      // provider_profiles.id, but invoices.provider_id (like this
+      // route's manual path) is a users.id, so pp.user_id is what
+      // actually goes on the invoice.
+      const [booking] = await sql`
+        SELECT b.id, b.customer_id, b.provider_id, b.scheduled_at, b.duration_min,
+          b.base_price, b.tax_amount, b.status,
+          s.code AS service_code, s.category_code,
+          pp.abn AS provider_abn, pp.user_id AS provider_user_id
+        FROM bookings b
+        LEFT JOIN services s ON s.id = b.service_id
+        JOIN provider_profiles pp ON pp.id = b.provider_id
+        WHERE b.id = ${bookingId}`;
+      if (!booking) { await sql.end(); return NextResponse.json({ error: "Booking not found" }, { status: 404 }); }
+      if (booking.provider_user_id !== me.id) {
+        await sql.end();
+        return NextResponse.json({ error: "This booking doesn't belong to you" }, { status: 403 });
+      }
+      if (!["completed", "released"].includes(booking.status)) {
+        await sql.end();
+        return NextResponse.json({ error: "Can only invoice a completed service." }, { status: 400 });
+      }
+      const [existingInvoice] = await sql`SELECT id FROM invoices WHERE booking_id = ${bookingId} LIMIT 1`;
+      if (existingInvoice) {
+        await sql.end();
+        return NextResponse.json({ error: "This booking already has an invoice.", invoiceId: existingInvoice.id }, { status: 409 });
+      }
+
+      providerId = booking.provider_user_id;
+      customerId = booking.customer_id;
+      const hours = (booking.duration_min || 60) / 60;
+      const basePrice = Number(booking.base_price);
+      const hourlyRate = hours > 0 ? basePrice / hours : basePrice;
+      const taxRate = basePrice > 0 ? Math.round((Number(booking.tax_amount) / basePrice) * 100) : 10;
+      items = [{
+        description: (booking.category_code || "Service") + " — " + hours.toFixed(2) + "h",
+        quantity: Math.round(hours * 100) / 100,
+        unitPrice: Math.round(hourlyRate * 100) / 100,
+        taxRate,
+      }];
+
+      const start = new Date(booking.scheduled_at);
+      const end = new Date(start.getTime() + (booking.duration_min || 60) * 60000);
+      compliance = {
+        providerAbn: booking.provider_abn || null,
+        serviceDate: start.toISOString().split("T")[0],
+        serviceStartTime: start.toISOString().slice(11, 16),
+        serviceEndTime: end.toISOString().slice(11, 16),
+        serviceCode: booking.service_code || null,
+      };
+    } else if (providerId !== me.id) {
+      // Manual free-text path — still requires the invoice to be from
+      // the caller's own account (this route had no auth at all before).
+      await sql.end();
+      return NextResponse.json({ error: "providerId must be your own account" }, { status: 403 });
+    }
+
+    if (!providerId || !customerId || !items || !Array.isArray(items) || items.length === 0) {
+      await sql.end();
+      return NextResponse.json({ error: "providerId, customerId, and items[] required" }, { status: 400 });
+    }
+
     // Verify provider and customer exist
     const [provider] = await sql`SELECT id, name, email FROM users WHERE id = ${providerId}`;
     const [customer] = await sql`SELECT id, name, email FROM users WHERE id = ${customerId}`;
@@ -82,10 +169,13 @@ export async function POST(req: NextRequest) {
     // Create invoice
     const dueDate = new Date(Date.now() + dueInDays * 86400000).toISOString().split("T")[0];
     const provider_ = getPaymentProvider();
+    const registeredName = clientRegisteredName || customer.name;
 
     const [invoice] = await sql`
-      INSERT INTO invoices (invoice_number, booking_id, provider_id, customer_id, status, due_date, subtotal, tax_amount, total_amount, notes, payment_provider)
-      VALUES (${invoiceNumber}, ${bookingId || null}, ${providerId}, ${customerId}, 'sent', ${dueDate}::date, ${subtotal}, ${taxAmount}, ${totalAmount}, ${notes}, ${provider_})
+      INSERT INTO invoices (invoice_number, booking_id, provider_id, customer_id, status, due_date, subtotal, tax_amount, total_amount, notes, payment_provider,
+        provider_abn, client_registered_name, service_date, service_start_time, service_end_time, service_code)
+      VALUES (${invoiceNumber}, ${bookingId || null}, ${providerId}, ${customerId}, 'sent', ${dueDate}::date, ${subtotal}, ${taxAmount}, ${totalAmount}, ${notes}, ${provider_},
+        ${compliance.providerAbn}, ${registeredName}, ${compliance.serviceDate}, ${compliance.serviceStartTime}, ${compliance.serviceEndTime}, ${compliance.serviceCode})
       RETURNING id, invoice_number, status, issue_date, due_date, subtotal, tax_amount, total_amount
     `;
 
@@ -201,6 +291,14 @@ export async function POST(req: NextRequest) {
         externalInvoiceId,
         paymentProvider: provider_,
         viewUrl: `/en/customer/invoices/${invoice.id}`,
+        compliance: {
+          providerAbn: compliance.providerAbn,
+          clientRegisteredName: registeredName,
+          serviceDate: compliance.serviceDate,
+          serviceStartTime: compliance.serviceStartTime,
+          serviceEndTime: compliance.serviceEndTime,
+          serviceCode: compliance.serviceCode,
+        },
       },
     });
   } catch (err: unknown) {

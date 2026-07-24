@@ -17,6 +17,7 @@ import {
   providerAvailability,
 } from "@/lib/db/schema/providers";
 import { getCurrentUser, signInUser } from "@/lib/auth/server";
+import { validateABN } from "@/lib/providers/actions";
 
 // Provider register wizard v2 — ABN + DL + BSB
 export const dynamic = "force-dynamic";
@@ -94,6 +95,13 @@ async function saveStep1(formData: FormData) {
   if (!name || !phone || !address) {
     nextRedirect(`/${locale}/provider/register?step=1&error=required`);
   }
+  // ABN is optional at this step (some categories don't need one), but if
+  // given it must be well-formed — this is what ends up on every invoice,
+  // so a bad ABN here becomes a rejected invoice later.
+  if (abn) {
+    const { valid } = await validateABN(abn);
+    if (!valid) nextRedirect(`/${locale}/provider/register?step=1&error=abn`);
+  }
   await db
     .update(users)
     .set({ name, phone, updatedAt: new Date() })
@@ -101,7 +109,7 @@ async function saveStep1(formData: FormData) {
   const draft = await ensureDraft(me.id);
   await db
     .update(providerProfiles)
-    .set({ addressLine: address, bio: bio || null, updatedAt: new Date() })
+    .set({ addressLine: address, bio: bio || null, abn: abn || null, updatedAt: new Date() })
     .where(eq(providerProfiles.id, draft.id));
   nextRedirect(`/${locale}/provider/register?step=2`);
 }

@@ -332,7 +332,11 @@
     "3pm-6pm": "3pm–6pm",
     "6pm-9pm": "6pm–9pm",
     "jobCancelBooking": "Cancel booking",
-    "cancelJobTitle": "Cancel this booking?"
+    "cancelJobTitle": "Cancel this booking?",
+    "generateInvoice": "Generate invoice",
+    "generatingInvoice": "Generating…",
+    "viewInvoice": "View invoice",
+    "alreadyInvoiced": "Invoice already generated"
   },
   "booking": {
     "steps": {
@@ -1600,7 +1604,13 @@
     "loading": "Loading invoice...",
     "notFound": "Invoice not found",
     "paySuccess": "Invoice Paid",
-    "poweredBy": "Powered by PHLedger"
+    "poweredBy": "Powered by PHLedger",
+    "complianceTitle": "Invoice details",
+    "abn": "ABN",
+    "serviceCode": "Service Code",
+    "clientRegisteredName": "Client name",
+    "serviceDate": "Service date",
+    "serviceTime": "Service time"
   },
   "cancellation": {
     "title": "Cancel Booking",

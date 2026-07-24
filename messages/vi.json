@@ -183,7 +183,13 @@
     "loading": "Đang tải...",
     "notFound": "Không tìm thấy hóa đơn",
     "paySuccess": "Thanh toán thành công",
-    "poweredBy": "Được hỗ trợ bởi PHLedger"
+    "poweredBy": "Được hỗ trợ bởi PHLedger",
+    "complianceTitle": "Chi tiết hóa đơn",
+    "abn": "ABN",
+    "serviceCode": "Mã dịch vụ",
+    "clientRegisteredName": "Tên khách hàng",
+    "serviceDate": "Ngày dịch vụ",
+    "serviceTime": "Giờ dịch vụ"
   },
   "dispute": {
     "title": "Khiếu nại",
@@ -1203,7 +1209,11 @@
     "3pm-6pm": "3 chiều–6 chiều",
     "6pm-9pm": "6 chiều–9 tối",
     "jobCancelBooking": "Hủy đặt lịch",
-    "cancelJobTitle": "Hủy đặt lịch này?"
+    "cancelJobTitle": "Hủy đặt lịch này?",
+    "generateInvoice": "Tạo hóa đơn",
+    "generatingInvoice": "Đang tạo…",
+    "viewInvoice": "Xem hóa đơn",
+    "alreadyInvoiced": "Hóa đơn đã được tạo"
   },
   "admin": {
     "title": "Bảng quản trị",

@@ -20,6 +20,7 @@ import { notifyAndEmail } from "@/lib/notifications/server";
 import { buildBookingStatusEmail } from "@/components/domain/email";
 import { payments, wallets } from "@/lib/db/schema/payments";
 import { cancelBooking, CancelBookingError } from "@/lib/bookings/cancelBooking";
+import { GenerateInvoiceButton } from "@/components/domain/GenerateInvoiceButton";
 
 export const dynamic = "force-dynamic";
 
@@ -328,6 +329,18 @@ export default async function ProviderJobDetailPage({
           >
             <Check size={18} aria-hidden /> {t("statusCompleted")}
           </div>
+        )}
+
+        {(status === "completed" || status === "released") && (
+          <GenerateInvoiceButton
+            bookingId={id}
+            strings={{
+              generate: t("generateInvoice"),
+              generating: t("generatingInvoice"),
+              view: t("viewInvoice"),
+              alreadyInvoiced: t("alreadyInvoiced"),
+            }}
+          />
         )}
 
         {isCancelled && (
