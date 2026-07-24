@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { providerProfiles, guaranteedWageCycles } from "@/lib/db/schema/providers";
-import { requireUser } from "@/lib/auth/server";
+import { getCurrentUser } from "@/lib/auth/server";
 import { isAuUser } from "@/lib/coins/ledger";
 import { requestGuaranteedWage, cancelGuaranteedWage } from "@/lib/providers/actions";
 
@@ -13,7 +13,10 @@ import { requestGuaranteedWage, cancelGuaranteedWage } from "@/lib/providers/act
  * minimum payment floor topped up by app/api/cron/guaranteed-wage-topup.
  */
 export async function GET() {
-  const user = await requireUser();
+  const user = await getCurrentUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   if (!(await isAuUser(user.id))) {
     return NextResponse.json({ error: "Guaranteed wage is only available to Australian providers." }, { status: 403 });
   }
@@ -49,7 +52,10 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const user = await requireUser();
+  const user = await getCurrentUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   if (!(await isAuUser(user.id))) {
     return NextResponse.json({ error: "Guaranteed wage is only available to Australian providers." }, { status: 403 });
   }
@@ -76,7 +82,10 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE() {
-  const user = await requireUser();
+  const user = await getCurrentUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const [profile] = await db
     .select({ id: providerProfiles.id })
