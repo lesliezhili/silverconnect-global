@@ -132,7 +132,12 @@
   },
   "services": {
     "title": "服務項目",
-    "errorLoad": "無法載入服務"
+    "errorLoad": "無法載入服務",
+    "certificateRequired": "僅限持證服務者",
+    "suppliesCustomer": "客戶自備用品",
+    "suppliesProvider": "服務者自帶用品",
+    "suppliesEither": "用品：雙方均可",
+    "parkingFeeMayApply": "可能收取停車費"
   },
   "providers": {
     "title": "服務人員",

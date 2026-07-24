@@ -16,6 +16,7 @@ import {
   providerCategories,
   providerProfiles,
 } from "@/lib/db/schema/providers";
+import { reviews } from "@/lib/db/schema/reviews";
 
 export const dynamic = "force-dynamic";
 
@@ -39,12 +40,12 @@ const CAT_EMOJI: Record<string, string> = {
 };
 
 const FALLBACK_CATS = [
-  { code: "cleaning", sortOrder: 10 },
-  { code: "garden", sortOrder: 20 },
-  { code: "repair", sortOrder: 30 },
-  { code: "personalCare", sortOrder: 40 },
-  { code: "companion", sortOrder: 50 },
-  { code: "transport", sortOrder: 60 },
+  { code: "cleaning", sortOrder: 10, requiresCertificate: false, suppliesProvidedBy: "either", parkingFeeApplies: false },
+  { code: "garden", sortOrder: 20, requiresCertificate: false, suppliesProvidedBy: "provider", parkingFeeApplies: false },
+  { code: "repair", sortOrder: 30, requiresCertificate: false, suppliesProvidedBy: "provider", parkingFeeApplies: true },
+  { code: "personalCare", sortOrder: 40, requiresCertificate: true, suppliesProvidedBy: "either", parkingFeeApplies: false },
+  { code: "companion", sortOrder: 50, requiresCertificate: false, suppliesProvidedBy: "customer", parkingFeeApplies: false },
+  { code: "transport", sortOrder: 60, requiresCertificate: true, suppliesProvidedBy: "provider", parkingFeeApplies: true },
 ];
 
 export default async function ServicesPage({
@@ -62,15 +63,19 @@ export default async function ServicesPage({
   const isZh = locale === "zh" || locale === "zh_tw";
 
   // Categories — with fallback if DB unavailable
-  let cats = FALLBACK_CATS;
+  let cats: (typeof FALLBACK_CATS)[number][] = FALLBACK_CATS;
   const ranges = new Map<string, { lo: number; hi: number }>();
   const countMap = new Map<string, number>();
+  const ratingMap = new Map<string, number>();
 
   try {
     const dbCats = await db
       .select({
         code: serviceCategories.code,
         sortOrder: serviceCategories.sortOrder,
+        requiresCertificate: serviceCategories.requiresCertificate,
+        suppliesProvidedBy: serviceCategories.suppliesProvidedBy,
+        parkingFeeApplies: serviceCategories.parkingFeeApplies,
       })
       .from(serviceCategories)
       .where(eq(serviceCategories.enabled, true))
@@ -79,6 +84,37 @@ export default async function ServicesPage({
     if (dbCats.length > 0) cats = dbCats;
     // Faith services are opt-in and shown only to signed-in users.
     if (!session.signedIn) cats = cats.filter((c) => c.code !== "faith");
+
+    // Average rating per category — from published reviews of approved
+    // providers offering it. Drives the sort below, alongside
+    // requiresCertificate: no-cert, well-reviewed categories (e.g.
+    // cleaning) surface first since they're faster/easier to book than
+    // categories needing a certified provider (e.g. personal care),
+    // which typically have fewer available providers.
+    const ratingRows = await db
+      .select({
+        category: providerCategories.category,
+        avgRating: sql<number>`COALESCE(AVG(${reviews.rating}), 0)`,
+      })
+      .from(providerCategories)
+      .innerJoin(providerProfiles, eq(providerProfiles.id, providerCategories.providerId))
+      .innerJoin(reviews, and(eq(reviews.providerId, providerProfiles.id), eq(reviews.status, "published")))
+      .where(eq(providerProfiles.onboardingStatus, "approved"))
+      .groupBy(providerCategories.category);
+
+    for (const r of ratingRows) {
+      ratingMap.set(r.category as string, Number(r.avgRating));
+    }
+
+    cats = [...cats].sort((a, b) => {
+      if (a.requiresCertificate !== b.requiresCertificate) {
+        return a.requiresCertificate ? 1 : -1;
+      }
+      const ra = ratingMap.get(a.code) ?? 0;
+      const rb = ratingMap.get(b.code) ?? 0;
+      if (rb !== ra) return rb - ra;
+      return a.sortOrder - b.sortOrder;
+    });
 
     // Hourly rate window per category (this country)
     const priceRows = await db
@@ -184,6 +220,25 @@ export default async function ServicesPage({
                           : `${providerCount} provider${providerCount === 1 ? "" : "s"}`}
                       </span>
                     )}
+                    <span className="mt-2 flex flex-wrap gap-1.5">
+                      {c.requiresCertificate && (
+                        <span className="rounded-full bg-warning-soft px-2 py-0.5 text-[13px] font-semibold text-warning">
+                          {t("certificateRequired")}
+                        </span>
+                      )}
+                      <span className="rounded-full bg-bg-surface px-2 py-0.5 text-[13px] text-text-secondary">
+                        {c.suppliesProvidedBy === "customer"
+                          ? t("suppliesCustomer")
+                          : c.suppliesProvidedBy === "either"
+                            ? t("suppliesEither")
+                            : t("suppliesProvider")}
+                      </span>
+                      {c.parkingFeeApplies && (
+                        <span className="rounded-full bg-bg-surface px-2 py-0.5 text-[13px] text-text-secondary">
+                          {t("parkingFeeMayApply")}
+                        </span>
+                      )}
+                    </span>
                   </span>
                   <ChevronRight
                     size={24}

@@ -130,7 +130,12 @@
   },
   "services": {
     "title": "서비스",
-    "errorLoad": "로드 실패"
+    "errorLoad": "로드 실패",
+    "certificateRequired": "자격증 소지 제공자만",
+    "suppliesCustomer": "고객이 용품 준비",
+    "suppliesProvider": "제공자가 용품 지참",
+    "suppliesEither": "용품: 둘 다 가능",
+    "parkingFeeMayApply": "주차비가 추가될 수 있음"
   },
   "providers": {
     "title": "케어러",

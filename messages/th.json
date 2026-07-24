@@ -130,7 +130,12 @@
   },
   "services": {
     "title": "บริการ",
-    "errorLoad": "โหลดไม่สำเร็จ"
+    "errorLoad": "โหลดไม่สำเร็จ",
+    "certificateRequired": "เฉพาะผู้ให้บริการที่มีใบรับรอง",
+    "suppliesCustomer": "ลูกค้าเตรียมอุปกรณ์เอง",
+    "suppliesProvider": "ผู้ให้บริการนำอุปกรณ์มาเอง",
+    "suppliesEither": "อุปกรณ์: ทั้งสองฝ่ายได้",
+    "parkingFeeMayApply": "อาจมีค่าจอดรถเพิ่มเติม"
   },
   "providers": {
     "title": "ผู้ดูแล",

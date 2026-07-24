@@ -130,7 +130,12 @@
   },
   "services": {
     "title": "サービス一覧",
-    "errorLoad": "サービスを読み込めませんでした"
+    "errorLoad": "サービスを読み込めませんでした",
+    "certificateRequired": "有資格提供者のみ",
+    "suppliesCustomer": "お客様が用品をご用意",
+    "suppliesProvider": "提供者が用品を持参",
+    "suppliesEither": "用品：どちらでも可",
+    "parkingFeeMayApply": "駐車料金がかかる場合があります"
   },
   "providers": {
     "title": "ケアラー",

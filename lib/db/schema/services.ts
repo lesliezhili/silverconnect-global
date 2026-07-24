@@ -24,6 +24,12 @@ export const serviceCategories = pgTable(
     iconKey: text("icon_key"),
     sortOrder: integer("sort_order").notNull().default(0),
     enabled: boolean("enabled").notNull().default(true),
+    /** Whether providers need a formal certificate/qualification to offer this category (e.g. personal care). Drives the services list sort — no-cert categories surface first. */
+    requiresCertificate: boolean("requires_certificate").notNull().default(false),
+    /** 'customer' | 'provider' | 'either' — who's expected to supply tools/materials for this category. */
+    suppliesProvidedBy: text("supplies_provided_by").notNull().default("provider"),
+    /** Whether this category commonly incurs a separate parking fee (e.g. tradespeople, delivery). Informational only — not factored into pricing. */
+    parkingFeeApplies: boolean("parking_fee_applies").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },

@@ -128,7 +128,12 @@
   },
   "services": {
     "title": "Choose a service",
-    "errorLoad": "Couldn't load services"
+    "errorLoad": "Couldn't load services",
+    "certificateRequired": "Chỉ nhà cung cấp có chứng chỉ",
+    "suppliesCustomer": "Khách hàng chuẩn bị dụng cụ",
+    "suppliesProvider": "Nhà cung cấp mang theo dụng cụ",
+    "suppliesEither": "Dụng cụ: bên nào cũng được",
+    "parkingFeeMayApply": "Có thể phát sinh phí đỗ xe"
   },
   "providers": {
     "title": "Cleaning ({country})",

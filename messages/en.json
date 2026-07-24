@@ -123,7 +123,12 @@
   },
   "services": {
     "title": "Choose a service",
-    "errorLoad": "Couldn't load services"
+    "errorLoad": "Couldn't load services",
+    "certificateRequired": "Certified providers only",
+    "suppliesCustomer": "You provide supplies",
+    "suppliesProvider": "Provider brings supplies",
+    "suppliesEither": "Supplies: either works",
+    "parkingFeeMayApply": "Parking fee may apply"
   },
   "providers": {
     "title": "Cleaning ({country})",

@@ -125,7 +125,12 @@
   },
   "services": {
     "title": "选择服务类别",
-    "errorLoad": "无法加载服务列表"
+    "errorLoad": "无法加载服务列表",
+    "certificateRequired": "仅限持证服务者",
+    "suppliesCustomer": "客户自备用品",
+    "suppliesProvider": "服务者自带用品",
+    "suppliesEither": "用品：双方均可",
+    "parkingFeeMayApply": "可能收取停车费"
   },
   "providers": {
     "title": "清洁服务（{country}）",
