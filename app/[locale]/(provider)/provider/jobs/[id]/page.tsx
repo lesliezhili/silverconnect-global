@@ -2,7 +2,7 @@ import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect as nextRedirect, notFound } from "next/navigation";
 import { after } from "next/server";
 import { eq, and, sql } from "drizzle-orm";
-import { Phone, MapPin, AlertTriangle, Check } from "lucide-react";
+import { Phone, MapPin, AlertTriangle, Check, Star } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Link } from "@/i18n/navigation";
 import { ProviderAvatar } from "@/components/domain/ProviderAvatar";
@@ -10,7 +10,7 @@ import { DeclineJobModal } from "@/components/domain/DeclineJobModal";
 import { getCountry } from "@/components/domain/countryCookie";
 import { priceCountry } from "@/components/domain/pricing";
 import { db } from "@/lib/db";
-import { bookings, bookingChanges } from "@/lib/db/schema/bookings";
+import { bookings, bookingChanges, bookingEvidence } from "@/lib/db/schema/bookings";
 import { providerProfiles } from "@/lib/db/schema/providers";
 import { users } from "@/lib/db/schema/users";
 import { addresses } from "@/lib/db/schema/customer-data";
@@ -21,6 +21,9 @@ import { buildBookingStatusEmail } from "@/components/domain/email";
 import { payments, wallets } from "@/lib/db/schema/payments";
 import { cancelBooking, CancelBookingError } from "@/lib/bookings/cancelBooking";
 import { GenerateInvoiceButton } from "@/components/domain/GenerateInvoiceButton";
+import { EvidenceUploadModal } from "@/components/domain/EvidenceUploadModal";
+import { RateCustomerWidget } from "@/components/domain/RateCustomerWidget";
+import { reviews } from "@/lib/db/schema/reviews";
 
 export const dynamic = "force-dynamic";
 
@@ -87,6 +90,22 @@ async function jobAction(formData: FormData) {
     nextRedirect(
       `/${locale}/provider/jobs/${id}?error=invalid_transition`,
     );
+  }
+
+  // "start"/"complete" each require a matching before/after photo — the
+  // client-side modal already blocks submission without one, but that's
+  // UX only; this is the real boundary, matching the convention used
+  // throughout this codebase for anything client-toggleable.
+  if (action === "start" || action === "complete") {
+    const requiredPhase = action === "start" ? "before" : "after";
+    const [evidence] = await db
+      .select({ id: bookingEvidence.id })
+      .from(bookingEvidence)
+      .where(and(eq(bookingEvidence.bookingId, id), eq(bookingEvidence.phase, requiredPhase)))
+      .limit(1);
+    if (!evidence) {
+      nextRedirect(`/${locale}/provider/jobs/${id}?error=evidence_required`);
+    }
   }
 
   if (action === "decline" || action === "cancel") {
@@ -247,6 +266,7 @@ export default async function ProviderJobDetailPage({
     const [dbRow] = await db
       .select({
         id: bookings.id,
+        customerId: bookings.customerId,
         scheduledAt: bookings.scheduledAt,
         durationMin: bookings.durationMin,
         status: bookings.status,
@@ -280,6 +300,25 @@ export default async function ProviderJobDetailPage({
 
   const justCompleted = status === "completed";
   const isCancelled = status === "cancelled";
+
+  // Customer reputation from other providers — lets this provider see who
+  // they're working with, mirroring the established avg(rating) pattern
+  // used for provider ratings throughout the app.
+  const [customerRatingAgg] = await db
+    .select({
+      n: sql<number>`count(*)::int`,
+      avg: sql<number>`coalesce(avg(${reviews.rating}), 0)::float`,
+    })
+    .from(reviews)
+    .where(
+      and(
+        eq(reviews.customerId, row.customerId),
+        eq(reviews.direction, "provider_to_customer"),
+        eq(reviews.status, "published"),
+      ),
+    );
+  const customerReviewCount = customerRatingAgg?.n ?? 0;
+  const customerAvgRating = customerRatingAgg?.avg ?? 0;
 
   const dateLabel = row.scheduledAt.toLocaleDateString(
     locale === "zh" ? "zh-CN" : "en-AU",
@@ -343,6 +382,20 @@ export default async function ProviderJobDetailPage({
           />
         )}
 
+        {(status === "completed" || status === "released") && (
+          <RateCustomerWidget
+            bookingId={id}
+            strings={{
+              title: t("rateCustomerTitle"),
+              submit: t("rateCustomerSubmit"),
+              submitting: t("rateCustomerSubmitting"),
+              submitted: t("rateCustomerSubmitted"),
+              failed: t("rateCustomerFailed"),
+              commentPh: t("rateCustomerCommentPh"),
+            }}
+          />
+        )}
+
         {isCancelled && (
           <div
             role="status"
@@ -359,6 +412,15 @@ export default async function ProviderJobDetailPage({
           <ProviderAvatar size={56} hue={3} initials={initials} />
           <div className="min-w-0 flex-1">
             <p className="text-[16px] font-bold">{dispName}</p>
+            {customerReviewCount > 0 && (
+              <p className="mt-0.5 flex items-center gap-1 text-[16px] text-text-secondary">
+                <Star size={14} className="text-[var(--brand-accent)]" aria-hidden />
+                <span className="font-bold tabular-nums">{customerAvgRating.toFixed(1)}</span>
+                <span className="text-text-tertiary">
+                  ({customerReviewCount} {t("customerReviewsFromProviders")})
+                </span>
+              </p>
+            )}
             {row.customerPhone && (
               <p className="mt-0.5 text-[17px] text-text-tertiary tabular-nums">
                 {row.customerPhone}
@@ -475,21 +537,52 @@ function ActionBar({
   t: Awaited<ReturnType<typeof getTranslations<"provider">>>;
   tCommon: Awaited<ReturnType<typeof getTranslations<"common">>>;
 }) {
+  // "accept" needs no evidence — it's a plain action button. "start" and
+  // "complete" each require a before/after photo first, so they render
+  // an EvidenceUploadModal instead (see the matching server-side check
+  // in jobAction).
   const acts: { key: Action; label: string; primary: boolean }[] =
     status === "pending"
       ? [{ key: "accept", label: t("jobAccept"), primary: true }]
-      : status === "confirmed"
-        ? [{ key: "start", label: t("jobOnTheWay"), primary: true }]
-        : status === "in_progress"
-          ? [{ key: "complete", label: t("jobComplete"), primary: true }]
-          : [];
+      : [];
 
+  const showEvidenceStart = status === "confirmed";
+  const showEvidenceComplete = status === "in_progress";
   const showDecline = status === "pending";
   // Already accepted (or started) — "cancel" instead of "decline", routed
   // through the same policy engine so the customer/provider split still
   // applies (full refund if not started yet, prorated if in_progress).
   const showCancel = status === "confirmed" || status === "in_progress";
-  if (acts.length === 0 && !showDecline && !showCancel) return null;
+  if (
+    acts.length === 0 &&
+    !showDecline &&
+    !showCancel &&
+    !showEvidenceStart &&
+    !showEvidenceComplete
+  )
+    return null;
+
+  const evidenceStartStrings = {
+    triggerLabel: t("jobOnTheWay"),
+    title: t("evidenceBeforeTitle"),
+    hint: t("evidenceBeforeHint"),
+    photoLabel: t("evidencePhotoLabel"),
+    cancel: tCommon("cancel"),
+    submit: t("jobOnTheWay"),
+    uploading: t("evidenceUploading"),
+    uploadFailed: t("evidenceUploadFailed"),
+  };
+
+  const evidenceCompleteStrings = {
+    triggerLabel: t("jobComplete"),
+    title: t("evidenceAfterTitle"),
+    hint: t("evidenceAfterHint"),
+    photoLabel: t("evidencePhotoLabel"),
+    cancel: tCommon("cancel"),
+    submit: t("jobComplete"),
+    uploading: t("evidenceUploading"),
+    uploadFailed: t("evidenceUploadFailed"),
+  };
 
   const declineStrings = {
     triggerLabel: t("jobDecline"),
@@ -534,6 +627,26 @@ function ActionBar({
             locale={locale}
             jobId={jobId}
             strings={cancelStrings}
+          />
+        )}
+        {showEvidenceStart && (
+          <EvidenceUploadModal
+            action={jobAction}
+            actionValue="start"
+            phase="before"
+            locale={locale}
+            jobId={jobId}
+            strings={evidenceStartStrings}
+          />
+        )}
+        {showEvidenceComplete && (
+          <EvidenceUploadModal
+            action={jobAction}
+            actionValue="complete"
+            phase="after"
+            locale={locale}
+            jobId={jobId}
+            strings={evidenceCompleteStrings}
           />
         )}
         {acts.map((a) => (

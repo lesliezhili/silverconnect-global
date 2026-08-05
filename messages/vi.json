@@ -795,7 +795,10 @@
     "successTitle": "Cảm ơn phản hồi",
     "successHint": "Đã thanh toán cho {provider}. Hẹn gặp lại.",
     "errorRequired": "Vui lòng chọn số sao trước khi gửi.",
-    "mockService": "Dọn sâu · 3 giờ"
+    "mockService": "Dọn sâu · 3 giờ",
+    "evidenceTitle": "Bằng chứng hình ảnh",
+    "evidenceBefore": "Trước",
+    "evidenceAfter": "Sau"
   },
   "oops": {
     "title": "Có lỗi xảy ra",
@@ -1213,7 +1216,21 @@
     "generateInvoice": "Tạo hóa đơn",
     "generatingInvoice": "Đang tạo…",
     "viewInvoice": "Xem hóa đơn",
-    "alreadyInvoiced": "Hóa đơn đã được tạo"
+    "alreadyInvoiced": "Hóa đơn đã được tạo",
+    "customerReviewsFromProviders": "đánh giá từ nhà cung cấp",
+    "evidenceBeforeTitle": "Thêm ảnh trước khi làm",
+    "evidenceBeforeHint": "Chụp ảnh trước khi bắt đầu công việc — điều này bảo vệ cả bạn và khách hàng.",
+    "evidenceAfterTitle": "Thêm ảnh sau khi hoàn thành",
+    "evidenceAfterHint": "Chụp ảnh công việc đã hoàn thành trước khi đánh dấu công việc này là hoàn tất.",
+    "evidencePhotoLabel": "Chạm để chụp hoặc chọn ảnh",
+    "evidenceUploading": "Đang tải lên…",
+    "evidenceUploadFailed": "Tải lên không thành công. Vui lòng thử lại.",
+    "rateCustomerTitle": "Đánh giá khách hàng này",
+    "rateCustomerSubmit": "Gửi đánh giá",
+    "rateCustomerSubmitting": "Đang gửi…",
+    "rateCustomerSubmitted": "Cảm ơn — đánh giá của bạn đã được gửi.",
+    "rateCustomerFailed": "Không thể gửi đánh giá. Vui lòng thử lại.",
+    "rateCustomerCommentPh": "Nhận xét tùy chọn (chỉ SilverConnect có thể xem)"
   },
   "admin": {
     "title": "Bảng quản trị",

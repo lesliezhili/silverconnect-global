@@ -338,7 +338,21 @@
     "generateInvoice": "生成账单",
     "generatingInvoice": "生成中…",
     "viewInvoice": "查看账单",
-    "alreadyInvoiced": "账单已生成"
+    "alreadyInvoiced": "账单已生成",
+    "customerReviewsFromProviders": "服务商评价",
+    "evidenceBeforeTitle": "添加服务前照片",
+    "evidenceBeforeHint": "开始服务前请拍一张照片——这既保护您，也保护客户。",
+    "evidenceAfterTitle": "添加服务后照片",
+    "evidenceAfterHint": "在标记任务完成前，请拍摄完成后的照片。",
+    "evidencePhotoLabel": "点击拍照或选择照片",
+    "evidenceUploading": "上传中…",
+    "evidenceUploadFailed": "上传失败，请重试。",
+    "rateCustomerTitle": "为该客户评分",
+    "rateCustomerSubmit": "提交评分",
+    "rateCustomerSubmitting": "提交中…",
+    "rateCustomerSubmitted": "感谢——您的评分已提交。",
+    "rateCustomerFailed": "提交评分失败，请重试。",
+    "rateCustomerCommentPh": "可选备注（仅维家可见）"
   },
   "booking": {
     "steps": {
@@ -725,7 +739,10 @@
     "successTitle": "感谢您的反馈",
     "successHint": "已释放托管给 {provider}，下次再约。",
     "errorRequired": "请先选择星级再提交。",
-    "mockService": "深度清洁 · 3 小时"
+    "mockService": "深度清洁 · 3 小时",
+    "evidenceTitle": "照片证明",
+    "evidenceBefore": "服务前",
+    "evidenceAfter": "服务后"
   },
   "dispute": {
     "title": "争议",

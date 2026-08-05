@@ -358,7 +358,21 @@
     "generateInvoice": "สร้างใบแจ้งหนี้",
     "generatingInvoice": "กำลังสร้าง…",
     "viewInvoice": "ดูใบแจ้งหนี้",
-    "alreadyInvoiced": "สร้างใบแจ้งหนี้แล้ว"
+    "alreadyInvoiced": "สร้างใบแจ้งหนี้แล้ว",
+    "customerReviewsFromProviders": "รีวิวจากผู้ให้บริการ",
+    "evidenceBeforeTitle": "เพิ่มรูปก่อนเริ่มงาน",
+    "evidenceBeforeHint": "ถ่ายรูปก่อนเริ่มงาน — เพื่อปกป้องทั้งคุณและลูกค้า",
+    "evidenceAfterTitle": "เพิ่มรูปหลังเสร็จงาน",
+    "evidenceAfterHint": "ถ่ายรูปผลงานที่เสร็จแล้วก่อนทำเครื่องหมายว่างานเสร็จสมบูรณ์",
+    "evidencePhotoLabel": "แตะเพื่อถ่ายหรือเลือกรูปภาพ",
+    "evidenceUploading": "กำลังอัปโหลด…",
+    "evidenceUploadFailed": "อัปโหลดไม่สำเร็จ กรุณาลองใหม่",
+    "rateCustomerTitle": "ให้คะแนนลูกค้ารายนี้",
+    "rateCustomerSubmit": "ส่งคะแนน",
+    "rateCustomerSubmitting": "กำลังส่ง…",
+    "rateCustomerSubmitted": "ขอบคุณ — คะแนนของคุณถูกส่งแล้ว",
+    "rateCustomerFailed": "ส่งคะแนนไม่สำเร็จ กรุณาลองใหม่",
+    "rateCustomerCommentPh": "ความคิดเห็นเพิ่มเติม (SilverConnect เท่านั้นที่เห็น)"
   },
   "booking": {
     "steps": {
@@ -788,7 +802,10 @@
     "successTitle": "ขอบคุณสำหรับความคิดเห็น",
     "successHint": "ปล่อยเงินให้ {provider} แล้ว แล้วพบกันใหม่ครั้งหน้า",
     "errorRequired": "กรุณาให้คะแนนดาวก่อนส่ง",
-    "mockService": "ทำความสะอาดเชิงลึก · 3 ชม."
+    "mockService": "ทำความสะอาดเชิงลึก · 3 ชม.",
+    "evidenceTitle": "หลักฐานภาพถ่าย",
+    "evidenceBefore": "ก่อน",
+    "evidenceAfter": "หลัง"
   },
   "dispute": {
     "title": "ข้อพิพาท",

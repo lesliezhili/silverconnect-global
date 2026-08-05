@@ -360,7 +360,21 @@
     "generateInvoice": "產生帳單",
     "generatingInvoice": "產生中…",
     "viewInvoice": "查看帳單",
-    "alreadyInvoiced": "帳單已產生"
+    "alreadyInvoiced": "帳單已產生",
+    "customerReviewsFromProviders": "服務商評價",
+    "evidenceBeforeTitle": "新增服務前照片",
+    "evidenceBeforeHint": "開始服務前請拍一張照片——這既保護您，也保護客戶。",
+    "evidenceAfterTitle": "新增服務後照片",
+    "evidenceAfterHint": "在標記任務完成前，請拍攝完成後的照片。",
+    "evidencePhotoLabel": "點擊拍照或選擇照片",
+    "evidenceUploading": "上傳中…",
+    "evidenceUploadFailed": "上傳失敗，請重試。",
+    "rateCustomerTitle": "為該客戶評分",
+    "rateCustomerSubmit": "提交評分",
+    "rateCustomerSubmitting": "提交中…",
+    "rateCustomerSubmitted": "感謝——您的評分已提交。",
+    "rateCustomerFailed": "提交評分失敗，請重試。",
+    "rateCustomerCommentPh": "可選備註（僅維家可見）"
   },
   "booking": {
     "steps": {
@@ -842,7 +856,10 @@
     "successTitle": "感謝您的評價",
     "successHint": "款項已釋出給 {provider}，期待下次為您服務。",
     "errorRequired": "請先選擇星等評分再提交。",
-    "mockService": "深度清潔 · 3小時"
+    "mockService": "深度清潔 · 3小時",
+    "evidenceTitle": "照片證明",
+    "evidenceBefore": "服務前",
+    "evidenceAfter": "服務後"
   },
   "dispute": {
     "title": "爭議",

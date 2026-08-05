@@ -29,11 +29,13 @@ export const reviews = pgTable(
     rating: integer("rating").notNull(),
     comment: text("comment"),
     status: reviewStatusEnum("status").notNull().default("published"),
+    /** 'customer_to_provider' (the original, and only, direction until dual feedback) | 'provider_to_customer'. One row per booking per direction. */
+    direction: text("direction").notNull().default("customer_to_provider"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => ({
-    bookingUq: uniqueIndex("reviews_booking_uq").on(t.bookingId),
+    bookingDirectionUq: uniqueIndex("reviews_booking_direction_uq").on(t.bookingId, t.direction),
     providerIdx: index("reviews_provider_idx").on(t.providerId),
     customerIdx: index("reviews_customer_idx").on(t.customerId),
     statusIdx: index("reviews_status_idx").on(t.status),

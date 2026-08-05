@@ -122,7 +122,19 @@ export async function POST(
   }
 
   const isCustomer = me.id === booking.customerId;
-  const isProvider = me.false; // simplification
+  // booking.providerId references provider_profiles.id, not users.id —
+  // resolve the provider's actual user id to compare against the signed-in
+  // user (same bridge needed elsewhere in this codebase for the same
+  // reason, e.g. invoice/guaranteed-wage routes).
+  let isProvider = false;
+  if (!isCustomer && booking.providerId) {
+    const [providerProfile] = await db
+      .select({ userId: providerProfiles.userId })
+      .from(providerProfiles)
+      .where(eq(providerProfiles.id, booking.providerId))
+      .limit(1);
+    isProvider = providerProfile?.userId === me.id;
+  }
 
   if (!isCustomer && !isProvider) {
     return NextResponse.json({ error: "Only the customer or provider can leave feedback" }, { status: 403 });
@@ -131,15 +143,16 @@ export async function POST(
   // Determine feedback type
   const feedbackType = isCustomer ? "customer_to_provider" : "provider_to_customer";
 
-  // Store customer→provider review in reviews table
-  if (isCustomer && booking.providerId) {
+  // Store the review — one row per booking per direction (reviews_booking_direction_uq).
+  if (booking.providerId) {
     await db.insert(reviews).values({
       bookingId,
-      customerId: me.id,
+      customerId: booking.customerId,
       providerId: booking.providerId,
       rating,
       comment: comment || null,
-    }).onConflictDoNothing(); // prevent duplicate
+      direction: feedbackType,
+    }).onConflictDoNothing(); // prevent duplicate submission in either direction
   }
 
   // After both feedback received → release funds to provider
@@ -207,12 +220,15 @@ export async function GET(
   const existingReviews = await db.select().from(reviews)
     .where(eq(reviews.bookingId, bookingId));
 
+  const customerFeedback = existingReviews.find(r => r.direction === "customer_to_provider") || null;
+  const providerFeedback = existingReviews.find(r => r.direction === "provider_to_customer") || null;
+
   return NextResponse.json({
     bookingId,
     status: booking.status,
-    customerFeedback: existingReviews.find(r => r.customerId === booking.customerId) || null,
-    providerFeedback: null, // Provider→customer feedback stored separately in production
-    bothSubmitted: existingReviews.length >= 1 && booking.status === "released",
+    customerFeedback,
+    providerFeedback,
+    bothSubmitted: !!customerFeedback && !!providerFeedback,
     payoutReleased: booking.status === "released",
   });
 }

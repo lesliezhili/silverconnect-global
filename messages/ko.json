@@ -358,7 +358,21 @@
     "generateInvoice": "인보이스 생성",
     "generatingInvoice": "생성 중…",
     "viewInvoice": "인보이스 보기",
-    "alreadyInvoiced": "이미 인보이스가 생성됨"
+    "alreadyInvoiced": "이미 인보이스가 생성됨",
+    "customerReviewsFromProviders": "제공자 리뷰",
+    "evidenceBeforeTitle": "작업 전 사진 추가",
+    "evidenceBeforeHint": "작업을 시작하기 전에 사진을 찍어주세요 — 고객과 제공자 모두를 보호합니다.",
+    "evidenceAfterTitle": "작업 후 사진 추가",
+    "evidenceAfterHint": "작업을 완료로 표시하기 전에 완료된 작업 사진을 찍어주세요.",
+    "evidencePhotoLabel": "탭하여 사진 촬영 또는 선택",
+    "evidenceUploading": "업로드 중…",
+    "evidenceUploadFailed": "업로드에 실패했습니다. 다시 시도해 주세요.",
+    "rateCustomerTitle": "이 고객 평가하기",
+    "rateCustomerSubmit": "평가 제출",
+    "rateCustomerSubmitting": "제출 중…",
+    "rateCustomerSubmitted": "감사합니다 — 평가가 제출되었습니다.",
+    "rateCustomerFailed": "평가를 제출하지 못했습니다. 다시 시도해 주세요.",
+    "rateCustomerCommentPh": "선택 사항 코멘트 (SilverConnect만 볼 수 있음)"
   },
   "booking": {
     "steps": {
@@ -840,7 +854,10 @@
     "successTitle": "피드백 감사합니다",
     "successHint": "{provider}에게 결제가 지급되었습니다. 다음에 또 만나요.",
     "errorRequired": "제출하기 전에 별점을 선택해 주세요.",
-    "mockService": "딥클린 · 3시간"
+    "mockService": "딥클린 · 3시간",
+    "evidenceTitle": "사진 증빙",
+    "evidenceBefore": "작업 전",
+    "evidenceAfter": "작업 후"
   },
   "dispute": {
     "title": "분쟁",

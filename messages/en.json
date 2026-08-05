@@ -336,7 +336,21 @@
     "generateInvoice": "Generate invoice",
     "generatingInvoice": "Generating…",
     "viewInvoice": "View invoice",
-    "alreadyInvoiced": "Invoice already generated"
+    "alreadyInvoiced": "Invoice already generated",
+    "customerReviewsFromProviders": "reviews from providers",
+    "evidenceBeforeTitle": "Add a before photo",
+    "evidenceBeforeHint": "Take a photo before you start the job — this protects both you and the customer.",
+    "evidenceAfterTitle": "Add an after photo",
+    "evidenceAfterHint": "Take a photo of the finished work before marking this job complete.",
+    "evidencePhotoLabel": "Tap to take or choose a photo",
+    "evidenceUploading": "Uploading…",
+    "evidenceUploadFailed": "Upload failed. Please try again.",
+    "rateCustomerTitle": "Rate this customer",
+    "rateCustomerSubmit": "Submit rating",
+    "rateCustomerSubmitting": "Submitting…",
+    "rateCustomerSubmitted": "Thanks — your rating has been submitted.",
+    "rateCustomerFailed": "Couldn't submit your rating. Please try again.",
+    "rateCustomerCommentPh": "Optional comment (visible to SilverConnect only)"
   },
   "booking": {
     "steps": {
@@ -723,7 +737,10 @@
     "successTitle": "Thanks for the feedback",
     "successHint": "Payment released to {provider}. See you next time.",
     "errorRequired": "Please pick a star rating before submitting.",
-    "mockService": "Deep clean · 3h"
+    "mockService": "Deep clean · 3h",
+    "evidenceTitle": "Photo evidence",
+    "evidenceBefore": "Before",
+    "evidenceAfter": "After"
   },
   "dispute": {
     "title": "Dispute",

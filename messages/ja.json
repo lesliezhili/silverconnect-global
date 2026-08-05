@@ -358,7 +358,21 @@
     "generateInvoice": "請求書を発行",
     "generatingInvoice": "発行中…",
     "viewInvoice": "請求書を見る",
-    "alreadyInvoiced": "請求書は発行済みです"
+    "alreadyInvoiced": "請求書は発行済みです",
+    "customerReviewsFromProviders": "プロバイダーからのレビュー",
+    "evidenceBeforeTitle": "作業前の写真を追加",
+    "evidenceBeforeHint": "作業を始める前に写真を撮ってください——あなたとお客様の両方を守ります。",
+    "evidenceAfterTitle": "作業後の写真を追加",
+    "evidenceAfterHint": "作業完了とマークする前に、完成した作業の写真を撮ってください。",
+    "evidencePhotoLabel": "タップして撮影または写真を選択",
+    "evidenceUploading": "アップロード中…",
+    "evidenceUploadFailed": "アップロードに失敗しました。もう一度お試しください。",
+    "rateCustomerTitle": "この顧客を評価する",
+    "rateCustomerSubmit": "評価を送信",
+    "rateCustomerSubmitting": "送信中…",
+    "rateCustomerSubmitted": "ありがとうございます——評価が送信されました。",
+    "rateCustomerFailed": "評価の送信に失敗しました。もう一度お試しください。",
+    "rateCustomerCommentPh": "任意のコメント（SilverConnectのみに表示）"
   },
   "booking": {
     "steps": {
@@ -840,7 +854,10 @@
     "successTitle": "フィードバックありがとうございます",
     "successHint": "{provider}へ支払いを解放しました。またのご利用をお待ちしています。",
     "errorRequired": "送信前に星評価を選択してください。",
-    "mockService": "ディープクリーン · 3時間"
+    "mockService": "ディープクリーン · 3時間",
+    "evidenceTitle": "写真証拠",
+    "evidenceBefore": "作業前",
+    "evidenceAfter": "作業後"
   },
   "dispute": {
     "title": "紛争",

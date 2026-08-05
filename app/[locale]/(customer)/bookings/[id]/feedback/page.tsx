@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { ProviderAvatar } from "@/components/domain/ProviderAvatar";
 import { getCountry } from "@/components/domain/countryCookie";
 import { db } from "@/lib/db";
-import { bookings, bookingChanges } from "@/lib/db/schema/bookings";
+import { bookings, bookingChanges, bookingEvidence } from "@/lib/db/schema/bookings";
 import { providerProfiles } from "@/lib/db/schema/providers";
 import { users } from "@/lib/db/schema/users";
 import { services } from "@/lib/db/schema/services";
@@ -157,6 +157,13 @@ export default async function FeedbackPage({
     .where(eq(reviews.bookingId, id))
     .limit(1);
 
+  const evidenceRows = await db
+    .select({ phase: bookingEvidence.phase, fileUrl: bookingEvidence.fileUrl })
+    .from(bookingEvidence)
+    .where(eq(bookingEvidence.bookingId, id));
+  const beforePhotos = evidenceRows.filter((e) => e.phase === "before");
+  const afterPhotos = evidenceRows.filter((e) => e.phase === "after");
+
   if (sent || existing) {
     return (
       <>
@@ -238,6 +245,40 @@ export default async function FeedbackPage({
             <p className="text-[17px] text-text-tertiary">{serviceLabel}</p>
           </div>
         </section>
+
+        {(beforePhotos.length > 0 || afterPhotos.length > 0) && (
+          <section className="mt-5 rounded-md border border-border bg-bg-base p-4">
+            <p className="text-[16px] font-bold text-text-primary">{t("evidenceTitle")}</p>
+            <div className="mt-3 grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-[15px] font-semibold text-text-tertiary">{t("evidenceBefore")}</p>
+                <div className="mt-2 flex flex-col gap-2">
+                  {beforePhotos.length === 0 ? (
+                    <p className="text-[15px] text-text-tertiary">—</p>
+                  ) : (
+                    beforePhotos.map((p, i) => (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img key={i} src={p.fileUrl} alt={t("evidenceBefore")} className="w-full rounded-md border border-border object-cover" />
+                    ))
+                  )}
+                </div>
+              </div>
+              <div>
+                <p className="text-[15px] font-semibold text-text-tertiary">{t("evidenceAfter")}</p>
+                <div className="mt-2 flex flex-col gap-2">
+                  {afterPhotos.length === 0 ? (
+                    <p className="text-[15px] text-text-tertiary">—</p>
+                  ) : (
+                    afterPhotos.map((p, i) => (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img key={i} src={p.fileUrl} alt={t("evidenceAfter")} className="w-full rounded-md border border-border object-cover" />
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
 
         <form className="mt-6 flex flex-col gap-6" action={feedbackAction}>
           <input type="hidden" name="locale" value={locale} />

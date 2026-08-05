@@ -112,7 +112,30 @@ export const bookingChanges = pgTable(
   }),
 );
 
+/** Before/after photo proof of work, uploaded by the provider — surfaced to the customer on the feedback/release page. */
+export const bookingEvidence = pgTable(
+  "booking_evidence",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    bookingId: uuid("booking_id")
+      .notNull()
+      .references(() => bookings.id, { onDelete: "cascade" }),
+    uploadedBy: uuid("uploaded_by")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    /** 'before' | 'after' */
+    phase: text("phase").notNull(),
+    fileUrl: text("file_url").notNull(),
+    description: text("description"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => ({
+    bookingIdx: index("booking_evidence_booking_idx").on(t.bookingId),
+  }),
+);
+
 export type Booking = typeof bookings.$inferSelect;
 export type NewBooking = typeof bookings.$inferInsert;
 export type BookingChange = typeof bookingChanges.$inferSelect;
 export type RecurringSeries = typeof recurringSeries.$inferSelect;
+export type BookingEvidence = typeof bookingEvidence.$inferSelect;

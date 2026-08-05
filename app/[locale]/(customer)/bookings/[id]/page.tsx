@@ -363,7 +363,7 @@ export default async function BookingDetailPage({
               </li>
             </ul>
           
-          {booking.status === "completed" && (
+          {status === "completed" && (
             <Link
               href={`/bookings/${id}/review`}
               className="mt-4 flex h-12 items-center justify-center rounded-xl border-2 border-success bg-success-soft text-[17px] font-bold text-success"
