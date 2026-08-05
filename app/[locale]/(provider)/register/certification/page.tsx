@@ -12,7 +12,7 @@ export default async function CertificationPage({
   const { locale } = await params
   setRequestLocale(locale)
   const me = await getCurrentUser()
-  if (!hasGovtFundingAccess(me?.email)) {
+  if (!(await hasGovtFundingAccess(me?.email))) {
     redirect({ href: '/provider/register', locale })
   }
   return (

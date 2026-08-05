@@ -1066,7 +1066,9 @@
     "navSettings": "Settings",
     "navReports": "Reports",
     "alertSafetyOpen": "Open safety events need review",
-    "navXinyuzhe": "Xinyuzhe"
+    "navXinyuzhe": "Xinyuzhe",
+    "navGovtFunding": "สิทธิ์เข้าถึงทุนรัฐบาล",
+    "navKpi": "แดชบอร์ด KPI"
   },
   "family": {
     "title": "การจัดการร่วมกันในครอบครัว",

@@ -999,7 +999,9 @@
     "navSettings": "系统设置",
     "navReports": "举报",
     "alertSafetyOpen": "有安全事件待处理",
-    "navXinyuzhe": "和润心语者"
+    "navXinyuzhe": "和润心语者",
+    "navGovtFunding": "政府资助权限",
+    "navKpi": "KPI仪表盘"
   },
   "family": {
     "title": "家属共管",

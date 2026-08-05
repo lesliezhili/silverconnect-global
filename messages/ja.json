@@ -1141,7 +1141,9 @@
     "navSettings": "Settings",
     "navReports": "Reports",
     "alertSafetyOpen": "Open safety events need review",
-    "navXinyuzhe": "Xinyuzhe"
+    "navXinyuzhe": "Xinyuzhe",
+    "navGovtFunding": "政府助成アクセス",
+    "navKpi": "KPIダッシュボード"
   },
   "family": {
     "title": "家族の見守り",

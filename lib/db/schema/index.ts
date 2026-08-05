@@ -31,3 +31,6 @@ export * from "./donations";
 
 // Phase 7: internal non-financial coin ledger (AU only)
 export * from "./coins";
+
+// Phase 8: admin-managed government-funding-scheme access grants
+export * from "./govtFunding";

@@ -1491,7 +1491,9 @@
     "typeDamage": "Hư hỏng",
     "typeIncomplete": "Chưa hoàn thành",
     "typeNotShow": "Không xuất hiện",
-    "typeOther": "Khác"
+    "typeOther": "Khác",
+    "navGovtFunding": "Quyền truy cập tài trợ chính phủ",
+    "navKpi": "Bảng điều khiển KPI"
   },
   "aCustomers": {
     "title": "Khách hàng",

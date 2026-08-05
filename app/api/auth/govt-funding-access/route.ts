@@ -13,5 +13,5 @@ export const dynamic = "force-dynamic";
  */
 export async function GET() {
   const me = await getCurrentUser();
-  return NextResponse.json({ allowed: hasGovtFundingAccess(me?.email) });
+  return NextResponse.json({ allowed: await hasGovtFundingAccess(me?.email) });
 }

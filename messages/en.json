@@ -997,7 +997,9 @@
     "navSettings": "Settings",
     "navReports": "Reports",
     "alertSafetyOpen": "Open safety events need review",
-    "navXinyuzhe": "心语者"
+    "navXinyuzhe": "心语者",
+    "navGovtFunding": "Govt Funding Access",
+    "navKpi": "KPI Dashboard"
   },
   "family": {
     "title": "Family co-management",

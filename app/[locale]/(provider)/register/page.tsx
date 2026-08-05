@@ -11,7 +11,7 @@ export default async function ProviderRegisterPage({
   const { locale } = await params
   setRequestLocale(locale)
   const me = await getCurrentUser()
-  const showGovtSchemes = hasGovtFundingAccess(me?.email)
+  const showGovtSchemes = await hasGovtFundingAccess(me?.email)
 
   return (
     <main className="min-h-screen bg-gray-50 py-8">

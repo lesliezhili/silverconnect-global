@@ -19,7 +19,7 @@ export default async function FundingPage({
   setRequestLocale(locale);
   const me = await getCurrentUser();
   if (!me) redirect({ href: "/auth/login", locale });
-  if (!hasGovtFundingAccess(me!.email)) redirect({ href: "/profile", locale });
+  if (!(await hasGovtFundingAccess(me!.email))) redirect({ href: "/profile", locale });
   const country = await getCountry();
   const t = await getTranslations("funding");
 

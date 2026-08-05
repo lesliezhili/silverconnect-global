@@ -1141,7 +1141,9 @@
     "navSettings": "Settings",
     "navReports": "Reports",
     "alertSafetyOpen": "Open safety events need review",
-    "navXinyuzhe": "Xinyuzhe"
+    "navXinyuzhe": "Xinyuzhe",
+    "navGovtFunding": "정부 지원 접근 권한",
+    "navKpi": "KPI 대시보드"
   },
   "family": {
     "title": "가족 모니터링",

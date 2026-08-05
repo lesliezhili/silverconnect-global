@@ -25,6 +25,7 @@ export default async function LandingPage({
   const isCN = country === "CN";
   const tCare = await getTranslations("care");
   const t = (k: string) => landingT(locale, k);
+  const govtFundingVisible = await hasGovtFundingAccess(me?.email);
 
   // Prayer widget removed from public landing page — faith content is opt-in for logged-in Christian users only
 
@@ -199,7 +200,7 @@ export default async function LandingPage({
             ever evaluates against an anonymous visitor (always false) —
             correct, since we can't identify an anonymous visitor as
             allowlisted before they sign in. */}
-        {hasGovtFundingAccess(me?.email) && (
+        {govtFundingVisible && (
           <section className="mb-10 rounded-2xl border-2 border-purple-200 bg-purple-50 p-6">
             <h2 className="mb-3 text-[24px] font-bold text-gray-900">{t("fundingTitle2")}</h2>
             <div className="flex flex-wrap gap-2">

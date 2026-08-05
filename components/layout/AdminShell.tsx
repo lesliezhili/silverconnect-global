@@ -19,6 +19,8 @@ import {
   Heart,
   Building2,
   HeartHandshake,
+  FileCheck,
+  TrendingUp,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
@@ -40,10 +42,16 @@ const NAV_SECONDARY = [
   { key: "navBookings", href: "/admin/bookings", Icon: ShoppingBag, exact: false },
   { key: "navPayments", href: "/admin/payments", Icon: CreditCard, exact: false },
   { key: "navAi", href: "/admin/ai/conversations", Icon: Bot, exact: false },
+  { key: "navGovtFunding", href: "/admin/govt-funding-access", Icon: FileCheck, exact: false },
   { key: "navSettings", href: "/admin/settings", Icon: Settings, exact: false },
   { key: "navXinyuzhe", href: "/admin/xinyuzhe", Icon: Heart, exact: false },
   { key: "navDonations", href: "/admin/donations", Icon: HeartHandshake, exact: false },
 ] as const;
+
+/** Owner-only — mirrors lib/auth/kpiDashboardAccess.ts. Nav visibility is
+ *  UX only; the page itself re-checks server-side. */
+const KPI_DASHBOARD_EMAIL = "zhili@phledger.com";
+const NAV_KPI = { key: "navKpi", href: "/admin/kpi-dashboard", Icon: TrendingUp, exact: false } as const;
 
 export function AdminShell({
   email,
@@ -55,6 +63,8 @@ export function AdminShell({
   const t = useTranslations("admin");
   const pathname = usePathname();
   const [openMobile, setOpenMobile] = React.useState(false);
+  const secondaryItems =
+    email.toLowerCase() === KPI_DASHBOARD_EMAIL ? [...NAV_SECONDARY, NAV_KPI] : NAV_SECONDARY;
 
   return (
     <div className="min-h-screen bg-bg-surface-2">
@@ -137,7 +147,7 @@ export function AdminShell({
             </ul>
             <hr className="my-3 border-border" aria-hidden />
             <ul className="flex flex-col gap-1">
-              {NAV_SECONDARY.map(({ key, href, Icon, exact }) => {
+              {secondaryItems.map(({ key, href, Icon, exact }) => {
                 const on = exact ? pathname === href : pathname?.startsWith(href);
                 return (
                   <li key={key}>

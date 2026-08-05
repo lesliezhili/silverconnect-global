@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     // matching today's existing behavior rather than hard-failing.
     const requestedScheme = typeof body.fundingScheme === "string" ? body.fundingScheme : null;
     const fundingScheme =
-      requestedScheme && VALID_SCHEMES.includes(requestedScheme) && hasGovtFundingAccess(session.email)
+      requestedScheme && VALID_SCHEMES.includes(requestedScheme) && (await hasGovtFundingAccess(session.email))
         ? requestedScheme
         : null;
 

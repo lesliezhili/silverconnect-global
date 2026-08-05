@@ -51,7 +51,7 @@ export default async function ProfilePage({
 
   const ITEMS = [
     ...BASE_ITEMS,
-    ...(hasGovtFundingAccess(session.email) ? [FUNDING_ITEM] : []),
+    ...((await hasGovtFundingAccess(session.email)) ? [FUNDING_ITEM] : []),
     // Internal non-financial coin ledger — Australia only.
     ...(country === "AU" ? [COINS_ITEM] : []),
   ];

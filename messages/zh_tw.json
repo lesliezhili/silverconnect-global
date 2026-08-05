@@ -1149,7 +1149,9 @@
     "navSettings": "Settings",
     "navReports": "Reports",
     "alertSafetyOpen": "Open safety events need review",
-    "navXinyuzhe": "和潤心语者"
+    "navXinyuzhe": "和潤心语者",
+    "navGovtFunding": "政府資助權限",
+    "navKpi": "KPI儀表板"
   },
   "family": {
     "title": "家庭監護",
