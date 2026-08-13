@@ -34,5 +34,5 @@ export async function POST(req: NextRequest) {
   session.role = user.role === "admin" ? "customer" : (user.role as "customer" | "provider");
   await session.save();
 
-  return NextResponse.json({ success: true, role: session.role, isAdmin: user.isAdmin });
+  return NextResponse.json({ success: true, role: session.role, isAdmin: user.isAdmin, locale: user.locale });
 }

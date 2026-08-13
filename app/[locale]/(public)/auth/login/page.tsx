@@ -22,9 +22,9 @@ export default async function LoginPage({
   const sp = await searchParams;
   setRequestLocale(locale);
 
-  // Already logged in — skip to home
+  // Already logged in — skip to home, in their saved language preference
   const me = await getCurrentUser();
-  if (me) redirect({ href: "/home", locale });
+  if (me) redirect({ href: "/home", locale: me.locale });
 
   const t = await getTranslations("auth");
   const tCommon = await getTranslations("common");

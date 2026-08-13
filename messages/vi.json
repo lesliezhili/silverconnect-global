@@ -33,11 +33,11 @@
   },
   "nav": {
     "home": "Trang chủ",
-    "services": "Services",
+    "services": "Dịch vụ",
     "bookings": "Đặt lịch",
     "messages": "Tin nhắn",
     "profile": "Hồ sơ",
-    "primary": "Primary navigation"
+    "primary": "Điều hướng chính"
   },
   "country": {
     "selectCountry": "Chọn quốc gia",
@@ -72,23 +72,23 @@
     "vi": "Tiếng Việt"
   },
   "tax": {
-    "incl": "incl. {rate}",
-    "inclLine": "All prices include {rate}"
+    "incl": "đã bao gồm {rate}",
+    "inclLine": "Tất cả giá đã bao gồm {rate}"
   },
   "home": {
-    "greeting": "Hello, {name} 👋",
-    "prompt": "What do you need help with today?",
-    "searchPlaceholder": "🔍 Search services or address",
-    "searchAria": "Search services or address",
-    "categoriesTitle": "Choose a service",
-    "fromPrice": "from {price}/h",
-    "recentTitle": "Recently booked",
-    "recommendedTitle": "Recommended providers",
-    "bookAgain": "Book again",
-    "welcomeFirst": "Welcome — book your first service →",
-    "noRecent": "· No recent bookings yet",
-    "errorLoad": "Couldn't load services. Try again",
-    "categoriesAll": "All →"
+    "greeting": "Xin chào, {name} 👋",
+    "prompt": "Hôm nay bạn cần giúp gì?",
+    "searchPlaceholder": "🔍 Tìm dịch vụ hoặc địa chỉ",
+    "searchAria": "Tìm dịch vụ hoặc địa chỉ",
+    "categoriesTitle": "Chọn dịch vụ",
+    "fromPrice": "từ {price}/giờ",
+    "recentTitle": "Đã đặt gần đây",
+    "recommendedTitle": "Nhà cung cấp được đề xuất",
+    "bookAgain": "Đặt lại",
+    "welcomeFirst": "Chào mừng — đặt dịch vụ đầu tiên của bạn →",
+    "noRecent": "· Chưa có lịch đặt gần đây",
+    "errorLoad": "Không thể tải dịch vụ. Vui lòng thử lại",
+    "categoriesAll": "Tất cả →"
   },
   "categories": {
     "cleaning": "Dọn dẹp",
@@ -127,8 +127,8 @@
     "tacWorkSafeDesc": "Chăm sóc hộ lý & cá nhân cho khách hàng bị tai nạn giao thông và thương tích tại nơi làm việc — đáp ứng quy định yêu cầu bồi thường của TAC/WorkSafe Victoria"
   },
   "services": {
-    "title": "Choose a service",
-    "errorLoad": "Couldn't load services",
+    "title": "Chọn dịch vụ",
+    "errorLoad": "Không thể tải dịch vụ",
     "certificateRequired": "Chỉ nhà cung cấp có chứng chỉ",
     "suppliesCustomer": "Khách hàng chuẩn bị dụng cụ",
     "suppliesProvider": "Nhà cung cấp mang theo dụng cụ",
@@ -136,22 +136,22 @@
     "parkingFeeMayApply": "Có thể phát sinh phí đỗ xe"
   },
   "providers": {
-    "title": "Cleaning ({country})",
+    "title": "Dọn dẹp ({country})",
     "filters": {
-      "rating": "Rating 4.5+",
-      "distance": "Within 5km",
-      "language": "Mandarin",
-      "weekend": "Weekends",
-      "female": "Female",
-      "firstAid": "First-aid"
+      "rating": "Đánh giá 4.5+",
+      "distance": "Trong vòng 5km",
+      "language": "Tiếng Quan Thoại",
+      "weekend": "Cuối tuần",
+      "female": "Nữ",
+      "firstAid": "Sơ cứu"
     },
-    "sortRecommended": "Sort: Recommended",
-    "noMatch": "No providers match your filters",
-    "adjustFilters": "Adjust filters",
-    "clearFilters": "Clear filters",
-    "errorLoad": "Couldn't load",
-    "fullyBooked": "Fully booked this week",
-    "seeNextWeek": "See next week"
+    "sortRecommended": "Sắp xếp: Đề xuất",
+    "noMatch": "Không có nhà cung cấp phù hợp với bộ lọc",
+    "adjustFilters": "Điều chỉnh bộ lọc",
+    "clearFilters": "Xóa bộ lọc",
+    "errorLoad": "Không thể tải",
+    "fullyBooked": "Đã kín lịch tuần này",
+    "seeNextWeek": "Xem tuần sau"
   },
   "invoice": {
     "title": "Hóa đơn",
@@ -754,7 +754,7 @@
     "topicRemindersHint": "Ngày trước dịch vụ + 1 giờ trước",
     "topicPayments": "Thanh toán & biên lai",
     "topicPaymentsHint": "Đã giữ, đã phát hành, đã hoàn tiền",
-    "topicMarketing": "Marketing",
+    "topicMarketing": "Tiếp thị",
     "topicMarketingHint": "Mẹo, khuyến mãi, nhà cung cấp mới",
     "save": "Lưu tùy chọn",
     "saved": "Đã lưu tùy chọn"
@@ -915,22 +915,22 @@
     "bannerDesc": "AU · CN · CA · US · TW · SG · HK · MY — Chăm sóc nói tiếng Trung"
   },
   "organization": {
-    "registerTitle": "Register your day care centre",
-    "registerSubtitle": "Apply as a business to list your day care centre on SilverConnect.",
-    "submittedTitle": "Application submitted",
-    "submittedBody": "Thanks — our team will review your application and get back to you soon.",
-    "fieldName": "Organisation name",
+    "registerTitle": "Đăng ký trung tâm chăm sóc ban ngày của bạn",
+    "registerSubtitle": "Đăng ký với tư cách doanh nghiệp để niêm yết trung tâm chăm sóc ban ngày của bạn trên SilverConnect.",
+    "submittedTitle": "Đã gửi đơn đăng ký",
+    "submittedBody": "Cảm ơn bạn — đội ngũ của chúng tôi sẽ xem xét đơn đăng ký và phản hồi sớm.",
+    "fieldName": "Tên tổ chức",
     "fieldAbn": "ABN",
-    "fieldAddress": "Address",
-    "fieldRegion": "State / territory",
-    "fieldRegionPlaceholder": "Select a state or territory",
-    "fieldContactPhone": "Contact phone",
-    "fieldContactEmail": "Contact email",
-    "fieldCapacity": "Capacity (places)",
-    "fieldOperatingHours": "Operating hours",
-    "fieldDescription": "Description",
-    "fieldAgreeTerms": "I agree to SilverConnect's terms and confirm the information provided is accurate.",
-    "submitButton": "Submit application"
+    "fieldAddress": "Địa chỉ",
+    "fieldRegion": "Tiểu bang / vùng lãnh thổ",
+    "fieldRegionPlaceholder": "Chọn tiểu bang hoặc vùng lãnh thổ",
+    "fieldContactPhone": "Số điện thoại liên hệ",
+    "fieldContactEmail": "Email liên hệ",
+    "fieldCapacity": "Sức chứa (số chỗ)",
+    "fieldOperatingHours": "Giờ hoạt động",
+    "fieldDescription": "Mô tả",
+    "fieldAgreeTerms": "Tôi đồng ý với điều khoản của SilverConnect và xác nhận thông tin đã cung cấp là chính xác.",
+    "submitButton": "Gửi đơn đăng ký"
   },
   "referrals": {
     "title": "Mời bạn bè",

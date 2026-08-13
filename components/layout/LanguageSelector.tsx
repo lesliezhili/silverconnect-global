@@ -37,6 +37,14 @@ export function LanguageChip({ className }: { locale?: Locale; className?: strin
   const switchTo = (next: Locale) => {
     if (next === locale) return;
     router.replace(pathname, { locale: next });
+    // Best-effort: persist to the account so the choice follows a signed-in
+    // user across devices. Silently no-ops (401) for guests — the
+    // NEXT_LOCALE cookie next-intl's middleware sets covers that case.
+    fetch("/api/user/locale", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ locale: next }),
+    }).catch(() => {});
   };
 
   return (

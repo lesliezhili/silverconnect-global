@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema/users";
 import { getOptionalAuthSession } from "./session";
 import { hashPassword as rawHash, verifyPassword } from "./password";
+import type { Locale } from "@/i18n/routing";
 
 export { rawHash as hashPassword, verifyPassword };
 
@@ -36,6 +37,8 @@ export interface CurrentUser {
   isAdmin: boolean;
   emailVerified: boolean;
   initials: string;
+  /** The user's saved language preference — set at signup, updatable via PATCH /api/user/locale. */
+  locale: Locale;
 }
 
 /**
@@ -60,6 +63,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     isAdmin: u.isAdmin,
     emailVerified: u.emailVerifiedAt !== null,
     initials: deriveInitials(u.name, u.email),
+    locale: u.locale,
   };
 }
 

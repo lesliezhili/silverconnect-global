@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/Input";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Label } from "@/components/ui/Label";
 import { Link } from "@/i18n/navigation";
+import { routing } from "@/i18n/routing";
 
 interface LoginLabels {
   title: string;
@@ -79,16 +80,21 @@ export function LoginForm({
         return;
       }
 
-      const data: { success: boolean; role?: string; isAdmin?: boolean } = await res.json();
+      const data: { success: boolean; role?: string; isAdmin?: boolean; locale?: string } = await res.json();
       const role = data.role ?? "customer";
+      // Land the user in their saved language preference, not whatever
+      // locale the login page itself happened to be viewed in.
+      const dest = (routing.locales as readonly string[]).includes(data.locale ?? "")
+        ? data.locale!
+        : locale;
 
       // router.push triggers a full navigation — the browser sends the
       // freshly-set sc-session cookie on the next server request.
       // Admins land on the dashboard by default; they still need the
       // separate /admin/login re-auth to actually get past its gate.
-      if (data.isAdmin) router.push(`/${locale}/admin`);
-      else if (role === "provider") router.push(`/${locale}/provider`);
-      else router.push(`/${locale}/home`);
+      if (data.isAdmin) router.push(`/${dest}/admin`);
+      else if (role === "provider") router.push(`/${dest}/provider`);
+      else router.push(`/${dest}/home`);
     } catch {
       setError(labels.errorGeneric);
       setLoading(false);

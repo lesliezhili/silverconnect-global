@@ -6,6 +6,7 @@ import { users, verificationCodes } from "@/lib/db/schema/users";
 import { sql } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { mintCoins, REGISTRATION_BONUS } from "@/lib/coins/ledger";
+import { routing } from "@/i18n/routing";
 
 const sessionOptions = {
   password: process.env.SESSION_SECRET || "fallback-session-secret-minimum-32-characters-long",
@@ -22,7 +23,8 @@ const sessionOptions = {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, email, password, country } = body;
+    const { name, email, password, country, locale } = body;
+    const signupLocale = routing.locales.includes(locale) ? locale : "en";
 
     // Validation
     if (!name?.trim()) {
@@ -60,7 +62,7 @@ export async function POST(req: NextRequest) {
         email: email.toLowerCase(),
         passwordHash,
         country: (country || "AU") as any,
-        locale: "en" as any,
+        locale: signupLocale as any,
         role: "customer",
       })
       .returning({ id: users.id, email: users.email });
