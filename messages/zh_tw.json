@@ -2023,6 +2023,11 @@
     "cancelFailed": "取消失敗，請重試。",
     "history": "每週週期記錄",
     "noHistory": "暫無週期記錄",
-    "toppedUp": "已補足 ${amount}"
+    "toppedUp": "已補足 ${amount}",
+    "trialTitle": "完成您的 ABN 試用期",
+    "trialBody": "新入駐服務人員預設按單次預約以承包商身份計費。達成以下里程碑後，保底週薪選項將自動解鎖。",
+    "trialBookings": "{count}/{min} 次已完成服務",
+    "trialRating": "平均評分 {rating}/{min}",
+    "trialTenure": "獲批以來 {count}/{min} 天"
   }
 }

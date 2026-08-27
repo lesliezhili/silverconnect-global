@@ -2015,6 +2015,11 @@
     "cancelFailed": "取り消しに失敗しました。もう一度お試しください。",
     "history": "週次サイクル履歴",
     "noHistory": "まだサイクル履歴がありません",
-    "toppedUp": "${amount} を補填しました"
+    "toppedUp": "${amount} を補填しました",
+    "trialTitle": "ABNトライアル期間を完了しましょう",
+    "trialBody": "新規プロバイダーは案件ごとの契約者としてスタートします。以下のマイルストーンを達成すると、週間最低保証オプションが自動的に解除されます。",
+    "trialBookings": "完了した案件数 {count}/{min}件",
+    "trialRating": "平均評価 {rating}/{min}",
+    "trialTenure": "承認からの経過日数 {count}/{min}日"
   }
 }

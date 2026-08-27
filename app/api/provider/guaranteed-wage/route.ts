@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { providerProfiles, guaranteedWageCycles } from "@/lib/db/schema/providers";
 import { getCurrentUser } from "@/lib/auth/server";
 import { isAuUser } from "@/lib/coins/ledger";
-import { requestGuaranteedWage, cancelGuaranteedWage } from "@/lib/providers/actions";
+import { requestGuaranteedWage, cancelGuaranteedWage, checkGuaranteedWageEligibility } from "@/lib/providers/actions";
 
 /**
  * GET/POST/DELETE /api/provider/guaranteed-wage
@@ -48,7 +48,12 @@ export async function GET() {
     .where(eq(guaranteedWageCycles.providerId, profile.id))
     .orderBy(guaranteedWageCycles.cycleStart);
 
-  return NextResponse.json({ ...full, cycles: cycles.reverse() });
+  // Surfaced even for providers who haven't requested yet, so the UI can
+  // show trial-period progress ("6/10 jobs, rating 4.2/4.0, 12/30 days")
+  // before they hit the request button and get rejected.
+  const eligibility = await checkGuaranteedWageEligibility(profile.id);
+
+  return NextResponse.json({ ...full, cycles: cycles.reverse(), eligibility });
 }
 
 export async function POST(req: NextRequest) {
@@ -78,7 +83,7 @@ export async function POST(req: NextRequest) {
   }
 
   const result = await requestGuaranteedWage(profile.id, committedHours, guaranteedAmount);
-  return NextResponse.json(result);
+  return NextResponse.json(result, { status: result.success ? 200 : 403 });
 }
 
 export async function DELETE() {

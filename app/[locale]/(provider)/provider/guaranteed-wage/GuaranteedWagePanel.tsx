@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { ShieldCheck, Clock } from "lucide-react";
+import { ShieldCheck, Clock, CheckCircle2, Circle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Label } from "@/components/ui/Label";
 
@@ -15,6 +15,18 @@ type Cycle = {
   topupAmount: string;
 };
 
+type Eligibility = {
+  eligible: boolean;
+  completedBookings: number;
+  avgRating: number;
+  tenureDays: number;
+  requirements: {
+    minCompletedBookings: number;
+    minAvgRating: number;
+    minTenureDays: number;
+  };
+} | null;
+
 /** Suggested guaranteed cycle amount = committed hours/week × a floor rate (weekly cycle). */
 const SUGGESTED_HOURLY_FLOOR = 32;
 
@@ -22,11 +34,13 @@ export function GuaranteedWagePanel({
   status,
   committedHours,
   guaranteedAmount,
+  eligibility,
   cycles,
 }: {
   status: string | null;
   committedHours: number | null;
   guaranteedAmount: string | null;
+  eligibility: Eligibility;
   cycles: Cycle[];
 }) {
   const t = useTranslations("guaranteedWage");
@@ -133,6 +147,35 @@ export function GuaranteedWagePanel({
             </Button>
           )}
         </section>
+      ) : eligibility && !eligibility.eligible ? (
+        <section className="mt-6 rounded-lg border border-border bg-bg-base p-5">
+          <p className="text-[16px] font-bold text-text-primary">{t("trialTitle")}</p>
+          <p className="mt-1 text-[15px] text-text-secondary">{t("trialBody")}</p>
+
+          <ul className="mt-4 flex flex-col gap-3">
+            <TrialMilestone
+              done={eligibility.completedBookings >= eligibility.requirements.minCompletedBookings}
+              label={t("trialBookings", {
+                count: eligibility.completedBookings,
+                min: eligibility.requirements.minCompletedBookings,
+              })}
+            />
+            <TrialMilestone
+              done={eligibility.avgRating >= eligibility.requirements.minAvgRating}
+              label={t("trialRating", {
+                rating: eligibility.avgRating.toFixed(1),
+                min: eligibility.requirements.minAvgRating.toFixed(1),
+              })}
+            />
+            <TrialMilestone
+              done={eligibility.tenureDays >= eligibility.requirements.minTenureDays}
+              label={t("trialTenure", {
+                count: eligibility.tenureDays,
+                min: eligibility.requirements.minTenureDays,
+              })}
+            />
+          </ul>
+        </section>
       ) : (
         <section className="mt-6 rounded-lg border border-border bg-bg-base p-5">
           <p className="text-[16px] font-bold text-text-primary">{t("enrollTitle")}</p>
@@ -210,5 +253,20 @@ export function GuaranteedWagePanel({
         )}
       </section>
     </>
+  );
+}
+
+function TrialMilestone({ done, label }: { done: boolean; label: string }) {
+  return (
+    <li className="flex items-center gap-2.5">
+      {done ? (
+        <CheckCircle2 size={20} className="shrink-0 text-success" aria-hidden />
+      ) : (
+        <Circle size={20} className="shrink-0 text-text-tertiary" aria-hidden />
+      )}
+      <span className={`text-[16px] ${done ? "text-text-primary" : "text-text-secondary"}`}>
+        {label}
+      </span>
+    </li>
   );
 }

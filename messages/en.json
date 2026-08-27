@@ -1807,6 +1807,11 @@
     "cancelFailed": "Couldn't cancel. Please try again.",
     "history": "Weekly cycle history",
     "noHistory": "No cycles yet",
-    "toppedUp": "Topped up ${amount}"
+    "toppedUp": "Topped up ${amount}",
+    "trialTitle": "Complete your ABN trial period",
+    "trialBody": "New providers start as standard per-booking contractors. Clear these milestones and the guaranteed weekly minimum unlocks automatically.",
+    "trialBookings": "{count}/{min} completed jobs",
+    "trialRating": "{rating}/{min} average rating",
+    "trialTenure": "{count}/{min} days since approval"
   }
 }

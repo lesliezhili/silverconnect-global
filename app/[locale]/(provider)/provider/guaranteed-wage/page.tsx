@@ -7,6 +7,7 @@ import { getCurrentUser } from "@/lib/auth/server";
 import { isAuUser } from "@/lib/coins/ledger";
 import { db } from "@/lib/db";
 import { providerProfiles, guaranteedWageCycles } from "@/lib/db/schema/providers";
+import { checkGuaranteedWageEligibility } from "@/lib/providers/actions";
 import { GuaranteedWagePanel } from "./GuaranteedWagePanel";
 
 export const dynamic = "force-dynamic";
@@ -47,6 +48,8 @@ export default async function GuaranteedWagePage({
         .orderBy(guaranteedWageCycles.cycleStart)
     : [];
 
+  const eligibility = profile ? await checkGuaranteedWageEligibility(profile.id) : null;
+
   return (
     <>
       <Header country={country} back signedIn initials={me!.initials} />
@@ -61,6 +64,7 @@ export default async function GuaranteedWagePage({
           status={profile?.guaranteedWageStatus ?? null}
           committedHours={profile?.guaranteedCommittedHours ?? null}
           guaranteedAmount={profile?.guaranteedMinCycleAmount ?? null}
+          eligibility={eligibility}
           cycles={cycles
             .map((c) => ({
               id: c.id,

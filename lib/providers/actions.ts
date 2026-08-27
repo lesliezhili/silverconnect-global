@@ -7,6 +7,8 @@ import {
   providerAvailability,
 } from "@/lib/db/schema/providers";
 import { users } from "@/lib/db/schema/users";
+import { bookings } from "@/lib/db/schema/bookings";
+import { reviews } from "@/lib/db/schema/reviews";
 
 // ─── Module 2: ABN Validation ─────────────────────────────────────
 /**
@@ -217,26 +219,113 @@ export async function toggleEmergencyOptIn(
   return { success: true };
 }
 
+// ─── Guaranteed Wage eligibility: ABN trial period, then performance-gated ──
+// New providers start as plain per-booking ABN contractors. The guaranteed
+// income floor is a "graduation" option, not a day-one perk — it only
+// unlocks once a provider has proven themselves over a real trial window.
+// Thresholds are deliberately named constants so they're easy to retune.
+const GUARANTEED_WAGE_MIN_COMPLETED_BOOKINGS = 10;
+const GUARANTEED_WAGE_MIN_AVG_RATING = 4.0;
+const GUARANTEED_WAGE_MIN_TENURE_DAYS = 30;
+
+export interface GuaranteedWageEligibility {
+  eligible: boolean;
+  completedBookings: number;
+  avgRating: number;
+  tenureDays: number;
+  requirements: {
+    minCompletedBookings: number;
+    minAvgRating: number;
+    minTenureDays: number;
+  };
+}
+
+export async function checkGuaranteedWageEligibility(
+  providerId: string,
+): Promise<GuaranteedWageEligibility> {
+  const [profile] = await db
+    .select({ approvedAt: providerProfiles.approvedAt })
+    .from(providerProfiles)
+    .where(eq(providerProfiles.id, providerId))
+    .limit(1);
+
+  const [bookingAgg] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(bookings)
+    .where(
+      and(
+        eq(bookings.providerId, providerId),
+        or(eq(bookings.status, "completed"), eq(bookings.status, "released")),
+      ),
+    );
+
+  const [reviewAgg] = await db
+    .select({ avg: sql<number>`coalesce(avg(${reviews.rating}), 0)::float` })
+    .from(reviews)
+    .where(
+      and(
+        eq(reviews.providerId, providerId),
+        eq(reviews.direction, "customer_to_provider"),
+        eq(reviews.status, "published"),
+      ),
+    );
+
+  const completedBookings = bookingAgg?.n ?? 0;
+  const avgRating = reviewAgg?.avg ?? 0;
+  const tenureDays = profile?.approvedAt
+    ? Math.floor((Date.now() - profile.approvedAt.getTime()) / (1000 * 60 * 60 * 24))
+    : 0;
+
+  const requirements = {
+    minCompletedBookings: GUARANTEED_WAGE_MIN_COMPLETED_BOOKINGS,
+    minAvgRating: GUARANTEED_WAGE_MIN_AVG_RATING,
+    minTenureDays: GUARANTEED_WAGE_MIN_TENURE_DAYS,
+  };
+
+  return {
+    eligible:
+      completedBookings >= requirements.minCompletedBookings &&
+      avgRating >= requirements.minAvgRating &&
+      tenureDays >= requirements.minTenureDays,
+    completedBookings,
+    avgRating,
+    tenureDays,
+    requirements,
+  };
+}
+
 // ─── Guaranteed Wage: opt-in income floor for AU providers ───────
 // Providers stay independent contractors (unchanged ABN/invoicing path);
 // this only sets a minimum payment floor the guaranteed-wage-topup cron
 // tops up to if actual booking earnings fall short of a cycle.
+// Gated on checkGuaranteedWageEligibility — a provider must clear the ABN
+// trial period (tenure + completed jobs + rating) before this can approve.
 export async function requestGuaranteedWage(
   providerId: string,
   committedHours: number,
   guaranteedAmount: number,
-): Promise<{ success: boolean }> {
+): Promise<{ success: boolean; error?: string; eligibility?: GuaranteedWageEligibility }> {
+  const eligibility = await checkGuaranteedWageEligibility(providerId);
+  if (!eligibility.eligible) {
+    return {
+      success: false,
+      error: "Not yet eligible for the guaranteed wage program — complete your ABN trial period first.",
+      eligibility,
+    };
+  }
+
   await db
     .update(providerProfiles)
     .set({
       payArrangement: "guaranteed_minimum",
-      guaranteedWageStatus: "pending",
+      guaranteedWageStatus: "approved",
       guaranteedCommittedHours: committedHours,
       guaranteedMinCycleAmount: String(guaranteedAmount),
+      guaranteedWageEnrolledAt: new Date(),
       updatedAt: new Date(),
     })
     .where(eq(providerProfiles.id, providerId));
-  return { success: true };
+  return { success: true, eligibility };
 }
 
 export async function cancelGuaranteedWage(

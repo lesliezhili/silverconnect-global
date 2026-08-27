@@ -2038,6 +2038,11 @@
     "cancelFailed": "Không thể hủy. Vui lòng thử lại.",
     "history": "Lịch sử chu kỳ hàng tuần",
     "noHistory": "Chưa có chu kỳ nào",
-    "toppedUp": "Đã bù ${amount}"
+    "toppedUp": "Đã bù ${amount}",
+    "trialTitle": "Hoàn thành giai đoạn thử việc ABN của bạn",
+    "trialBody": "Nhà cung cấp mới sẽ bắt đầu với tư cách nhà thầu tính phí theo từng lượt đặt. Khi đạt các mốc dưới đây, tùy chọn thu nhập tối thiểu hàng tuần sẽ tự động mở khóa.",
+    "trialBookings": "{count}/{min} công việc đã hoàn thành",
+    "trialRating": "Đánh giá trung bình {rating}/{min}",
+    "trialTenure": "{count}/{min} ngày kể từ khi được duyệt"
   }
 }

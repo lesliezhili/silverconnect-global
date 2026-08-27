@@ -1809,6 +1809,11 @@
     "cancelFailed": "取消失败，请重试。",
     "history": "每周周期记录",
     "noHistory": "暂无周期记录",
-    "toppedUp": "已补足 ${amount}"
+    "toppedUp": "已补足 ${amount}",
+    "trialTitle": "完成您的 ABN 试用期",
+    "trialBody": "新入驻服务人员默认按单次预约以承包商身份计费。达成以下里程碑后，保底周薪选项将自动解锁。",
+    "trialBookings": "{count}/{min} 次已完成服务",
+    "trialRating": "平均评分 {rating}/{min}",
+    "trialTenure": "获批以来 {count}/{min} 天"
   }
 }
