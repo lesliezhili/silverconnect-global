@@ -5,21 +5,63 @@ import { eq, and, asc } from "drizzle-orm";
 import { Header } from "@/components/layout/Header";
 import { Link } from "@/i18n/navigation";
 import { BookingProgress } from "@/components/domain/BookingProgress";
-import { CURRENCY_SYMBOL, TAX_ABBR } from "@/components/domain/country";
+import { CURRENCY_SYMBOL } from "@/components/domain/country";
+import type { CountryCode } from "@/components/domain/country";
 import { getCountry } from "@/components/domain/countryCookie";
 import { db } from "@/lib/db";
-import { services, servicePrices } from "@/lib/db/schema/services";
-import { providerProfiles, providerCategories } from "@/lib/db/schema/providers";
+import { services } from "@/lib/db/schema/services";
+import { providerProfiles } from "@/lib/db/schema/providers";
 import { users } from "@/lib/db/schema/users";
 import { addresses } from "@/lib/db/schema/customer-data";
 import { bookings, bookingChanges } from "@/lib/db/schema/bookings";
 import { getCurrentUser } from "@/lib/auth/server";
 import { getAuthSession, type BookingDraft } from "@/lib/auth/session";
 import { notify } from "@/lib/notifications/server";
+import {
+  RELEASE_CATEGORIES,
+  RELEASE_SUBTYPES,
+  findLiveArea,
+  isReleaseCategory,
+  isReleaseCountry,
+  liveAreasFor,
+  type ReleaseCategory,
+  type ReleaseCountry,
+} from "@/lib/release";
+import {
+  EFFORT_TIERS,
+  TIER,
+  TIER_SCOPE,
+  TIER_SERVICE_CODE,
+  isEffortTier,
+  priceFor,
+  type EffortTier,
+} from "@/lib/release-pricing";
+import { priceReleaseBooking } from "@/lib/bookings/release-booking";
+import { customerPauseReason, eligibleProviders, isProviderEligible } from "@/lib/trust";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * Release 1 booking — the only customer booking flow:
+ *   1. service: category × effort tier (standard price model) [+ handyman job]
+ *   2. provider (trust-gated) + time
+ *   3. address inside a live area
+ *   4. review → create pending booking → /pay/[id] (Stripe)
+ * Price is always computed server-side by priceReleaseBooking().
+ */
+
 type Step = 1 | 2 | 3 | 4;
+
+const CAT_EMOJI: Record<ReleaseCategory, string> = { cleaning: "🧹", garden: "🌿", repair: "🔧" };
+
+const JOB_TYPES: Record<string, { en: string; zh: string }> = {
+  furniture: { en: "Furniture assembly", zh: "家具组装" },
+  hanging: { en: "Pictures & shelves", zh: "挂画装架" },
+  door: { en: "Door handle / hinge", zh: "门把 / 合页" },
+  window: { en: "Window latch / screen", zh: "窗锁 / 纱窗" },
+  curtain: { en: "Curtains & blinds", zh: "窗帘和百叶" },
+  small_fix: { en: "Other small fix", zh: "其他小修" },
+};
 
 function clampStep(raw: string | undefined): Step {
   const n = Number.parseInt(raw ?? "1", 10);
@@ -43,22 +85,41 @@ async function clearDraft(): Promise<void> {
   await s.save();
 }
 
+async function serviceIdFor(category: ReleaseCategory, tier: EffortTier): Promise<string | null> {
+  const [svc] = await db
+    .select({ id: services.id })
+    .from(services)
+    .where(and(eq(services.code, TIER_SERVICE_CODE[category][tier]), eq(services.enabled, true)))
+    .limit(1);
+  return svc?.id ?? null;
+}
+
 async function saveStep1(formData: FormData) {
   "use server";
   const locale = String(formData.get("locale") ?? "en");
   const me = await getCurrentUser();
   if (!me) nextRedirect(`/${locale}/auth/login`);
-  const serviceId = String(formData.get("serviceId") ?? "");
-  if (!serviceId) {
+  if (await customerPauseReason(me.id)) nextRedirect(`/${locale}/bookings/new?step=1&error=paused`);
+
+  const [category, tier] = String(formData.get("choice") ?? "").split(":");
+  if (!isReleaseCategory(category) || !isEffortTier(tier)) {
     nextRedirect(`/${locale}/bookings/new?step=1&error=pickService`);
   }
-  const [svc] = await db
-    .select({ id: services.id })
-    .from(services)
-    .where(and(eq(services.id, serviceId), eq(services.enabled, true)))
-    .limit(1);
-  if (!svc) nextRedirect(`/${locale}/bookings/new?step=1&error=invalid`);
-  await writeDraft({ serviceId });
+  const jobType = String(formData.get("jobType") ?? "");
+  if (category === "repair" && !RELEASE_SUBTYPES.repair.includes(jobType)) {
+    nextRedirect(`/${locale}/bookings/new?step=1&cat=repair&error=pickJob`);
+  }
+  const serviceId = await serviceIdFor(category, tier);
+  if (!serviceId) nextRedirect(`/${locale}/bookings/new?step=1&error=invalid`);
+
+  const keepProvider = String(formData.get("providerId") ?? "") || undefined;
+  await writeDraft({
+    serviceId,
+    category,
+    tier,
+    jobType: category === "repair" ? jobType : undefined,
+    providerId: keepProvider,
+  });
   nextRedirect(`/${locale}/bookings/new?step=2`);
 }
 
@@ -68,7 +129,7 @@ async function saveStep2(formData: FormData) {
   const me = await getCurrentUser();
   if (!me) nextRedirect(`/${locale}/auth/login`);
   const draft = await readDraft();
-  if (!draft.serviceId) {
+  if (!draft.serviceId || !draft.category) {
     nextRedirect(`/${locale}/bookings/new?step=1&error=missingService`);
   }
   const providerId = String(formData.get("providerId") ?? "");
@@ -78,22 +139,13 @@ async function saveStep2(formData: FormData) {
     !providerId ||
     !scheduledAt ||
     Number.isNaN(scheduledAt.getTime()) ||
-    scheduledAt.getTime() < Date.now()
+    scheduledAt.getTime() < Date.now() + 60 * 60 * 1000
   ) {
     nextRedirect(`/${locale}/bookings/new?step=2&error=pick`);
   }
-  // Verify provider exists + is approved.
-  const [p] = await db
-    .select({ id: providerProfiles.id })
-    .from(providerProfiles)
-    .where(
-      and(
-        eq(providerProfiles.id, providerId),
-        eq(providerProfiles.onboardingStatus, "approved"),
-      ),
-    )
-    .limit(1);
-  if (!p) nextRedirect(`/${locale}/bookings/new?step=2&error=invalid`);
+  if (!(await isProviderEligible(providerId, draft.category!, me.id))) {
+    nextRedirect(`/${locale}/bookings/new?step=2&error=invalid`);
+  }
   await writeDraft({ providerId, scheduledAt: scheduledAt.toISOString() });
   nextRedirect(`/${locale}/bookings/new?step=3`);
 }
@@ -108,11 +160,14 @@ async function saveStep3(formData: FormData) {
     nextRedirect(`/${locale}/bookings/new?step=3&error=pickAddress`);
   }
   const [a] = await db
-    .select({ id: addresses.id })
+    .select({ id: addresses.id, country: addresses.country, postcode: addresses.postcode })
     .from(addresses)
     .where(and(eq(addresses.id, addressId), eq(addresses.userId, me.id)))
     .limit(1);
   if (!a) nextRedirect(`/${locale}/bookings/new?step=3&error=invalid`);
+  if (!findLiveArea(a.country, a.postcode)) {
+    nextRedirect(`/${locale}/bookings/new?step=3&error=outsideArea`);
+  }
   await writeDraft({ addressId });
   nextRedirect(`/${locale}/bookings/new?step=4`);
 }
@@ -120,41 +175,32 @@ async function saveStep3(formData: FormData) {
 async function finalizeBooking(formData: FormData) {
   "use server";
   const locale = String(formData.get("locale") ?? "en");
-  const country = String(formData.get("country") ?? "AU") as "AU" | "CN" | "CA" | "US" | "TW" | "SG" | "HK" | "MY";
   const notes = String(formData.get("notes") ?? "").trim() || null;
   const me = await getCurrentUser();
   if (!me) nextRedirect(`/${locale}/auth/login`);
+  if (await customerPauseReason(me.id)) nextRedirect(`/${locale}/bookings/new?step=1&error=paused`);
   const draft = await readDraft();
-  if (!draft.serviceId || !draft.providerId || !draft.addressId || !draft.scheduledAt) {
+  if (!draft.serviceId || !draft.providerId || !draft.addressId || !draft.scheduledAt || !draft.category || !draft.tier) {
     nextRedirect(`/${locale}/bookings/new?step=1&error=incomplete`);
   }
-
-  // Snapshot price + duration at booking time.
-  const [svc] = await db
-    .select({ id: services.id, durationMin: services.durationMin })
-    .from(services)
-    .where(eq(services.id, draft.serviceId!))
-    .limit(1);
-  const [price] = await db
-    .select({
-      basePrice: servicePrices.basePrice,
-      taxRate: servicePrices.taxRate,
-      currency: servicePrices.currency,
-    })
-    .from(servicePrices)
-    .where(
-      and(
-        eq(servicePrices.serviceId, draft.serviceId!),
-        eq(servicePrices.country, country),
-      ),
-    )
-    .limit(1);
-  if (!svc || !price) {
-    nextRedirect(`/${locale}/bookings/new?step=1&error=priceMissing`);
+  // Re-check everything server-side at the moment of booking.
+  if (!(await isProviderEligible(draft.providerId!, draft.category!, me.id))) {
+    nextRedirect(`/${locale}/bookings/new?step=2&error=invalid`);
   }
-  const base = Number(price.basePrice);
-  const tax = +(base * Number(price.taxRate)).toFixed(2);
-  const total = +(base + tax).toFixed(2);
+  const [addr] = await db
+    .select({ country: addresses.country, postcode: addresses.postcode })
+    .from(addresses)
+    .where(and(eq(addresses.id, draft.addressId!), eq(addresses.userId, me.id)))
+    .limit(1);
+  const price = await priceReleaseBooking({
+    customerId: me.id,
+    providerId: draft.providerId!,
+    category: draft.category,
+    tier: draft.tier,
+    address: addr ?? null,
+  });
+  if (!price) nextRedirect(`/${locale}/bookings/new?step=3&error=outsideArea`);
+  const serviceId = (await serviceIdFor(draft.category as ReleaseCategory, price.tier)) ?? draft.serviceId!;
 
   let createdId = "";
   await db.transaction(async (tx) => {
@@ -163,16 +209,18 @@ async function finalizeBooking(formData: FormData) {
       .values({
         customerId: me.id,
         providerId: draft.providerId!,
-        serviceId: draft.serviceId!,
+        serviceId,
         addressId: draft.addressId!,
         scheduledAt: new Date(draft.scheduledAt!),
-        durationMin: svc.durationMin,
+        durationMin: Math.round(price.hours * 60),
         status: "pending",
         notes,
-        basePrice: base.toFixed(2),
-        taxAmount: tax.toFixed(2),
-        totalPrice: total.toFixed(2),
+        basePrice: price.base.toFixed(2),
+        taxAmount: price.tax.toFixed(2),
+        totalPrice: price.total.toFixed(2),
         currency: price.currency,
+        effortTier: price.tier,
+        jobType: draft.jobType ?? null,
       })
       .returning({ id: bookings.id });
     createdId = created!.id;
@@ -181,13 +229,12 @@ async function finalizeBooking(formData: FormData) {
       type: "created",
       toStatus: "pending",
       actorId: me.id,
-      note: "Customer booking submitted, awaiting payment",
+      note: `Customer booking submitted (${draft.category}/${price.tier}${price.quoteId ? `, quote ${price.quoteId}` : ""}), awaiting payment`,
     });
   });
+
   await clearDraft();
-  // Provider notification — fetch their user_id so we can write a
-  // notifications row pointing at the new booking. Deferred via after()
-  // so the redirect isn't blocked.
+
   after(async () => {
     const [p] = await db
       .select({ userId: providerProfiles.userId })
@@ -199,14 +246,13 @@ async function finalizeBooking(formData: FormData) {
         userId: p.userId,
         kind: "booking_update",
         title: "New booking request",
-        body: `Customer booking · awaiting payment · ${price.currency} ${total.toFixed(2)}`,
+        body: `Customer booking · awaiting payment · ${price.currency} ${price.total.toFixed(2)}`,
         link: `/${locale}/provider/jobs/${createdId}`,
         relatedBookingId: createdId,
       });
     }
   });
-  // Stripe wiring lands separately; for now route to the existing
-  // /pay/[id] placeholder so the flow is end-to-end visible.
+
   nextRedirect(`/${locale}/pay/${createdId}`);
 }
 
@@ -222,149 +268,134 @@ export default async function BookingNewPage({
   setRequestLocale(locale);
   const me = await getCurrentUser();
   if (!me) nextRedirect(`/${locale}/auth/login`);
-  const country = await getCountry();
+  const cookieCountry = await getCountry();
+  const country: ReleaseCountry = isReleaseCountry(cookieCountry) ? cookieCountry : "AU";
   const t = await getTranslations("booking");
   const tCommon = await getTranslations("common");
   const tCategories = await getTranslations("categories");
-  const sym = CURRENCY_SYMBOL[country];
-  const taxAbbr = TAX_ABBR[country];
-  const isZh = locale === "zh";
-
+  const isZh = locale === "zh" || locale === "zh_tw";
   const step = clampStep(typeof sp.step === "string" ? sp.step : undefined);
   const error = typeof sp.error === "string" ? sp.error : undefined;
   const draft = await readDraft();
+  const sym = CURRENCY_SYMBOL[country];
+  const catName = (c: string) => tCategories(c as Parameters<typeof tCategories>[0]);
 
-  // ---- STEP 1: pick a service variant ----
+  // ---- STEP 1: category × effort tier ----
   if (step === 1) {
-  try {
-      const rows = await db
-        .select({
-          id: services.id,
-          code: services.code,
-          category: services.categoryCode,
-          durationMin: services.durationMin,
-          basePrice: servicePrices.basePrice,
-        })
-        .from(services)
-        .leftJoin(
-          servicePrices,
-          and(
-            eq(servicePrices.serviceId, services.id),
-            eq(servicePrices.country, country),
-          ),
-        )
-        .where(eq(services.enabled, true))
-        .orderBy(asc(services.categoryCode), asc(services.sortOrder));
-
-      return (
-        <Wizard step={step} country={country} initials={me.initials}>
-          <h1 className="text-[22px] font-bold">{t("step1Title")}</h1>
-          {error === "pickService" && (
-            <Alert>{isZh ? "请选择一个服务" : "Pick a service"}</Alert>
-          )}
-          <form action={saveStep1} className="mt-4 flex flex-col gap-3">
-            <input type="hidden" name="locale" value={locale} />
-            <ul className="flex flex-col gap-3">
-              {rows.map((s) => {
-                const checked = draft.serviceId === s.id;
-                return (
-                  <li key={s.id}>
-                    <label
-                      className={
-                        "flex cursor-pointer items-center gap-3 rounded-md border-[1.5px] bg-bg-base p-4 has-[:checked]:border-2 has-[:checked]:border-brand " +
-                        (checked ? "border-brand" : "border-border")
-                      }
-                    >
-                      <input
-                        type="radio"
-                        name="serviceId"
-                        value={s.id}
-                        defaultChecked={checked}
-                        required
-                        className="peer sr-only"
-                      />
-                      <span
-                        className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-border-strong after:hidden after:h-3 after:w-3 after:rounded-full after:bg-brand after:content-[''] peer-checked:border-brand peer-checked:after:block"
-                        aria-hidden
-                      />
-                      <span className="flex-1">
-                        <span className="block text-[17px] font-bold">
-                          {tCategories(
-                            s.category as Parameters<typeof tCategories>[0],
-                          )}{" "}
-                          · {(s.durationMin / 60).toFixed(1)}h
-                        </span>
-                        <span className="mt-0.5 block text-[16px] text-text-secondary tabular-nums">
-                          {s.code}
-                        </span>
-                      </span>
-                      <span className="text-[18px] font-bold text-brand tabular-nums">
-                        {sym}
-                        {s.basePrice ? Number(s.basePrice).toFixed(0) : "—"}
-                      </span>
-                    </label>
-                  </li>
-                );
-              })}
-            </ul>
-            <Footer step={step} t={tCommon} backHref="/home" />
-          </form>
-        </Wizard>
-      );
-  } catch (error) {
-    console.error("[new] DB unavailable", error);
+    const paused = await customerPauseReason(me.id);
+    const qCat = typeof sp.cat === "string" && isReleaseCategory(sp.cat) ? sp.cat : null;
+    const cat: ReleaseCategory = qCat ?? (isReleaseCategory(draft.category) ? draft.category : "cleaning");
+    const preProvider = typeof sp.providerId === "string" ? sp.providerId : draft.providerId;
+    const taxRate = liveAreasFor(country)[0]?.tax.rate ?? 0;
     return (
-      <main className="mx-auto w-full max-w-content px-5 py-12 text-center">
-        <p className="text-[48px]">⏳</p>
-        <h1 className="mt-4 text-[22px] font-bold">Service Temporarily Unavailable</h1>
-        <p className="mt-2 text-[17px] text-text-secondary">Please try again shortly.</p>
-      </main>
+      <Wizard step={step} country={country} initials={me.initials}>
+        <h1 className="text-[22px] font-bold">{t("step1Title")}</h1>
+        {paused && (
+          <Alert>
+            {isZh
+              ? "您的账户暂时无法预约，我们的工作人员会尽快联系您。"
+              : "Your account is paused from booking for now. Our team will contact you."}
+          </Alert>
+        )}
+        {error === "pickService" && <Alert>{isZh ? "请选择一个服务" : "Pick a service"}</Alert>}
+        {error === "pickJob" && <Alert>{isZh ? "请选择杂工项目" : "Pick the handyman job"}</Alert>}
+
+        <nav className="mt-4 flex gap-2" aria-label={isZh ? "服务类别" : "Service category"}>
+          {RELEASE_CATEGORIES.map((c) => (
+            <Link
+              key={c}
+              href={`/bookings/new?step=1&cat=${c}${preProvider ? `&providerId=${preProvider}` : ""}`}
+              aria-current={c === cat ? "page" : undefined}
+              className={
+                "flex h-14 flex-1 items-center justify-center gap-1 rounded-md border-2 text-[17px] font-bold " +
+                (c === cat ? "border-brand bg-brand-soft text-brand" : "border-border bg-bg-base text-text-primary")
+              }
+            >
+              <span aria-hidden>{CAT_EMOJI[c]}</span> {catName(c)}
+            </Link>
+          ))}
+        </nav>
+
+        <form action={saveStep1} className="mt-4 flex flex-col gap-3">
+          <input type="hidden" name="locale" value={locale} />
+          {preProvider && <input type="hidden" name="providerId" value={preProvider} />}
+          <ul className="flex flex-col gap-3">
+            {EFFORT_TIERS.map((tier) => {
+              const p = priceFor({ country, category: cat, tier, taxRate });
+              const value = `${cat}:${tier}`;
+              const checked = draft.category === cat ? draft.tier === tier : tier === "regular";
+              const scope = TIER_SCOPE[cat][tier];
+              return (
+                <li key={tier}>
+                  <label className="flex cursor-pointer items-start gap-3 rounded-md border-[1.5px] border-border bg-bg-base p-4 has-[:checked]:border-2 has-[:checked]:border-brand">
+                    <input type="radio" name="choice" value={value} defaultChecked={checked} required className="mt-1 h-5 w-5 accent-[var(--brand-primary)]" />
+                    <span className="flex-1">
+                      <span className="block text-[18px] font-bold">
+                        {tierLabel(tier, isZh)} · {p.hours}h
+                      </span>
+                      <span className="mt-1 block text-[16px] text-text-secondary">{isZh ? scope.zh : scope.en}</span>
+                      <span className="mt-1 block text-[15px] text-text-tertiary">
+                        {TIER[tier].fixed
+                          ? isZh ? "固定价格" : "Fixed price"
+                          : isZh
+                            ? "首次按此价格；之后服务者可按实际用时报价，需您确认"
+                            : "First visit at this price; after it the provider may quote later visits from the real time — you approve"}
+                      </span>
+                    </span>
+                    <span className="text-right">
+                      <span className="block text-[18px] font-bold text-brand tabular-nums">
+                        {sym}{p.base.toFixed(0)}
+                      </span>
+                      <span className="block text-[14px] text-text-tertiary tabular-nums">
+                        {sym}{p.hourly}/{isZh ? "小时" : "h"}
+                      </span>
+                    </span>
+                  </label>
+                </li>
+              );
+            })}
+          </ul>
+
+          {cat === "repair" && (
+            <div>
+              <label htmlFor="jobType" className="block text-[17px] font-bold">
+                {isZh ? "杂工项目" : "Handyman job"}
+              </label>
+              <select
+                id="jobType"
+                name="jobType"
+                required
+                defaultValue={draft.jobType ?? ""}
+                className="mt-1.5 block h-touch-btn w-full rounded-md border-[1.5px] border-border bg-bg-base px-4 text-body"
+              >
+                <option value="" disabled>{isZh ? "请选择" : "Choose…"}</option>
+                {RELEASE_SUBTYPES.repair.map((j) => (
+                  <option key={j} value={j}>{isZh ? JOB_TYPES[j]?.zh : JOB_TYPES[j]?.en}</option>
+                ))}
+              </select>
+              <p className="mt-2 rounded-md bg-warning-soft p-3 text-[15px] text-warning">
+                {isZh
+                  ? "仅限无需执照的小型杂工。电工、水管、燃气、砍树及屋顶/排水沟等高处作业不在服务范围内。"
+                  : "Small no-licence jobs only. Electrical, plumbing, gas, tree felling and roof/gutter work are not offered."}
+              </p>
+            </div>
+          )}
+
+          <p className="text-[15px] text-text-tertiary">
+            {isZh ? "价格不含" : "Prices exclude"} {liveAreasFor(country)[0]?.tax.abbr ?? "tax"}
+          </p>
+          {!paused && <Footer step={step} t={tCommon} backHref="/services" />}
+        </form>
+      </Wizard>
     );
   }
-  }
 
-  // ---- STEP 2: pick provider + datetime ----
+  // ---- STEP 2: provider (trust-gated) + datetime ----
   if (step === 2) {
-    if (!draft.serviceId) {
+    if (!draft.serviceId || !isReleaseCategory(draft.category)) {
       nextRedirect(`/${locale}/bookings/new?step=1`);
     }
-    const [svc] = await db
-      .select({ category: services.categoryCode })
-      .from(services)
-      .where(eq(services.id, draft.serviceId!))
-      .limit(1);
-    const cat = svc?.category as Parameters<typeof tCategories>[0] | undefined;
-
-    // Approved providers offering this category.
-    const providers = cat
-      ? await db
-          .select({
-            id: providerProfiles.id,
-            userId: providerProfiles.userId,
-            radius: providerProfiles.serviceRadiusKm,
-            providerName: users.name,
-            providerEmail: users.email,
-          })
-          .from(providerProfiles)
-          .innerJoin(
-            providerCategories,
-            eq(providerCategories.providerId, providerProfiles.id),
-          )
-          .leftJoin(users, eq(users.id, providerProfiles.userId))
-          .where(
-            and(
-              eq(providerProfiles.onboardingStatus, "approved"),
-              eq(providerCategories.category, cat as never),
-            ),
-          )
-          .limit(50)
-      : [];
-
-    // Default the picker to whatever's in the draft. The "must be at
-    // least 1h from now" rule is enforced in saveStep2, not in the input
-    // attributes — computing min={Date.now()} at render time trips the
-    // react-compiler purity rule and there's no working suppression for
-    // that rule in our ESLint config.
+    const providers = await eligibleProviders(draft.category!, me.id);
     const defaultDateTime = draft.scheduledAt?.slice(0, 16) ?? "";
 
     return (
@@ -372,53 +403,34 @@ export default async function BookingNewPage({
         <h1 className="text-[22px] font-bold">{t("step2Title")}</h1>
         {error === "pick" && (
           <Alert>
-            {isZh ? "请选择服务者并设置时间（必须晚于现在）" : "Pick a provider and a future time"}
+            {isZh ? "请选择服务者并设置时间（至少 1 小时后）" : "Pick a provider and a time at least 1 hour from now"}
           </Alert>
+        )}
+        {error === "invalid" && (
+          <Alert>{isZh ? "该服务者暂不可预约，请选择其他服务者" : "That provider isn't available — please pick another"}</Alert>
         )}
         {providers.length === 0 ? (
           <p className="mt-6 rounded-md border border-border bg-bg-base p-4 text-[16px] text-text-secondary">
             {isZh
-              ? "目前没有可服务的提供者，请稍后再试。"
-              : "No approved providers for this service yet — please try later."}
+              ? "目前没有可服务的服务者，请稍后再试。"
+              : "No providers are available for this service yet — please try later."}
           </p>
         ) : (
           <form action={saveStep2} className="mt-4 flex flex-col gap-4">
             <input type="hidden" name="locale" value={locale} />
             <fieldset>
-              <legend className="text-[17px] font-bold">
-                {isZh ? "服务者" : "Provider"}
-              </legend>
+              <legend className="text-[17px] font-bold">{isZh ? "服务者" : "Provider"}</legend>
               <ul className="mt-2 flex flex-col gap-2">
-                {providers.map((p) => {
-                  const checked = draft.providerId === p.id;
-                  const dispName =
-                    p.providerName ||
-                    (p.providerEmail?.split("@")[0] ?? "Provider");
+                {providers.map((p, i) => {
+                  const checked = draft.providerId ? draft.providerId === p.id : i === 0;
+                  const dispName = p.providerName || (p.providerEmail?.split("@")[0] ?? "Provider");
                   return (
                     <li key={p.id}>
-                      <label
-                        className={
-                          "flex cursor-pointer items-center gap-3 rounded-md border-[1.5px] bg-bg-base p-3.5 has-[:checked]:border-2 has-[:checked]:border-brand " +
-                          (checked ? "border-brand" : "border-border")
-                        }
-                      >
-                        <input
-                          type="radio"
-                          name="providerId"
-                          value={p.id}
-                          defaultChecked={checked}
-                          required
-                          className="peer sr-only"
-                        />
-                        <span
-                          className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-border-strong after:hidden after:h-3 after:w-3 after:rounded-full after:bg-brand after:content-[''] peer-checked:border-brand peer-checked:after:block"
-                          aria-hidden
-                        />
-                        <span className="flex-1 text-[16px] font-semibold">
-                          {dispName}
-                        </span>
+                      <label className="flex cursor-pointer items-center gap-3 rounded-md border-[1.5px] border-border bg-bg-base p-3.5 has-[:checked]:border-2 has-[:checked]:border-brand">
+                        <input type="radio" name="providerId" value={p.id} defaultChecked={checked} required className="h-5 w-5 accent-[var(--brand-primary)]" />
+                        <span className="flex-1 text-[16px] font-semibold">{dispName}</span>
                         <span className="text-[16px] text-text-tertiary tabular-nums">
-                          {p.radius} km
+                          {p.reviewCount > 0 ? `★ ${p.avgRating.toFixed(1)} (${p.reviewCount})` : isZh ? "新服务者" : "New"}
                         </span>
                       </label>
                     </li>
@@ -427,10 +439,7 @@ export default async function BookingNewPage({
               </ul>
             </fieldset>
             <div>
-              <label
-                htmlFor="scheduledAt"
-                className="block text-[17px] font-bold"
-              >
+              <label htmlFor="scheduledAt" className="block text-[17px] font-bold">
                 {isZh ? "时间" : "When"}
               </label>
               <input
@@ -442,23 +451,17 @@ export default async function BookingNewPage({
                 className="mt-1.5 block h-touch-btn w-full rounded-md border-[1.5px] border-border bg-bg-base px-4 text-body text-text-primary focus:border-brand focus:outline-none"
               />
               <p className="mt-1.5 text-[17px] text-text-tertiary">
-                {isZh
-                  ? "需在 1 小时之后预订。"
-                  : "Must be at least 1 hour from now."}
+                {isZh ? "需在 1 小时之后预订。" : "Must be at least 1 hour from now."}
               </p>
             </div>
-            <Footer
-              step={step}
-              t={tCommon}
-              backHref="/bookings/new?step=1"
-            />
+            <Footer step={step} t={tCommon} backHref="/bookings/new?step=1" />
           </form>
         )}
       </Wizard>
     );
   }
 
-  // ---- STEP 3: pick address ----
+  // ---- STEP 3: address inside a live area ----
   if (step === 3) {
     if (!draft.serviceId || !draft.providerId || !draft.scheduledAt) {
       nextRedirect(`/${locale}/bookings/new?step=1`);
@@ -471,112 +474,65 @@ export default async function BookingNewPage({
     return (
       <Wizard step={step} country={country} initials={me.initials}>
         <h1 className="text-[22px] font-bold">{t("step3Title")}</h1>
-        {error === "pickAddress" && (
-          <Alert>{isZh ? "请选择一个地址" : "Pick an address"}</Alert>
+        {error === "pickAddress" && <Alert>{isZh ? "请选择一个地址" : "Pick an address"}</Alert>}
+        {error === "outsideArea" && (
+          <Alert>
+            {isZh
+              ? "该地址暂不在服务范围内。目前开通：墨尔本和温哥华的华人社区。"
+              : "That address isn't in a service area yet. We're live in Melbourne's and Vancouver's Chinese communities."}
+          </Alert>
         )}
-        {myAddresses.length === 0 ? (
-          <div className="mt-6 rounded-md border border-border bg-bg-base p-4">
-            <p className="text-[16px] text-text-secondary">
-              {isZh
-                ? "还没有保存地址。请先到资料里新增一个地址。"
-                : "No saved addresses yet. Add one in your profile first."}
-            </p>
-            <Link
-              href="/profile/addresses?add=1"
-              className="mt-3 inline-flex h-12 items-center rounded-md bg-brand px-5 text-[17px] font-bold text-white"
-            >
-              {isZh ? "新增地址" : "Add address"}
-            </Link>
-          </div>
-        ) : (
+        {myAddresses.length === 0 ? null : (
           <form action={saveStep3} className="mt-4 flex flex-col gap-3">
             <input type="hidden" name="locale" value={locale} />
             <ul className="flex flex-col gap-3">
               {myAddresses.map((a) => {
-                const checked =
-                  draft.addressId === a.id ||
-                  (!draft.addressId && a.isDefault);
+                const area = findLiveArea(a.country, a.postcode);
+                const checked = draft.addressId === a.id || (!draft.addressId && a.isDefault && !!area);
                 return (
                   <li key={a.id}>
                     <label
                       className={
-                        "flex h-20 cursor-pointer items-center gap-3 rounded-md border-[1.5px] bg-bg-base p-4 has-[:checked]:border-2 has-[:checked]:border-brand " +
-                        (checked ? "border-brand" : "border-border")
+                        "flex min-h-20 items-center gap-3 rounded-md border-[1.5px] border-border bg-bg-base p-4 has-[:checked]:border-2 has-[:checked]:border-brand " +
+                        (area ? "cursor-pointer" : "opacity-60")
                       }
                     >
-                      <input
-                        type="radio"
-                        name="addressId"
-                        value={a.id}
-                        defaultChecked={checked}
-                        required
-                        className="sr-only"
-                      />
+                      <input type="radio" name="addressId" value={a.id} defaultChecked={checked} disabled={!area} required className="h-5 w-5 accent-[var(--brand-primary)]" />
                       <span className="flex-1">
-                        <span className="block text-[16px] font-bold">
-                          {a.label || (isZh ? "地址" : "Address")}
-                        </span>
+                        <span className="block text-[16px] font-bold">{a.label || (isZh ? "地址" : "Address")}</span>
                         <span className="block text-[16px] text-text-secondary">
-                          {[a.line1, a.city, a.state, a.postcode]
-                            .filter(Boolean)
-                            .join(" ")}
+                          {[a.line1, a.city, a.state, a.postcode].filter(Boolean).join(" ")}
                         </span>
+                        {!area && (
+                          <span className="mt-1 block text-[15px] text-warning">
+                            {isZh ? "暂不在服务范围内" : "Not in a service area yet"}
+                          </span>
+                        )}
                       </span>
                     </label>
                   </li>
                 );
               })}
             </ul>
-            <Footer
-              step={step}
-              t={tCommon}
-              backHref="/bookings/new?step=2"
-            />
+            <Footer step={step} t={tCommon} backHref="/bookings/new?step=2" />
           </form>
         )}
+        <Link
+          href="/profile/addresses?add=1"
+          className="mt-4 inline-flex h-12 items-center rounded-md border-2 border-brand px-5 text-[17px] font-bold text-brand"
+        >
+          {isZh ? "新增地址" : "Add address"}
+        </Link>
       </Wizard>
     );
   }
 
-  // ---- STEP 4: confirm + finalize ----
-  if (
-    !draft.serviceId ||
-    !draft.providerId ||
-    !draft.addressId ||
-    !draft.scheduledAt
-  ) {
+  // ---- STEP 4: review + pay ----
+  if (!draft.serviceId || !draft.providerId || !draft.addressId || !draft.scheduledAt) {
     nextRedirect(`/${locale}/bookings/new?step=1`);
   }
-
-  const [svcRow] = await db
-    .select({
-      code: services.code,
-      durationMin: services.durationMin,
-      category: services.categoryCode,
-    })
-    .from(services)
-    .where(eq(services.id, draft.serviceId!))
-    .limit(1);
-  const [priceRow] = await db
-    .select({
-      basePrice: servicePrices.basePrice,
-      taxRate: servicePrices.taxRate,
-      currency: servicePrices.currency,
-    })
-    .from(servicePrices)
-    .where(
-      and(
-        eq(servicePrices.serviceId, draft.serviceId!),
-        eq(servicePrices.country, country),
-      ),
-    )
-    .limit(1);
   const [providerRow] = await db
-    .select({
-      id: providerProfiles.id,
-      name: users.name,
-      email: users.email,
-    })
+    .select({ id: providerProfiles.id, name: users.name, email: users.email })
     .from(providerProfiles)
     .leftJoin(users, eq(users.id, providerProfiles.userId))
     .where(eq(providerProfiles.id, draft.providerId!))
@@ -584,96 +540,69 @@ export default async function BookingNewPage({
   const [addressRow] = await db
     .select()
     .from(addresses)
-    .where(eq(addresses.id, draft.addressId!))
+    .where(and(eq(addresses.id, draft.addressId!), eq(addresses.userId, me.id)))
     .limit(1);
-
-  const base = priceRow ? Number(priceRow.basePrice) : 0;
-  const taxRate = priceRow ? Number(priceRow.taxRate) : 0;
-  const tax = +(base * taxRate).toFixed(2);
-  const total = +(base + tax).toFixed(2);
+  const price = await priceReleaseBooking({
+    customerId: me.id,
+    providerId: draft.providerId!,
+    category: draft.category,
+    tier: draft.tier,
+    address: addressRow ?? null,
+  });
+  if (!price) nextRedirect(`/${locale}/bookings/new?step=3&error=outsideArea`);
+  const psym = CURRENCY_SYMBOL[price.area.country];
   const sched = new Date(draft.scheduledAt!);
 
   return (
-    <Wizard step={step} country={country} initials={me.initials}>
+    <Wizard step={step} country={price.area.country} initials={me.initials}>
       <h1 className="text-[22px] font-bold">{t("step4Title")}</h1>
       <section className="mt-4 rounded-lg border border-border bg-bg-base p-4 text-[16px]">
         <Row
           label={isZh ? "服务" : "Service"}
-          value={
-            svcRow?.category
-              ? `${tCategories(svcRow.category as Parameters<typeof tCategories>[0])} · ${(svcRow.durationMin / 60).toFixed(1)}h`
-              : "—"
-          }
+          value={`${catName(draft.category!)} · ${tierLabel(price.tier, isZh)} · ${price.hours}h${
+            draft.jobType ? ` · ${isZh ? JOB_TYPES[draft.jobType]?.zh : JOB_TYPES[draft.jobType]?.en}` : ""
+          }`}
         />
-        <Row
-          label={isZh ? "服务者" : "Provider"}
-          value={providerRow?.name || providerRow?.email?.split("@")[0] || "—"}
-        />
+        <Row label={isZh ? "服务者" : "Provider"} value={providerRow?.name || providerRow?.email?.split("@")[0] || "—"} />
         <Row
           label={isZh ? "时间" : "When"}
           value={sched.toLocaleString(isZh ? "zh-CN" : "en-AU", {
-            weekday: "short",
-            month: "short",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
+            weekday: "short", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
           })}
         />
         <Row
           label={isZh ? "地址" : "Address"}
-          value={
-            addressRow
-              ? [
-                  addressRow.line1,
-                  addressRow.city,
-                  addressRow.state,
-                  addressRow.postcode,
-                ]
-                  .filter(Boolean)
-                  .join(" ")
-              : "—"
-          }
+          value={addressRow ? [addressRow.line1, addressRow.city, addressRow.state, addressRow.postcode].filter(Boolean).join(" ") : "—"}
         />
       </section>
+      {price.quoteId && (
+        <p className="mt-3 rounded-md bg-brand-soft px-3.5 py-3 text-[16px] text-brand">
+          {isZh ? "✅ 已按您确认的报价计价" : "✅ Priced from the quote you approved"}
+        </p>
+      )}
       <section className="mt-3 rounded-lg border border-border bg-bg-base p-4">
         <div className="flex justify-between text-[16px] text-text-secondary">
-          <span>{isZh ? "服务费" : "Service"}</span>
-          <span className="tabular-nums">
-            {sym}
-            {base.toFixed(2)}
-          </span>
+          <span>{price.hours}h × {psym}{price.hourly}</span>
+          <span className="tabular-nums">{psym}{price.base.toFixed(2)}</span>
         </div>
         <div className="mt-1.5 flex justify-between text-[16px] text-text-secondary">
-          <span>
-            {taxAbbr} {(taxRate * 100).toFixed(0)}%
-          </span>
-          <span className="tabular-nums">
-            {sym}
-            {tax.toFixed(2)}
-          </span>
+          <span>{price.taxLabel}</span>
+          <span className="tabular-nums">{psym}{price.tax.toFixed(2)}</span>
         </div>
         <div className="mt-2.5 flex justify-between border-t border-border pt-2.5 text-[18px] font-extrabold">
           <span>{isZh ? "合计" : "Total"}</span>
-          <span className="text-brand tabular-nums">
-            {sym}
-            {total.toFixed(2)} {priceRow?.currency}
-          </span>
+          <span className="text-brand tabular-nums">{psym}{price.total.toFixed(2)} {price.currency}</span>
         </div>
       </section>
-      <p className="mt-3 rounded-md bg-brand-soft px-3.5 py-3 text-[16px] text-brand">
-        {isZh
-          ? "ℹ️ 距开始 > 24 小时取消可全额退款"
-          : "ℹ️ Free cancel until 24h before start"}
-      </p>
+      <ul className="mt-3 flex flex-col gap-1.5 rounded-md bg-bg-base px-3.5 py-3 text-[15px] text-text-secondary">
+        <li>📸 {isZh ? "服务者须拍摄服务前后照片/视频，您确认满意后才放款。" : "Your provider must take before & after photos/video; payment is released only after you confirm."}</li>
+        <li>ℹ️ {isZh ? "取消政策：" : "Cancellation: "}<Link href="/cancellation-policy" className="underline">{isZh ? "查看详情" : "see policy"}</Link></li>
+      </ul>
       <form action={finalizeBooking} className="mt-4 flex flex-col gap-3">
         <input type="hidden" name="locale" value={locale} />
-        <input type="hidden" name="country" value={country} />
         <div>
-          <label
-            htmlFor="notes"
-            className="block text-[16px] font-bold text-text-primary"
-          >
-            {isZh ? "备注（可选）" : "Notes (optional)"}
+          <label htmlFor="notes" className="block text-[16px] font-bold text-text-primary">
+            {isZh ? "备注（可选）：门禁、宠物、重点区域等" : "Notes (optional): access, pets, focus areas"}
           </label>
           <textarea
             id="notes"
@@ -687,15 +616,17 @@ export default async function BookingNewPage({
           step={step}
           t={tCommon}
           backHref="/bookings/new?step=3"
-          finalCta={
-            isZh
-              ? `确认并支付 ${sym}${total.toFixed(2)}`
-              : `Confirm & pay ${sym}${total.toFixed(2)}`
-          }
+          finalCta={isZh ? `确认并支付 ${psym}${price.total.toFixed(2)}` : `Confirm & pay ${psym}${price.total.toFixed(2)}`}
         />
       </form>
     </Wizard>
   );
+}
+
+function tierLabel(tier: EffortTier, zh: boolean): string {
+  return zh
+    ? { regular: "常规", medium: "中度", high: "高强度" }[tier]
+    : { regular: "Regular", medium: "Medium effort", high: "High effort" }[tier];
 }
 
 function Wizard({
@@ -705,7 +636,7 @@ function Wizard({
   children,
 }: {
   step: Step;
-  country: "AU" | "CN" | "CA" | "US" | "TW" | "SG" | "HK" | "MY";
+  country: CountryCode;
   initials: string;
   children: React.ReactNode;
 }) {

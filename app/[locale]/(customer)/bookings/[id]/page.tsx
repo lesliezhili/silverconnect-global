@@ -1,4 +1,5 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import { QuoteDecision } from "./QuoteDecision";
 import { redirect as nextRedirect, notFound } from "next/navigation";
 import { after } from "next/server";
 import { eq, and } from "drizzle-orm";
@@ -215,7 +216,7 @@ export default async function BookingDetailPage({
   const tCta = await getTranslations("booking.cta");
   const tCommon = await getTranslations("common");
   const country = await getCountry();
-  const isZh = locale === "zh";
+  const isZh = locale === "zh" || locale === "zh_tw";
   const sym = CURRENCY_SYMBOL[country];
 
   try {
@@ -233,6 +234,7 @@ export default async function BookingDetailPage({
         addressCity: addresses.city,
         addressState: addresses.state,
         addressPostcode: addresses.postcode,
+        addressCountry: addresses.country,
         serviceCode: services.code,
         serviceCategory: services.categoryCode,
       })
@@ -377,6 +379,14 @@ export default async function BookingDetailPage({
             {t("statusTimeline")}
           </h2>
           <BookingTimeline status={badge} />
+
+          {(status === "completed" || status === "released") && (
+            <QuoteDecision
+              locale={locale}
+              bookingId={id}
+              address={{ country: row.addressCountry, postcode: row.addressPostcode }}
+            />
+          )}
 
           {(status === "confirmed" ||
             status === "in_progress" ||

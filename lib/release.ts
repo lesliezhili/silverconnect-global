@@ -39,6 +39,36 @@ export const RELEASE_SUBTYPES: Record<ReleaseCategory, readonly string[]> = {
 /** Handyman jobs above this (labour + materials) need a registered builder in VIC. */
 export const HANDYMAN_JOB_CAP = 10_000;
 
+/**
+ * Built but not part of Release 1. Kept in the codebase as reference for
+ * later releases (see docs/FUTURE_RELEASES.md); the proxy sends visitors
+ * to /coming-soon instead. Paths are without the locale prefix.
+ */
+export const FUTURE_ROUTES: readonly string[] = [
+  // Faith & emotional-care programmes
+  "/christian", "/devotional", "/book-faith", "/xinyuzhe", "/biography",
+  "/provider/register-faith", "/provider/faith-info", "/provider/faith-schedule",
+  "/provider/complete-faith", "/provider/prayer-report", "/provider/prayer-reports",
+  // Other customer features
+  "/donate", "/products", "/nearby", "/country-services", "/family",
+  "/customer/membership", "/profile/coins", "/profile/referrals", "/profile/funding",
+  "/bookings/recurring",
+  // Legacy booking flows — Release 1 books only through /bookings/new
+  "/book", "/book-service",
+  // Care facilities & certified care
+  "/register/day-care-centre", "/register/certification", "/provider/licenses",
+  // Provider extras
+  "/provider/guaranteed-wage", "/provider/leaderboard", "/provider/achievements",
+  "/provider/goals", "/provider/team-chat", "/provider/smart-pricing",
+  "/provider/seniors", "/provider/training",
+  // Internal / demo
+  "/test-sos", "/dev",
+];
+
+export function isFutureRoute(pathWithoutLocale: string): boolean {
+  return FUTURE_ROUTES.some((r) => pathWithoutLocale === r || pathWithoutLocale.startsWith(r + "/"));
+}
+
 export function isReleaseSubtype(category: string, subtype: string | null | undefined): boolean {
   if (!isReleaseCategory(category)) return false;
   const allowed = RELEASE_SUBTYPES[category];

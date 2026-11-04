@@ -22,24 +22,23 @@ for (const locale of LOCALES) {
       expect(await links.count()).toBeGreaterThan(3);
     });
 
-    test(`book-service page loads`, async ({ page }) => {
-      const res = await page.goto(`/${locale}/book-service`);
-      expect([200, 302, 303]).toContain(res?.status() ?? 200);
-      await expect(page.getByRole('heading').first()).toBeVisible();
+    test(`legacy book-service redirects to coming-soon`, async ({ page }) => {
+      await page.goto(`/${locale}/book-service`);
+      await expect(page).toHaveURL(new RegExp(`/${locale}/coming-soon`));
     });
   });
 
   test.describe(`Nearby providers [${locale}]`, () => {
-    test(`nearby page loads or redirects to auth`, async ({ page }) => {
-      const res = await page.goto(`/${locale}/nearby`);
-      expect([200, 302, 303]).toContain(res?.status() ?? 200);
+    test(`nearby is a future release`, async ({ page }) => {
+      await page.goto(`/${locale}/nearby`);
+      await expect(page).toHaveURL(new RegExp(`/${locale}/coming-soon`));
     });
   });
 
   test.describe(`Country services [${locale}]`, () => {
-    test(`country-services page loads`, async ({ page }) => {
-      const res = await page.goto(`/${locale}/country-services`);
-      expect([200, 302, 303]).toContain(res?.status() ?? 200);
+    test(`country-services is a future release`, async ({ page }) => {
+      await page.goto(`/${locale}/country-services`);
+      await expect(page).toHaveURL(new RegExp(`/${locale}/coming-soon`));
     });
   });
 }

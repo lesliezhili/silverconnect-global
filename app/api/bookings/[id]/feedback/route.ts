@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { bookings } from "@/lib/db/schema/bookings";
+import { isEffortTier } from "@/lib/release-pricing";
+import { releaseOrHold } from "@/lib/feedback/release";
 import { reviews } from "@/lib/db/schema/reviews";
 import { providerProfiles } from "@/lib/db/schema/providers";
 import { wallets } from "@/lib/db/schema/payments";
@@ -108,6 +110,17 @@ export async function POST(
   const { id: bookingId } = await params;
   const body = await req.json();
   const { rating, comment } = body;
+  // Optional per-aspect 1..5 ratings and a next-visit tier suggestion —
+  // feed provider matching and service selection (lib/release-quality.ts).
+  const ASPECTS = ["quality", "punctuality", "communication", "access", "accurate_description", "respect"];
+  const aspects: Record<string, number> = {};
+  if (body.aspects && typeof body.aspects === "object") {
+    for (const [k, v] of Object.entries(body.aspects as Record<string, unknown>)) {
+      const n = Number(v);
+      if (ASPECTS.includes(k) && Number.isInteger(n) && n >= 1 && n <= 5) aspects[k] = n;
+    }
+  }
+  const suggestedTier = isEffortTier(body.suggestedTier) ? body.suggestedTier : null;
 
   if (!rating || rating < 1 || rating > 5) {
     return NextResponse.json({ error: "Rating must be 1-5" }, { status: 400 });
@@ -152,40 +165,22 @@ export async function POST(
       rating,
       comment: comment || null,
       direction: feedbackType,
+      aspects: Object.keys(aspects).length ? aspects : null,
+      suggestedTier,
     }).onConflictDoNothing(); // prevent duplicate submission in either direction
   }
 
-  // After both feedback received → release funds to provider
-  // In production: check both sides submitted. For now: mark released on customer feedback.
+  // Customer confirmation releases (or holds) the payout — lib/feedback/release.ts.
+  let payoutTriggered = false;
+  let heldForReview = false;
   if (isCustomer) {
-    await db.update(bookings).set({
-      status: "released" as never,
-      updatedAt: new Date(),
-    }).where(eq(bookings.id, bookingId));
-
-    // Credit provider wallet
-    if (booking.providerId) {
-      const amount = String(booking.totalPrice || "0");
-      const platformFee = (Number(amount) * 0.15).toFixed(2); // 15% platform fee
-      const providerEarning = (Number(amount) - Number(platformFee)).toFixed(2);
-
-      // Upsert wallet balance (best-effort — wallet table may not exist yet)
-      try {
-        await db.execute(sql`
-          INSERT INTO wallets (id, provider_id, balance_available, balance_pending, currency, updated_at)
-          VALUES (gen_random_uuid(), ${booking.providerId}, ${providerEarning}, '0', ${booking.currency || 'AUD'}, NOW())
-          ON CONFLICT (provider_id)
-          DO UPDATE SET
-            balance_available = wallets.balance_available + ${Number(providerEarning)},
-            updated_at = NOW()
-        `);
-      } catch (walletErr) {
-        console.warn("[feedback] Wallet upsert failed (table may not exist):", walletErr);
-      }
+    const r = await releaseOrHold({ bookingId, actorId: me.id, rating });
+    payoutTriggered = r.released;
+    heldForReview = r.held;
+    if (r.released) {
+      await maybeRewardReferral(booking.customerId, booking.currency || "AUD");
+      await maybeRewardCoins(booking.customerId);
     }
-
-    await maybeRewardReferral(booking.customerId, booking.currency || "AUD");
-    await maybeRewardCoins(booking.customerId);
   }
 
   return NextResponse.json({
@@ -193,9 +188,12 @@ export async function POST(
     feedbackType,
     rating,
     message: isCustomer
-      ? "Thank you for your feedback! Payment has been released to your helper."
-      : "Thank you for rating this customer. Your earnings are now available.",
-    payoutTriggered: isCustomer,
+      ? heldForReview
+        ? "Thank you. Our team will review this job before payment is released."
+        : "Thank you for your feedback! Payment has been released to your helper."
+      : "Thank you for rating this customer.",
+    payoutTriggered,
+    heldForReview,
   });
 }
 

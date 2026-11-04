@@ -6,6 +6,7 @@ import {
   integer,
   uniqueIndex,
   index,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import { users } from "./users";
 import { bookings } from "./bookings";
@@ -31,6 +32,10 @@ export const reviews = pgTable(
     status: reviewStatusEnum("status").notNull().default("published"),
     /** 'customer_to_provider' (the original, and only, direction until dual feedback) | 'provider_to_customer'. One row per booking per direction. */
     direction: text("direction").notNull().default("customer_to_provider"),
+    /** Per-aspect 1..5 ratings, e.g. { quality, punctuality, communication } or { access, accurate_description, respect }. */
+    aspects: jsonb("aspects").$type<Record<string, number>>(),
+    /** Rater's suggested effort tier for the next visit. */
+    suggestedTier: text("suggested_tier"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },

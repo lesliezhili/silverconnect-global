@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   Scale,
   ShieldAlert,
+  ShieldCheck,
   Users,
   RotateCcw,
   BarChart3,
@@ -28,6 +29,7 @@ import { cn } from "@/components/ui/cn";
 
 const NAV_PRIMARY = [
   { key: "navOverview", href: "/admin", Icon: LayoutDashboard, exact: true },
+  { key: "navQuality", href: "/admin/quality", Icon: ShieldCheck, exact: false },
   { key: "navDisputes", href: "/admin/disputes", Icon: Scale, exact: false },
   { key: "navSafety", href: "/admin/safety", Icon: ShieldAlert, exact: false },
   { key: "navProviders", href: "/admin/providers", Icon: Users, exact: false },

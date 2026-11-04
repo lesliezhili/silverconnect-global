@@ -158,7 +158,7 @@ export default async function LandingPage({
             ].filter((s) => isReleaseCategory(s.cat)).map((s) => (
               <Link
                 key={s.cat}
-                href="/book-service"
+                href={`/services/${s.cat}`}
                 className="flex flex-col items-center justify-center rounded-2xl border-2 border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-teal-400 hover:bg-teal-50 hover:shadow-lg active:scale-[0.96] active:bg-teal-100"
                 style={{ minHeight: "130px" }}
               >

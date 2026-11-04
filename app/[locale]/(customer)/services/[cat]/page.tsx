@@ -1,25 +1,19 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { eq, and, desc, sql } from "drizzle-orm";
 import { Header } from "@/components/layout/Header";
 import { ProviderCard } from "@/components/domain/ProviderCard";
 import { CURRENCY_SYMBOL, TAX_ABBR } from "@/components/domain/country";
 import { getCountry } from "@/components/domain/countryCookie";
 import { getSession } from "@/components/domain/sessionCookie";
 import { EmptyState } from "@/components/domain/PageStates";
-import { db } from "@/lib/db";
 import { isReleaseCategory } from "@/lib/release";
-import {
-  serviceCategories,
-  services,
-  servicePrices,
-} from "@/lib/db/schema/services";
-import {
-  providerProfiles,
-  providerCategories,
-} from "@/lib/db/schema/providers";
-import { users } from "@/lib/db/schema/users";
-import { reviews } from "@/lib/db/schema/reviews";
+import { Link } from "@/i18n/navigation";
+import { isReleaseCountry, liveAreasFor, type ReleaseCategory, type ReleaseCountry } from "@/lib/release";
+import { EFFORT_TIERS, TIER_SCOPE, priceFor } from "@/lib/release-pricing";
+import { eligibleProviders } from "@/lib/trust";
+
+/** Placeholder customer id for anonymous visitors (no pair blocks apply). */
+const ANON_CUSTOMER = "00000000-0000-0000-0000-000000000000";
 
 export const dynamic = "force-dynamic";
 
@@ -79,90 +73,22 @@ export default async function ProvidersByCategoryPage({
   }> = [];
   let cheapestHourly = 0;
 
+  // Release 1: standard tier prices + trust-gated providers.
+  const relCountry: ReleaseCountry = isReleaseCountry(country) ? country : "AU";
+  const relCat = cat as ReleaseCategory;
+  const taxRate = liveAreasFor(relCountry)[0]?.tax.rate ?? 0;
+  const tiers = EFFORT_TIERS.map((tier) => ({ tier, ...priceFor({ country: relCountry, category: relCat, tier, taxRate }) }));
+  cheapestHourly = Math.round(tiers[0].hourly);
+  hourlyLabel = `${sym}${Math.round(tiers[0].hourly)}–${Math.round(tiers[2].hourly)}`;
   try {
-    // Verify category exists in DB
-    const [validCat] = await db
-      .select({ code: serviceCategories.code })
-      .from(serviceCategories)
-      .where(
-        and(
-          eq(serviceCategories.code, cat),
-          eq(serviceCategories.enabled, true),
-        ),
-      )
-      .limit(1);
-
-    // If DB has categories but this one isn't there, still show the page
-    // (don't notFound — it's a valid category, just not seeded in DB)
-
-    // Hourly price window
-    const priceRows = await db
-      .select({
-        basePrice: servicePrices.basePrice,
-        durationMin: services.durationMin,
-      })
-      .from(services)
-      .innerJoin(
-        servicePrices,
-        and(
-          eq(servicePrices.serviceId, services.id),
-          eq(servicePrices.country, country),
-        ),
-      )
-      .where(
-        and(
-          eq(services.enabled, true),
-          eq(services.categoryCode, cat),
-        ),
-      );
-
-    let lo = Number.POSITIVE_INFINITY;
-    let hi = 0;
-    for (const r of priceRows) {
-      const hr = (Number(r.basePrice) * 60) / Math.max(1, r.durationMin);
-      lo = Math.min(lo, hr);
-      hi = Math.max(hi, hr);
-    }
-    if (Number.isFinite(lo)) {
-      hourlyLabel = `${sym}${Math.round(lo)}–${Math.round(hi)}`;
-      cheapestHourly = Math.round(lo);
-    }
-
-    // Approved providers
-    provs = await db
-      .select({
-        id: providerProfiles.id,
-        userId: providerProfiles.userId,
-        name: users.name,
-        email: users.email,
-        ratingAvg: (sql<number>`coalesce(avg(${reviews.rating}), 0)::float`),
-        ratingCount: (sql<number>`count(${reviews.id})::int`),
-      })
-      .from(providerProfiles)
-      .innerJoin(
-        providerCategories,
-        eq(providerCategories.providerId, providerProfiles.id),
-      )
-      .leftJoin(users, eq(users.id, providerProfiles.userId))
-      .leftJoin(
-        reviews,
-        and(
-          eq(reviews.providerId, providerProfiles.id),
-          eq(reviews.status, "published"),
-        ),
-      )
-      .where(
-        and(
-          eq(providerProfiles.onboardingStatus, "approved"),
-          eq(providerCategories.category, cat as never),
-        ),
-      )
-      .groupBy(providerProfiles.id, providerProfiles.userId, users.name, users.email)
-      .orderBy(
-        desc(sql`avg(${reviews.rating})`),
-        desc(sql`count(${reviews.id})`),
-      )
-      .limit(50);
+    provs = (await eligibleProviders(cat, session.userId ?? ANON_CUSTOMER)).map((p) => ({
+      id: p.id,
+      userId: p.userId,
+      name: p.providerName,
+      email: p.providerEmail,
+      ratingAvg: p.avgRating,
+      ratingCount: p.reviewCount,
+    }));
   } catch (error) {
     console.error(`[services/${cat}] DB unavailable`, error);
   }
@@ -190,8 +116,8 @@ export default async function ProvidersByCategoryPage({
             {hourlyLabel && (
               <p className="mt-0.5 text-[16px] text-text-secondary">
                 {isZh
-                  ? `${hourlyLabel}/小时（含${taxAbbr}）`
-                  : `${hourlyLabel}/h (incl. ${taxAbbr})`}
+                  ? `${hourlyLabel}/小时（不含${taxAbbr}）`
+                  : `${hourlyLabel}/h (ex ${taxAbbr})`}
               </p>
             )}
           </div>
@@ -200,6 +126,35 @@ export default async function ProvidersByCategoryPage({
         <p className="mt-4 text-[17px] text-text-secondary">
           {tCat(`${cat}Desc` as Parameters<typeof tCat>[0])}
         </p>
+
+        <section className="mt-5 rounded-lg border border-border bg-bg-base p-4">
+          <h2 className="text-[18px] font-bold">{isZh ? "标准价格" : "Standard prices"}</h2>
+          <ul className="mt-2 flex flex-col divide-y divide-border">
+            {tiers.map((p) => (
+              <li key={p.tier} className="py-2.5">
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-[17px] font-semibold">
+                    {isZh ? { regular: "常规", medium: "中度", high: "高强度" }[p.tier] : { regular: "Regular", medium: "Medium effort", high: "High effort" }[p.tier]}
+                    {" · "}{p.hours}h
+                  </span>
+                  <span className="text-[17px] font-bold text-brand tabular-nums">{sym}{p.base.toFixed(0)}</span>
+                </div>
+                <p className="mt-0.5 text-[15px] text-text-secondary">{isZh ? TIER_SCOPE[relCat][p.tier].zh : TIER_SCOPE[relCat][p.tier].en}</p>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-[14px] text-text-tertiary">
+            {isZh
+              ? "常规为固定价格。中度/高强度首次按此价格，之后服务者可按实际用时报价，需您确认。"
+              : "Regular is a fixed price. Medium/high: first visit at this price; the provider may then quote later visits from the real time — you approve."}
+          </p>
+          <Link
+            href={`/bookings/new?step=1&cat=${cat}`}
+            className="mt-3 flex h-14 items-center justify-center rounded-md bg-brand text-[18px] font-bold text-white"
+          >
+            {isZh ? "立即预约" : "Book now"}
+          </Link>
+        </section>
 
         {provs.length === 0 ? (
           <div className="mt-8">
@@ -223,6 +178,7 @@ export default async function ProvidersByCategoryPage({
               <ProviderCard
                 key={p.id}
                 country={country}
+                category={cat}
                 provider={{
                   id: p.id,
                   name: p.name || (p.email?.split("@")[0] ?? "Provider"),

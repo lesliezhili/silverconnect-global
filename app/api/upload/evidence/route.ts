@@ -45,6 +45,11 @@ async function isAssignedProvider(userId: string, bookingId: string): Promise<bo
   return !!row;
 }
 
+/** QC area key (lib/release-quality.ts QC_AREAS), stored in booking_evidence.description. */
+function cleanArea(area: unknown): string | null {
+  return typeof area === "string" && /^[a-z_]{1,32}$/.test(area) ? area : null;
+}
+
 function validPhase(type: unknown): type is "before" | "after" {
   return type === "before" || type === "after";
 }
@@ -74,7 +79,7 @@ export async function POST(req: NextRequest) {
 
     const [row] = await db
       .insert(bookingEvidence)
-      .values({ bookingId, uploadedBy: user.id, phase: type, fileUrl: result.url! })
+      .values({ bookingId, uploadedBy: user.id, phase: type, fileUrl: result.url!, description: cleanArea(fd.get("area")) })
       .returning({ id: bookingEvidence.id });
 
     return NextResponse.json({ success: true, id: row.id, url: result.url, path: result.path, simulated: result.simulated });
@@ -95,7 +100,7 @@ export async function POST(req: NextRequest) {
     const fileUrl = getPublicUrl("evidence", path);
     const [row] = await db
       .insert(bookingEvidence)
-      .values({ bookingId, uploadedBy: user.id, phase: type, fileUrl })
+      .values({ bookingId, uploadedBy: user.id, phase: type, fileUrl, description: cleanArea(body.area) })
       .returning({ id: bookingEvidence.id });
     return NextResponse.json({ success: true, id: row.id, url: fileUrl, path });
   }

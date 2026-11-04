@@ -48,26 +48,23 @@ test.describe('Services page — aged care / NDIS services', () => {
     await expect(page.getByRole('heading').first()).toBeVisible()
   })
 
-  test('book-service page loads', async ({ page }) => {
-    const res = await page.goto(BASE + '/book-service')
-    // May redirect to login if auth required
-    expect([200, 302, 303]).toContain(res?.status() ?? 200)
-    await expect(page.getByRole('heading').first()).toBeVisible()
+  test('legacy book-service redirects to coming-soon (Release 1)', async ({ page }) => {
+    await page.goto(BASE + '/book-service')
+    await expect(page).toHaveURL(/coming-soon/)
   })
 })
 
-test.describe('Nearby providers — GPS location matching', () => {
-  test('nearby page loads', async ({ page }) => {
-    const res = await page.goto(BASE + '/nearby')
-    expect([200, 302, 303]).toContain(res?.status() ?? 200)
+test.describe('Nearby providers — future release', () => {
+  test('nearby redirects to coming-soon', async ({ page }) => {
+    await page.goto(BASE + '/nearby')
+    await expect(page).toHaveURL(/coming-soon/)
   })
 })
 
 test.describe('Profile — NDIS / disability funding setup', () => {
-  test('funding page redirects to login when unauthenticated', async ({ page }) => {
+  test('funding page is a future release', async ({ page }) => {
     await page.goto(BASE + '/profile/funding')
-    // Must redirect to login — funding is sensitive (NDIS, TAC, WorkSafe)
-    await expect(page).toHaveURL(/auth\/login|login/)
+    await expect(page).toHaveURL(/coming-soon/)
   })
 
   test('emergency contact page requires auth', async ({ page }) => {
