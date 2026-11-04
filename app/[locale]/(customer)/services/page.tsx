@@ -7,6 +7,7 @@ import { fmtPriceRange } from "@/components/domain/country";
 import { getCountry } from "@/components/domain/countryCookie";
 import { getSession } from "@/components/domain/sessionCookie";
 import { db } from "@/lib/db";
+import { isReleaseCategory } from "@/lib/release";
 import {
   serviceCategories,
   services,
@@ -82,8 +83,6 @@ export default async function ServicesPage({
       .orderBy(serviceCategories.sortOrder);
 
     if (dbCats.length > 0) cats = dbCats;
-    // Faith services are opt-in and shown only to signed-in users.
-    if (!session.signedIn) cats = cats.filter((c) => c.code !== "faith");
 
     // Average rating per category — from published reviews of approved
     // providers offering it. Drives the sort below, alongside
@@ -160,6 +159,8 @@ export default async function ServicesPage({
   } catch (error) {
     console.error("[services] DB unavailable, using fallback categories", error);
   }
+  // Release 1: cleaning + garden only (lib/release.ts)
+  cats = cats.filter((c) => isReleaseCategory(c.code));
 
   return (
     <>
@@ -177,7 +178,7 @@ export default async function ServicesPage({
         {(country !== "CN" && country !== "HK") && (
         <div className="mt-4 flex h-12 items-center gap-2 rounded-md border border-border bg-bg-base px-4 text-[17px] text-text-secondary">
           <span aria-hidden>ℹ️</span>
-          <span>{tTax("inclLine", { rate: country === "AU" ? "10% GST" : country === "CA" ? "13% HST" : country === "US" ? "8.25% Tax" : country === "SG" ? "9% GST" : country === "TW" ? "5% VAT" : country === "MY" ? "6% SST" : "" })}</span>
+          <span>{tTax("inclLine", { rate: country === "AU" ? "10% GST" : country === "CA" ? "5% GST" : country === "US" ? "8.25% Tax" : country === "SG" ? "9% GST" : country === "TW" ? "5% VAT" : country === "MY" ? "6% SST" : "" })}</span>
         </div>
         )}
 

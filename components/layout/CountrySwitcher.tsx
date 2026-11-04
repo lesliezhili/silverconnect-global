@@ -12,7 +12,7 @@ const COOKIE_NAME = "sc-country";
 const ONE_YEAR = 60 * 60 * 24 * 365;
 
 /**
- * Compact country chip — AU always, CN only for the small internal
+ * Compact country chip — Release 1 markets (AU, CA) always, CN only for the small internal
  * allowlist previewing the future mainland deployment (see
  * lib/auth/chinaSiteAccess.ts — the current CN option runs on the
  * AU-hosted stack, which doesn't actually work for mainland users yet).
@@ -71,6 +71,18 @@ export function CountrySwitcher({
           >
             <span aria-hidden>🇦🇺</span>
             <span>{t("AU")}</span>
+          </Dropdown.Item>
+
+          {/* 🇨🇦 Canada — Release 1 market (waitlist until a city goes live) */}
+          <Dropdown.Item
+            onSelect={() => onSelect("CA")}
+            className={cn(
+              "flex cursor-pointer items-center gap-3 rounded-sm px-3 py-2 text-body text-text-primary outline-none hover:bg-bg-surface focus:bg-bg-surface",
+              value === "CA" && "bg-bg-surface-2 font-semibold"
+            )}
+          >
+            <span aria-hidden>🇨🇦</span>
+            <span>{t("CA")}</span>
           </Dropdown.Item>
 
           {/* 🇨🇳 China / 九鼎 — internal preview only, see chinaSiteAccess.ts */}
