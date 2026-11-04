@@ -35,6 +35,16 @@ export async function eligibleProviders(category: string, customerId: string) {
     LEFT JOIN users u ON u.id = pp.user_id
     LEFT JOIN stats s ON s.provider_id = pp.id
     WHERE pp.onboarding_status = 'approved'
+      -- background check: approved, current police check + ID
+      AND (
+        SELECT COUNT(DISTINCT d.type) FROM provider_documents d
+        WHERE d.provider_id = pp.id AND d.status = 'approved'
+          AND d.type::text IN ('police_check', 'identity')
+          AND (
+            d.expires_at > NOW()
+            OR (d.expires_at IS NULL AND COALESCE(d.reviewed_at, d.created_at) > NOW() - make_interval(years => ${R.policeCheckValidYears}))
+          )
+      ) = ${R.requiredDocs.length}
       -- low rating
       AND NOT (COALESCE(s.n, 0) >= ${R.minReviews} AND s.avg_rating < ${R.providerMinAvg})
       -- repeated self-cancellations
@@ -111,7 +121,13 @@ export async function pausedProviders() {
             AND c.created_at > NOW() - INTERVAL '90 days') AS cancels_90d,
         (SELECT COUNT(*)::int FROM bookings b
           WHERE b.provider_id = pp.id AND b.qc_flag IS NOT NULL
-            AND b.completed_at > NOW() - INTERVAL '90 days') AS qc_flags_90d
+            AND b.completed_at > NOW() - INTERVAL '90 days') AS qc_flags_90d,
+        (SELECT COUNT(DISTINCT d.type)::int FROM provider_documents d
+          WHERE d.provider_id = pp.id AND d.status = 'approved'
+            AND d.type::text IN ('police_check', 'identity')
+            AND (d.expires_at > NOW()
+              OR (d.expires_at IS NULL AND COALESCE(d.reviewed_at, d.created_at) > NOW() - make_interval(years => ${R.policeCheckValidYears})))
+        ) AS current_checks
       FROM provider_profiles pp
       LEFT JOIN users u ON u.id = pp.user_id
       LEFT JOIN stats s ON s.provider_id = pp.id
@@ -121,6 +137,7 @@ export async function pausedProviders() {
     WHERE (review_count >= ${R.minReviews} AND avg_rating < ${R.providerMinAvg})
        OR cancels_90d >= ${R.maxCancels90d}
        OR qc_flags_90d >= ${R.maxQcFlags90d}
+       OR current_checks < ${R.requiredDocs.length}
     ORDER BY avg_rating ASC`);
 }
 

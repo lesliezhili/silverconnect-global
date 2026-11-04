@@ -1,4 +1,5 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import { isStripeConfigured } from "@/lib/stripe/server";
 import { redirect as nextRedirect, notFound } from "next/navigation";
 import { eq, and } from "drizzle-orm";
 import { Lock, CreditCard, AlertTriangle, Check } from "lucide-react";
@@ -37,10 +38,15 @@ async function processPayment(formData: FormData) {
   const me = await getCurrentUser();
   if (!me) nextRedirect(`/${locale}/auth/login`);
 
-  // Get booking
+  // Simulated payments only where Stripe isn't configured (local / E2E).
+  // With Stripe configured, real payment goes through /checkout/[id].
+  if (isStripeConfigured()) nextRedirect(`/${locale}/checkout/${bookingId}`);
+
+  // Get booking — only an unpaid booking of this customer can be paid.
   const [booking] = await db.select().from(bookings)
     .where(and(eq(bookings.id, bookingId), eq(bookings.customerId, me.id))).limit(1);
   if (!booking) nextRedirect(`/${locale}/home`);
+  if (booking.status !== "pending") nextRedirect(`/${locale}/bookings/${bookingId}`);
 
   // Get default payment method
   const [pm] = await db.select().from(paymentMethods)
@@ -76,6 +82,7 @@ export default async function PaymentPage({
   const country = await getCountry();
   const me = await getCurrentUser();
   if (!me) nextRedirect(`/${locale}/auth/login`);
+  if (isStripeConfigured()) nextRedirect(`/${locale}/checkout/${bookingId}`);
 
   try {
     const [row] = await db

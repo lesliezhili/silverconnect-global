@@ -16,6 +16,8 @@ import { services } from "@/lib/db/schema/services";
 import { reviews } from "@/lib/db/schema/reviews";
 import { getCurrentUser } from "@/lib/auth/server";
 import { releaseOrHold } from "@/lib/feedback/release";
+import { FeedbackPhotos } from "./FeedbackPhotos";
+import { TRUST_RULES } from "@/lib/release-quality";
 import { isEffortTier } from "@/lib/release-pricing";
 
 export const dynamic = "force-dynamic";
@@ -66,6 +68,13 @@ async function feedbackAction(formData: FormData) {
   }
   const suggestedTier = String(formData.get("suggestedTier") ?? "");
   const rating = Math.round(ratingRaw);
+  if (rating <= TRUST_RULES.pairBlockAt) {
+    const photos = await db
+      .select({ id: bookingEvidence.id })
+      .from(bookingEvidence)
+      .where(and(eq(bookingEvidence.bookingId, b.id), eq(bookingEvidence.phase, "feedback")));
+    if (photos.length === 0) nextRedirect(`/${locale}/bookings/${id}/feedback?error=photo_required`);
+  }
 
   let held = false;
   try {
@@ -209,7 +218,9 @@ export default async function FeedbackPage({
           ? "You've already reviewed this booking."
           : error === "server"
             ? "Something went wrong. Please retry."
-            : null;
+            : error === "photo_required"
+              ? zhFb ? "评分 2 星或以下时，请上传至少一张照片说明问题。" : "For 2★ or lower, please add at least one photo showing the problem."
+              : null;
 
   return (
     <>
@@ -365,6 +376,12 @@ export default async function FeedbackPage({
               className="block w-full rounded-md border-[1.5px] border-border-strong bg-bg-base p-3.5 text-[16px] text-text-primary placeholder:text-text-placeholder focus:border-brand focus:outline-none"
             />
           </div>
+
+          <FeedbackPhotos
+            bookingId={id}
+            zh={zhFb}
+            initialCount={evidenceRows.filter((e) => e.phase === "feedback").length}
+          />
 
           <Button type="submit" variant="primary" block size="md">
             {t("submit")}

@@ -38,6 +38,7 @@ import {
 } from "@/lib/release-pricing";
 import { priceReleaseBooking } from "@/lib/bookings/release-booking";
 import { customerPauseReason, eligibleProviders, isProviderEligible } from "@/lib/trust";
+import { isStripeConfigured } from "@/lib/stripe/server";
 
 export const dynamic = "force-dynamic";
 
@@ -253,7 +254,9 @@ async function finalizeBooking(formData: FormData) {
     }
   });
 
-  nextRedirect(`/${locale}/pay/${createdId}`);
+  // Real card payment through Stripe whenever it's configured; the
+  // simulated /pay page only exists for local / E2E environments.
+  nextRedirect(isStripeConfigured() ? `/${locale}/checkout/${createdId}` : `/${locale}/pay/${createdId}`);
 }
 
 export default async function BookingNewPage({

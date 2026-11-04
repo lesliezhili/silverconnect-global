@@ -84,7 +84,7 @@ export default async function AdminQualityPage({
                   {h.customer_rating != null ? <span className="block">{String(h.customer_rating)}★ {String(h.customer_comment ?? "")}</span> : null}
                 </td>
                 <td>
-                  {(["before", "after"] as const).map((ph) => (
+                  {(["before", "after", "feedback"] as const).map((ph) => (
                     <span key={ph} className="block">
                       {ph}:{" "}
                       {evidence
@@ -118,6 +118,7 @@ export default async function AdminQualityPage({
           <li key={String(p.id)}>
             <Link href={`/admin/providers/${String(p.id)}`} className="underline">{String(p.name ?? p.email ?? p.id)}</Link>
             {" — "}{Number(p.avg_rating).toFixed(1)}★ ({String(p.review_count)}) · {String(p.cancels_90d)} self-cancels · {String(p.qc_flags_90d)} QC flags (90d)
+            {Number(p.current_checks) < TRUST_RULES.requiredDocs.length && " · ⚠️ police check / ID missing or expired"}
           </li>
         ))}
         {providers.length === 0 && <li className="text-text-tertiary">None.</li>}

@@ -23,8 +23,11 @@ export async function POST(req: NextRequest) {
 
   // Get booking
   const [booking] = await db.select().from(bookings).where(eq(bookings.id, bookingId)).limit(1);
-  if (!booking) {
+  if (!booking || booking.customerId !== user.id) {
     return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+  }
+  if (booking.status !== "pending") {
+    return NextResponse.json({ error: "This booking is already paid or closed" }, { status: 409 });
   }
 
   const amountCents = Math.round(Number(booking.totalPrice) * 100);

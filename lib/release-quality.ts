@@ -128,4 +128,8 @@ export const TRUST_RULES = {
   maxCancels90d: 3,
   /** Jobs flagged by QC (short visit, upheld dispute) in 90 days before a provider is paused. */
   maxQcFlags90d: 2,
+  /** Background check: these documents must be approved and current to be matched. */
+  requiredDocs: ["police_check", "identity"],
+  /** A police check with no expiry date counts as current for this many years after review. */
+  policeCheckValidYears: 3,
 } as const;

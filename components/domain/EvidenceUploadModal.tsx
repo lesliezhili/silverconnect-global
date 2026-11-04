@@ -4,6 +4,7 @@ import * as React from "react";
 import { Camera } from "lucide-react";
 import { Modal, ModalContent, ModalTrigger, ModalClose } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
+import { compressPhoto } from "@/lib/client/compressPhoto";
 
 type Strings = {
   triggerLabel: string;
@@ -21,7 +22,7 @@ type Strings = {
 type Item = { key: string; label: string };
 
 /**
- * Requires a before/after photo or short video before a job can move to "in progress" or
+ * Requires a before/after photo (compressed on the device) for every QC area before a job can move to "in progress" or
  * "completed" — uploads via /api/upload/evidence (which persists a
  * booking_evidence row), then invokes the same jobAction server action
  * DeclineJobModal uses, but programmatically once the upload succeeds
@@ -100,7 +101,7 @@ export function EvidenceUploadModal({
     setError("");
     try {
       for (const a of areas) {
-        const file = files[a.key]!;
+        const file = await compressPhoto(files[a.key]!);
         const ok = DIRECT_UPLOAD(file)
           ? await uploadDirect(file, jobId, phase, a.key)
           : await uploadViaRoute(file, jobId, phase, a.key);
@@ -152,7 +153,7 @@ export function EvidenceUploadModal({
                 </span>
                 <input
                   type="file"
-                  accept="image/jpeg,image/png,image/webp,image/heic,video/mp4,video/quicktime,video/webm"
+                  accept="image/*"
                   capture="environment"
                   className="sr-only"
                   onChange={(e) => {

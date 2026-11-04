@@ -50,8 +50,28 @@ function cleanArea(area: unknown): string | null {
   return typeof area === "string" && /^[a-z_]{1,32}$/.test(area) ? area : null;
 }
 
-function validPhase(type: unknown): type is "before" | "after" {
-  return type === "before" || type === "after";
+type Phase = "before" | "after" | "feedback";
+const MAX_FEEDBACK_PHOTOS = 3;
+
+function validPhase(type: unknown): type is Phase {
+  return type === "before" || type === "after" || type === "feedback";
+}
+
+/** before/after: the assigned provider. feedback: the booking's customer, photos only, up to 3. */
+async function canUpload(userId: string, bookingId: string, phase: Phase): Promise<string | null> {
+  if (phase !== "feedback") return (await isAssignedProvider(userId, bookingId)) ? null : "Forbidden";
+  const [b] = await db
+    .select({ customerId: bookings.customerId, status: bookings.status })
+    .from(bookings)
+    .where(eq(bookings.id, bookingId))
+    .limit(1);
+  if (!b || b.customerId !== userId) return "Forbidden";
+  if (b.status !== "completed" && b.status !== "released") return "Feedback photos are for completed jobs";
+  const n = await db
+    .select({ id: bookingEvidence.id })
+    .from(bookingEvidence)
+    .where(and(eq(bookingEvidence.bookingId, bookingId), eq(bookingEvidence.phase, "feedback")));
+  return n.length >= MAX_FEEDBACK_PHOTOS ? `Max ${MAX_FEEDBACK_PHOTOS} photos` : null;
 }
 
 export async function POST(req: NextRequest) {
@@ -66,11 +86,12 @@ export async function POST(req: NextRequest) {
     const type = fd.get("type") as string;
     if (!file) return NextResponse.json({ error: "No file" }, { status: 400 });
     if (!bookingId || !type) return NextResponse.json({ error: "bookingId and type required" }, { status: 400 });
-    if (!validPhase(type)) return NextResponse.json({ error: "type must be 'before' or 'after'" }, { status: 400 });
+    if (!validPhase(type)) return NextResponse.json({ error: "type must be 'before', 'after' or 'feedback'" }, { status: 400 });
     const ext = EXT_BY_TYPE[file.type];
     if (!ext || !file.type.startsWith("image/")) return NextResponse.json({ error: "Unsupported file type" }, { status: 400 });
     if (file.size > MAX_PHOTO_BYTES) return NextResponse.json({ error: "Max 10MB" }, { status: 400 });
-    if (!(await isAssignedProvider(user.id, bookingId))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const denied = await canUpload(user.id, bookingId, type);
+    if (denied) return NextResponse.json({ error: denied }, { status: 403 });
 
     const path = bookingId + "/" + type + "_" + randomUUID().slice(0, 8) + "." + ext;
     const buf = Buffer.from(await file.arrayBuffer());
@@ -88,8 +109,9 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { bookingId, type } = body;
   if (!bookingId || !type) return NextResponse.json({ error: "bookingId and type required" }, { status: 400 });
-  if (!validPhase(type)) return NextResponse.json({ error: "type must be 'before' or 'after'" }, { status: 400 });
-  if (!(await isAssignedProvider(user.id, bookingId))) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!validPhase(type)) return NextResponse.json({ error: "type must be 'before', 'after' or 'feedback'" }, { status: 400 });
+  const denied = await canUpload(user.id, bookingId, type);
+  if (denied) return NextResponse.json({ error: denied }, { status: 403 });
 
   if (body.action === "record") {
     const path = String(body.path || "");
@@ -107,7 +129,9 @@ export async function POST(req: NextRequest) {
 
   const contentType = String(body.contentType || "");
   const ext = EXT_BY_TYPE[contentType];
-  if (!ext) return NextResponse.json({ error: "Unsupported file type" }, { status: 400 });
+  if (!ext || (type === "feedback" && !contentType.startsWith("image/"))) {
+    return NextResponse.json({ error: "Unsupported file type" }, { status: 400 });
+  }
   const size = Number(body.size || 0);
   const max = contentType.startsWith("video/") ? MAX_VIDEO_BYTES : MAX_PHOTO_BYTES;
   if (size > max) return NextResponse.json({ error: contentType.startsWith("video/") ? "Max 100MB" : "Max 10MB" }, { status: 400 });

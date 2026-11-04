@@ -43,3 +43,10 @@ CREATE TABLE IF NOT EXISTS service_quotes (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS service_quotes_booking_uq ON service_quotes (booking_id);
 CREATE INDEX IF NOT EXISTS service_quotes_pair_idx ON service_quotes (customer_id, provider_id, category, status);
+
+-- Cancellations: the code records provider compensation and these reasons;
+-- the table was created by an admin route without them.
+ALTER TABLE cancellations ADD COLUMN IF NOT EXISTS provider_compensation NUMERIC(10,2) DEFAULT 0;
+ALTER TYPE cancellation_reason ADD VALUE IF NOT EXISTS 'provider_declined';
+ALTER TYPE cancellation_reason ADD VALUE IF NOT EXISTS 'no_show';
+ALTER TYPE cancellation_reason ADD VALUE IF NOT EXISTS 'weather';
