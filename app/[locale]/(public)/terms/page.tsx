@@ -100,8 +100,8 @@ export default async function TermsPage({
           </h2>
           <p className="mt-3">
             {isZh
-              ? "所有服务人员必须通过以下验证方可接单：警察背景审查（或当地等效）、身份证件验证、资格证书审核（如适用）、人脸识别确认。平台提供紧急求助按钮、GPS追踪（服务期间）、家庭监护仪表盘等安全功能。"
-              : "All care providers must pass the following verification before accepting bookings: police background check (or local equivalent), identity document verification, qualification certificate review (where applicable), and facial recognition confirmation. The Platform provides emergency panic button, GPS tracking (during service), and family monitoring dashboard as safety features."}
+              ? "所有服务人员必须通过以下验证方可接单：警察背景审查（或当地等效）和带照片的身份证件验证。每次服务都需拍摄服务前后照片，客户确认满意后才放款，双方可互相评价。紧急情况请拨打 000（澳大利亚）。"
+              : "All providers must pass the following verification before accepting bookings: a police background check (or local equivalent) and photo ID verification. Every job is documented with before and after photos, payment is released only after the customer confirms the work, and both sides can rate each other. In an emergency, call 000 (Australia)."}
           </p>
         </section>
 

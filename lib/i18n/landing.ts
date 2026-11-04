@@ -35,7 +35,7 @@ const dict: Record<string, Record<string, string>> = {
   safetyTitle: { en: "Safety Guarantees", zh: "安全保障", zh_tw: "安全保障", ja: "安全保証", ko: "안전 보장", th: "ความปลอดภัย" },
   safetyTitle2: { en: "Safety & Trust", zh: "安全保障", zh_tw: "安全保障", ja: "安全と信頼", ko: "안전 및 신뢰", th: "ความปลอดภัย" },
   safe1: { en: "Police-checked and photo-ID verified helpers", zh: "服务者均通过警方背景审查和身份核验", zh_tw: "服務者均通過警方背景審查和身分核驗", ja: "警察審査・本人確認済みのヘルパー", ko: "경찰 신원 조회 및 신분증 확인 완료", th: "ผู้ช่วยผ่านการตรวจประวัติและยืนยันตัวตนแล้ว", vi: "Người giúp việc đã kiểm tra lý lịch và xác minh danh tính" },
-  safe2: { en: "Before & after photo/video evidence", zh: "服务前后照片视频证据", zh_tw: "服務前後照片影片證據", ja: "前後の写真・動画記録", ko: "전후 사진/영상 증거", th: "หลักฐานภาพก่อนและหลัง" },
+  safe2: { en: "Before & after photos of every job", zh: "每次服务前后均有照片为证", zh_tw: "每次服務前後均有照片為證", ja: "毎回の作業前後の写真記録", ko: "모든 작업의 전후 사진", th: "ภาพถ่ายก่อนและหลังทุกงาน", vi: "Ảnh trước và sau mỗi lần làm việc" },
   safe3: { en: "GPS check-in/out for every visit", zh: "GPS实时签到签退", zh_tw: "GPS即時簽到簽退", ja: "GPSチェックイン・アウト", ko: "GPS 체크인/아웃", th: "GPS เช็คอิน/เอาท์" },
   safe4: { en: "Emergency SOS button", zh: "紧急求助按钮", zh_tw: "緊急求助按鈕", ja: "緊急SOSボタン", ko: "긴급 SOS 버튼", th: "ปุ่ม SOS ฉุกเฉิน" },
   safeSOS: { en: "One-tap emergency SOS button", zh: "一键紧急求助按钮 (SOS)", zh_tw: "一鍵緊急求助按鈕", ja: "ワンタップ緊急SOS", ko: "원탭 긴급 SOS", th: "ปุ่ม SOS แตะเดียว" },

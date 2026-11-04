@@ -73,6 +73,8 @@ export const FUTURE_ROUTES: readonly string[] = [
   "/provider/guaranteed-wage", "/provider/leaderboard", "/provider/achievements",
   "/provider/goals", "/provider/team-chat", "/provider/smart-pricing",
   "/provider/seniors", "/provider/training",
+  // GPS tracking (not in Release 1)
+  "/provider/job-execution", "/customer/track-provider",
   // Internal / demo
   "/test-sos", "/dev",
 ];

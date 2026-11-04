@@ -39,7 +39,7 @@ export default async function PrivacyPolicyPage({
             <li>{isZh ? "账户信息：姓名、电子邮件、电话号码、地址" : "Account information: name, email, phone number, address"}</li>
             <li>{isZh ? "身份验证：政府颁发的身份证件（服务人员）" : "Identity verification: government-issued ID (care providers)"}</li>
             <li>{isZh ? "服务数据：预约历史、评价、偏好设置" : "Service data: booking history, reviews, preferences"}</li>
-            <li>{isZh ? "位置数据：仅在服务期间（GPS追踪用于安全）" : "Location data: only during active service (GPS tracking for safety)"}</li>
+            <li>{isZh ? "位置数据：仅您提供的服务地址（我们不追踪您的实时位置）" : "Location data: only the service address you provide (we do not track your live location)"}</li>
             <li>{isZh ? "支付信息：通过第三方支付处理商（我们不存储卡号）" : "Payment information: via third-party payment processor (we do not store card numbers)"}</li>
             <li>{isZh ? "设备信息：设备类型、操作系统、浏览器版本" : "Device information: device type, operating system, browser version"}</li>
           </ul>
