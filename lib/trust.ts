@@ -16,7 +16,7 @@ const rows = async (q: ReturnType<typeof sql>) => (await db.execute(q)) as unkno
  * Approved providers offering `category` who pass the trust gate for this
  * customer, best first (rating, then review count).
  */
-export async function eligibleProviders(category: string, customerId: string) {
+export async function eligibleProviders(category: string, customerId: string, country?: string) {
   const r = await rows(sql`
     WITH recent AS (
       SELECT provider_id, rating,
@@ -35,6 +35,7 @@ export async function eligibleProviders(category: string, customerId: string) {
     LEFT JOIN users u ON u.id = pp.user_id
     LEFT JOIN stats s ON s.provider_id = pp.id
     WHERE pp.onboarding_status = 'approved'
+      ${country ? sql`AND u.country::text = ${country}` : sql``}
       -- background check: approved, current police check + ID
       AND (
         SELECT COUNT(DISTINCT d.type) FROM provider_documents d
@@ -79,8 +80,8 @@ export async function eligibleProviders(category: string, customerId: string) {
 }
 
 /** Is this provider still eligible for this customer? (re-checked at booking time) */
-export async function isProviderEligible(providerId: string, category: string, customerId: string) {
-  return (await eligibleProviders(category, customerId)).some((p) => p.id === providerId);
+export async function isProviderEligible(providerId: string, category: string, customerId: string, country?: string) {
+  return (await eligibleProviders(category, customerId, country)).some((p) => p.id === providerId);
 }
 
 /** Why a customer can't book right now, or null. */

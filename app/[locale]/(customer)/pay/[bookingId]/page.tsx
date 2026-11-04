@@ -4,7 +4,6 @@ import { redirect as nextRedirect, notFound } from "next/navigation";
 import { eq, and } from "drizzle-orm";
 import { Lock, CreditCard, AlertTriangle, Check } from "lucide-react";
 import { Header } from "@/components/layout/Header";
-import { Link } from "@/i18n/navigation";
 import { CURRENCY_SYMBOL, TAX_ABBR } from "@/components/domain/country";
 import { getCountry } from "@/components/domain/countryCookie";
 import { db } from "@/lib/db";
@@ -255,13 +254,17 @@ export default async function PaymentPage({
             {state === "threeDS" ? t("waitingBank") : t("processing")}
           </button>
         ) : (
-          <Link
-            href={`/bookings/${bookingId}/success`}
-            className="flex h-14 items-center justify-center gap-2 rounded-md bg-brand text-[17px] font-bold text-white hover:bg-brand-hover"
-          >
+          <form action={processPayment}>
+            <input type="hidden" name="locale" value={locale} />
+            <input type="hidden" name="bookingId" value={bookingId} />
+            <button
+              type="submit"
+              className="w-full flex h-14 items-center justify-center gap-2 rounded-md bg-brand text-[17px] font-bold text-white hover:bg-brand-hover"
+            >
             <Lock size={18} aria-hidden />
             {t("payNow", { amount: total })}
-          </Link>
+            </button>
+          </form>
         )}
       </div>
     </>

@@ -81,7 +81,7 @@ export default async function ProvidersByCategoryPage({
   cheapestHourly = Math.round(tiers[0].hourly);
   hourlyLabel = `${sym}${Math.round(tiers[0].hourly)}–${Math.round(tiers[2].hourly)}`;
   try {
-    provs = (await eligibleProviders(cat, session.userId ?? ANON_CUSTOMER)).map((p) => ({
+    provs = (await eligibleProviders(cat, session.userId ?? ANON_CUSTOMER, relCountry)).map((p) => ({
       id: p.id,
       userId: p.userId,
       name: p.providerName,

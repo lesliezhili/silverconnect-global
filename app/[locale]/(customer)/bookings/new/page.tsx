@@ -86,6 +86,18 @@ async function clearDraft(): Promise<void> {
   await s.save();
 }
 
+/** The customer's market: their default address's country, else the country switcher. */
+async function customerCountry(userId: string): Promise<ReleaseCountry> {
+  const [a] = await db
+    .select({ country: addresses.country })
+    .from(addresses)
+    .where(and(eq(addresses.userId, userId), eq(addresses.isDefault, true)))
+    .limit(1);
+  if (isReleaseCountry(a?.country)) return a.country;
+  const c = await getCountry();
+  return isReleaseCountry(c) ? c : "AU";
+}
+
 async function serviceIdFor(category: ReleaseCategory, tier: EffortTier): Promise<string | null> {
   const [svc] = await db
     .select({ id: services.id })
@@ -144,7 +156,7 @@ async function saveStep2(formData: FormData) {
   ) {
     nextRedirect(`/${locale}/bookings/new?step=2&error=pick`);
   }
-  if (!(await isProviderEligible(providerId, draft.category!, me.id))) {
+  if (!(await isProviderEligible(providerId, draft.category!, me.id, await customerCountry(me.id)))) {
     nextRedirect(`/${locale}/bookings/new?step=2&error=invalid`);
   }
   await writeDraft({ providerId, scheduledAt: scheduledAt.toISOString() });
@@ -184,15 +196,16 @@ async function finalizeBooking(formData: FormData) {
   if (!draft.serviceId || !draft.providerId || !draft.addressId || !draft.scheduledAt || !draft.category || !draft.tier) {
     nextRedirect(`/${locale}/bookings/new?step=1&error=incomplete`);
   }
-  // Re-check everything server-side at the moment of booking.
-  if (!(await isProviderEligible(draft.providerId!, draft.category!, me.id))) {
-    nextRedirect(`/${locale}/bookings/new?step=2&error=invalid`);
-  }
+  // Re-check everything server-side at the moment of booking: the
+  // provider must still pass the trust gate and work in the address's country.
   const [addr] = await db
     .select({ country: addresses.country, postcode: addresses.postcode })
     .from(addresses)
     .where(and(eq(addresses.id, draft.addressId!), eq(addresses.userId, me.id)))
     .limit(1);
+  if (!addr || !(await isProviderEligible(draft.providerId!, draft.category!, me.id, addr.country))) {
+    nextRedirect(`/${locale}/bookings/new?step=2&error=invalid`);
+  }
   const price = await priceReleaseBooking({
     customerId: me.id,
     providerId: draft.providerId!,
@@ -271,8 +284,7 @@ export default async function BookingNewPage({
   setRequestLocale(locale);
   const me = await getCurrentUser();
   if (!me) nextRedirect(`/${locale}/auth/login`);
-  const cookieCountry = await getCountry();
-  const country: ReleaseCountry = isReleaseCountry(cookieCountry) ? cookieCountry : "AU";
+  const country: ReleaseCountry = await customerCountry(me.id);
   const t = await getTranslations("booking");
   const tCommon = await getTranslations("common");
   const tCategories = await getTranslations("categories");
@@ -398,7 +410,7 @@ export default async function BookingNewPage({
     if (!draft.serviceId || !isReleaseCategory(draft.category)) {
       nextRedirect(`/${locale}/bookings/new?step=1`);
     }
-    const providers = await eligibleProviders(draft.category!, me.id);
+    const providers = await eligibleProviders(draft.category!, me.id, await customerCountry(me.id));
     const defaultDateTime = draft.scheduledAt?.slice(0, 16) ?? "";
 
     return (

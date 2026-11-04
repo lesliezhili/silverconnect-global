@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { getCurrentUser } from "@/lib/auth/server";
 
 export const ADMIN_COOKIE = "sc-admin";
 const MAX_AGE = 60 * 60 * 8;
@@ -8,15 +9,18 @@ export interface AdminSession {
   email?: string;
 }
 
+/**
+ * Admin panel gate. The sc-admin cookie is unsigned (anyone can set it), so
+ * it only counts together with the signed session of a user who is an
+ * admin — admin login establishes both.
+ */
 export async function getAdmin(): Promise<AdminSession> {
   const store = await cookies();
   const raw = store.get(ADMIN_COOKIE)?.value;
   if (!raw) return { signedIn: false };
-  try {
-    return { signedIn: true, email: decodeURIComponent(raw) };
-  } catch {
-    return { signedIn: false };
-  }
+  const me = await getCurrentUser();
+  if (!me?.isAdmin) return { signedIn: false };
+  return { signedIn: true, email: me.email };
 }
 
 export async function setAdmin(email: string): Promise<void> {
