@@ -17,13 +17,48 @@ type Strings = {
 };
 
 /**
- * Requires a before/after photo before a job can move to "in progress" or
+ * Requires a before/after photo or short video before a job can move to "in progress" or
  * "completed" — uploads via /api/upload/evidence (which persists a
  * booking_evidence row), then invokes the same jobAction server action
  * DeclineJobModal uses, but programmatically once the upload succeeds
  * rather than via a plain form submit (a File can't travel through a
  * server-action FormData the same way a text field can alongside it).
  */
+// Videos and large photos go straight to storage via a signed URL —
+// they exceed the serverless request-body limit (~4.5MB).
+const DIRECT_UPLOAD = (f: File) => f.type.startsWith("video/") || f.size > 4 * 1024 * 1024;
+
+/** Returns true on success, otherwise an error message (or "" for generic). */
+async function uploadViaRoute(file: File, bookingId: string, phase: string): Promise<true | string> {
+  const fd = new FormData();
+  fd.set("file", file);
+  fd.set("bookingId", bookingId);
+  fd.set("type", phase);
+  const res = await fetch("/api/upload/evidence", { method: "POST", body: fd });
+  const data = await res.json();
+  return res.ok && data.success ? true : data.error || "";
+}
+
+async function uploadDirect(file: File, bookingId: string, phase: string): Promise<true | string> {
+  const post = (body: object) =>
+    fetch("/api/upload/evidence", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }).then(async (r) => ({ ok: r.ok, data: await r.json() }));
+
+  const sign = await post({ bookingId, type: phase, contentType: file.type, size: file.size });
+  if (!sign.ok || !sign.data.success) return sign.data.error || "";
+  const put = await fetch(sign.data.signedUrl, {
+    method: "PUT",
+    headers: { "Content-Type": file.type },
+    body: file,
+  });
+  if (!put.ok) return "";
+  const rec = await post({ action: "record", bookingId, type: phase, path: sign.data.path });
+  return rec.ok && rec.data.success ? true : rec.data.error || "";
+}
+
 export function EvidenceUploadModal({
   action,
   actionValue,
@@ -49,14 +84,11 @@ export function EvidenceUploadModal({
     setState("uploading");
     setError("");
     try {
-      const fd = new FormData();
-      fd.set("file", file);
-      fd.set("bookingId", jobId);
-      fd.set("type", phase);
-      const res = await fetch("/api/upload/evidence", { method: "POST", body: fd });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        setError(data.error || strings.uploadFailed);
+      const ok = DIRECT_UPLOAD(file)
+        ? await uploadDirect(file, jobId, phase)
+        : await uploadViaRoute(file, jobId, phase);
+      if (ok !== true) {
+        setError(ok || strings.uploadFailed);
         setState("idle");
         return;
       }
@@ -91,7 +123,7 @@ export function EvidenceUploadModal({
             </span>
             <input
               type="file"
-              accept="image/jpeg,image/png"
+              accept="image/jpeg,image/png,image/webp,image/heic,video/mp4,video/quicktime,video/webm"
               capture="environment"
               className="sr-only"
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}

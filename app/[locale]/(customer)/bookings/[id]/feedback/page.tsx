@@ -106,6 +106,8 @@ async function feedbackAction(formData: FormData) {
   nextRedirect(`/${locale}/bookings/${id}/feedback?sent=1`);
 }
 
+const isVideo = (url: string) => /\.(mp4|mov|webm)(\?|$)/i.test(url);
+
 export default async function FeedbackPage({
   params,
   searchParams,
@@ -257,8 +259,12 @@ export default async function FeedbackPage({
                     <p className="text-[15px] text-text-tertiary">—</p>
                   ) : (
                     beforePhotos.map((p, i) => (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img key={i} src={p.fileUrl} alt={t("evidenceBefore")} className="w-full rounded-md border border-border object-cover" />
+                      isVideo(p.fileUrl) ? (
+                        <video key={i} src={p.fileUrl} controls playsInline preload="metadata" aria-label={t("evidenceBefore")} className="w-full rounded-md border border-border" />
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img key={i} src={p.fileUrl} alt={t("evidenceBefore")} className="w-full rounded-md border border-border object-cover" />
+                      )
                     ))
                   )}
                 </div>
@@ -270,8 +276,12 @@ export default async function FeedbackPage({
                     <p className="text-[15px] text-text-tertiary">—</p>
                   ) : (
                     afterPhotos.map((p, i) => (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img key={i} src={p.fileUrl} alt={t("evidenceAfter")} className="w-full rounded-md border border-border object-cover" />
+                      isVideo(p.fileUrl) ? (
+                        <video key={i} src={p.fileUrl} controls playsInline preload="metadata" aria-label={t("evidenceAfter")} className="w-full rounded-md border border-border" />
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img key={i} src={p.fileUrl} alt={t("evidenceAfter")} className="w-full rounded-md border border-border object-cover" />
+                      )
                     ))
                   )}
                 </div>

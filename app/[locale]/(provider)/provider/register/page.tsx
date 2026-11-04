@@ -1,4 +1,5 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import { RELEASE_CATEGORIES } from "@/lib/release";
 import { redirect as nextRedirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { Upload, MapPin, Check } from "lucide-react";
@@ -32,16 +33,8 @@ const TITLE_KEYS = [
   "registerStep5",
 ] as const;
 
-const CATEGORY_KEYS = [
-  "cleaning",
-  "companion",
-  "garden",
-  "personalCare",
-  "repair",
-  "itSupport",
-  "transport",
-  "mealDelivery",
-] as const;
+// Release 1: providers sign up for cleaning / garden only (lib/release.ts).
+const CATEGORY_KEYS = RELEASE_CATEGORIES;
 type CategoryKey = (typeof CATEGORY_KEYS)[number];
 
 const SLOT_KEYS = ["6am-9am", "9am-12pm", "12pm-3pm", "3pm-6pm", "6pm-9pm"] as const;
