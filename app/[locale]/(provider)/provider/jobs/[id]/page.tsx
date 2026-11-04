@@ -147,6 +147,7 @@ async function jobAction(formData: FormData) {
     try {
       covered = (await providerWithdraw({ bookingId: id, providerUserId: me.id, reason, locale })).covered;
     } catch (e) {
+      console.error("[provider withdraw]", id, e);
       const message = e instanceof CancelBookingError ? e.message : "Cancellation failed";
       nextRedirect(`/${locale}/provider/jobs/${id}?error=${encodeURIComponent(message)}`);
     }

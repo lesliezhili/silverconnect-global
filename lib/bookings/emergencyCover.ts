@@ -44,8 +44,8 @@ export async function assignEmergencyCover(bookingId: string, locale = "en"): Pr
     SELECT DISTINCT provider_id FROM bookings
     WHERE provider_id IN (${sql.join(ids.map((i) => sql`${i}::uuid`), sql`, `)})
       AND status IN ('pending', 'confirmed', 'in_progress')
-      AND scheduled_at < ${end}
-      AND scheduled_at + (duration_min || ' minutes')::interval > ${b.scheduledAt}`)) as unknown as { provider_id: string }[];
+      AND scheduled_at < ${end.toISOString()}::timestamptz
+      AND scheduled_at + make_interval(mins => duration_min) > ${b.scheduledAt.toISOString()}::timestamptz`)) as unknown as { provider_id: string }[];
   const busyIds = new Set(busy.map((r) => String(r.provider_id)));
   const team = await db
     .select({ id: providerProfiles.id })
