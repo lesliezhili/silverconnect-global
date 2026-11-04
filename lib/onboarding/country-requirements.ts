@@ -35,7 +35,7 @@ export const AU_ONBOARDING: OnboardingConfig = {
   country: "AU",
   identityCheck: [
     { id: "au_police_check", label: "National Police Check", description: "Valid Australian Federal Police check (< 12 months)", required: true, documentType: "police_check" },
-    { id: "au_wwc", label: "Working With Children Check", description: "State-issued WWC card or VIT registration", required: true, documentType: "wwc" },
+    { id: "au_wwc", label: "Working With Children Check", description: "State-issued WWC card or VIT registration (optional in Release 1)", required: false, documentType: "wwc" },
     { id: "au_id", label: "Photo ID", description: "Australian driver licence or passport", required: true, documentType: "photo_id" },
   ],
   workRights: [

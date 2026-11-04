@@ -1,6 +1,6 @@
 # SilverConnect Global (和润 HeRun)
 
-> 🌏 Non-profit mutual aid platform for elder care — connecting vulnerable seniors with dual-generation caregivers.
+> 🌏 Home services for older adults — a PHLedger service (operated by PHLEDGER PTY LTD). Release 1: cleaning, garden and small handyman jobs for Chinese-speaking seniors in Melbourne and Vancouver — see docs/RELEASE_1.md.
 
 ## 100% Free & Open-Source Stack
 
@@ -14,7 +14,7 @@
 | Push Notifications | ntfy.sh (open-source) | Free forever |
 | Email | Resend (100/day free) or Nodemailer + Gmail | Free |
 | Geocoding | OpenStreetMap Nominatim | Free |
-| Payments | Stripe (pay-per-tx, non-profit discount) | Free until revenue |
+| Payments | Stripe (pay-per-tx) | Per transaction |
 | Hosting | Vercel Hobby | Free |
 | CI/CD | GitHub Actions | Free |
 | Monitoring | Vercel Analytics (free) | Free |

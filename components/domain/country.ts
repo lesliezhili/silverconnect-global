@@ -50,7 +50,7 @@ export const EMERGENCY_NUMBER: Record<CountryCode, string> = {
 
 /**
  * Country-specific brand name.
- * China market uses 九鼎银联 (9tripod Silver Connect — non-profit mutual aid).
+ * China market uses 九鼎银联 (9tripod Silver Connect).
  */
 export const BRAND_NAME: Record<CountryCode, string> = {
   AU: "SilverConnect",

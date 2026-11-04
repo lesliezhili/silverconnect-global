@@ -8,7 +8,7 @@
  */
 
 const NOMINATIM_URL = "https://nominatim.openstreetmap.org";
-const USER_AGENT = "SilverConnect-Global/1.0 (non-profit elder care platform)";
+const USER_AGENT = "SilverConnect/1.0 (+https://silverconnect.phledger.com)";
 
 export async function geocodeAddress(address: string): Promise<{
   success: boolean;

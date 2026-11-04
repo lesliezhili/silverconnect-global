@@ -488,7 +488,7 @@
     "voice": "Voice",
     "send": "Send",
     "voiceHint": "Tap and speak — supports English, Mandarin, Cantonese",
-    "aiDisclaimer": "AI may make mistakes. For emergencies, use the SOS button.",
+    "aiDisclaimer": "AI may make mistakes. In an emergency, call 000 (Australia) or 911 (Canada).",
     "quickReplies": {
       "reschedule": "Reschedule",
       "policy": "Cancel policy",
@@ -604,7 +604,7 @@
   },
   "safetyReport": {
     "title": "Report a safety concern",
-    "sub": "Use this if a service was unsafe but it's not an emergency. For an emergency, tap the SOS button.",
+    "sub": "Use this if a service was unsafe but it's not an emergency. In an emergency, call 000 (Australia) or 911 (Canada).",
     "severity": "How serious is this?",
     "sevLow": "Mild — annoyance",
     "sevLowHint": "Late, unprofessional, minor mess",
@@ -613,8 +613,8 @@
     "sevHigh": "Serious — danger",
     "sevHighHint": "Threats, theft, physical harm. Police or 000 / 120 / 911 first.",
     "sevHighDivertTitle": "Stop — this might be an emergency",
-    "sevHighDivertHint": "Open the SOS overlay first to call your country's emergency number.",
-    "openSos": "Open SOS",
+    "sevHighDivertHint": "Call emergency services first, then report it here.",
+    "openSos": "Call {number}",
     "when": "When did this happen?",
     "describe": "Describe what happened",
     "describeHint": "At least 30 characters. Stick to facts — who, what, where.",

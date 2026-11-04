@@ -1,6 +1,7 @@
 import { setRequestLocale } from "next-intl/server";
 import { BottomTabBar } from "@/components/layout/BottomTabBar";
 import EmergencyButton from "@/components/safety/EmergencyButton";
+import { RELEASE_FEATURES } from "@/lib/release";
 import { EmergencyOverlay } from "@/components/layout/EmergencyOverlay";
 import { BackButton } from "@/components/layout/BackButton";
 import { getCountry } from "@/components/domain/countryCookie";
@@ -20,8 +21,9 @@ export default async function CustomerLayout({
     <>
       <BackButton />
       {children}
-      <EmergencyButton country={country} />
-      <EmergencyOverlay country={country} />
+      {/* SOS is not part of Release 1 (lib/release.ts RELEASE_FEATURES) */}
+      {RELEASE_FEATURES.emergencySos && <EmergencyButton country={country} />}
+      {RELEASE_FEATURES.emergencySos && <EmergencyOverlay country={country} />}
       <BottomTabBar />
     </>
   );

@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const AU_REQUIREMENTS = [
   { id: "police_check", label: "National Police Check", required: true },
-  { id: "wwc", label: "Working With Children Check", required: true },
+  { id: "wwc", label: "Working With Children Check", required: false }, // optional in Release 1
   { id: "photo_id", label: "Photo ID (Licence/Passport)", required: true },
   { id: "work_rights", label: "Work Rights Verification", required: true },
   { id: "insurance", label: "Public Liability Insurance ($10M)", required: true },

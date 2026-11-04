@@ -555,7 +555,7 @@
     "voice": "語音",
     "send": "發送",
     "voiceHint": "點擊說話 — 支持國語、粵語、英語",
-    "aiDisclaimer": "AI可能出錯。緊急情況請使用SOS按鈕。",
+    "aiDisclaimer": "AI 可能會出錯。緊急情況請撥打 000（澳洲）或 911（加拿大）。",
     "quickReplies": {
       "reschedule": "改期",
       "policy": "取消政策",
@@ -688,7 +688,7 @@
   },
   "safetyReport": {
     "title": "安全回報",
-    "sub": "如果您感到不安全，請告訴我們",
+    "sub": "服務存在安全問題但並非緊急情況時，請在此回報。緊急情況請撥打 000（澳洲）或 911（加拿大）。",
     "severity": "嚴重程度",
     "sevLow": "低",
     "sevLowHint": "不影響安全，但需改善",
@@ -710,8 +710,8 @@
     "anonymousHint": "您的身份不會透露給對方",
     "contactMe": "可以聯繫我了解更多",
     "sevHighDivertTitle": "停止 — 這可能是緊急狀況",
-    "sevHighDivertHint": "請先開啟 SOS 疊層以撥打您所在國家的緊急電話。",
-    "openSos": "開啟 SOS",
+    "sevHighDivertHint": "請先撥打緊急電話，再在此回報。",
+    "openSos": "撥打 {number}",
     "when": "事件發生時間？",
     "describeHint": "至少 30 字，請陳述事實 — 誰、什麼、在哪裡。",
     "policeContacted": "我已聯絡警方",
