@@ -6,7 +6,7 @@ const AI_ENDPOINT = `${BASE}/api/ai/chat`
 test.describe('AI 聊天控件 (GROQ)', () => {
   test('responds to zh general query', async ({ request }) => {
     const res = await request.post(AI_ENDPOINT, {
-      data: { message: '你好，我想了解和润心语者服务', locale: 'zh', conversationId: 'e2e-001' },
+      data: { message: '你好，我想了解心语者服务', locale: 'zh', conversationId: 'e2e-001' },
       timeout: 15000,
     })
     expect(res.status()).not.toBe(500)

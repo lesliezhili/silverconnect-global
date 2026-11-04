@@ -204,7 +204,7 @@ export async function processAIIncomingInquiry(
     }).catch(() => {});
   } else {
     // After-hours: AI covers it.
-    const systemPrompt = `You are HeRun (和润), a compassionate AI companion for SilverConnect Global,
+    const systemPrompt = `You are the SilverConnect (银联) assistant, a compassionate AI companion for SilverConnect,
 an elder care platform. You help seniors and their families with care services.
 Be warm, clear, patient. Use simple language. If unsure, suggest contacting support.
 Ethics: empathy, dignity, protection of vulnerable, honesty.`;

@@ -73,7 +73,7 @@ const dict: Record<string, Record<string, string>> = {
   missionVerse: { en: "A new command I give you: Love one another. — John 13:34", zh: "我赐给你们一条新命令，乃是叫你们彼此相爱。— 约翰福音 13:34", zh_tw: "我賜給你們一條新命令，乃是叫你們彼此相愛。— 約翰福音 13:34", ja: "互いに愛し合いなさい — ヨハネ13:34", ko: "서로 사랑하라 — 요한복음 13:34", th: "จงรักซึ่งกันและกัน — ยอห์น 13:34" },
   missionBuilt: { en: "Built on the call to serve", zh: "建立在服务的呼召之上", zh_tw: "建立在服務的呼召之上", ja: "奉仕の召しに基づいて", ko: "섬김의 부르심 위에", th: "สร้างจากการรับใช้" },
   missionBuilt2: { en: "Built on the call to serve. Every act of care is love in action.", zh: "SilverConnect 建立在服务他人的信念之上", zh_tw: "SilverConnect 建立在服務他人的信念之上", ja: "奉仕の召し。ケアは愛の行動。", ko: "섬김의 부르심. 돌봄은 사랑의 실천.", th: "สร้างจากการรับใช้ ทุกการดูแลคือความรัก" },
-  footerBrand: { en: "SilverConnect · a PHLedger service", zh: "SilverConnect（和润）· PHLedger 旗下服务", zh_tw: "SilverConnect（和潤）· PHLedger 旗下服務", ja: "SilverConnect · PHLedger のサービス", ko: "SilverConnect · PHLedger 서비스", th: "SilverConnect · บริการของ PHLedger", vi: "SilverConnect · dịch vụ của PHLedger" },
+  footerBrand: { en: "SilverConnect · a PHLedger service", zh: "SilverConnect（银联）· PHLedger 旗下服务", zh_tw: "SilverConnect（銀聯）· PHLedger 旗下服務", ja: "SilverConnect · PHLedger のサービス", ko: "SilverConnect · PHLedger 서비스", th: "SilverConnect · บริการของ PHLedger", vi: "SilverConnect · dịch vụ của PHLedger" },
   cancelPolicy: { en: "Cancellation", zh: "取消政策", zh_tw: "取消政策", ja: "キャンセル", ko: "취소 정책", th: "ยกเลิก" , vi: "Chính sách hủy"},
   terms: { en: "Terms", zh: "条款", zh_tw: "條款", ja: "利用規約", ko: "이용약관", th: "ข้อกำหนด" , vi: "Điều khoản"},
   privacy: { en: "Privacy", zh: "隐私", zh_tw: "隱私", ja: "プライバシー", ko: "개인정보", th: "ความเป็นส่วนตัว" , vi: "Quyền riêng tư"},

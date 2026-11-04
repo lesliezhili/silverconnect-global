@@ -476,7 +476,7 @@ export default async function CustomerHomePage({
           </div>
         ) : null}
 
-        {/* ── 和润心语者 (Aged Mental Health) — CN platform only, hidden in Australia ── */}
+        {/* ── 心语者 (Aged Mental Health) — CN platform only, hidden in Australia ── */}
         {/* Future release (see docs/FUTURE_RELEASES.md) */}
         {false && (
           <section className="mx-5 mt-5 mb-3">
@@ -487,7 +487,7 @@ export default async function CustomerHomePage({
               <span className="text-[40px] shrink-0">🌸</span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h3 className="text-elder-body font-bold text-gray-900">和润心语者</h3>
+                  <h3 className="text-elder-body font-bold text-gray-900">心语者</h3>
                   <span className="text-xs bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full font-medium">老年心理健康</span>
                 </div>
                 <p className="text-[15px] text-gray-600 leading-relaxed">

@@ -1,5 +1,5 @@
 /**
- * 和润心语者 — Aged Mental Health Service Provider
+ * 心语者 — Aged Mental Health Service Provider
  * Training modules, registration types, implementation protocols, and feedback types.
  * Part of SilverConnect China Platform.
  */
@@ -27,10 +27,10 @@ export interface TrainingModule {
 export const TRAINING_MODULES: TrainingModule[] = [
   {
     id: 'M1', title: '情感陪伴基础',
-    description: '和润心语者的核心理念、职业伦理与基本陪伴框架。',
+    description: '心语者的核心理念、职业伦理与基本陪伴框架。',
     totalHours: 4, badge: '🌱', color: 'green',
     lessons: [
-      { id: 'M1-1', title: '和润心语者的使命与价值观', duration: '45分钟', type: 'video' },
+      { id: 'M1-1', title: '心语者的使命与价值观', duration: '45分钟', type: 'video' },
       { id: 'M1-2', title: '职业伦理与服务边界', duration: '60分钟', type: 'reading' },
       { id: 'M1-3', title: '情感陪伴 vs. 心理治疗：区别与联系', duration: '45分钟', type: 'video' },
       { id: 'M1-4', title: '基础理念评估测试', duration: '30分钟', type: 'quiz' },

@@ -90,7 +90,7 @@ export function CountrySwitcher({
           </Dropdown.Item>
           )}
 
-          {/* 🇨🇳 China / 九鼎 — internal preview only, see chinaSiteAccess.ts */}
+          {/* 🇨🇳 China / 银联 — internal preview only, see chinaSiteAccess.ts */}
           {chinaSiteAllowed && (
             <Dropdown.Item
               onSelect={() => onSelect("CN")}

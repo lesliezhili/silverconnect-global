@@ -1,4 +1,4 @@
-# SilverConnect Global (和润 HeRun)
+# SilverConnect (银联)
 
 > 🌏 Home services for older adults — a PHLedger service (operated by PHLEDGER PTY LTD). Release 1: cleaning, garden and small handyman jobs for Chinese-speaking seniors in Melbourne and Vancouver — see docs/RELEASE_1.md.
 

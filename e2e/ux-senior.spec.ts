@@ -34,10 +34,10 @@ test.describe('Landing page — senior-first UX', () => {
     await expect(page.locator('footer')).toBeVisible()
   })
 
-  test('page mentions seniors, elder care, or HeRun', async ({ page }) => {
+  test('page mentions seniors, elder care, or 银联', async ({ page }) => {
     await page.goto(BASE)
     const body = await page.locator('body').textContent() ?? ''
-    expect(/senior|elder|care|aged|HeRun|和润/i.test(body)).toBe(true)
+    expect(/senior|elder|care|aged|银联/i.test(body)).toBe(true)
   })
 })
 
