@@ -52,7 +52,7 @@ test.describe('心语者注册流程', () => {
 
   test('registration page renders in zh locale', async ({ page }) => {
     await page.goto(`${BASE}/zh/xinyuzhe/registration`)
-    await expect(page).toHaveTitle(/和润|心语者|SilverConnect/)
+    await expect(page).toHaveTitle(/银联|心语者|SilverConnect/)
     // Step 1 inputs visible
     await expect(page.locator('input[type="text"], input[type="email"]').first()).toBeVisible()
   })

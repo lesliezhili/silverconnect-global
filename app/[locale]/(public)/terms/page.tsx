@@ -34,11 +34,11 @@ export default async function TermsPage({
         {/* 1. About SilverConnect */}
         <section>
           <h2 className="text-elder-subheading font-semibold">
-            {isZh ? "1. 关于和润 SilverConnect" : "1. About SilverConnect"}
+            {isZh ? "1. 关于银联 SilverConnect" : "1. About SilverConnect"}
           </h2>
           <p className="mt-3">
             {isZh
-              ? "和润 SilverConnect（\"平台\"）是 PHLedger 旗下的居家服务平台，连接需要居家服务的长者与经过背景审查的服务人员。平台由 PHLEDGER PTY LTD（ABN 49 663 259 667）运营，目前服务澳大利亚和加拿大。"
+              ? "银联 SilverConnect（\"平台\"）是 PHLedger 旗下的居家服务平台，连接需要居家服务的长者与经过背景审查的服务人员。平台由 PHLEDGER PTY LTD（ABN 49 663 259 667）运营，目前服务澳大利亚和加拿大。"
               : "SilverConnect (\"the Platform\") is a PHLedger home-services platform connecting older adults who need help at home with background-checked providers. The Platform is operated by PHLEDGER PTY LTD (ABN 49 663 259 667) and currently serves Australia and Canada."}
           </p>
         </section>

@@ -240,7 +240,7 @@ export default async function LandingPage({
             </a>
         )}
 
-        {/* 和润心语者 — aged emotional companion, Chinese locale only, hidden in Australia */}
+        {/* 心语者 — aged emotional companion, Chinese locale only, hidden in Australia */}
         {zh && country !== "AU" && (
           <a
             href={`/${locale}/xinyuzhe`}
@@ -249,7 +249,7 @@ export default async function LandingPage({
             <span className="text-[42px] shrink-0">🌸</span>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-[20px] font-bold text-gray-900">和润心语者</h3>
+                <h3 className="text-[20px] font-bold text-gray-900">心语者</h3>
                 <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[12px] font-medium text-rose-700">老年心理健康</span>
               </div>
               <p className="text-[15px] text-gray-600 leading-relaxed">专属情感陞伴 · 数字生命传记 · 心理健康支持</p>
@@ -264,7 +264,7 @@ export default async function LandingPage({
           <div className="grid grid-cols-2 gap-3">
             {/* SilverConnect card */}
             <div className="rounded-2xl border-2 border-green-300 bg-green-50 p-5 text-center shadow-sm">
-              <p className="text-[16px] font-bold text-green-700 uppercase tracking-wide">{isCN ? "九鼎银联" : "SilverConnect"}</p>
+              <p className="text-[16px] font-bold text-green-700 uppercase tracking-wide">{isCN ? "银联" : "SilverConnect"}</p>
               <p className="mt-2 text-[36px] font-extrabold text-green-700">15%</p>
               <p className="mt-1 text-[16px] text-green-600">{t("platformFee")}</p>
               <div className="mt-3 rounded-lg bg-green-100 p-2">
@@ -331,7 +331,7 @@ export default async function LandingPage({
             <Link href="/help" className="text-gray-500 hover:text-teal-700">{t("help")}</Link>
           </div>
           <p className="mt-4 text-[16px] text-gray-400">{t("footerBrand")}</p>
-          <p className="mt-1 text-[14px] text-gray-400">{isCN ? "© 2026 九鼎银联 · SilverConnect Global（和润）" : "© 2026 SilverConnect Global"}</p>
+          <p className="mt-1 text-[14px] text-gray-400">{isCN ? "© 2026 银联 · SilverConnect" : "© 2026 SilverConnect Global"}</p>
         
           {/* Powered by PHLedger */}
           <div className="mt-6 pt-4 border-t border-gray-200">

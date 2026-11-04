@@ -70,7 +70,7 @@ export default function XinyuzheRegistrationPage() {
           <div className="text-5xl mb-4">🌸</div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">申请已提交！</h2>
           <p className="text-gray-600 text-sm mb-6">
-            感谢您申请成为和润心语者。我们将在 3−5 个工作日内审核您的资主并通过电子邮件通知您。
+            感谢您申请成为心语者。我们将在 3−5 个工作日内审核您的资主并通过电子邮件通知您。
           </p>
           <Link href="/zh/xinyuzhe" className="bg-rose-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-rose-600 transition">
             返回主页
@@ -88,7 +88,7 @@ export default function XinyuzheRegistrationPage() {
         <div className="text-center mb-8">
           <div className="text-4xl mb-2">🔏</div>
           <h1 className="text-2xl font-bold text-gray-900 mb-1">心语者注册申请</h1>
-          <p className="text-gray-500 text-sm">和润心语者 · 老年心理健康服务提供商</p>
+          <p className="text-gray-500 text-sm">心语者 · 老年心理健康服务提供商</p>
         </div>
 
         {/* 步骤条 */}
@@ -221,7 +221,7 @@ export default function XinyuzheRegistrationPage() {
                   <input type="checkbox" className="mt-1" checked={form.agreeTerms}
                     onChange={e => set('agreeTerms', e.target.checked)} />
                   <span className="text-sm text-gray-600">
-                    我已阅读并同意《和润心语者服务协议》和《个人信息保护政策》。
+                    我已阅读并同意《心语者服务协议》和《个人信息保护政策》。
                   </span>
                 </label>
                 <label className="flex items-start gap-3 cursor-pointer">
