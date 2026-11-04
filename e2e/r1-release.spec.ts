@@ -32,7 +32,7 @@ for (const L of ['en', 'zh'] as const) {
       const prices = page.getByRole('heading', { name: zh ? '标准价格' : 'Standard prices' })
       await expect(prices).toBeVisible()
       await expect(page.locator('main section li')).toHaveCount(3)
-      await expect(page.getByRole('link', { name: zh ? '立即预约' : 'Book now' })).toHaveAttribute('href', /bookings\/new\?step=1&cat=cleaning/)
+      await expect(page.getByRole('link', { name: zh ? '立即预约' : 'Book now', exact: true })).toHaveAttribute('href', /bookings\/new\?step=1&cat=cleaning/)
     })
 
     test('categories outside Release 1 are 404', async ({ page }) => {

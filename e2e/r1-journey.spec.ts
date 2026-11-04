@@ -32,6 +32,15 @@ const PHOTO = Buffer.from(
 )
 const photo = (name: string) => ({ name: `${name}.png`, mimeType: 'image/png', buffer: PHOTO })
 
+/** Selects a visually hidden (sr-only) radio reliably and confirms it stuck. */
+async function choose(radio: import('@playwright/test').Locator) {
+  await radio.waitFor({ state: 'attached' })
+  await expect(async () => {
+    await radio.evaluate((el) => (el as HTMLInputElement).click())
+    expect(await radio.isChecked()).toBe(true)
+  }).toPass()
+}
+
 async function signIn(browser: Browser, email: string): Promise<Page> {
   const ctx = await browser.newContext()
   const page = await ctx.newPage()
@@ -96,7 +105,7 @@ async function evidence(page: Page, id: string, trigger: 'On the way' | 'Mark co
 
 async function rate(page: Page, id: string, stars: number) {
   await page.goto(`/en/bookings/${id}/feedback`)
-  await page.locator(`input[name="rating"][value="${stars}"]`).check({ force: true })
+  await choose(page.locator(`input[name="rating"][value="${stars}"]`))
   await page.getByRole('button', { name: 'Submit & release payment' }).click()
 }
 
@@ -111,9 +120,10 @@ const STANDBY = '00000000-0000-4000-c000-000000000015' // emergency cover team
 /** Provider declines / cancels through the modal, picking the first reason. */
 async function withdraw(page: Page, id: string, trigger: 'Decline' | 'Cancel booking') {
   await page.goto(`/en/provider/jobs/${id}`)
-  await page.getByRole('button', { name: trigger }).first().click()
+  // dispatchEvent: the Next.js dev-mode badge overlaps the bottom-left button in `next dev`.
+  await page.getByRole('button', { name: trigger }).first().dispatchEvent('click')
   const dialog = page.getByRole('dialog')
-  await dialog.locator('input[name="reason"]').first().check({ force: true })
+  await choose(dialog.locator('input[name="reason"]').first())
   await dialog.getByRole('button', { name: trigger }).click()
 }
 
@@ -131,7 +141,7 @@ test('trust gate: only background-checked, well-rated providers in the customer\
 test('paused customer cannot book', async ({ browser }) => {
   const bad = await signIn(browser, 'cust-bad@e2e.test')
   await bad.goto('/en/bookings/new?step=1&cat=cleaning')
-  await expect(bad.getByRole('alert')).toContainText('paused')
+  await expect(bad.getByText('Your account is paused from booking')).toBeVisible()
   await expect(bad.getByRole('button', { name: 'Next', exact: true })).toHaveCount(0)
 })
 
@@ -254,7 +264,7 @@ test('1★ needs photo evidence and holds the payout; the pair is never matched 
   await cust.waitForURL(/error=photo_required/)
   await cust.locator('main input[type="file"]').setInputFiles([photo('stain1'), photo('stain2')])
   await expect(cust.getByText('2/3 uploaded')).toBeVisible()
-  await cust.locator('input[name="rating"][value="1"]').check({ force: true })
+  await choose(cust.locator('input[name="rating"][value="1"]'))
   await cust.getByRole('button', { name: 'Submit & release payment' }).click()
   await cust.waitForURL(/held=1/)
   expect(await status(id)).toBe('completed')
@@ -324,7 +334,7 @@ test('customer cancels ≥7 days ahead: full refund; provider declines: emergenc
 
 test('provider cancels <48h before: emergency team covers, provider pays 10% + strike', async ({ browser }) => {
   const cust = await signIn(browser, 'cust-au@e2e.test')
-  const id = await book(cust, { cat: 'cleaning', tier: 'regular', provider: 'Good Helper', days: 17 })
+  const id = await book(cust, { cat: 'garden', tier: 'regular', provider: 'Good Helper', days: 17 })
   await pay(cust, id)
   await sql`UPDATE bookings SET scheduled_at = NOW() + INTERVAL '20 hours' WHERE id = ${id}`
   const before = await wallet(GOOD)
@@ -333,8 +343,8 @@ test('provider cancels <48h before: emergency team covers, provider pays 10% + s
   await expect.poll(async () => (await sql`SELECT provider_id FROM bookings WHERE id = ${id}`)[0].provider_id).toBe(STANDBY)
   expect(await status(id)).toBe('confirmed') // same booking, same time, same price
   const [c] = await sql`SELECT policy_applied, provider_penalty::float AS pen, refund_amount::float AS refund FROM cancellations WHERE booking_id = ${id}`
-  expect(c).toMatchObject({ policy_applied: 'provider_<48h', pen: 12.1, refund: 0 }) // 10% of A$121
-  expect((await wallet(GOOD)).a).toBeCloseTo(before.a - 12.1, 2)
+  expect(c).toMatchObject({ policy_applied: 'provider_<48h', pen: 13.2, refund: 0 }) // 10% of A$132 (2h × A$60 + GST)
+  expect((await wallet(GOOD)).a).toBeCloseTo(before.a - 13.2, 2)
   const [r] = await sql`SELECT replacement_provider_id FROM emergency_reroutes WHERE booking_id = ${id}`
   expect(r.replacement_provider_id).toBe(STANDBY)
 })
@@ -370,7 +380,7 @@ test('3 late cancellations / no-shows in 90 days pause the customer', async ({ b
   }
   const hist = await signIn(browser, 'cust-hist@e2e.test')
   await hist.goto('/en/bookings/new?step=1&cat=cleaning')
-  await expect(hist.getByRole('alert')).toContainText('paused')
+  await expect(hist.getByText('Your account is paused from booking')).toBeVisible()
 })
 
 test('Canada: Vancouver customer sees C$ prices with 5% GST', async ({ browser }) => {

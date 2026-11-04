@@ -52,13 +52,12 @@ export async function providerWithdraw(input: {
         cancelledBy: input.providerUserId,
         reason: b.status === "pending" ? "provider_declined" : "provider_unavailable",
         notes: note,
+        policyOverride: notice,
+        providerPenalty: penalty,
       });
     } finally {
       await client.end().catch(() => {});
     }
-    await db.execute(sql`
-      UPDATE cancellations SET policy_applied = ${notice}, provider_penalty = ${penalty}
-      WHERE booking_id = ${input.bookingId} AND cancelled_by = ${input.providerUserId}`);
     await db.insert(bookingChanges).values({
       bookingId: input.bookingId,
       type: "cancel",

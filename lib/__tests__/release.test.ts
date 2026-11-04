@@ -83,3 +83,25 @@ describe("quality control", () => {
     expect(qcFlagFor(120, null, new Date())).toBe("no_start_time");
   });
 });
+
+import { providerNotice, providerPenalty } from "../release-cancellation";
+
+describe("provider cancellation policy", () => {
+  const now = new Date("2026-11-04T00:00:00Z");
+  const at = (h: number) => new Date(now.getTime() + h * 3600000);
+  it("no penalty with 48h+ notice", () => {
+    expect(providerNotice("confirmed", at(49), now)).toBe("provider_48h+");
+    expect(providerPenalty("provider_48h+", 200)).toBe(0);
+  });
+  it("10% under 48h, 25% under 12h or once started", () => {
+    expect(providerNotice("confirmed", at(30), now)).toBe("provider_<48h");
+    expect(providerPenalty("provider_<48h", 121)).toBe(12.1);
+    expect(providerNotice("confirmed", at(5), now)).toBe("provider_<12h");
+    expect(providerNotice("in_progress", at(-1), now)).toBe("provider_<12h");
+    expect(providerPenalty("provider_<12h", 132)).toBe(33);
+  });
+  it("declining an unpaid request is free", () => {
+    expect(providerNotice("pending", at(2), now)).toBe("provider_declined");
+    expect(providerPenalty("provider_declined", 500)).toBe(0);
+  });
+});
