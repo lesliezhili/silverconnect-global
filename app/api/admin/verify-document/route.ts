@@ -35,13 +35,14 @@ export async function POST(req: NextRequest) {
       await sql`INSERT INTO notifications (user_id, kind, title, body, link) VALUES (${profile.user_id}, 'system', ${title}, ${body}, '/provider/documents')`;
     }
 
-    // Auto-approve if WWC + police_check both approved
+    // Auto-approve once the Release 1 background check is complete:
+    // police check + photo ID approved (WWC is optional).
     if (action === "verify") {
       const allDocs = await sql`SELECT type, status FROM provider_documents WHERE provider_id = ${doc.provider_id}`;
       const approved = allDocs.filter((d: { status: string }) => d.status === "approved");
-      const hasWWC = approved.some((d: { type: string }) => d.type === "wwc");
+      const hasId = approved.some((d: { type: string }) => d.type === "identity");
       const hasPolice = approved.some((d: { type: string }) => d.type === "police_check");
-      if (hasWWC && hasPolice) {
+      if (hasId && hasPolice) {
         await sql`UPDATE provider_profiles SET onboarding_status = 'approved', approved_at = NOW() WHERE id = ${doc.provider_id}`;
         if (profile) {
           await sql`INSERT INTO notifications (user_id, kind, title, body, link)

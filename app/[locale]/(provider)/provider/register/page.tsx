@@ -514,7 +514,7 @@ function Step2({ t, country }: { t: T; country: string }) {
         <label className="flex items-start gap-3 cursor-pointer">
           <input type="checkbox" name="wwcc" value="yes" className="mt-1 h-6 w-6 rounded border-border-strong text-brand" />
           <div>
-            <p className="text-[17px] font-bold">Working With Children Check</p>
+            <p className="text-[17px] font-bold">Working With Children Check (optional)</p>
             <p className="mt-0.5 text-[16px] text-text-tertiary">
               If applicable to your services
             </p>

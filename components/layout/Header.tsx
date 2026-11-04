@@ -64,7 +64,6 @@ export function Header({
             {country === "CN" ? (
               <span className="flex items-baseline gap-1.5">
                 <span className="text-[24px] sm:text-[28px]">九鼎银联</span>
-                <span className="text-[12px] font-bold text-brand/60 sm:text-[14px]">非营利互助平台</span>
               </span>
             ) : (
               <span className="flex items-baseline gap-1.5">

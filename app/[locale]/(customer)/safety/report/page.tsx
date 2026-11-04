@@ -6,6 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/Button";
 import { Label } from "@/components/ui/Label";
 import { getCountry } from "@/components/domain/countryCookie";
+import { EMERGENCY_NUMBER } from "@/components/domain/country";
 import { db } from "@/lib/db";
 import { incidentReports } from "@/lib/db/schema/safety";
 import { getCurrentUser } from "@/lib/auth/server";
@@ -130,12 +131,13 @@ export default async function SafetyReportPage({
           <div className="text-danger">
             <p className="text-[17px] font-bold">{t("sevHighDivertTitle")}</p>
             <p className="mt-0.5 text-[16px]">{t("sevHighDivertHint")}</p>
-            <Link
-              href="/chat?emergency=1"
+            {/* Release 1 has no in-app SOS: call the local emergency number. */}
+            <a
+              href={`tel:${EMERGENCY_NUMBER[country]}`}
               className="mt-2 inline-flex h-12 items-center rounded-md bg-danger px-5 text-[17px] font-bold text-white"
             >
-              {t("openSos")}
-            </Link>
+              {t("openSos", { number: EMERGENCY_NUMBER[country] })}
+            </a>
           </div>
         </div>
 

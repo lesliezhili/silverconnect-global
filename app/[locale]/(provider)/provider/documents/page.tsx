@@ -3,8 +3,10 @@
 import { useState, useEffect, Suspense, useRef } from "react";
 
 const DOC_TYPES = [
-  { type: "wwc", label: "Working with Vulnerable People", label_zh: "弱势群体工作许可证", required: true, icon: "\ud83d\udee1\ufe0f" },
-  { type: "police_check", label: "National Police Check", label_zh: "全国犯罪记录检查", required: true, icon: "\ud83d\udc6e" },
+  // Release 1: police check + photo ID are required to be matched; WWC is optional.
+  { type: "police_check", label: "Police Check (AU) / Criminal Record Check (CA)", label_zh: "无犯罪记录证明（澳洲警方检查 / 加拿大犯罪记录检查）", required: true, icon: "\ud83d\udc6e" },
+  { type: "identity", label: "Photo ID (driver licence or passport)", label_zh: "带照片的身份证件（驾照或护照）", required: true, icon: "\ud83e\udeaa" },
+  { type: "wwc", label: "Working With Children / Vulnerable People (optional)", label_zh: "儿童/弱势群体工作许可（可选）", required: false, icon: "\ud83d\udee1\ufe0f" },
   { type: "first_aid", label: "First Aid Certificate", label_zh: "急救证书", required: false, icon: "\u2695\ufe0f" },
 ];
 

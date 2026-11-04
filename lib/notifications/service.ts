@@ -3,7 +3,7 @@
 import { isUnroutableTestDomain } from "@/lib/notifications/testDomain";
 
 /**
- * FREE Notification Stack for SilverConnect Global (Non-Profit)
+ * FREE Notification Stack for SilverConnect (a PHLedger service)
  * 
  * Push Notifications: ntfy.sh (open-source, self-hostable, free forever)
  * Email: Nodemailer + Gmail SMTP (free up to 500/day) OR Resend free tier (100/day)
