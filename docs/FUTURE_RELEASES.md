@@ -8,7 +8,7 @@ Release 1 ships only home cleaning, garden care and no-licence handyman jobs ([R
 | Licensed trades | Electrical, plumbing, gas, tree felling, gutter/roof work | Need licence verification (VIC: ESV, VBA; BC: Technical Safety BC) |
 | Government funding | NDIS, DVA, TAC, WorkSafe, My Aged Care, HCP (`/profile/funding`, `govt-funding-access`) | Allow-listed only today |
 | Faith & care programmes | `/christian`, `/devotional`, `/book-faith`, provider faith/prayer pages | Opt-in ministry features |
-| 和润心语者 emotional care | `/xinyuzhe/*` | Planned for the China platform |
+| 心语者 emotional care | `/xinyuzhe/*` | Planned for the China platform |
 | Digital autobiography | `/biography` | |
 | Day-care centres | `/register/day-care-centre`, `/register/certification` | Facility onboarding |
 | Family accounts | `/family/*` | Children booking for parents (high value for Chinese families; good next candidate) |
@@ -16,5 +16,5 @@ Release 1 ships only home cleaning, garden care and no-licence handyman jobs ([R
 | Rewards & referrals | `/profile/coins`, `/profile/referrals`, `/customer/membership` | |
 | Marketplace / misc | `/products`, `/donate`, `/nearby`, `/country-services` | |
 | Provider extras | `/provider/guaranteed-wage`, `leaderboard`, `achievements`, `goals`, `team-chat`, `smart-pricing`, `seniors`, `training` | Guaranteed wage is gated on ABN trial performance |
-| Other countries | CN (九鼎银联, separate mainland stack: `docs/CHINA_DEPLOYMENT.md`), US, TW, SG, HK, MY, NZ | Country switcher offers AU + CA only |
+| Other countries | CN (银联, separate mainland stack: `docs/CHINA_DEPLOYMENT.md`), US, TW, SG, HK, MY, NZ | Country switcher offers AU + CA only |
 | Legacy booking flows | `/book`, `/book-service`, `POST /api/bookings/charged` | Superseded by `/bookings/new` → `/pay/[id]` |
