@@ -1,4 +1,6 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import { RELEASE_CATEGORIES, isReleaseCategory, isReleaseCountry } from "@/lib/release";
+import { HOURLY_RATE } from "@/lib/release-pricing";
 import { eq, and, desc, sql, lte } from "drizzle-orm";
 import { Header } from "@/components/layout/Header";
 import { Link, redirect } from "@/i18n/navigation";
@@ -174,6 +176,13 @@ export default async function CustomerHomePage({
     }
   } catch (error) {
     console.error("[home] Falling back to static category data", error);
+  }
+
+  // Release 1: cleaning / garden / handyman only, priced by the standard
+  // model (regular-tier hourly, ex tax) — lib/release-pricing.ts.
+  catRows = catRows.filter((c) => isReleaseCategory(c.code));
+  if (isReleaseCountry(country)) {
+    for (const c of RELEASE_CATEGORIES) minHourlyByCategory.set(c, HOURLY_RATE[country][c]);
   }
 
   // ----- Recently booked: last 4 distinct providers from this user's bookings -----
@@ -468,7 +477,8 @@ export default async function CustomerHomePage({
         ) : null}
 
         {/* ── 和润心语者 (Aged Mental Health) — CN platform only, hidden in Australia ── */}
-        {isZh && country !== "AU" && (
+        {/* Future release (see docs/FUTURE_RELEASES.md) */}
+        {false && (
           <section className="mx-5 mt-5 mb-3">
             <Link
               href="/xinyuzhe"

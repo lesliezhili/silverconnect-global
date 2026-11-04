@@ -8,6 +8,7 @@ import { getCountry } from "@/components/domain/countryCookie";
 import { getSession } from "@/components/domain/sessionCookie";
 import { EmptyState } from "@/components/domain/PageStates";
 import { db } from "@/lib/db";
+import { isReleaseCategory } from "@/lib/release";
 import {
   serviceCategories,
   services,
@@ -60,7 +61,8 @@ export default async function ProvidersByCategoryPage({
   const taxAbbr = TAX_ABBR[country];
 
   // Validate category is known
-  if (!VALID_CATS.includes(cat)) notFound();
+  // Release 1 only exposes cleaning / garden / handyman (lib/release.ts)
+  if (!VALID_CATS.includes(cat) || !isReleaseCategory(cat)) notFound();
 
   const catName = tCat(cat as CatKey);
   const emoji = CAT_EMOJI[cat] ?? "📋";

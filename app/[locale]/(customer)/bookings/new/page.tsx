@@ -1,13 +1,14 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect as nextRedirect } from "next/navigation";
 import { after } from "next/server";
-import { eq, and, asc } from "drizzle-orm";
+import { eq, and, asc, inArray } from "drizzle-orm";
 import { Header } from "@/components/layout/Header";
 import { Link } from "@/i18n/navigation";
 import { BookingProgress } from "@/components/domain/BookingProgress";
 import { CURRENCY_SYMBOL, TAX_ABBR } from "@/components/domain/country";
 import { getCountry } from "@/components/domain/countryCookie";
 import { db } from "@/lib/db";
+import { RELEASE_CATEGORIES, isReleaseCategory } from "@/lib/release";
 import { services, servicePrices } from "@/lib/db/schema/services";
 import { providerProfiles, providerCategories } from "@/lib/db/schema/providers";
 import { users } from "@/lib/db/schema/users";
@@ -53,11 +54,11 @@ async function saveStep1(formData: FormData) {
     nextRedirect(`/${locale}/bookings/new?step=1&error=pickService`);
   }
   const [svc] = await db
-    .select({ id: services.id })
+    .select({ id: services.id, category: services.categoryCode })
     .from(services)
     .where(and(eq(services.id, serviceId), eq(services.enabled, true)))
     .limit(1);
-  if (!svc) nextRedirect(`/${locale}/bookings/new?step=1&error=invalid`);
+  if (!svc || !isReleaseCategory(svc.category)) nextRedirect(`/${locale}/bookings/new?step=1&error=invalid`);
   await writeDraft({ serviceId });
   nextRedirect(`/${locale}/bookings/new?step=2`);
 }
@@ -253,7 +254,7 @@ export default async function BookingNewPage({
             eq(servicePrices.country, country),
           ),
         )
-        .where(eq(services.enabled, true))
+        .where(and(eq(services.enabled, true), inArray(services.categoryCode, [...RELEASE_CATEGORIES])))
         .orderBy(asc(services.categoryCode), asc(services.sortOrder));
 
       return (

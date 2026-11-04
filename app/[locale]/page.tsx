@@ -7,6 +7,7 @@ import { getCountry } from "@/components/domain/countryCookie";
 import { getCurrentUser } from "@/lib/auth/server";
 import { hasGovtFundingAccess } from "@/lib/auth/govtFundingAccess";
 import { redirect } from "@/i18n/navigation";
+import { isReleaseCategory, LIVE_AREAS, NEXT_AREAS } from "@/lib/release";
 
 // No forced Bible content on public landing — faith content is opt-in after login
 
@@ -78,7 +79,7 @@ export default async function LandingPage({
         <section className="mb-10">
           <h2 className="mb-2 text-center text-[24px] font-bold text-gray-900">{tCare("careChoose")}</h2>
           <p className="mb-5 text-center text-[17px] text-gray-500">{tCare("careChooseSub")}</p>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4">
             {/* Pillar 1: Home-Based Care */}
             <Link
               href="/services"
@@ -95,21 +96,7 @@ export default async function LandingPage({
               </span>
             </Link>
 
-            {/* Pillar 2: Day Care Facility */}
-            <Link
-              href="/help"
-              className="group relative flex flex-col rounded-2xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-6 shadow-sm transition-all hover:border-emerald-400 hover:shadow-lg active:scale-[0.98]"
-              style={{ minHeight: "260px" }}
-            >
-              <span className="absolute top-3 right-3 rounded-full bg-emerald-100 px-3 py-1 text-[12px] font-bold text-emerald-700">{tCare("facilityBadge")}</span>
-              <span className="text-[48px] mb-3">🏛️</span>
-              <h3 className="text-[20px] font-bold text-gray-900 mb-2">{tCare("facilityTitle")}</h3>
-              <p className="text-[15px] text-gray-600 mb-3">{tCare("facilitySub")}</p>
-              <p className="text-[13px] text-gray-400 mb-4">{tCare("facilityFeatures")}</p>
-              <span className="mt-auto inline-flex items-center text-[16px] font-semibold text-emerald-600 group-hover:text-emerald-800">
-                {tCare("facilityCTA")} →
-              </span>
-            </Link>
+            {/* Pillar 2 (Day Care Facility) is out of Release 1 scope — see lib/release.ts */}
           </div>
         </section>
 
@@ -131,6 +118,28 @@ export default async function LandingPage({
           </div>
         </section>
 
+        {/* Release 1 service areas — major Chinese communities, Melbourne + Vancouver first */}
+        <section className="mb-10 rounded-2xl border-2 border-teal-200 bg-white p-6">
+          <h2 className="mb-4 text-[24px] font-bold text-gray-900">{zh ? "服务地区" : "Where we serve"}</h2>
+          <ul className="space-y-4">
+            {LIVE_AREAS.map((a) => (
+              <li key={a.city}>
+                <p className="text-[20px] font-semibold text-gray-900">
+                  ✅ {a.country === "AU" ? "🇦🇺" : "🇨🇦"} {zh ? `${a.cityZh} · 已开通` : `${a.city} · Now open`}
+                </p>
+                <p className="mt-1 text-[17px] text-gray-600">
+                  {a.hubs.map((h) => (zh ? h.zh : h.en)).join(zh ? "、" : " · ")}
+                  {zh ? "及周边" : " and nearby"}
+                </p>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-5 text-[17px] text-gray-500">
+            🕒 {zh ? "即将开通：" : "Coming next: "}
+            {NEXT_AREAS.map((a) => (zh ? a.zh : a.en)).join(zh ? "；" : "; ")}
+          </p>
+        </section>
+
         {/* Services — Clickable cards linking to signup with category pre-selected */}
         <section className="mb-10">
           <h2 className="mb-4 text-[24px] font-bold text-gray-900">{t("servicesTitle")}</h2>
@@ -138,7 +147,7 @@ export default async function LandingPage({
             {[
               { e: "🧹", cat: "cleaning", label: t("cleaning") },
               { e: "🌳", cat: "garden", label: t("garden") },
-              { e: "🔧", cat: "repair", label: t("repair") },
+              { e: "🔧", cat: "repair", label: zh ? "杂工小修" : "Handyman" },
               { e: "💊", cat: "personalCare", label: t("personalCare") },
               { e: "👋", cat: "companion", label: t("companion") },
               { e: "🚗", cat: "transport", label: t("transport") },
@@ -146,10 +155,10 @@ export default async function LandingPage({
               { e: "🎵", cat: "musicLesson",     label: t("musicLesson") },
               { e: "🎨", cat: "artClass",         label: t("artClass") },
               { e: "🤖", cat: "digitalLiteracy",  label: t("digitalLiteracy") }
-            ].map((s) => (
+            ].filter((s) => isReleaseCategory(s.cat)).map((s) => (
               <Link
                 key={s.cat}
-                href="/book-service"
+                href={`/services/${s.cat}`}
                 className="flex flex-col items-center justify-center rounded-2xl border-2 border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-teal-400 hover:bg-teal-50 hover:shadow-lg active:scale-[0.96] active:bg-teal-100"
                 style={{ minHeight: "130px" }}
               >

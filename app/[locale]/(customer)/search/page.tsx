@@ -7,6 +7,7 @@ import { ProviderAvatar } from "@/components/domain/ProviderAvatar";
 import { getCountry } from "@/components/domain/countryCookie";
 import { getSession } from "@/components/domain/sessionCookie";
 import { db } from "@/lib/db";
+import { isReleaseCategory } from "@/lib/release";
 import { providerProfiles, providerCategories } from "@/lib/db/schema/providers";
 import { users } from "@/lib/db/schema/users";
 import { reviews } from "@/lib/db/schema/reviews";
@@ -67,6 +68,7 @@ export default async function SearchPage({
       : [];
     const services = q
       ? catRows
+          .filter((c) => isReleaseCategory(c.code)) // Release 1 categories only
           .map((c) => {
             const label = tCategories(
               c.code as Parameters<typeof tCategories>[0],
@@ -159,7 +161,7 @@ export default async function SearchPage({
         const catByProv = new Map<string, string[]>();
         for (const r of catLookup) {
           const arr = catByProv.get(r.providerId) ?? [];
-          arr.push(r.category as string);
+          if (isReleaseCategory(r.category)) arr.push(r.category as string);
           catByProv.set(r.providerId, arr);
         }
 
