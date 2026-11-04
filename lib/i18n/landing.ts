@@ -2,7 +2,7 @@
 const dict: Record<string, Record<string, string>> = {
   heroTitle1: { en: "Trusted home help for", zh: "华人长者的", zh_tw: "華人長者的", ja: "すべてのシニアに", ko: "모든 어르신께", th: "ศักดิ์ศรีและการดูแล" , vi: "Phẩm giá & chăm sóc cho"},
   heroTitle2: { en: "Chinese seniors", zh: "上门清洁·园艺·杂工", zh_tw: "到府清潔·園藝·雜工", ja: "尊厳あるケアを", ko: "존엄한 돌봄을", th: "สำหรับผู้สูงอายุทุกคน" , vi: "mọi người cao tuổi"},
-  heroSub: { en: "Cleaning, garden care and small handyman jobs — standard prices, before & after proof, in Melbourne and Vancouver.", zh: "清洁、园艺、杂工小修——标准价格，服务前后有照片视频为证。墨尔本、温哥华已开通。", zh_tw: "清潔、園藝、雜工小修——標準價格，服務前後有照片影片為證。墨爾本、溫哥華已開通。", ja: "60歳以上と認定介護者をつなぐ互助。", ko: "60세 이상과 검증된 돌봄 제공자를 연결.", th: "เชื่อมต่อผู้สูงอายุ 60+ กับผู้ดูแลที่รับรอง" , vi: "Kết nối người cao tuổi với người chăm sóc tận tâm"},
+  heroSub: { en: "Cleaning, garden care and small handyman jobs — standard prices, before & after proof, in Melbourne.", zh: "清洁、园艺、杂工小修——标准价格，服务前后有照片视频为证。墨尔本已开通。", zh_tw: "清潔、園藝、雜工小修——標準價格，服務前後有照片影片為證。墨爾本已開通。", ja: "メルボルンで清掃・庭仕事・簡単な修理を標準価格で。", ko: "60세 이상과 검증된 돌봄 제공자를 연결.", th: "เชื่อมต่อผู้สูงอายุ 60+ กับผู้ดูแลที่รับรอง" , vi: "Kết nối người cao tuổi với người chăm sóc tận tâm"},
   heroPhoto: { en: "Real people. Real care. Real dignity.", zh: "真实的关怀，有尊严的陪伴", zh_tw: "真實的關懷，有尊嚴的陪伴", ja: "本物のケア。本物の尊厳。", ko: "진정한 돌봄. 진정한 존엄.", th: "คนจริง ดูแลจริง ศักดิ์ศรีจริง" },
   altPhoto: { en: "Senior smiling with caring helper", zh: "老人与护理员微笑", zh_tw: "老人與護理員微笑", ja: "シニアとヘルパーの笑顔", ko: "어르신과 도우미의 미소", th: "ผู้สูงอายุยิ้มกับผู้ช่วย" },
   ctaRegister: { en: "Join SilverConnect — Free", zh: "加入 SilverConnect — 免费", zh_tw: "加入 SilverConnect — 免費", ja: "参加する — 無料", ko: "가입 — 무료", th: "เข้าร่วม — ฟรี" },

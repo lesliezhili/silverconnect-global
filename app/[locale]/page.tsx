@@ -118,7 +118,7 @@ export default async function LandingPage({
           </div>
         </section>
 
-        {/* Release 1 service areas — major Chinese communities, Melbourne + Vancouver first */}
+        {/* Release 1 service areas — Melbourne's Chinese communities; other cities on the waitlist */}
         <section className="mb-10 rounded-2xl border-2 border-teal-200 bg-white p-6">
           <h2 className="mb-4 text-[24px] font-bold text-gray-900">{zh ? "服务地区" : "Where we serve"}</h2>
           <ul className="space-y-4">

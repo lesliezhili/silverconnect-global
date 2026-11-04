@@ -4,9 +4,10 @@
  *
  * Release 1: home cleaning, garden care and no-licence handyman jobs
  * for Chinese-speaking older adults (华人长者), Australia and Canada
- * only. Live first in Melbourne's and Vancouver's Chinese communities;
- * other major communities (Sydney, Brisbane, Toronto, …) are on a
- * waitlist (NEXT_AREAS) until added to LIVE_AREAS.
+ * only. Release 1 is live in Melbourne's Chinese communities only;
+ * Vancouver (configured as VANCOUVER) and the other major communities
+ * (Sydney, Brisbane, Toronto, …) are on a waitlist (NEXT_AREAS) until
+ * added to LIVE_AREAS.
  *
  * Everything else in the codebase (other categories, CN/US/… countries,
  * day-care centres) stays built but hidden from customer-facing pages
@@ -103,8 +104,38 @@ export interface LiveArea {
 }
 
 /**
- * Live now — the major Chinese communities of the launch city in each
- * market. Widen as provider coverage grows.
+ * Vancouver is configured but not live in Release 1 (Melbourne only).
+ * To open it, add VANCOUVER to LIVE_AREAS and drop it from NEXT_AREAS.
+ */
+export const VANCOUVER: LiveArea = {
+  country: "CA",
+  city: "Vancouver",
+  cityZh: "温哥华",
+  state: "BC",
+  // Home cleaning / garden / handyman services: 5% GST, no BC PST.
+  tax: { abbr: "GST", rate: 0.05 },
+  hubs: [
+    { en: "Richmond", zh: "列治文" },
+    { en: "Burnaby", zh: "本拿比" },
+    { en: "Vancouver", zh: "温哥华" },
+    { en: "Coquitlam", zh: "高贵林" },
+  ],
+  fsas: [
+    // Richmond
+    "V6V", "V6W", "V6X", "V6Y", "V7A", "V7C", "V7E",
+    // Burnaby
+    "V5A", "V5B", "V5C", "V5E", "V5G", "V5H", "V5J",
+    // City of Vancouver
+    "V5K", "V5L", "V5M", "V5N", "V5P", "V5R", "V5S", "V5T", "V5V", "V5W", "V5X", "V5Y", "V5Z",
+    "V6A", "V6B", "V6C", "V6E", "V6G", "V6H", "V6J", "V6K", "V6L", "V6M", "V6N", "V6P", "V6R", "V6S", "V6T", "V6Z",
+    // Coquitlam / Port Moody
+    "V3B", "V3C", "V3E", "V3H", "V3J", "V3K",
+  ],
+};
+
+/**
+ * Live now — Release 1 is Melbourne only (its major Chinese communities).
+ * Widen as provider coverage grows.
  */
 export const LIVE_AREAS: readonly LiveArea[] = [
   {
@@ -133,31 +164,6 @@ export const LIVE_AREAS: readonly LiveArea[] = [
       [3166, 3172], // Oakleigh, Clayton, Springvale
     ],
   },
-  {
-    country: "CA",
-    city: "Vancouver",
-    cityZh: "温哥华",
-    state: "BC",
-    // Home cleaning / garden / handyman services: 5% GST, no BC PST.
-    tax: { abbr: "GST", rate: 0.05 },
-    hubs: [
-      { en: "Richmond", zh: "列治文" },
-      { en: "Burnaby", zh: "本拿比" },
-      { en: "Vancouver", zh: "温哥华" },
-      { en: "Coquitlam", zh: "高贵林" },
-    ],
-    fsas: [
-      // Richmond
-      "V6V", "V6W", "V6X", "V6Y", "V7A", "V7C", "V7E",
-      // Burnaby
-      "V5A", "V5B", "V5C", "V5E", "V5G", "V5H", "V5J",
-      // City of Vancouver
-      "V5K", "V5L", "V5M", "V5N", "V5P", "V5R", "V5S", "V5T", "V5V", "V5W", "V5X", "V5Y", "V5Z",
-      "V6A", "V6B", "V6C", "V6E", "V6G", "V6H", "V6J", "V6K", "V6L", "V6M", "V6N", "V6P", "V6R", "V6S", "V6T", "V6Z",
-      // Coquitlam / Port Moody
-      "V3B", "V3C", "V3E", "V3H", "V3J", "V3K",
-    ],
-  },
 ];
 
 /** Shown as "coming next" (waitlist) — the other major Chinese communities. */
@@ -166,6 +172,7 @@ export const NEXT_AREAS: readonly { country: ReleaseCountry; en: string; zh: str
   { country: "AU", en: "Brisbane (Sunnybank)", zh: "布里斯班（新柏）" },
   { country: "AU", en: "Perth", zh: "珀斯" },
   { country: "AU", en: "Adelaide", zh: "阿德莱德" },
+  { country: "CA", en: "Vancouver (Richmond, Burnaby, Coquitlam)", zh: "温哥华（列治文、本拿比、高贵林）" },
   { country: "CA", en: "Toronto (Markham, Richmond Hill, Scarborough)", zh: "多伦多（万锦、列治文山、士嘉堡）" },
   { country: "CA", en: "Calgary", zh: "卡尔加里" },
   { country: "CA", en: "Montreal", zh: "蒙特利尔" },

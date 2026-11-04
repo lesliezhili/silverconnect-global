@@ -7,6 +7,9 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { cn } from "@/components/ui/cn";
 import { COUNTRY_FLAG, type CountryCode } from "./CountrySelector";
+import { isCountryLive } from "@/lib/release";
+
+const CANADA_LIVE = isCountryLive("CA");
 
 const COOKIE_NAME = "sc-country";
 const ONE_YEAR = 60 * 60 * 24 * 365;
@@ -73,7 +76,8 @@ export function CountrySwitcher({
             <span>{t("AU")}</span>
           </Dropdown.Item>
 
-          {/* 🇨🇦 Canada — Release 1 market (waitlist until a city goes live) */}
+          {/* 🇨🇦 Canada — shown once a Canadian city is live (lib/release.ts) */}
+          {CANADA_LIVE && (
           <Dropdown.Item
             onSelect={() => onSelect("CA")}
             className={cn(
@@ -84,6 +88,7 @@ export function CountrySwitcher({
             <span aria-hidden>🇨🇦</span>
             <span>{t("CA")}</span>
           </Dropdown.Item>
+          )}
 
           {/* 🇨🇳 China / 九鼎 — internal preview only, see chinaSiteAccess.ts */}
           {chinaSiteAllowed && (
