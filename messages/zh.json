@@ -1,8 +1,8 @@
 {
   "brand": {
-    "name": "九鼎银联",
+    "name": "银联",
     "tagline": "值得信赖的长者居家服务",
-    "legal": "九鼎银联互助平台"
+    "legal": "银联"
   },
   "common": {
     "search": "搜索",
@@ -1017,7 +1017,7 @@
     "navSettings": "系统设置",
     "navReports": "举报",
     "alertSafetyOpen": "有安全事件待处理",
-    "navXinyuzhe": "和润心语者",
+    "navXinyuzhe": "心语者",
     "navGovtFunding": "政府资助权限",
     "navKpi": "KPI仪表盘"
   },

@@ -7,8 +7,8 @@ import { xinyuzheProviders } from '@/lib/db/schema/xinyuzhe'
 import { eq } from 'drizzle-orm'
 
 export const metadata = {
-  title: '和润心语者 — 服务提供者中心',
-  description: '和润心语者服务提供者管理中心',
+  title: '心语者 — 服务提供者中心',
+  description: '心语者服务提供者管理中心',
 }
 
 const TILES = [
@@ -16,7 +16,7 @@ const TILES = [
     href:     'xinyuzhe/register',
     icon:     '📝',
     title:    '心语者申请注册',
-    desc:     '提交您的个人信息、学历背景与服务方向，申请加入和润心语者团队。',
+    desc:     '提交您的个人信息、学历背景与服务方向，申请加入心语者团队。',
     bg:       'bg-rose-50',
     border:   'border-rose-200',
     badge:    '开放招募中',
@@ -46,7 +46,7 @@ const TILES = [
     href:     'xinyuzhe/feedback',
     icon:     '⭐',
     title:    '反馈与评价',
-    desc:     '提交服务结束后的客户反馈，持续提升和润服务质量。',
+    desc:     '提交服务结束后的客户反馈，持续提升银联服务质量。',
     bg:       'bg-purple-50',
     border:   'border-purple-200',
     badge:    '质量保障',
@@ -106,12 +106,12 @@ export default async function XinyuzheProviderHubNavPage({
           <div className="flex items-center gap-4 mb-4">
             <span className="text-5xl">🌸</span>
             <div>
-              <h1 className="text-3xl font-bold">和润心语者</h1>
+              <h1 className="text-3xl font-bold">心语者</h1>
               <p className="text-rose-100 text-sm mt-1">服务提供者管理中心</p>
             </div>
           </div>
           <p className="text-white/90 max-w-2xl text-base leading-relaxed">
-            欢迎加入和润心语者团队，为独居老人提供情感陊伴服务。
+            欢迎加入心语者团队，为独居老人提供情感陊伴服务。
           </p>
         </div>
       </section>

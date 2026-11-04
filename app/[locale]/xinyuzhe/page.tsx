@@ -58,7 +58,7 @@ export default function XinyuzhePage() {
       {/* Hero */}
       <section className="text-center px-6 py-16 bg-gradient-to-br from-pink-100 to-purple-100">
         <div className="text-6xl mb-4">🌸</div>
-        <h1 className="text-4xl font-bold text-purple-900 mb-3">和润心语者</h1>
+        <h1 className="text-4xl font-bold text-purple-900 mb-3">心语者</h1>
         <p className="text-xl text-purple-700 mb-2">为长辈而生的心灵陪伴服务</p>
         <p className="text-sm text-purple-600 max-w-md mx-auto mb-8">
           专业认证的心语者陪伴您或您的家人，走过人生每一个重要时刻

@@ -1,4 +1,4 @@
-# SilverConnect / 九鼎 — Alibaba Cloud deployment
+# SilverConnect / 银联 — Alibaba Cloud deployment
 # Optimized for China network (no Google/Cloudflare deps)
 
 FROM node:20-alpine AS base

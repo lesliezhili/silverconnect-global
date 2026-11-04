@@ -74,7 +74,7 @@ function BookingForm() {
         <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 mb-6 flex items-center gap-3">
           <span className="text-2xl">🌸</span>
           <div>
-            <p className="text-xs text-rose-600 font-medium">和润心语者</p>
+            <p className="text-xs text-rose-600 font-medium">心语者</p>
             <p className="text-sm font-semibold text-gray-900">情感智能与数字生命服务</p>
           </div>
         </div>

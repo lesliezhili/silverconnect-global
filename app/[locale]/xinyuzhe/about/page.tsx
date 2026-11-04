@@ -1,7 +1,7 @@
 import { setRequestLocale } from 'next-intl/server'
 
 export const metadata = {
-  title: '和润心语者 — SilverConnect銀龄智联',
+  title: '心语者 — SilverConnect銀龄智联',
   description: '情感智能与数字生命服务中心——中国领先的高净值情感科技平台',
 }
 
@@ -20,7 +20,7 @@ export default async function XinyuzhePage({
       <section className="bg-gradient-to-br from-rose-50 via-amber-50 to-orange-50 py-16 px-4">
         <div className="max-w-5xl mx-auto text-center">
           <div className="text-7xl mb-4">🌸</div>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">和润心语者</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-2">心语者</h1>
           <p className="text-2xl text-rose-700 font-semibold mb-2">情感智能与数字生命服务中心</p>
           <p className="text-gray-600 text-lg mb-6">SilverConnect 銀龄智联 · 中国平台旗舰项目</p>
           <div className="flex flex-wrap justify-center gap-3 mb-8">
@@ -40,7 +40,7 @@ export default async function XinyuzhePage({
       <section className="py-14 px-4 bg-white">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">一、执行摘要</h2>
-          <p className="text-center text-gray-400 text-sm mb-8">SilverConnect（銀龄智联）中国平台——和润心语者项目路径指南与财务规划说明书（正式版 V2.0 · 2026年6月）</p>
+          <p className="text-center text-gray-400 text-sm mb-8">SilverConnect（銀龄智联）中国平台——心语者项目路径指南与财务规划说明书（正式版 V2.0 · 2026年6月）</p>
           <div className="grid md:grid-cols-3 gap-6">
             <div className="bg-rose-50 rounded-2xl p-6">
               <div className="text-3xl mb-3">🎯</div>
@@ -589,7 +589,7 @@ export default async function XinyuzhePage({
             而是谁率先拥有最真实的场景、最持续的数据、最深厚的信任。
           </p>
           <p className="text-base opacity-80 mb-8 leading-relaxed">
-            和润心语者，以情感为入口，以数据为资产，以 AI 为引擎。
+            心语者，以情感为入口，以数据为资产，以 AI 为引擎。
             今天投入 500 万元，不只是启动一个项目，
             而是在建设能够陊伴千万家庭、赋能整个集团的新型智能基础设施。
           </p>
@@ -600,7 +600,7 @@ export default async function XinyuzhePage({
             </a>
             <a href="/zh/book-service"
               className="border-2 border-white text-white px-8 py-3 rounded-xl font-bold hover:bg-white/10 transition-colors">
-              预约和润服务
+              预约银联服务
             </a>
           </div>
           <p className="mt-8 text-sm opacity-60">

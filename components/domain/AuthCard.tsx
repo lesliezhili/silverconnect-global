@@ -40,7 +40,7 @@ export function AuthCard({
           aria-label="Back to home"
         >
           SilverConnect
-          {isChinese && <span className="text-[14px] font-bold text-brand/70">和润</span>}
+          {isChinese && <span className="text-[14px] font-bold text-brand/70">{locale === "zh_tw" ? "銀聯" : "银联"}</span>}
         </Link>
 
         <h1 className="text-elder-heading font-extrabold leading-tight">{title}</h1>

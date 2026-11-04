@@ -34,7 +34,7 @@ export default async function AdminXinyuzhePage({
       <div className="p-6 max-w-5xl mx-auto">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">
-            和润心语者 — 服务者申请管理
+            心语者 — 服务者申请管理
           </h1>
           <p className="text-gray-500 text-sm mt-1">
             待审核 {pending.length} 人· 已通过 {approved.length} 人· 已拒绝/暂停 {rejected.length} 人

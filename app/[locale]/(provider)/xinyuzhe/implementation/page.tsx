@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { IMPLEMENTATION_PROTOCOLS } from '@/lib/types/xinyuzhe'
 
 export const metadata = {
-  title: '服务实施工具第 — 和润心语者',
+  title: '服务实施工具第 — 心语者',
 }
 
 const COLOR_HDR: Record<string, string> = {
@@ -34,20 +34,20 @@ export default async function XinyuzheImplementationPage({
         {/* 标题 */}
         <div className="mb-8">
           <Link href={`/${locale}/xinyuzhe`} className="text-sm text-gray-400 hover:text-gray-600 mb-3 inline-block">
-            ← 和润心语者中心
+            ← 心语者中心
           </Link>
           <div className="flex items-center gap-4">
             <span className="text-4xl">🗓️</span>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">服务实施工具第</h1>
-              <p className="text-gray-500 text-sm">和润心语者 · 老年心理健康服务 · 标准操作协议</p>
+              <p className="text-gray-500 text-sm">心语者 · 老年心理健康服务 · 标准操作协议</p>
             </div>
           </div>
         </div>
 
         {/* 冥想提示 */}
         <div className="bg-rose-50 border border-rose-200 rounded-2xl p-5 mb-8">
-          <p className="text-rose-800 text-sm font-medium">💗 和润心语者的使命：</p>
+          <p className="text-rose-800 text-sm font-medium">💗 心语者的使命：</p>
           <p className="text-rose-700 text-sm mt-1 leading-relaxed">
             我们不是其他任何人的替代品——我们是长者信任的那个声音。
             我们不提供诊断，不给建议，只是指引和陪伴。
@@ -118,7 +118,7 @@ export default async function XinyuzheImplementationPage({
               <p className="text-xs text-gray-400">24小时 · 全国免费</p>
             </div>
             <div className="bg-white rounded-xl p-4">
-              <p className="font-semibold text-gray-700">和润制导电话</p>
+              <p className="font-semibold text-gray-700">银联制导电话</p>
               <p className="text-2xl font-bold text-gray-800">内部热线</p>
               <p className="text-xs text-gray-400">工作日 9:00—18:00</p>
             </div>

@@ -1,4 +1,4 @@
-# 九鼎 (9tripod) — Alibaba Cloud Deployment Guide
+# SilverConnect 银联 — Alibaba Cloud Deployment Guide
 
 ## Architecture
 ```
@@ -65,7 +65,7 @@ ALIPAY_GATEWAY=https://openapi.alipay.com/gateway.do
 # Alibaba Cloud SMS
 ALIBABA_SMS_ACCESS_KEY=your_key
 ALIBABA_SMS_SECRET=your_secret
-ALIBABA_SMS_SIGN_NAME=九鼎
+ALIBABA_SMS_SIGN_NAME=银联
 
 # App
 NEXT_PUBLIC_APP_URL=https://www.jiuding.cn

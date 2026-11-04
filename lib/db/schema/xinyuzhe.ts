@@ -1,7 +1,7 @@
 import { pgTable, text, timestamp, integer, boolean } from 'drizzle-orm/pg-core'
 import { sql } from 'drizzle-orm'
 
-// 和润心语者 Database Schema — aligned with Cell 23b Supabase migration
+// 心语者 Database Schema — aligned with Cell 23b Supabase migration
 
 /** Registered 心语者 service providers */
 export const xinyuzheProviders = pgTable('xinyuzhe_providers', {
