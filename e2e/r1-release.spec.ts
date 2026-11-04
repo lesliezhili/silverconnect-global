@@ -1,6 +1,6 @@
 /**
  * Release 1 — public journey (safe against production: read-only).
- * Chinese seniors · cleaning / garden / handyman · Melbourne + Vancouver.
+ * Chinese seniors · cleaning / garden / handyman · Melbourne (Vancouver on the waitlist).
  */
 import { test, expect } from '@playwright/test'
 
@@ -8,11 +8,12 @@ for (const L of ['en', 'zh'] as const) {
   const zh = L === 'zh'
 
   test.describe(`Release 1 public pages [${L}] @critical`, () => {
-    test('landing shows the 3 services and both live cities', async ({ page }) => {
+    test('landing shows the 3 services; Melbourne open, Vancouver coming next', async ({ page }) => {
       await page.goto(`/${L}`)
       const main = page.locator('main')
       await expect(main.getByText(zh ? '墨尔本 · 已开通' : 'Melbourne · Now open')).toBeVisible()
-      await expect(main.getByText(zh ? '温哥华 · 已开通' : 'Vancouver · Now open')).toBeVisible()
+      await expect(main.getByText(zh ? '温哥华 · 已开通' : 'Vancouver · Now open')).toHaveCount(0)
+      await expect(main.getByText(zh ? /即将开通：.*温哥华/ : /Coming next: .*Vancouver/)).toBeVisible()
       for (const cat of ['cleaning', 'garden', 'repair']) {
         await expect(main.locator(`a[href$="/services/${cat}"]`).first()).toBeVisible()
       }

@@ -22,6 +22,7 @@ import {
   RELEASE_SUBTYPES,
   findLiveArea,
   isReleaseCategory,
+  isCountryLive,
   isReleaseCountry,
   liveAreasFor,
   type ReleaseCategory,
@@ -86,16 +87,16 @@ async function clearDraft(): Promise<void> {
   await s.save();
 }
 
-/** The customer's market: their default address's country, else the country switcher. */
+/** The customer's market: their default address's country if it has a live city, else the switcher (AU). */
 async function customerCountry(userId: string): Promise<ReleaseCountry> {
   const [a] = await db
     .select({ country: addresses.country })
     .from(addresses)
     .where(and(eq(addresses.userId, userId), eq(addresses.isDefault, true)))
     .limit(1);
-  if (isReleaseCountry(a?.country)) return a.country;
+  if (isReleaseCountry(a?.country) && isCountryLive(a.country)) return a.country;
   const c = await getCountry();
-  return isReleaseCountry(c) ? c : "AU";
+  return isReleaseCountry(c) && isCountryLive(c) ? c : "AU";
 }
 
 async function serviceIdFor(category: ReleaseCategory, tier: EffortTier): Promise<string | null> {

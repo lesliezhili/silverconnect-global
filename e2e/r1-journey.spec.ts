@@ -383,19 +383,17 @@ test('3 late cancellations / no-shows in 90 days pause the customer', async ({ b
   await expect(hist.getByText('Your account is paused from booking')).toBeVisible()
 })
 
-test('Canada: Vancouver customer sees C$ prices with 5% GST', async ({ browser }) => {
+test('Vancouver is on the waitlist: a Richmond BC customer cannot book yet', async ({ browser }) => {
   const ca = await signIn(browser, 'cust-ca@e2e.test')
   await ca.goto('/en/bookings/new?step=1&cat=cleaning')
-  await expect(ca.locator('label', { hasText: 'Regular' }).getByText('C$120')).toBeVisible() // 2h × C$60
+  await expect(ca.locator('label', { hasText: 'Regular' }).getByText('A$110')).toBeVisible() // AU market until Canada opens
   await ca.getByRole('button', { name: 'Next', exact: true }).click()
-  await expect(ca.getByText('Vancouver Helper')).toBeVisible()
-  await expect(ca.getByText('Good Helper')).toHaveCount(0)
-  await ca.getByRole('radio', { name: /Vancouver Helper/ }).check()
+  await ca.waitForURL(/step=2/)
+  await expect(ca.getByText('Vancouver Helper')).toHaveCount(0)
+  await ca.getByRole('radio', { name: /Good Helper/ }).check()
   await ca.locator('#scheduledAt').fill(inDays(10))
   await ca.getByRole('button', { name: 'Next', exact: true }).click()
-  await ca.locator('input[name="addressId"]').first().check()
-  await ca.getByRole('button', { name: 'Next', exact: true }).click()
-  await ca.waitForURL(/step=4/)
-  await expect(ca.getByText('GST 5%')).toBeVisible()
-  await expect(ca.getByText('C$126.00 CAD')).toBeVisible()
+  await ca.waitForURL(/step=3/)
+  await expect(ca.locator('input[name="addressId"]').first()).toBeDisabled()
+  await expect(ca.getByText('Not in a service area yet')).toBeVisible()
 })

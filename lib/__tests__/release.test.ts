@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findLiveArea, isFutureRoute, isReleaseCategory } from "../release";
+import { VANCOUVER, findLiveArea, isCountryLive, isFutureRoute, isReleaseCategory } from "../release";
 import { priceFor, recommendQuote, tierHours } from "../release-pricing";
 import { missingAreas, qcFlagFor } from "../release-quality";
 
@@ -13,18 +13,19 @@ describe("live areas", () => {
     expect(findLiveArea("AU", "2067")).toBeNull(); // Chatswood NSW
     expect(findLiveArea("AU", "3220")).toBeNull(); // Geelong
   });
-  it("serves Vancouver FSAs, any spacing/case", () => {
-    expect(findLiveArea("CA", "V6X 1A1")?.city).toBe("Vancouver");
-    expect(findLiveArea("CA", "v5h2b3")?.city).toBe("Vancouver");
-    expect(findLiveArea("CA", "M2N 6K1")).toBeNull(); // Toronto
+  it("Release 1 is Melbourne only — Vancouver is configured but on the waitlist", () => {
+    expect(isCountryLive("AU")).toBe(true);
+    expect(isCountryLive("CA")).toBe(false);
+    expect(findLiveArea("CA", "V6X 1A1")).toBeNull();
+    expect(VANCOUVER.fsas).toContain("V6X");
   });
   it("never matches across countries", () => {
     expect(findLiveArea("CA", "3128")).toBeNull();
     expect(findLiveArea("AU", "V6X 1A1")).toBeNull();
   });
-  it("uses BC GST, not Ontario HST", () => {
-    expect(findLiveArea("CA", "V6X1A1")?.tax.rate).toBe(0.05);
+  it("tax: VIC 10% GST; Vancouver ready with BC 5% GST, not Ontario HST", () => {
     expect(findLiveArea("AU", "3128")?.tax.rate).toBe(0.1);
+    expect(VANCOUVER.tax.rate).toBe(0.05);
   });
 });
 

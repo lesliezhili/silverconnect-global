@@ -1,7 +1,7 @@
 # Release 1 — home help for Chinese seniors
 
 **Who:** Chinese-speaking older adults (华人长者) and their families.
-**Where:** Australia and Canada. Live first in the Chinese communities of **Melbourne** (Box Hill, Doncaster, Glen Waverley, Balwyn, Kew, Toorak, Clayton, CBD) and **Vancouver** (Richmond, Burnaby, Vancouver, Coquitlam). Sydney, Brisbane, Perth, Adelaide, Toronto, Calgary and Montreal are on the waitlist.
+**Where:** **Melbourne only** — its Chinese communities (Box Hill, Doncaster, Glen Waverley, Balwyn, Kew, Toorak, Clayton, CBD). Vancouver is configured (`VANCOUVER` in `lib/release.ts`, BC 5% GST) but on the waitlist with Sydney, Brisbane, Perth, Adelaide, Toronto, Calgary and Montreal; Canada appears in the country switcher once a Canadian city is in `LIVE_AREAS`.
 **What:** home cleaning, garden care, and small handyman jobs that need no trade licence.
 
 Everything else stays in the codebase as reference for later releases: see [FUTURE_RELEASES.md](FUTURE_RELEASES.md).
@@ -74,6 +74,8 @@ Nobody is banned automatically. Paused accounts appear at `/admin/quality` for a
 | Provider | **No approved, current police check + ID document** (police checks without an expiry count for 3 years), **or** average of the last 10 ratings < 3.5★ (with 3+ reviews), **or** 3 late-cancellation strikes in 90 days, **or** 2+ QC flags in 90 days |
 | Customer | Average of the last 10 provider ratings < 3.0★ (with 3+ reviews), **or** 3+ cancellations < 24 h / no-shows in 90 days |
 | Pair | Either side rated the other ≤2★, so that pair is never matched again |
+
+Background check = **police check + photo ID** (Working With Children is optional in Release 1). No SOS button or GPS tracking in Release 1 — customers are told to call 000 (`RELEASE_FEATURES` in `lib/release.ts`).
 
 Providers are only matched within the customer's country.
 
