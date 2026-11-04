@@ -16,5 +16,5 @@ Release 1 ships only home cleaning, garden care and no-licence handyman jobs ([R
 | Rewards & referrals | `/profile/coins`, `/profile/referrals`, `/customer/membership` | |
 | Marketplace / misc | `/products`, `/donate`, `/nearby`, `/country-services` | |
 | Provider extras | `/provider/guaranteed-wage`, `leaderboard`, `achievements`, `goals`, `team-chat`, `smart-pricing`, `seniors`, `training` | Guaranteed wage is gated on ABN trial performance |
-| Other countries | CN (银联, separate mainland stack: `docs/CHINA_DEPLOYMENT.md`), US, TW, SG, HK, MY, NZ | Country switcher offers AU + CA only |
+| Other countries | CN (银联, separate mainland stack: `docs/CHINA_DEPLOYMENT.md`), US, TW, SG, HK, MY, NZ | Country switcher offers AU only (CA appears once a Canadian city is live) |
 | Legacy booking flows | `/book`, `/book-service`, `POST /api/bookings/charged` | Superseded by `/bookings/new` → `/pay/[id]` |
