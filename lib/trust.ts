@@ -50,8 +50,9 @@ export async function eligibleProviders(category: string, customerId: string, co
       AND NOT (COALESCE(s.n, 0) >= ${R.minReviews} AND s.avg_rating < ${R.providerMinAvg})
       -- repeated self-cancellations
       AND (
-        SELECT COUNT(*) FROM cancellations c JOIN bookings b ON b.id = c.booking_id
-        WHERE b.provider_id = pp.id AND c.cancelled_by = pp.user_id
+        SELECT COUNT(*) FROM cancellations c
+        WHERE c.cancelled_by = pp.user_id
+          AND c.policy_applied IN ('provider_<48h', 'provider_<12h')
           AND c.created_at > NOW() - INTERVAL '90 days'
       ) < ${R.maxCancels90d}
       -- quality-control flags (short visits etc.)
@@ -84,7 +85,10 @@ export async function isProviderEligible(providerId: string, category: string, c
   return (await eligibleProviders(category, customerId, country)).some((p) => p.id === providerId);
 }
 
-/** Why a customer can't book right now, or null. */
+/**
+ * Why a customer can't book right now, or null. Late = cancelled < 24h
+ * before start or a no-show (labels from lib/bookings/cancellation.ts).
+ */
 export async function customerPauseReason(customerId: string): Promise<"low_rating" | "cancellations" | null> {
   const [stats] = await rows(sql`
     SELECT AVG(rating)::float AS avg_rating, COUNT(*)::int AS n FROM (
@@ -96,7 +100,7 @@ export async function customerPauseReason(customerId: string): Promise<"low_rati
   const [late] = await rows(sql`
     SELECT COUNT(*)::int AS n FROM cancellations c JOIN bookings b ON b.id = c.booking_id
     WHERE b.customer_id = ${customerId} AND c.cancelled_by = ${customerId}
-      AND (c.policy_applied LIKE '<%' OR c.policy_applied LIKE '%no_show%')
+      AND (c.policy_applied IN ('<12h', '12-24h') OR c.policy_applied ILIKE '%no%show%')
       AND c.created_at > NOW() - INTERVAL '90 days'`);
   if (Number(late?.n ?? 0) >= R.maxCancels90d) return "cancellations";
   return null;
@@ -117,8 +121,9 @@ export async function pausedProviders() {
     p AS (
       SELECT pp.id, u.name, u.email,
         COALESCE(s.avg_rating, 0) AS avg_rating, COALESCE(s.n, 0) AS review_count,
-        (SELECT COUNT(*)::int FROM cancellations c JOIN bookings b ON b.id = c.booking_id
-          WHERE b.provider_id = pp.id AND c.cancelled_by = pp.user_id
+        (SELECT COUNT(*)::int FROM cancellations c
+          WHERE c.cancelled_by = pp.user_id
+            AND c.policy_applied IN ('provider_<48h', 'provider_<12h')
             AND c.created_at > NOW() - INTERVAL '90 days') AS cancels_90d,
         (SELECT COUNT(*)::int FROM bookings b
           WHERE b.provider_id = pp.id AND b.qc_flag IS NOT NULL
@@ -156,7 +161,7 @@ export async function pausedCustomers() {
     late AS (
       SELECT b.customer_id, COUNT(*)::int AS n FROM cancellations c JOIN bookings b ON b.id = c.booking_id
       WHERE c.cancelled_by = b.customer_id
-        AND (c.policy_applied LIKE '<%' OR c.policy_applied LIKE '%no_show%')
+        AND (c.policy_applied IN ('<12h', '12-24h') OR c.policy_applied ILIKE '%no%show%')
         AND c.created_at > NOW() - INTERVAL '90 days'
       GROUP BY b.customer_id
     )

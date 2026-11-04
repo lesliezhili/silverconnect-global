@@ -19,7 +19,8 @@ import { getCurrentUser } from "@/lib/auth/server";
 import { notifyAndEmail } from "@/lib/notifications/server";
 import { buildBookingStatusEmail } from "@/components/domain/email";
 import { payments, wallets } from "@/lib/db/schema/payments";
-import { cancelBooking, CancelBookingError } from "@/lib/bookings/cancelBooking";
+import { CancelBookingError } from "@/lib/bookings/cancelBooking";
+import { providerWithdraw } from "@/lib/bookings/providerWithdraw";
 import { GenerateInvoiceButton } from "@/components/domain/GenerateInvoiceButton";
 import { EvidenceUploadModal } from "@/components/domain/EvidenceUploadModal";
 import { RateCustomerWidget } from "@/components/domain/RateCustomerWidget";
@@ -138,30 +139,17 @@ async function jobAction(formData: FormData) {
     }
   }
 
+  // Decline / cancel → Release 1 policy: emergency cover first, penalty
+  // and strike by notice, full refund if nobody can cover
+  // (lib/bookings/providerWithdraw.ts).
+  let covered = false;
   if (action === "decline" || action === "cancel") {
-    const { default: postgres } = await import("postgres");
-    const sql2 = postgres(process.env.DATABASE_URL || "", { prepare: false, connect_timeout: 10 });
     try {
-      await cancelBooking(sql2, {
-        bookingId: id,
-        cancelledBy: me.id,
-        reason: reason || (action === "decline" ? "provider_declined" : "provider_unavailable"),
-        notes: action === "decline" ? `Provider decline: ${reason || "—"}` : `Provider cancel: ${reason || "—"}`,
-      });
-      await db.insert(bookingChanges).values({
-        bookingId: id,
-        type: "cancel",
-        fromStatus: from,
-        toStatus: "cancelled",
-        actorId: me.id,
-        note: action === "decline" ? `Provider decline: ${reason || "—"}` : `Provider cancel: ${reason || "—"}`,
-      });
+      covered = (await providerWithdraw({ bookingId: id, providerUserId: me.id, reason, locale })).covered;
     } catch (e) {
-      await sql2.end().catch(() => {});
       const message = e instanceof CancelBookingError ? e.message : "Cancellation failed";
       nextRedirect(`/${locale}/provider/jobs/${id}?error=${encodeURIComponent(message)}`);
     }
-    await sql2.end();
   } else {
     await db.transaction(async (tx) => {
       const patch: Record<string, unknown> = {
@@ -210,6 +198,8 @@ async function jobAction(formData: FormData) {
       .where(eq(bookings.id, id))
       .limit(1);
     if (!b?.customerId) return;
+    // Emergency cover already told the customer their helper changed.
+    if (covered) return;
 
     const titles: Record<Action, string> = {
       accept: "Provider accepted your booking",

@@ -1,6 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
 import { redirect as nextRedirect } from "next/navigation";
-import { eq, inArray } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 import { redirect } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
 import { AdminShell } from "@/components/layout/AdminShell";
@@ -8,6 +8,8 @@ import { getAdmin } from "@/components/domain/adminCookie";
 import { getCurrentUser } from "@/lib/auth/server";
 import { db } from "@/lib/db";
 import { bookings, bookingEvidence } from "@/lib/db/schema/bookings";
+import { providerProfiles } from "@/lib/db/schema/providers";
+import { users } from "@/lib/db/schema/users";
 import { releaseOrHold } from "@/lib/feedback/release";
 import { heldPayouts, pausedCustomers, pausedProviders } from "@/lib/trust";
 import { TRUST_RULES } from "@/lib/release-quality";
@@ -25,6 +27,18 @@ async function releaseHeld(formData: FormData) {
   if (!b || b.status !== "completed") nextRedirect(`/${locale}/admin/quality?error=invalid`);
   await releaseOrHold({ bookingId: id, actorId: me.id, rating: 5, force: true });
   nextRedirect(`/${locale}/admin/quality?released=${id}`);
+}
+
+/** Admin adds/removes a provider from the emergency cover team. */
+async function toggleEmergency(formData: FormData) {
+  "use server";
+  const locale = String(formData.get("locale") ?? "en");
+  const id = String(formData.get("providerId") ?? "");
+  const on = formData.get("on") === "1";
+  const me = await getCurrentUser();
+  if (!me || !me.isAdmin) nextRedirect(`/${locale}/admin/login`);
+  await db.update(providerProfiles).set({ emergencyOptIn: on, updatedAt: new Date() }).where(eq(providerProfiles.id, id));
+  nextRedirect(`/${locale}/admin/quality#emergency`);
 }
 
 /**
@@ -46,6 +60,12 @@ export default async function AdminQualityPage({
   if (!admin.signedIn) redirect({ href: "/admin/login", locale });
 
   const [held, providers, customers] = await Promise.all([heldPayouts(), pausedProviders(), pausedCustomers()]);
+  const team = await db
+    .select({ id: providerProfiles.id, on: providerProfiles.emergencyOptIn, name: users.name, email: users.email, country: users.country })
+    .from(providerProfiles)
+    .leftJoin(users, eq(users.id, providerProfiles.userId))
+    .where(eq(providerProfiles.onboardingStatus, "approved"))
+    .orderBy(desc(providerProfiles.emergencyOptIn), users.name);
   const heldIds = held.map((h) => String(h.id));
   const evidence = heldIds.length
     ? await db
@@ -122,6 +142,29 @@ export default async function AdminQualityPage({
           </li>
         ))}
         {providers.length === 0 && <li className="text-text-tertiary">None.</li>}
+      </ul>
+
+      <h2 id="emergency" className="mt-8 text-[19px] font-bold">
+        Emergency cover team ({team.filter((p) => p.on).length})
+      </h2>
+      <p className="mt-1 text-[14px] text-text-secondary">
+        When a provider withdraws, the job is reassigned automatically — team members first — to a free,
+        background-checked provider in the same country. If nobody is free, the customer is refunded in full and admins are alerted.
+      </p>
+      <ul className="mt-2 flex flex-col gap-1 text-[14px]">
+        {team.map((p) => (
+          <li key={p.id} className="flex items-center gap-3">
+            <form action={toggleEmergency}>
+              <input type="hidden" name="locale" value={locale} />
+              <input type="hidden" name="providerId" value={p.id} />
+              <input type="hidden" name="on" value={p.on ? "0" : "1"} />
+              <button className={"rounded-md px-3 py-1 font-semibold " + (p.on ? "bg-brand text-white" : "border border-border")}>
+                {p.on ? "On team" : "Add"}
+              </button>
+            </form>
+            <span>{p.name ?? p.email} · {p.country}</span>
+          </li>
+        ))}
       </ul>
 
       <h2 className="mt-8 text-[19px] font-bold">Paused customers ({customers.length})</h2>

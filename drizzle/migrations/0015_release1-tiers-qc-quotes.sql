@@ -50,3 +50,21 @@ ALTER TABLE cancellations ADD COLUMN IF NOT EXISTS provider_compensation NUMERIC
 ALTER TYPE cancellation_reason ADD VALUE IF NOT EXISTS 'provider_declined';
 ALTER TYPE cancellation_reason ADD VALUE IF NOT EXISTS 'no_show';
 ALTER TYPE cancellation_reason ADD VALUE IF NOT EXISTS 'weather';
+
+-- Provider withdrawal penalties (lib/release-cancellation.ts).
+ALTER TABLE cancellations ADD COLUMN IF NOT EXISTS provider_penalty NUMERIC(10,2) DEFAULT 0;
+
+-- Emergency cover team (admin-designated standby providers) and the
+-- reassignment log — from migration 0008, repeated idempotently here.
+ALTER TABLE provider_profiles ADD COLUMN IF NOT EXISTS emergency_opt_in BOOLEAN NOT NULL DEFAULT FALSE;
+CREATE TABLE IF NOT EXISTS emergency_reroutes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  booking_id UUID NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
+  original_provider_id UUID,
+  replacement_provider_id UUID,
+  reason TEXT NOT NULL,
+  rerouted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  customer_notified BOOLEAN NOT NULL DEFAULT FALSE,
+  admin_escalated BOOLEAN NOT NULL DEFAULT FALSE
+);
+CREATE INDEX IF NOT EXISTS idx_reroutes_booking ON emergency_reroutes(booking_id);

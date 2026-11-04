@@ -14,6 +14,7 @@ INSERT INTO users (id, email, password_hash, name, role, is_admin, country, loca
   ('00000000-0000-4000-a000-000000000012', 'prov-nocheck@e2e.test', :'pw', 'No Check Helper', 'provider', false, 'AU', 'en', NOW()),
   ('00000000-0000-4000-a000-000000000013', 'prov-low@e2e.test',  :'pw', 'Low Rated Helper', 'provider', false, 'AU', 'en', NOW()),
   ('00000000-0000-4000-a000-000000000014', 'prov-ca@e2e.test',   :'pw', 'Vancouver Helper', 'provider', false, 'CA', 'en', NOW()),
+  ('00000000-0000-4000-a000-000000000015', 'prov-standby@e2e.test', :'pw', 'Standby Helper', 'provider', false, 'AU', 'en', NOW()),
   ('00000000-0000-4000-a000-000000000021', 'admin@e2e.test',     :'pw', 'E2E Admin',     'customer', true,  'AU', 'en', NOW());
 
 INSERT INTO addresses (id, user_id, label, line1, city, state, postcode, country, is_default) VALUES
@@ -27,7 +28,9 @@ INSERT INTO provider_profiles (id, user_id, service_radius_km, onboarding_status
   ('00000000-0000-4000-c000-000000000011', '00000000-0000-4000-a000-000000000011', 25, 'approved'),
   ('00000000-0000-4000-c000-000000000012', '00000000-0000-4000-a000-000000000012', 25, 'approved'),
   ('00000000-0000-4000-c000-000000000013', '00000000-0000-4000-a000-000000000013', 25, 'approved'),
-  ('00000000-0000-4000-c000-000000000014', '00000000-0000-4000-a000-000000000014', 25, 'approved');
+  ('00000000-0000-4000-c000-000000000014', '00000000-0000-4000-a000-000000000014', 25, 'approved'),
+  ('00000000-0000-4000-c000-000000000015', '00000000-0000-4000-a000-000000000015', 25, 'approved');
+UPDATE provider_profiles SET emergency_opt_in = true WHERE id = '00000000-0000-4000-c000-000000000015';
 
 INSERT INTO provider_categories (provider_id, category) VALUES
   ('00000000-0000-4000-c000-000000000011', 'cleaning'),
@@ -35,7 +38,10 @@ INSERT INTO provider_categories (provider_id, category) VALUES
   ('00000000-0000-4000-c000-000000000011', 'repair'),
   ('00000000-0000-4000-c000-000000000012', 'cleaning'),
   ('00000000-0000-4000-c000-000000000013', 'cleaning'),
-  ('00000000-0000-4000-c000-000000000014', 'cleaning');
+  ('00000000-0000-4000-c000-000000000014', 'cleaning'),
+  ('00000000-0000-4000-c000-000000000015', 'cleaning'),
+  ('00000000-0000-4000-c000-000000000015', 'garden'),
+  ('00000000-0000-4000-c000-000000000015', 'repair');
 
 -- Background checks: good + low + ca have current police check & ID; nocheck has none.
 INSERT INTO provider_documents (provider_id, type, file_url, status, expires_at, reviewed_at) VALUES
@@ -44,7 +50,9 @@ INSERT INTO provider_documents (provider_id, type, file_url, status, expires_at,
   ('00000000-0000-4000-c000-000000000013', 'police_check', 'https://e2e.test/pc3.pdf', 'approved', NOW() + INTERVAL '2 years', NOW()),
   ('00000000-0000-4000-c000-000000000013', 'identity',     'https://e2e.test/id3.pdf', 'approved', NOW() + INTERVAL '5 years', NOW()),
   ('00000000-0000-4000-c000-000000000014', 'police_check', 'https://e2e.test/pc4.pdf', 'approved', NULL, NOW()),
-  ('00000000-0000-4000-c000-000000000014', 'identity',     'https://e2e.test/id4.pdf', 'approved', NOW() + INTERVAL '5 years', NOW());
+  ('00000000-0000-4000-c000-000000000014', 'identity',     'https://e2e.test/id4.pdf', 'approved', NOW() + INTERVAL '5 years', NOW()),
+  ('00000000-0000-4000-c000-000000000015', 'police_check', 'https://e2e.test/pc5.pdf', 'approved', NOW() + INTERVAL '2 years', NOW()),
+  ('00000000-0000-4000-c000-000000000015', 'identity',     'https://e2e.test/id5.pdf', 'approved', NOW() + INTERVAL '5 years', NOW());
 
 -- History: 3 released jobs. prov-low got 2★ from cust-hist (→ paused provider);
 -- cust-bad got 1★ from prov-good (→ paused customer).

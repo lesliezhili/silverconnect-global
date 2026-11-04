@@ -59,14 +59,14 @@ async function book(
   await page.goto(`/en/bookings/new?step=1&cat=${o.cat}`)
   await page.locator(`input[name="choice"][value="${o.cat}:${o.tier}"]`).check()
   if (o.jobType) await page.locator('#jobType').selectOption(o.jobType)
-  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: 'Next', exact: true }).click()
   await page.waitForURL(/step=2/)
   await page.getByRole('radio', { name: new RegExp(o.provider) }).check()
   await page.locator('#scheduledAt').fill(inDays(o.days ?? 10))
-  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: 'Next', exact: true }).click()
   await page.waitForURL(/step=3/)
   await page.locator('input[name="addressId"]:not([disabled])').first().check()
-  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: 'Next', exact: true }).click()
   await page.waitForURL(/step=4/)
   if (o.expectPrice) await expect(page.getByText(o.expectPrice)).toBeVisible()
   await page.getByRole('button', { name: /Confirm & pay/ }).click()
@@ -106,11 +106,21 @@ async function wallet(providerId: string) {
 }
 
 const GOOD = '00000000-0000-4000-c000-000000000011'
+const STANDBY = '00000000-0000-4000-c000-000000000015' // emergency cover team
+
+/** Provider declines / cancels through the modal, picking the first reason. */
+async function withdraw(page: Page, id: string, trigger: 'Decline' | 'Cancel booking') {
+  await page.goto(`/en/provider/jobs/${id}`)
+  await page.getByRole('button', { name: trigger }).first().click()
+  const dialog = page.getByRole('dialog')
+  await dialog.locator('input[name="reason"]').first().check({ force: true })
+  await dialog.getByRole('button', { name: trigger }).click()
+}
 
 test('trust gate: only background-checked, well-rated providers in the customer\'s country', async ({ browser }) => {
   const cust = await signIn(browser, 'cust-au@e2e.test')
   await cust.goto('/en/bookings/new?step=1&cat=cleaning')
-  await cust.getByRole('button', { name: 'Next' }).click()
+  await cust.getByRole('button', { name: 'Next', exact: true }).click()
   await cust.waitForURL(/step=2/)
   await expect(cust.getByText('Good Helper')).toBeVisible()
   await expect(cust.getByText('No Check Helper')).toHaveCount(0) // no police check / ID
@@ -122,16 +132,16 @@ test('paused customer cannot book', async ({ browser }) => {
   const bad = await signIn(browser, 'cust-bad@e2e.test')
   await bad.goto('/en/bookings/new?step=1&cat=cleaning')
   await expect(bad.getByRole('alert')).toContainText('paused')
-  await expect(bad.getByRole('button', { name: 'Next' })).toHaveCount(0)
+  await expect(bad.getByRole('button', { name: 'Next', exact: true })).toHaveCount(0)
 })
 
 test('address outside a live area is not selectable', async ({ browser }) => {
   const cust = await signIn(browser, 'cust-au@e2e.test')
   await cust.goto('/en/bookings/new?step=1&cat=garden')
-  await cust.getByRole('button', { name: 'Next' }).click()
+  await cust.getByRole('button', { name: 'Next', exact: true }).click()
   await cust.getByRole('radio', { name: /Good Helper/ }).check()
   await cust.locator('#scheduledAt').fill(inDays(9))
-  await cust.getByRole('button', { name: 'Next' }).click()
+  await cust.getByRole('button', { name: 'Next', exact: true }).click()
   await cust.waitForURL(/step=3/)
   await expect(cust.locator('input[name="addressId"][value="00000000-0000-4000-b000-000000000002"]')).toBeDisabled()
 })
@@ -235,6 +245,7 @@ test('1★ needs photo evidence and holds the payout; the pair is never matched 
   await pay(cust, id)
   const prov = await signIn(browser, 'prov-good@e2e.test')
   await evidence(prov, id, 'On the way')
+  await expect.poll(() => status(id)).toBe('in_progress')
   await sql`UPDATE bookings SET started_at = NOW() - INTERVAL '2 hours' WHERE id = ${id}`
   await evidence(prov, id, 'Mark complete')
   await expect.poll(() => status(id)).toBe('completed')
@@ -252,7 +263,7 @@ test('1★ needs photo evidence and holds the payout; the pair is never matched 
 
   // Pair blocked: Good Helper is no longer offered to this customer.
   await cust.goto('/en/bookings/new?step=1&cat=cleaning')
-  await cust.getByRole('button', { name: 'Next' }).click()
+  await cust.getByRole('button', { name: 'Next', exact: true }).click()
   await expect(cust.getByText('Good Helper')).toHaveCount(0)
   // Undo for the following tests.
   await sql`DELETE FROM reviews WHERE booking_id = ${id}`
@@ -264,6 +275,7 @@ test('quote after a medium first job: real time → customer approves → next b
   await pay(cust, id)
   const prov = await signIn(browser, 'prov-good@e2e.test')
   await evidence(prov, id, 'On the way')
+  await expect.poll(() => status(id)).toBe('in_progress')
   await sql`UPDATE bookings SET started_at = NOW() - INTERVAL '4 hours' WHERE id = ${id}` // took 4h, booked 3h
   await evidence(prov, id, 'Mark complete')
   await expect.poll(() => status(id)).toBe('completed')
@@ -286,44 +298,93 @@ test('quote after a medium first job: real time → customer approves → next b
   expect(nb).toMatchObject({ duration_min: 240, base: 264 })
 })
 
-test('cancellations: customer ≥7 days ahead gets a full refund; provider decline is recorded', async ({ browser }) => {
+test('customer cancels ≥7 days ahead: full refund; provider declines: emergency team takes it', async ({ browser }) => {
   const cust = await signIn(browser, 'cust-au@e2e.test')
   const paid = await book(cust, { cat: 'garden', tier: 'medium', provider: 'Good Helper', days: 15 })
   await pay(cust, paid)
   await cust.goto(`/en/bookings/${paid}`)
-  await cust.getByRole('button', { name: 'Cancel' }).click()
+  // dispatchEvent: the Next.js dev-mode badge overlaps this corner in `next dev`.
+  await cust.getByRole('button', { name: 'Cancel', exact: true }).dispatchEvent('click')
   await expect.poll(() => status(paid)).toBe('cancelled')
   const [c1] = await sql`SELECT reason, refund_amount::float AS refund, policy_applied FROM cancellations WHERE booking_id = ${paid}`
-  expect(c1).toMatchObject({ reason: 'customer_request', policy_applied: '7d+' })
+  expect(c1).toMatchObject({ reason: 'customer_request', policy_applied: '7+ days' })
   const [b1] = await sql`SELECT total_price::float AS total FROM bookings WHERE id = ${paid}`
   expect(c1.refund).toBeCloseTo(b1.total, 2)
 
+  // Provider declines an unpaid request: free for them, and the emergency
+  // team picks it up so the customer still has a helper.
   const unpaid = await book(cust, { cat: 'repair', tier: 'medium', provider: 'Good Helper', days: 16, jobType: 'hanging' })
   const prov = await signIn(browser, 'prov-good@e2e.test')
-  await prov.goto(`/en/provider/jobs/${unpaid}`)
-  await prov.getByRole('button', { name: 'Decline' }).first().click()
-  const dialog = prov.getByRole('dialog')
-  const reason = dialog.locator('[name="reason"]').first()
-  if ((await reason.evaluate((el) => el.tagName)) === 'SELECT') await reason.selectOption({ index: 1 })
-  else await reason.fill('Not available that day')
-  await dialog.getByRole('button', { name: 'Decline' }).click()
-  await expect.poll(() => status(unpaid)).toBe('cancelled')
-  const [c2] = await sql`SELECT reason FROM cancellations WHERE booking_id = ${unpaid}`
-  expect(['provider_declined', 'other']).toContain(c2.reason)
+  await withdraw(prov, unpaid, 'Decline')
+  await expect.poll(async () => (await sql`SELECT provider_id FROM bookings WHERE id = ${unpaid}`)[0].provider_id).toBe(STANDBY)
+  expect(await status(unpaid)).toBe('pending')
+  const [c2] = await sql`SELECT policy_applied, provider_penalty::float AS pen FROM cancellations WHERE booking_id = ${unpaid}`
+  expect(c2).toMatchObject({ policy_applied: 'provider_declined', pen: 0 })
+})
+
+test('provider cancels <48h before: emergency team covers, provider pays 10% + strike', async ({ browser }) => {
+  const cust = await signIn(browser, 'cust-au@e2e.test')
+  const id = await book(cust, { cat: 'cleaning', tier: 'regular', provider: 'Good Helper', days: 17 })
+  await pay(cust, id)
+  await sql`UPDATE bookings SET scheduled_at = NOW() + INTERVAL '20 hours' WHERE id = ${id}`
+  const before = await wallet(GOOD)
+  const prov = await signIn(browser, 'prov-good@e2e.test')
+  await withdraw(prov, id, 'Cancel booking')
+  await expect.poll(async () => (await sql`SELECT provider_id FROM bookings WHERE id = ${id}`)[0].provider_id).toBe(STANDBY)
+  expect(await status(id)).toBe('confirmed') // same booking, same time, same price
+  const [c] = await sql`SELECT policy_applied, provider_penalty::float AS pen, refund_amount::float AS refund FROM cancellations WHERE booking_id = ${id}`
+  expect(c).toMatchObject({ policy_applied: 'provider_<48h', pen: 12.1, refund: 0 }) // 10% of A$121
+  expect((await wallet(GOOD)).a).toBeCloseTo(before.a - 12.1, 2)
+  const [r] = await sql`SELECT replacement_provider_id FROM emergency_reroutes WHERE booking_id = ${id}`
+  expect(r.replacement_provider_id).toBe(STANDBY)
+})
+
+test('provider cancels <12h with nobody free: full refund, 25% penalty, admins alerted', async ({ browser }) => {
+  await sql`UPDATE provider_profiles SET onboarding_status = 'suspended' WHERE id = ${STANDBY}`
+  try {
+    const cust = await signIn(browser, 'cust-au@e2e.test')
+    const id = await book(cust, { cat: 'garden', tier: 'regular', provider: 'Good Helper', days: 18 })
+    await pay(cust, id)
+    await sql`UPDATE bookings SET scheduled_at = NOW() + INTERVAL '5 hours' WHERE id = ${id}`
+    const prov = await signIn(browser, 'prov-good@e2e.test')
+    await withdraw(prov, id, 'Cancel booking')
+    await expect.poll(() => status(id)).toBe('cancelled')
+    const [c] = await sql`SELECT policy_applied, provider_penalty::float AS pen, refund_amount::float AS refund FROM cancellations WHERE booking_id = ${id}`
+    const [b] = await sql`SELECT total_price::float AS total FROM bookings WHERE id = ${id}`
+    expect(c).toMatchObject({ policy_applied: 'provider_<12h' })
+    expect(c.refund).toBeCloseTo(b.total, 2) // customer fully refunded
+    expect(c.pen).toBeCloseTo(b.total * 0.25, 2)
+    const [n] = await sql`SELECT count(*)::int AS n FROM notifications WHERE related_booking_id = ${id} AND title = 'Emergency: no cover found'`
+    expect(n.n).toBeGreaterThan(0)
+  } finally {
+    await sql`UPDATE provider_profiles SET onboarding_status = 'approved' WHERE id = ${STANDBY}`
+  }
+})
+
+test('3 late cancellations / no-shows in 90 days pause the customer', async ({ browser }) => {
+  const HIST = '00000000-0000-4000-a000-000000000004'
+  const rows = await sql`SELECT id FROM bookings WHERE customer_id = ${HIST} LIMIT 3`
+  const policies = ['<12h', '12-24h', 'no-show_no_show']
+  for (const [i, r] of rows.entries()) {
+    await sql`INSERT INTO cancellations (booking_id, cancelled_by, reason, policy_applied) VALUES (${r.id}, ${HIST}, 'customer_request', ${policies[i]})`
+  }
+  const hist = await signIn(browser, 'cust-hist@e2e.test')
+  await hist.goto('/en/bookings/new?step=1&cat=cleaning')
+  await expect(hist.getByRole('alert')).toContainText('paused')
 })
 
 test('Canada: Vancouver customer sees C$ prices with 5% GST', async ({ browser }) => {
   const ca = await signIn(browser, 'cust-ca@e2e.test')
   await ca.goto('/en/bookings/new?step=1&cat=cleaning')
   await expect(ca.locator('label', { hasText: 'Regular' }).getByText('C$120')).toBeVisible() // 2h × C$60
-  await ca.getByRole('button', { name: 'Next' }).click()
+  await ca.getByRole('button', { name: 'Next', exact: true }).click()
   await expect(ca.getByText('Vancouver Helper')).toBeVisible()
   await expect(ca.getByText('Good Helper')).toHaveCount(0)
   await ca.getByRole('radio', { name: /Vancouver Helper/ }).check()
   await ca.locator('#scheduledAt').fill(inDays(10))
-  await ca.getByRole('button', { name: 'Next' }).click()
+  await ca.getByRole('button', { name: 'Next', exact: true }).click()
   await ca.locator('input[name="addressId"]').first().check()
-  await ca.getByRole('button', { name: 'Next' }).click()
+  await ca.getByRole('button', { name: 'Next', exact: true }).click()
   await ca.waitForURL(/step=4/)
   await expect(ca.getByText('GST 5%')).toBeVisible()
   await expect(ca.getByText('C$126.00 CAD')).toBeVisible()
