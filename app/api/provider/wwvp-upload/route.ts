@@ -108,8 +108,9 @@ export async function GET(req: NextRequest) {
       success: true,
       documents: docs,
       requiredDocuments: [
-        { type: "wwc", label: "Working with Vulnerable People (WWC/WWVP)", required: true },
         { type: "police_check", label: "National Police Check", required: true },
+        { type: "identity", label: "Photo ID", required: true },
+        { type: "wwc", label: "Working with Vulnerable People (WWC/WWVP)", required: false },
         { type: "first_aid", label: "First Aid Certificate", required: false },
       ],
     });

@@ -16,6 +16,17 @@ import type { CountryCode } from "@/components/domain/country";
 
 export const RELEASE_ID = "r1";
 
+/**
+ * Features that exist in the codebase but are off for Release 1.
+ * - emergencySos: the floating SOS button / emergency overlay.
+ * - wwcRequired: Working With Children check as a provider requirement
+ *   (Release 1 needs a police check + photo ID; WWC stays optional).
+ */
+export const RELEASE_FEATURES = {
+  emergencySos: false,
+  wwcRequired: false,
+} as const;
+
 export const RELEASE_COUNTRIES = ["AU", "CA"] as const satisfies readonly CountryCode[];
 export type ReleaseCountry = (typeof RELEASE_COUNTRIES)[number];
 

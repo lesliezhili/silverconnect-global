@@ -190,10 +190,6 @@ export default async function LandingPage({
             </li>
             <li className="flex items-start gap-3">
               <span className="text-green-600 shrink-0">{"✅"}</span>
-              <span>{t("safeSOS")}</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="text-green-600 shrink-0">{"✅"}</span>
               <span>{t("safeRating")}</span>
             </li>
             <li className="flex items-start gap-3">

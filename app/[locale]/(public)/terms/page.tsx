@@ -38,8 +38,8 @@ export default async function TermsPage({
           </h2>
           <p className="mt-3">
             {isZh
-              ? "和润 SilverConnect Global（\"平台\"）是一个非营利互助平台，连接需要居家服务的长者与经过验证的服务人员。平台由 SilverConnect Global Pty Ltd（ABN 待申请）运营，服务覆盖澳大利亚、中国、加拿大、美国、台湾、新加坡、香港和马来西亚。"
-              : "SilverConnect Global (\"the Platform\") is a non-profit mutual aid platform connecting older adults who need home services with verified care providers. The Platform is operated by SilverConnect Global Pty Ltd (ABN pending) and serves Australia, China, Canada, United States, Taiwan, Singapore, Hong Kong, and Malaysia."}
+              ? "和润 SilverConnect（\"平台\"）是 PHLedger 旗下的居家服务平台，连接需要居家服务的长者与经过背景审查的服务人员。平台由 PHLEDGER PTY LTD（ABN 49 663 259 667）运营，目前服务澳大利亚和加拿大。"
+              : "SilverConnect (\"the Platform\") is a PHLedger home-services platform connecting older adults who need help at home with background-checked providers. The Platform is operated by PHLEDGER PTY LTD (ABN 49 663 259 667) and currently serves Australia and Canada."}
           </p>
         </section>
 

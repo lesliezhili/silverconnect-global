@@ -1,7 +1,7 @@
 /**
  * Government-capped hourly rates by scheme and service category.
  * Platform rates MUST be BELOW these caps to remain competitive
- * and sustainable (non-profit 15% margin).
+ * and sustainable (15% platform fee).
  *
  * NDIS Price Guide 2025-26:
  * https://www.ndis.gov.au/providers/pricing-arrangements

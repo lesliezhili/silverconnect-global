@@ -490,7 +490,7 @@
     "voice": "语音",
     "send": "发送",
     "voiceHint": "点击说话 — 支持普通话、粤语、英语",
-    "aiDisclaimer": "AI可能出错。紧急情况请使用SOS按钮。",
+    "aiDisclaimer": "AI 可能会出错。紧急情况请拨打 000（澳大利亚）或 911（加拿大）。",
     "quickReplies": {
       "reschedule": "改期",
       "policy": "取消政策",
@@ -606,7 +606,7 @@
   },
   "safetyReport": {
     "title": "报告安全问题",
-    "sub": "服务不安全但非紧急时使用。如果是紧急情况，请点 SOS 按钮。",
+    "sub": "服务存在安全问题但并非紧急情况时，请在此报告。紧急情况请拨打 000（澳大利亚）或 911（加拿大）。",
     "severity": "严重程度",
     "sevLow": "轻微 — 不满",
     "sevLowHint": "迟到、不专业、轻微脏乱",
@@ -615,8 +615,8 @@
     "sevHigh": "严重 — 危险",
     "sevHighHint": "威胁、盗窃、人身伤害。请先报警 000 / 120 / 911。",
     "sevHighDivertTitle": "请先确认这不是紧急情况",
-    "sevHighDivertHint": "请先打开 SOS 拨打您所在国家的紧急号码。",
-    "openSos": "打开 SOS",
+    "sevHighDivertHint": "请先拨打急救电话，再在此报告。",
+    "openSos": "拨打 {number}",
     "when": "何时发生？",
     "describe": "描述具体情况",
     "describeHint": "至少 30 字。只写事实 — 谁、做了什么、在哪。",

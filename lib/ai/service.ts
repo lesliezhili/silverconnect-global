@@ -122,9 +122,9 @@ function getTemplateResponse(message: string): string {
   if (lower.includes("book") || lower.includes("预约"))
     return "I can help you book a service! Visit the booking page to choose a service type, pick a date, and we\'ll match you with an available carer in your area.";
   if (lower.includes("price") || lower.includes("cost") || lower.includes("费用"))
-    return "Our pricing is transparent: base hourly rate set by the carer, plus a 15% platform fee that funds our charity programs. Weekend and holiday surcharges may apply.";
+    return "Our prices are standard and shown before you book: each service has Regular, Medium and High effort levels with a set hourly rate. The platform keeps 15% to cover background checks, payments, insurance and support.";
   if (lower.includes("cancel") || lower.includes("取消"))
-    return "You can cancel a booking up to 24 hours before the scheduled time for a full refund. Contact us if you need to cancel within 24 hours.";
+    return "You get a full refund if you cancel at least 48 hours before the booked time (72 hours in Canada). Later cancellations may be partly refunded — see the cancellation policy for details.";
   return "Thank you for reaching out! I\'m here to help with bookings, service questions, or anything else. What would you like to know?";
 }
 
@@ -250,7 +250,7 @@ export async function generateBiographySession(params: {
   const quota = (quotaRows as any).rows?.[0];
 
   if (!quota) {
-    // Create default free quota (50k tokens ≈ 25 pages — generous for non-profit)
+    // Create default free quota (50k tokens ≈ 25 pages)
     await db.execute(sql`
       INSERT INTO biography_quotas (customer_id, plan_type, max_allowed_tokens, tokens_consumed, sessions_completed, activated_at)
       VALUES (${customerId}, 'free', 50000, 0, 0, NOW())
