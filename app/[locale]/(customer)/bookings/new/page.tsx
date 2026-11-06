@@ -40,6 +40,7 @@ import {
 import { priceReleaseBooking } from "@/lib/bookings/release-booking";
 import { customerPauseReason, eligibleProviders, isProviderEligible } from "@/lib/trust";
 import { isStripeConfigured } from "@/lib/stripe/server";
+import { helperPreferences, sortByPreference, suggestedTier, PREFERRED_MIN_RATING } from "@/lib/bookings/preferences";
 
 export const dynamic = "force-dynamic";
 
@@ -302,6 +303,10 @@ export default async function BookingNewPage({
     const qCat = typeof sp.cat === "string" && isReleaseCategory(sp.cat) ? sp.cat : null;
     const cat: ReleaseCategory = qCat ?? (isReleaseCategory(draft.category) ? draft.category : "cleaning");
     const preProvider = typeof sp.providerId === "string" ? sp.providerId : draft.providerId;
+    // Two-way feedback → preference: the latest "next visit should be…"
+    // for this service preselects the tier (unless already chosen).
+    const suggestion = await suggestedTier(me.id, cat);
+    const selectedTier = draft.category === cat && draft.tier ? draft.tier : suggestion?.tier ?? "regular";
     const taxRate = liveAreasFor(country)[0]?.tax.rate ?? 0;
     return (
       <Wizard step={step} country={country} initials={me.initials}>
@@ -335,11 +340,23 @@ export default async function BookingNewPage({
         <form action={saveStep1} className="mt-4 flex flex-col gap-3">
           <input type="hidden" name="locale" value={locale} />
           {preProvider && <input type="hidden" name="providerId" value={preProvider} />}
+          {suggestion && (
+            <p className="rounded-md bg-brand-soft px-3.5 py-3 text-[16px] text-brand">
+              💡{" "}
+              {suggestion.by === "provider" && suggestion.providerName
+                ? isZh
+                  ? `${suggestion.providerName} 上次服务后建议选择「${tierLabel(suggestion.tier, true)}」`
+                  : `Recommended by ${suggestion.providerName} after your last visit`
+                : isZh
+                  ? `根据您上次的反馈，建议选择「${tierLabel(suggestion.tier, true)}」`
+                  : "Based on your last feedback"}
+            </p>
+          )}
           <ul className="flex flex-col gap-3">
             {EFFORT_TIERS.map((tier) => {
               const p = priceFor({ country, category: cat, tier, taxRate });
               const value = `${cat}:${tier}`;
-              const checked = draft.category === cat ? draft.tier === tier : tier === "regular";
+              const checked = selectedTier === tier;
               const scope = TIER_SCOPE[cat][tier];
               return (
                 <li key={tier}>
@@ -411,7 +428,13 @@ export default async function BookingNewPage({
     if (!draft.serviceId || !isReleaseCategory(draft.category)) {
       nextRedirect(`/${locale}/bookings/new?step=1`);
     }
-    const providers = await eligibleProviders(draft.category!, me.id, await customerCountry(me.id));
+    // Two-way feedback → preference: helpers this customer rated highly or
+    // favourited come first (≤2★ pairs are already excluded by the trust gate).
+    const prefs = await helperPreferences(me.id);
+    const providers = sortByPreference(
+      await eligibleProviders(draft.category!, me.id, await customerCountry(me.id)),
+      prefs,
+    );
     const defaultDateTime = draft.scheduledAt?.slice(0, 16) ?? "";
 
     return (
@@ -444,7 +467,18 @@ export default async function BookingNewPage({
                     <li key={p.id}>
                       <label className="flex cursor-pointer items-center gap-3 rounded-md border-[1.5px] border-border bg-bg-base p-3.5 has-[:checked]:border-2 has-[:checked]:border-brand">
                         <input type="radio" name="providerId" value={p.id} defaultChecked={checked} required className="h-5 w-5 accent-[var(--brand-primary)]" />
-                        <span className="flex-1 text-[16px] font-semibold">{dispName}</span>
+                        <span className="flex-1 text-[16px] font-semibold">
+                          {dispName}
+                          {(() => {
+                            const pref = prefs.get(p.id);
+                            const tags: string[] = [];
+                            if (pref?.rated && pref.rated >= PREFERRED_MIN_RATING) tags.push(isZh ? `您评过 ★${pref.rated}` : `You rated ★${pref.rated}`);
+                            if (pref?.favourite) tags.push(isZh ? "您的收藏" : "Your favourite");
+                            return tags.length > 0 ? (
+                              <span className="mt-0.5 block text-[14px] font-normal text-brand">{tags.join(" · ")}</span>
+                            ) : null;
+                          })()}
+                        </span>
                         <span className="text-[16px] text-text-tertiary tabular-nums">
                           {p.reviewCount > 0 ? `★ ${p.avgRating.toFixed(1)} (${p.reviewCount})` : isZh ? "新服务者" : "New"}
                         </span>

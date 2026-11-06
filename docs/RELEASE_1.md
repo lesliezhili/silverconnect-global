@@ -71,7 +71,7 @@ Nobody is banned automatically. Paused accounts appear at `/admin/quality` for a
 
 | Who | Paused when |
 | --- | --- |
-| Provider | **No approved, current police check + ID document** (police checks without an expiry count for 3 years), **or** average of the last 10 ratings < 3.5★ (with 3+ reviews), **or** 3 late-cancellation strikes in 90 days, **or** 2+ QC flags in 90 days |
+| Provider | **No approved, current police check + photo ID** (police check and ID must be uploaded files; expired documents are refused at upload and can't be approved) (police checks without an expiry count for 3 years), **or** average of the last 10 ratings < 3.5★ (with 3+ reviews), **or** 3 late-cancellation strikes in 90 days, **or** 2+ QC flags in 90 days |
 | Customer | Average of the last 10 provider ratings < 3.0★ (with 3+ reviews), **or** 3+ cancellations < 24 h / no-shows in 90 days |
 | Pair | Either side rated the other ≤2★, so that pair is never matched again |
 
@@ -125,17 +125,21 @@ An isolated environment: a Docker Postgres database with fixtures and an app ser
 Run the app against that database with **no Stripe or Supabase keys**, for example from a separate checkout whose `.env.local` only has `DATABASE_URL=postgres://postgres:sc_e2e@localhost:55432/sc_e2e`, `DATABASE_SSL=false` and a `SESSION_SECRET`. Then:
 
 ```bash
-SC_E2E_DB_URL=postgres://postgres:sc_e2e@localhost:55432/sc_e2e PLAYWRIGHT_BASE_URL=http://localhost:3021 CI=1 npx playwright test e2e/r1-journey.spec.ts e2e/r1-release.spec.ts --project=chromium --workers=1
+SC_E2E_DB_URL=postgres://postgres:sc_e2e@localhost:55432/sc_e2e PLAYWRIGHT_BASE_URL=http://localhost:3020 CI=1 npx playwright test e2e/r1-journey.spec.ts e2e/r1-release.spec.ts e2e/r1-trust.spec.ts --project=chromium --workers=1
 ```
 
-`r1-journey.spec.ts` refuses to run against anything but localhost. It covers:
-- the trust gate: background check, low rating, paused customer, country;
-- the happy path with exact payout amounts, and re-submitted feedback not paying twice;
-- completion blocked without evidence and checklist;
-- the short-visit hold and admin release;
-- a forged admin cookie;
-- a 1★ rating that needs photos, then the pair block;
-- quotes;
-- customer cancellation, provider decline, late provider cancel with emergency cover, and no cover with full refund + admin alert;
-- late-cancelling customers being paused;
-- Canadian pricing.
+Use `--project=Pixel` or `--project=iPhone` for phones. All three projects pass: 52 tests, 1 staging-only skip.
+
+The suites refuse to run against anything but a localhost database. Shared helpers are in `e2e/helpers/r1.ts`. Coverage:
+
+| Area | Tests |
+| --- | --- |
+| **Quality evidence** | Before photos for every area to start; after photos + full checklist to complete (blocked otherwise); short visit flagged and payout held → admin releases; 1★ needs customer photos and holds the payout; only the assigned provider can add before/after photos, customers only feedback photos after completion |
+| **Background check** | No file → refused; expired police check refused at upload; documents page asks for police check + photo ID (WWC optional); upload → not matched while pending → admin approves → matched; admin can't approve an expired document; an expired police check drops the provider from matching and flags them in `/admin/quality` |
+| **Cancellation risk** | Customer ≥7 days: full refund; 24–48 h: 50% refund / 50% to provider; <24 h: no refund / 90% to provider; provider decline → emergency team; provider <48 h → cover + 10% penalty + strike; provider <12 h with no cover → full refund, 25% penalty, admin alert; 3 late cancellations pause a customer |
+| **Two-way feedback → booking preferences** | Provider rates the customer by aspect (access, job matched booking, respect) and suggests the next tier; that suggestion preselects the customer's next booking with "Recommended by …"; helpers the customer rated ≥4★ or favourited are offered first and labelled; ≤2★ either way blocks the pair |
+| **Trust gate** | Only background-checked, well-rated providers in the customer's country; paused customers can't book; out-of-area addresses can't be chosen; Vancouver is on the waitlist |
+| **Money** | Exact payout amounts; re-submitted feedback never pays twice; quotes price the next booking |
+| **Security** | A forged admin cookie doesn't open the admin panel |
+| **Public pages** | Only the three services; other categories 404; future features → coming soon; booking needs sign-in |
+

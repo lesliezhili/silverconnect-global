@@ -15,6 +15,7 @@ INSERT INTO users (id, email, password_hash, name, role, is_admin, country, loca
   ('00000000-0000-4000-a000-000000000013', 'prov-low@e2e.test',  :'pw', 'Low Rated Helper', 'provider', false, 'AU', 'en', NOW()),
   ('00000000-0000-4000-a000-000000000014', 'prov-ca@e2e.test',   :'pw', 'Vancouver Helper', 'provider', false, 'CA', 'en', NOW()),
   ('00000000-0000-4000-a000-000000000015', 'prov-standby@e2e.test', :'pw', 'Standby Helper', 'provider', false, 'AU', 'en', NOW()),
+  ('00000000-0000-4000-a000-000000000016', 'prov-new@e2e.test',  :'pw', 'New Helper',    'provider', false, 'AU', 'en', NOW()),
   ('00000000-0000-4000-a000-000000000021', 'admin@e2e.test',     :'pw', 'E2E Admin',     'customer', true,  'AU', 'en', NOW());
 
 INSERT INTO addresses (id, user_id, label, line1, city, state, postcode, country, is_default) VALUES
@@ -29,7 +30,9 @@ INSERT INTO provider_profiles (id, user_id, service_radius_km, onboarding_status
   ('00000000-0000-4000-c000-000000000012', '00000000-0000-4000-a000-000000000012', 25, 'approved'),
   ('00000000-0000-4000-c000-000000000013', '00000000-0000-4000-a000-000000000013', 25, 'approved'),
   ('00000000-0000-4000-c000-000000000014', '00000000-0000-4000-a000-000000000014', 25, 'approved'),
-  ('00000000-0000-4000-c000-000000000015', '00000000-0000-4000-a000-000000000015', 25, 'approved');
+  ('00000000-0000-4000-c000-000000000015', '00000000-0000-4000-a000-000000000015', 25, 'approved'),
+  -- signed up, no background check yet
+  ('00000000-0000-4000-c000-000000000016', '00000000-0000-4000-a000-000000000016', 25, 'pending');
 UPDATE provider_profiles SET emergency_opt_in = true WHERE id = '00000000-0000-4000-c000-000000000015';
 
 INSERT INTO provider_categories (provider_id, category) VALUES
@@ -41,7 +44,8 @@ INSERT INTO provider_categories (provider_id, category) VALUES
   ('00000000-0000-4000-c000-000000000014', 'cleaning'),
   ('00000000-0000-4000-c000-000000000015', 'cleaning'),
   ('00000000-0000-4000-c000-000000000015', 'garden'),
-  ('00000000-0000-4000-c000-000000000015', 'repair');
+  ('00000000-0000-4000-c000-000000000015', 'repair'),
+  ('00000000-0000-4000-c000-000000000016', 'garden');
 
 -- Background checks: good + low + ca have current police check & ID; nocheck has none.
 INSERT INTO provider_documents (provider_id, type, file_url, status, expires_at, reviewed_at) VALUES

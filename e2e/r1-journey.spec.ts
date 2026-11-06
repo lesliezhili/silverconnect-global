@@ -13,119 +13,13 @@
  * The app server must use the same database and no Stripe keys
  * (simulated payment). Refuses to run against anything but localhost.
  */
-import { test, expect, type Browser, type Page } from '@playwright/test'
-import postgres from 'postgres'
+import { test, expect } from '@playwright/test'
+import {
+  requireLocalDb, sql, signIn, status, inDays, book, pay, evidence, rate, wallet, withdraw, choose, photo,
+  GOOD, STANDBY, PW,
+} from './helpers/r1'
 
-const DB_URL = process.env.SC_E2E_DB_URL ?? ''
-const LOCAL = /^postgres(ql)?:\/\/[^@]+@(localhost|127\.0\.0\.1):/.test(DB_URL)
-test.skip(!LOCAL, 'Set SC_E2E_DB_URL to the local E2E database (scripts/e2e-local.sh)')
-test.describe.configure({ mode: 'serial' })
-
-const PW = 'E2e-pass-123!'
-const sql = LOCAL ? postgres(DB_URL, { max: 2 }) : (null as unknown as ReturnType<typeof postgres>)
-test.afterAll(async () => { if (LOCAL) await sql.end() })
-
-// 1×1 PNG — compressed and uploaded like a phone photo.
-const PHOTO = Buffer.from(
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
-  'base64',
-)
-const photo = (name: string) => ({ name: `${name}.png`, mimeType: 'image/png', buffer: PHOTO })
-
-/** Selects a visually hidden (sr-only) radio reliably and confirms it stuck. */
-async function choose(radio: import('@playwright/test').Locator) {
-  await radio.waitFor({ state: 'attached' })
-  await expect(async () => {
-    await radio.evaluate((el) => (el as HTMLInputElement).click())
-    expect(await radio.isChecked()).toBe(true)
-  }).toPass()
-}
-
-async function signIn(browser: Browser, email: string): Promise<Page> {
-  const ctx = await browser.newContext()
-  const page = await ctx.newPage()
-  const res = await page.request.post('/api/auth/login', { data: { email, password: PW } })
-  expect(res.ok(), `login ${email}`).toBeTruthy()
-  return page
-}
-
-async function status(id: string): Promise<string> {
-  const [b] = await sql`SELECT status FROM bookings WHERE id = ${id}`
-  return b.status
-}
-
-function inDays(days: number, hour = 10): string {
-  const d = new Date(Date.now() + days * 86400000)
-  const p = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(hour)}:00`
-}
-
-/** Customer books through the UI and lands on the payment page; returns the booking id. */
-async function book(
-  page: Page,
-  o: { cat: 'cleaning' | 'garden' | 'repair'; tier: 'regular' | 'medium' | 'high'; provider: string; days?: number; jobType?: string; expectPrice?: string },
-): Promise<string> {
-  await page.goto(`/en/bookings/new?step=1&cat=${o.cat}`)
-  await page.locator(`input[name="choice"][value="${o.cat}:${o.tier}"]`).check()
-  if (o.jobType) await page.locator('#jobType').selectOption(o.jobType)
-  await page.getByRole('button', { name: 'Next', exact: true }).click()
-  await page.waitForURL(/step=2/)
-  await page.getByRole('radio', { name: new RegExp(o.provider) }).check()
-  await page.locator('#scheduledAt').fill(inDays(o.days ?? 10))
-  await page.getByRole('button', { name: 'Next', exact: true }).click()
-  await page.waitForURL(/step=3/)
-  await page.locator('input[name="addressId"]:not([disabled])').first().check()
-  await page.getByRole('button', { name: 'Next', exact: true }).click()
-  await page.waitForURL(/step=4/)
-  if (o.expectPrice) await expect(page.getByText(o.expectPrice)).toBeVisible()
-  await page.getByRole('button', { name: /Confirm & pay/ }).click()
-  await page.waitForURL(/\/en\/pay\//)
-  return page.url().split('/pay/')[1].split(/[?#]/)[0]
-}
-
-async function pay(page: Page, id: string) {
-  await page.goto(`/en/pay/${id}`)
-  await page.getByRole('button', { name: /Pay securely/ }).click()
-  await page.waitForURL(new RegExp(`/bookings/${id}/success`))
-  expect(await status(id)).toBe('confirmed')
-}
-
-/** Provider uploads a photo for every QC area (and ticks the checklist) through the modal. */
-async function evidence(page: Page, id: string, trigger: 'On the way' | 'Mark complete', tickAll = true) {
-  await page.goto(`/en/provider/jobs/${id}`)
-  await page.getByRole('button', { name: trigger }).first().click()
-  const dialog = page.getByRole('dialog')
-  const inputs = dialog.locator('input[type="file"]')
-  const n = await inputs.count()
-  expect(n).toBeGreaterThan(0)
-  for (let i = 0; i < n; i++) await inputs.nth(i).setInputFiles(photo(`area${i}`))
-  if (tickAll) for (const box of await dialog.locator('input[type="checkbox"]').all()) await box.check()
-  await dialog.getByRole('button', { name: trigger }).click()
-}
-
-async function rate(page: Page, id: string, stars: number) {
-  await page.goto(`/en/bookings/${id}/feedback`)
-  await choose(page.locator(`input[name="rating"][value="${stars}"]`))
-  await page.getByRole('button', { name: 'Submit & release payment' }).click()
-}
-
-async function wallet(providerId: string) {
-  const [w] = await sql`SELECT balance_available::float AS a, balance_pending::float AS p FROM wallets WHERE provider_id = ${providerId}`
-  return w ?? { a: 0, p: 0 }
-}
-
-const GOOD = '00000000-0000-4000-c000-000000000011'
-const STANDBY = '00000000-0000-4000-c000-000000000015' // emergency cover team
-
-/** Provider declines / cancels through the modal, picking the first reason. */
-async function withdraw(page: Page, id: string, trigger: 'Decline' | 'Cancel booking') {
-  await page.goto(`/en/provider/jobs/${id}`)
-  // dispatchEvent: the Next.js dev-mode badge overlaps the bottom-left button in `next dev`.
-  await page.getByRole('button', { name: trigger }).first().dispatchEvent('click')
-  const dialog = page.getByRole('dialog')
-  await choose(dialog.locator('input[name="reason"]').first())
-  await dialog.getByRole('button', { name: trigger }).click()
-}
+requireLocalDb()
 
 test('trust gate: only background-checked, well-rated providers in the customer\'s country', async ({ browser }) => {
   const cust = await signIn(browser, 'cust-au@e2e.test')

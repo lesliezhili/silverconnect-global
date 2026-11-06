@@ -419,6 +419,7 @@ export default async function ProviderJobDetailPage({
         {(status === "completed" || status === "released") && (
           <RateCustomerWidget
             bookingId={id}
+            zh={locale === "zh" || locale === "zh_tw"}
             strings={{
               title: t("rateCustomerTitle"),
               submit: t("rateCustomerSubmit"),

@@ -21,6 +21,9 @@ export function ModalContent({
       <Dialog.Content
         className={cn(
           "fixed left-1/2 top-1/2 z-50 w-[min(480px,calc(100vw-32px))] -translate-x-1/2 -translate-y-1/2",
+          // Tall dialogs (e.g. photo evidence + checklist) scroll on phones
+          // instead of pushing their buttons off-screen.
+          "max-h-[calc(100dvh-32px)] overflow-y-auto overscroll-contain",
           "rounded-lg bg-bg-base p-6 shadow-card border border-border",
           "data-[state=open]:animate-in data-[state=open]:fade-in",
           className
