@@ -19,11 +19,16 @@ import { getCurrentUser } from "@/lib/auth/server";
 import { notifyAndEmail } from "@/lib/notifications/server";
 import { buildBookingStatusEmail } from "@/components/domain/email";
 import { payments, wallets } from "@/lib/db/schema/payments";
-import { cancelBooking, CancelBookingError } from "@/lib/bookings/cancelBooking";
+import { CancelBookingError } from "@/lib/bookings/cancelBooking";
+import { providerWithdraw } from "@/lib/bookings/providerWithdraw";
 import { GenerateInvoiceButton } from "@/components/domain/GenerateInvoiceButton";
 import { EvidenceUploadModal } from "@/components/domain/EvidenceUploadModal";
 import { RateCustomerWidget } from "@/components/domain/RateCustomerWidget";
 import { reviews } from "@/lib/db/schema/reviews";
+import { isReleaseCategory, type ReleaseCategory } from "@/lib/release";
+import { isEffortTier, type EffortTier } from "@/lib/release-pricing";
+import { QC_AREAS, QC_CHECKLIST, missingAreas, qcFlagFor } from "@/lib/release-quality";
+import { QuotePanel } from "./QuotePanel";
 
 export const dynamic = "force-dynamic";
 
@@ -96,42 +101,56 @@ async function jobAction(formData: FormData) {
   // client-side modal already blocks submission without one, but that's
   // UX only; this is the real boundary, matching the convention used
   // throughout this codebase for anything client-toggleable.
+  // Release 1 QC: every required area needs evidence for the phase, and
+  // completion needs the full checklist (lib/release-quality.ts).
+  let qcPatch: { qcChecklist?: Record<string, boolean>; qcFlag?: string | null } = {};
   if (action === "start" || action === "complete") {
     const requiredPhase = action === "start" ? "before" : "after";
-    const [evidence] = await db
-      .select({ id: bookingEvidence.id })
-      .from(bookingEvidence)
-      .where(and(eq(bookingEvidence.bookingId, id), eq(bookingEvidence.phase, requiredPhase)))
+    const [job] = await db
+      .select({
+        category: services.categoryCode,
+        tier: bookings.effortTier,
+        durationMin: bookings.durationMin,
+        startedAt: bookings.startedAt,
+      })
+      .from(bookings)
+      .leftJoin(services, eq(services.id, bookings.serviceId))
+      .where(eq(bookings.id, id))
       .limit(1);
-    if (!evidence) {
+    const evidence = await db
+      .select({ phase: bookingEvidence.phase, description: bookingEvidence.description })
+      .from(bookingEvidence)
+      .where(eq(bookingEvidence.bookingId, id));
+    const category = isReleaseCategory(job?.category) ? job!.category as ReleaseCategory : null;
+    const missing = category
+      ? missingAreas(category, evidence, requiredPhase)
+      : evidence.some((e) => e.phase === requiredPhase) ? [] : [{ key: "any" }];
+    if (missing.length > 0) {
       nextRedirect(`/${locale}/provider/jobs/${id}?error=evidence_required`);
+    }
+    if (action === "complete" && category) {
+      const tier: EffortTier = isEffortTier(job!.tier) ? job!.tier : "regular";
+      const items = QC_CHECKLIST[category][tier];
+      const ticked = Object.fromEntries(items.map((c) => [c.key, formData.get(`qc_${c.key}`) === "on"]));
+      if (!Object.values(ticked).every(Boolean)) {
+        nextRedirect(`/${locale}/provider/jobs/${id}?error=checklist_required`);
+      }
+      qcPatch = { qcChecklist: ticked, qcFlag: qcFlagFor(job!.durationMin, job!.startedAt, new Date()) };
     }
   }
 
+  // Decline / cancel → Release 1 policy: emergency cover first, penalty
+  // and strike by notice, full refund if nobody can cover
+  // (lib/bookings/providerWithdraw.ts).
+  let covered = false;
   if (action === "decline" || action === "cancel") {
-    const { default: postgres } = await import("postgres");
-    const sql2 = postgres(process.env.DATABASE_URL || "", { prepare: false, connect_timeout: 10 });
     try {
-      await cancelBooking(sql2, {
-        bookingId: id,
-        cancelledBy: me.id,
-        reason: reason || (action === "decline" ? "provider_declined" : "provider_unavailable"),
-        notes: action === "decline" ? `Provider decline: ${reason || "—"}` : `Provider cancel: ${reason || "—"}`,
-      });
-      await db.insert(bookingChanges).values({
-        bookingId: id,
-        type: "cancel",
-        fromStatus: from,
-        toStatus: "cancelled",
-        actorId: me.id,
-        note: action === "decline" ? `Provider decline: ${reason || "—"}` : `Provider cancel: ${reason || "—"}`,
-      });
+      covered = (await providerWithdraw({ bookingId: id, providerUserId: me.id, reason, locale })).covered;
     } catch (e) {
-      await sql2.end().catch(() => {});
+      console.error("[provider withdraw]", id, e);
       const message = e instanceof CancelBookingError ? e.message : "Cancellation failed";
       nextRedirect(`/${locale}/provider/jobs/${id}?error=${encodeURIComponent(message)}`);
     }
-    await sql2.end();
   } else {
     await db.transaction(async (tx) => {
       const patch: Record<string, unknown> = {
@@ -140,7 +159,7 @@ async function jobAction(formData: FormData) {
       };
       if (action === "accept") patch.confirmedAt = new Date();
       if (action === "start") patch.startedAt = new Date();
-      if (action === "complete") patch.completedAt = new Date();
+      if (action === "complete") Object.assign(patch, { completedAt: new Date() }, qcPatch);
       await tx.update(bookings).set(patch).where(eq(bookings.id, id));
       await tx.insert(bookingChanges).values({
         bookingId: id,
@@ -180,6 +199,8 @@ async function jobAction(formData: FormData) {
       .where(eq(bookings.id, id))
       .limit(1);
     if (!b?.customerId) return;
+    // Emergency cover already told the customer their helper changed.
+    if (covered) return;
 
     const titles: Record<Action, string> = {
       accept: "Provider accepted your booking",
@@ -245,10 +266,15 @@ function initialsOf(name: string | null, fallback: string): string {
 
 export default async function ProviderJobDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale, id } = await params;
+  const sp = await searchParams;
+  const errorKey = typeof sp.error === "string" ? sp.error : null;
+  const quoteSent = sp.quote === "sent";
   setRequestLocale(locale);
   const me = await getCurrentUser();
   if (!me) nextRedirect(`/${locale}/auth/login`);
@@ -282,6 +308,11 @@ export default async function ProviderJobDetailPage({
         addressState: addresses.state,
         addressPostcode: addresses.postcode,
         serviceCategory: services.categoryCode,
+        effortTier: bookings.effortTier,
+        jobType: bookings.jobType,
+        startedAt: bookings.startedAt,
+        completedAt: bookings.completedAt,
+        qcFlag: bookings.qcFlag,
       })
       .from(bookings)
       .leftJoin(users, eq(users.id, bookings.customerId))
@@ -356,6 +387,9 @@ export default async function ProviderJobDetailPage({
         id="main-content"
         className="mx-auto w-full max-w-content px-5 pb-[140px] pt-6 sm:pb-12"
       >
+        {(errorKey || quoteSent) && (
+          <JobNotice errorKey={errorKey} quoteSent={quoteSent} zh={locale === "zh" || locale === "zh_tw"} />
+        )}
         <p className="text-[16px] font-semibold uppercase tracking-wide text-text-tertiary tabular-nums">
           {dateLabel} · {timeLabel}
         </p>
@@ -385,6 +419,7 @@ export default async function ProviderJobDetailPage({
         {(status === "completed" || status === "released") && (
           <RateCustomerWidget
             bookingId={id}
+            zh={locale === "zh" || locale === "zh_tw"}
             strings={{
               title: t("rateCustomerTitle"),
               submit: t("rateCustomerSubmit"),
@@ -488,6 +523,20 @@ export default async function ProviderJobDetailPage({
           {t("reportProblem")}
         </Link>
 
+        {(status === "completed" || status === "released") && (
+          <QuotePanel
+            locale={locale}
+            job={{
+              id: row.id,
+              status,
+              effortTier: row.effortTier,
+              durationMin: row.durationMin,
+              startedAt: row.startedAt,
+              completedAt: row.completedAt,
+              serviceCategory: row.serviceCategory,
+            }}
+          />
+        )}
       </main>
 
       {!justCompleted && !isCancelled && (
@@ -497,6 +546,8 @@ export default async function ProviderJobDetailPage({
           status={status}
           t={t}
           tCommon={tCommon}
+          category={isReleaseCategory(row.serviceCategory) ? row.serviceCategory : null}
+          tier={isEffortTier(row.effortTier) ? row.effortTier : "regular"}
         />
       )}
     </>
@@ -530,13 +581,23 @@ function ActionBar({
   status,
   t,
   tCommon,
+  category,
+  tier,
 }: {
   locale: string;
   jobId: string;
   status: DbStatus;
   t: Awaited<ReturnType<typeof getTranslations<"provider">>>;
   tCommon: Awaited<ReturnType<typeof getTranslations<"common">>>;
+  category: ReleaseCategory | null;
+  tier: EffortTier;
 }) {
+  const zh = locale === "zh" || locale === "zh_tw";
+  const label = (i: { en: string; zh: string }) => (zh ? i.zh : i.en);
+  const areas = category
+    ? QC_AREAS[category].map((a) => ({ key: a.key, label: label(a) }))
+    : [{ key: "job", label: zh ? "服务位置" : "Job area" }];
+  const checklist = category ? QC_CHECKLIST[category][tier].map((c) => ({ key: c.key, label: label(c) })) : [];
   // "accept" needs no evidence — it's a plain action button. "start" and
   // "complete" each require a before/after photo first, so they render
   // an EvidenceUploadModal instead (see the matching server-side check
@@ -582,6 +643,7 @@ function ActionBar({
     submit: t("jobComplete"),
     uploading: t("evidenceUploading"),
     uploadFailed: t("evidenceUploadFailed"),
+    checklistTitle: zh ? "完成清单（全部勾选）" : "Completion checklist (tick all)",
   };
 
   const declineStrings = {
@@ -637,6 +699,7 @@ function ActionBar({
             locale={locale}
             jobId={jobId}
             strings={evidenceStartStrings}
+            areas={areas}
           />
         )}
         {showEvidenceComplete && (
@@ -647,6 +710,8 @@ function ActionBar({
             locale={locale}
             jobId={jobId}
             strings={evidenceCompleteStrings}
+            areas={areas}
+            checklist={checklist}
           />
         )}
         {acts.map((a) => (
@@ -669,5 +734,29 @@ function ActionBar({
         ))}
       </div>
     </div>
+  );
+}
+
+const JOB_NOTICES: Record<string, [string, string]> = {
+  evidence_required: ["Add a photo or video for every area first.", "请先为每个区域上传照片或视频。"],
+  checklist_required: ["Tick every checklist item before completing.", "完成前请勾选全部清单项目。"],
+  invalid_transition: ["That action isn't available for this job now.", "该任务当前无法执行此操作。"],
+  quote_not_allowed: ["A quote can't be sent for this job.", "此任务无法发送报价。"],
+  quote_invalid: ["Check the tier, hours and reason (10+ characters).", "请检查强度、时长和原因（至少 10 个字）。"],
+};
+
+function JobNotice({ errorKey, quoteSent, zh }: { errorKey: string | null; quoteSent: boolean; zh: boolean }) {
+  if (quoteSent) {
+    return (
+      <p role="status" className="mb-4 rounded-md bg-success-soft px-3.5 py-3 text-[16px] font-semibold text-success">
+        {zh ? "报价已发送，等待客户确认。" : "Quote sent — waiting for the customer."}
+      </p>
+    );
+  }
+  const msg = errorKey ? JOB_NOTICES[errorKey] : null;
+  return (
+    <p role="alert" className="mb-4 rounded-md border-[1.5px] border-danger bg-danger-soft px-3.5 py-3 text-[16px] font-semibold text-danger">
+      {msg ? msg[zh ? 1 : 0] : decodeURIComponent(errorKey ?? "")}
+    </p>
   );
 }

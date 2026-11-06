@@ -32,6 +32,29 @@ export default async function CancellationPolicyPage({
             <PolicyTier window="Less than 24 hours" refund="0%" color="bg-red-50 border-red-200" textColor="text-red-700" />
             <PolicyTier window="No-show" refund="0%" color="bg-red-50 border-red-200" textColor="text-red-700" />
           </div>
+          <p className="mt-2 text-[15px] text-text-tertiary">Australia. Canada below.</p>
+          <h3 className="mt-6 text-[19px] font-bold text-text-primary">Canada</h3>
+          <div className="mt-3 flex flex-col gap-3">
+            <PolicyTier window="72+ hours before" refund="100%" color="bg-green-50 border-green-200" textColor="text-green-700" />
+            <PolicyTier window="24 – 72 hours before" refund="75%" color="bg-yellow-50 border-yellow-200" textColor="text-yellow-700" />
+            <PolicyTier window="Less than 24 hours" refund="25%" color="bg-red-50 border-red-200" textColor="text-red-700" />
+            <PolicyTier window="No-show" refund="0%" color="bg-red-50 border-red-200" textColor="text-red-700" />
+          </div>
+          <h3 className="mt-8 text-[19px] font-bold text-text-primary">If your helper cancels</h3>
+          <ul className="mt-3 flex list-disc flex-col gap-2 pl-5 text-[16px] text-text-secondary">
+            <li>You never lose out: our <strong>emergency cover team</strong> sends a background-checked replacement at the same time and price.</li>
+            <li>If nobody can cover, you get a <strong>full refund</strong> and our team contacts you.</li>
+            <li>If a job stops part-way, you pay only for the time worked.</li>
+          </ul>
+          <h3 className="mt-8 text-[19px] font-bold text-text-primary">Helper notice and penalties</h3>
+          <div className="mt-3 flex flex-col gap-3">
+            <PolicyTier window="48+ hours before" refund="No penalty" color="bg-green-50 border-green-200" textColor="text-green-700" />
+            <PolicyTier window="12 – 48 hours before" refund="10% penalty + strike" color="bg-yellow-50 border-yellow-200" textColor="text-yellow-700" />
+            <PolicyTier window="Under 12 hours / after starting" refund="25% penalty + strike" color="bg-red-50 border-red-200" textColor="text-red-700" />
+          </div>
+          <p className="mt-4 text-[16px] text-text-secondary">
+            Helpers with 3 strikes in 90 days, and customers with 3 or more late cancellations (under 24 hours) or no-shows, are paused until our team reviews them.
+          </p>
         </section>
 
         {/* Exceptions */}

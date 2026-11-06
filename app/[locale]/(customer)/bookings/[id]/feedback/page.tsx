@@ -1,7 +1,7 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { redirect as nextRedirect, notFound } from "next/navigation";
 import { eq, and } from "drizzle-orm";
-import { Star, CheckCircle2, Camera } from "lucide-react";
+import { Star, CheckCircle2 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Link } from "@/i18n/navigation";
 import { Label } from "@/components/ui/Label";
@@ -9,22 +9,18 @@ import { Button } from "@/components/ui/Button";
 import { ProviderAvatar } from "@/components/domain/ProviderAvatar";
 import { getCountry } from "@/components/domain/countryCookie";
 import { db } from "@/lib/db";
-import { bookings, bookingChanges, bookingEvidence } from "@/lib/db/schema/bookings";
+import { bookings, bookingEvidence } from "@/lib/db/schema/bookings";
 import { providerProfiles } from "@/lib/db/schema/providers";
 import { users } from "@/lib/db/schema/users";
 import { services } from "@/lib/db/schema/services";
 import { reviews } from "@/lib/db/schema/reviews";
 import { getCurrentUser } from "@/lib/auth/server";
+import { releaseOrHold } from "@/lib/feedback/release";
+import { FeedbackPhotos } from "./FeedbackPhotos";
+import { TRUST_RULES } from "@/lib/release-quality";
+import { isEffortTier } from "@/lib/release-pricing";
 
 export const dynamic = "force-dynamic";
-
-const TAG_KEYS = [
-  "tagPunctual",
-  "tagProfessional",
-  "tagClean",
-  "tagFriendly",
-  "tagFair",
-] as const;
 
 function initialsOf(name: string | null, fallback: string): string {
   const src = (name || fallback).trim();
@@ -65,46 +61,50 @@ async function feedbackAction(formData: FormData) {
     nextRedirect(`/${locale}/bookings/${id}/feedback?error=no_provider`);
   }
 
+  const aspects: Record<string, number> = {};
+  for (const k of ["quality", "punctuality", "communication"]) {
+    const n = Number(formData.get(`aspect_${k}`));
+    if (Number.isInteger(n) && n >= 1 && n <= 5) aspects[k] = n;
+  }
+  const suggestedTier = String(formData.get("suggestedTier") ?? "");
+  const rating = Math.round(ratingRaw);
+  if (rating <= TRUST_RULES.pairBlockAt) {
+    const photos = await db
+      .select({ id: bookingEvidence.id })
+      .from(bookingEvidence)
+      .where(and(eq(bookingEvidence.bookingId, b.id), eq(bookingEvidence.phase, "feedback")));
+    if (photos.length === 0) nextRedirect(`/${locale}/bookings/${id}/feedback?error=photo_required`);
+  }
+
+  let held = false;
   try {
-    await db.transaction(async (tx) => {
-      await tx.insert(reviews).values({
+    const inserted = await db
+      .insert(reviews)
+      .values({
         bookingId: b.id,
         customerId: me.id,
         providerId: b.providerId!,
-        rating: Math.round(ratingRaw),
+        rating,
         comment: comment || null,
-      });
-      // Submitting feedback releases held funds: completed → released.
-      // The button copy ("Submit & release payment") commits to this.
-      // Idempotent: if a prior run already released, the second update is a no-op.
-      if (b.status === "completed") {
-        await tx
-          .update(bookings)
-          .set({ status: "released", updatedAt: new Date() })
-          .where(eq(bookings.id, b.id));
-        await tx.insert(bookingChanges).values({
-          bookingId: b.id,
-          type: "status_change",
-          fromStatus: "completed",
-          toStatus: "released",
-          actorId: me.id,
-          note: "Customer released payment via feedback",
-        });
-      }
-    });
+        direction: "customer_to_provider",
+        aspects: Object.keys(aspects).length ? aspects : null,
+        suggestedTier: isEffortTier(suggestedTier) ? suggestedTier : null,
+      })
+      .onConflictDoNothing()
+      .returning({ id: reviews.id });
+    if (inserted.length === 0) nextRedirect(`/${locale}/bookings/${id}/feedback?error=duplicate`);
+    // Confirming the job releases the payout, or holds it for review.
+    held = (await releaseOrHold({ bookingId: b.id, actorId: me.id, rating })).held;
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    // Unique on booking_id — duplicate submit lands here.
-    if (msg.includes("reviews_booking_uq")) {
-      nextRedirect(`/${locale}/bookings/${id}/feedback?error=duplicate`);
-    }
-     
-    console.error("[feedback] insert failed:", msg);
+    if (e && typeof e === "object" && "digest" in e) throw e; // redirect
+    console.error("[feedback] insert failed:", e instanceof Error ? e.message : e);
     nextRedirect(`/${locale}/bookings/${id}/feedback?error=server`);
   }
 
-  nextRedirect(`/${locale}/bookings/${id}/feedback?sent=1`);
+  nextRedirect(`/${locale}/bookings/${id}/feedback?sent=1${held ? "&held=1" : ""}`);
 }
+
+const isVideo = (url: string) => /\.(mp4|mov|webm)(\?|$)/i.test(url);
 
 export default async function FeedbackPage({
   params,
@@ -116,6 +116,7 @@ export default async function FeedbackPage({
   const { locale, id } = await params;
   const sp = await searchParams;
   setRequestLocale(locale);
+  const zhFb = locale === "zh" || locale === "zh_tw";
   const me = await getCurrentUser();
   if (!me) nextRedirect(`/${locale}/auth/login`);
   const country = await getCountry();
@@ -154,7 +155,7 @@ export default async function FeedbackPage({
   const [existing] = await db
     .select({ id: reviews.id, rating: reviews.rating })
     .from(reviews)
-    .where(eq(reviews.bookingId, id))
+    .where(and(eq(reviews.bookingId, id), eq(reviews.direction, "customer_to_provider")))
     .limit(1);
 
   const evidenceRows = await db
@@ -184,6 +185,13 @@ export default async function FeedbackPage({
           <p className="max-w-[320px] text-[16px] text-text-secondary">
             {t("successHint", { provider: providerName })}
           </p>
+          {sp.held === "1" && (
+            <p className="max-w-[320px] rounded-md bg-warning-soft p-3 text-[16px] text-warning">
+              {zhFb
+                ? "感谢反馈。我们的工作人员会先审核此次服务，再放款给服务者。"
+                : "Thanks — our team will review this job before payment is released."}
+            </p>
+          )}
           {existing && (
             <p className="text-[16px] text-text-tertiary">
               {existing.rating}★ ·{" "}
@@ -210,7 +218,9 @@ export default async function FeedbackPage({
           ? "You've already reviewed this booking."
           : error === "server"
             ? "Something went wrong. Please retry."
-            : null;
+            : error === "photo_required"
+              ? zhFb ? "评分 2 星或以下时，请上传至少一张照片说明问题。" : "For 2★ or lower, please add at least one photo showing the problem."
+              : null;
 
   return (
     <>
@@ -257,8 +267,12 @@ export default async function FeedbackPage({
                     <p className="text-[15px] text-text-tertiary">—</p>
                   ) : (
                     beforePhotos.map((p, i) => (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img key={i} src={p.fileUrl} alt={t("evidenceBefore")} className="w-full rounded-md border border-border object-cover" />
+                      isVideo(p.fileUrl) ? (
+                        <video key={i} src={p.fileUrl} controls playsInline preload="metadata" aria-label={t("evidenceBefore")} className="w-full rounded-md border border-border" />
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img key={i} src={p.fileUrl} alt={t("evidenceBefore")} className="w-full rounded-md border border-border object-cover" />
+                      )
                     ))
                   )}
                 </div>
@@ -270,8 +284,12 @@ export default async function FeedbackPage({
                     <p className="text-[15px] text-text-tertiary">—</p>
                   ) : (
                     afterPhotos.map((p, i) => (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img key={i} src={p.fileUrl} alt={t("evidenceAfter")} className="w-full rounded-md border border-border object-cover" />
+                      isVideo(p.fileUrl) ? (
+                        <video key={i} src={p.fileUrl} controls playsInline preload="metadata" aria-label={t("evidenceAfter")} className="w-full rounded-md border border-border" />
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img key={i} src={p.fileUrl} alt={t("evidenceAfter")} className="w-full rounded-md border border-border object-cover" />
+                      )
                     ))
                   )}
                 </div>
@@ -315,30 +333,36 @@ export default async function FeedbackPage({
             </div>
           </fieldset>
 
-          <fieldset>
+          {/* Aspect ratings + next-visit tier: feed provider matching and
+              service selection (reviews.aspects / reviews.suggested_tier). */}
+          <fieldset className="flex flex-col gap-3">
             <legend className="text-[16px] font-bold text-text-primary">
-              {t("tags")}
+              {zhFb ? "分项评价（可选）" : "Rate each part (optional)"}
             </legend>
-            <p className="mt-1 text-[16px] text-text-tertiary">
-              {/* Tag pills render but submission is currently dropped — schema
-                  has no tags column yet. Shipped with reviews as visual hint. */}
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {TAG_KEYS.map((k) => (
-                <label
-                  key={k}
-                  className="inline-flex cursor-pointer items-center gap-1 rounded-pill border-[1.5px] border-border-strong bg-bg-base px-4 py-2 text-[16px] font-semibold text-text-primary hover:border-brand has-[:checked]:border-brand has-[:checked]:bg-brand-soft has-[:checked]:text-brand"
-                >
-                  <input
-                    type="checkbox"
-                    name="tags"
-                    value={k.replace(/^tag/, "").toLowerCase()}
-                    className="sr-only"
-                  />
-                  {t(k)}
-                </label>
-              ))}
-            </div>
+            {([
+              ["quality", "Quality of work", "服务质量"],
+              ["punctuality", "On time", "准时"],
+              ["communication", "Communication", "沟通"],
+            ] as const).map(([k, en, zh]) => (
+              <label key={k} className="flex items-center justify-between gap-3 text-[16px]">
+                <span>{zhFb ? zh : en}</span>
+                <select name={`aspect_${k}`} defaultValue="" className="h-12 w-28 rounded-md border-[1.5px] border-border-strong bg-bg-base px-3">
+                  <option value="">—</option>
+                  {[5, 4, 3, 2, 1].map((n) => (
+                    <option key={n} value={n}>{"★".repeat(n)}</option>
+                  ))}
+                </select>
+              </label>
+            ))}
+            <label className="flex items-center justify-between gap-3 text-[16px]">
+              <span>{zhFb ? "下次需要的强度" : "Next visit should be"}</span>
+              <select name="suggestedTier" defaultValue="" className="h-12 w-40 rounded-md border-[1.5px] border-border-strong bg-bg-base px-3">
+                <option value="">{zhFb ? "不变" : "Same"}</option>
+                <option value="regular">{zhFb ? "常规" : "Regular"}</option>
+                <option value="medium">{zhFb ? "中度" : "Medium effort"}</option>
+                <option value="high">{zhFb ? "高强度" : "High effort"}</option>
+              </select>
+            </label>
           </fieldset>
 
           <div>
@@ -353,22 +377,11 @@ export default async function FeedbackPage({
             />
           </div>
 
-          <div>
-            <Label htmlFor="photos">{t("photos")}</Label>
-            <input
-              id="photos"
-              name="photos"
-              type="file"
-              accept="image/jpeg,image/png"
-              multiple
-              disabled
-              title="Photo upload ships with file storage"
-              className="block w-full text-[16px] text-text-secondary opacity-50 file:mr-3 file:inline-flex file:h-12 file:items-center file:rounded-md file:border-[1.5px] file:border-border-strong file:bg-bg-base file:px-4 file:text-[16px] file:font-semibold file:text-text-primary"
-            />
-            <p className="mt-1.5 flex items-center gap-1 text-[17px] text-text-tertiary">
-              <Camera size={14} aria-hidden /> {t("photosHint")}
-            </p>
-          </div>
+          <FeedbackPhotos
+            bookingId={id}
+            zh={zhFb}
+            initialCount={evidenceRows.filter((e) => e.phase === "feedback").length}
+          />
 
           <Button type="submit" variant="primary" block size="md">
             {t("submit")}

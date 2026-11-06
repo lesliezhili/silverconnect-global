@@ -14,6 +14,22 @@ type Strings = {
 };
 
 /**
+ * Provider-side aspects and next-visit tier — stored on the review and
+ * used as booking preferences (the customer's next booking preselects the
+ * suggested tier; ≤2★ blocks the pair). Labels per locale, one language per page.
+ */
+const ASPECTS = [
+  { key: "access", en: "Easy access to the home", zh: "进门方便" },
+  { key: "accurate_description", en: "Job matched the booking", zh: "实际工作与预约相符" },
+  { key: "respect", en: "Respectful and safe", zh: "尊重并安全" },
+] as const;
+const TIERS = [
+  { value: "regular", en: "Regular", zh: "常规" },
+  { value: "medium", en: "Medium effort", zh: "中度" },
+  { value: "high", en: "High effort", zh: "高强度" },
+] as const;
+
+/**
  * The provider-side half of the dual feedback system — mirrors the
  * customer's star-rating form (app/[locale]/(customer)/bookings/[id]/feedback/page.tsx)
  * but as a client widget embedded on the job detail page, posting to the
@@ -23,14 +39,18 @@ type Strings = {
 export function RateCustomerWidget({
   bookingId,
   strings,
+  zh = false,
 }: {
   bookingId: string;
   strings: Strings;
+  zh?: boolean;
 }) {
   const [loading, setLoading] = React.useState(true);
   const [alreadySubmitted, setAlreadySubmitted] = React.useState(false);
   const [rating, setRating] = React.useState(0);
   const [comment, setComment] = React.useState("");
+  const [aspects, setAspects] = React.useState<Record<string, number>>({});
+  const [suggestedTier, setSuggestedTier] = React.useState("");
   const [state, setState] = React.useState<"idle" | "submitting" | "error">("idle");
   const [error, setError] = React.useState("");
 
@@ -50,7 +70,7 @@ export function RateCustomerWidget({
       const res = await fetch(`/api/bookings/${bookingId}/feedback`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rating, comment: comment || undefined }),
+        body: JSON.stringify({ rating, comment: comment || undefined, aspects, suggestedTier: suggestedTier || undefined }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -69,14 +89,14 @@ export function RateCustomerWidget({
 
   if (alreadySubmitted) {
     return (
-      <div className="mt-3 flex items-center gap-2 rounded-md bg-success-soft px-3.5 py-3 text-[16px] font-semibold text-success">
+      <div data-testid="rate-customer" className="mt-3 flex items-center gap-2 rounded-md bg-success-soft px-3.5 py-3 text-[16px] font-semibold text-success">
         <CheckCircle2 size={18} aria-hidden /> {strings.submitted}
       </div>
     );
   }
 
   return (
-    <section className="mt-3 rounded-lg border border-border bg-bg-base p-4">
+    <section data-testid="rate-customer" className="mt-3 rounded-lg border border-border bg-bg-base p-4">
       <p className="text-[16px] font-bold text-text-primary">{strings.title}</p>
       <div className="mt-3 flex gap-2" role="radiogroup" aria-label={strings.title}>
         {[1, 2, 3, 4, 5].map((n) => (
@@ -85,6 +105,7 @@ export function RateCustomerWidget({
             type="button"
             role="radio"
             aria-checked={rating === n}
+            aria-label={`${n} star${n === 1 ? "" : "s"}`}
             onClick={() => setRating(n)}
             className={
               "flex h-12 w-12 items-center justify-center rounded-md border-[1.5px] " +
@@ -100,6 +121,45 @@ export function RateCustomerWidget({
             />
           </button>
         ))}
+      </div>
+      <div className="mt-3 flex flex-col gap-2">
+        {ASPECTS.map((a) => (
+          <label key={a.key} className="flex items-center justify-between gap-3 text-[16px]">
+            <span>{zh ? a.zh : a.en}</span>
+            <select
+              aria-label={zh ? a.zh : a.en}
+              value={aspects[a.key] ?? ""}
+              onChange={(e) =>
+                setAspects((prev) => {
+                  const next = { ...prev };
+                  if (e.target.value) next[a.key] = Number(e.target.value);
+                  else delete next[a.key];
+                  return next;
+                })
+              }
+              className="h-12 w-28 rounded-md border-[1.5px] border-border-strong bg-bg-base px-3"
+            >
+              <option value="">—</option>
+              {[5, 4, 3, 2, 1].map((n) => (
+                <option key={n} value={n}>{"★".repeat(n)}</option>
+              ))}
+            </select>
+          </label>
+        ))}
+        <label className="flex items-center justify-between gap-3 text-[16px]">
+          <span>{zh ? "下次需要的强度" : "Next visit should be"}</span>
+          <select
+            aria-label={zh ? "下次需要的强度" : "Next visit should be"}
+            value={suggestedTier}
+            onChange={(e) => setSuggestedTier(e.target.value)}
+            className="h-12 w-40 rounded-md border-[1.5px] border-border-strong bg-bg-base px-3"
+          >
+            <option value="">{zh ? "不变" : "Same"}</option>
+            {TIERS.map((t) => (
+              <option key={t.value} value={t.value}>{zh ? t.zh : t.en}</option>
+            ))}
+          </select>
+        </label>
       </div>
       <textarea
         value={comment}

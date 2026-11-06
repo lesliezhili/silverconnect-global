@@ -1,9 +1,9 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
+import { isStripeConfigured } from "@/lib/stripe/server";
 import { redirect as nextRedirect, notFound } from "next/navigation";
 import { eq, and } from "drizzle-orm";
 import { Lock, CreditCard, AlertTriangle, Check } from "lucide-react";
 import { Header } from "@/components/layout/Header";
-import { Link } from "@/i18n/navigation";
 import { CURRENCY_SYMBOL, TAX_ABBR } from "@/components/domain/country";
 import { getCountry } from "@/components/domain/countryCookie";
 import { db } from "@/lib/db";
@@ -37,10 +37,15 @@ async function processPayment(formData: FormData) {
   const me = await getCurrentUser();
   if (!me) nextRedirect(`/${locale}/auth/login`);
 
-  // Get booking
+  // Simulated payments only where Stripe isn't configured (local / E2E).
+  // With Stripe configured, real payment goes through /checkout/[id].
+  if (isStripeConfigured()) nextRedirect(`/${locale}/checkout/${bookingId}`);
+
+  // Get booking — only an unpaid booking of this customer can be paid.
   const [booking] = await db.select().from(bookings)
     .where(and(eq(bookings.id, bookingId), eq(bookings.customerId, me.id))).limit(1);
   if (!booking) nextRedirect(`/${locale}/home`);
+  if (booking.status !== "pending") nextRedirect(`/${locale}/bookings/${bookingId}`);
 
   // Get default payment method
   const [pm] = await db.select().from(paymentMethods)
@@ -76,6 +81,7 @@ export default async function PaymentPage({
   const country = await getCountry();
   const me = await getCurrentUser();
   if (!me) nextRedirect(`/${locale}/auth/login`);
+  if (isStripeConfigured()) nextRedirect(`/${locale}/checkout/${bookingId}`);
 
   try {
     const [row] = await db
@@ -248,13 +254,17 @@ export default async function PaymentPage({
             {state === "threeDS" ? t("waitingBank") : t("processing")}
           </button>
         ) : (
-          <Link
-            href={`/bookings/${bookingId}/success`}
-            className="flex h-14 items-center justify-center gap-2 rounded-md bg-brand text-[17px] font-bold text-white hover:bg-brand-hover"
-          >
+          <form action={processPayment}>
+            <input type="hidden" name="locale" value={locale} />
+            <input type="hidden" name="bookingId" value={bookingId} />
+            <button
+              type="submit"
+              className="w-full flex h-14 items-center justify-center gap-2 rounded-md bg-brand text-[17px] font-bold text-white hover:bg-brand-hover"
+            >
             <Lock size={18} aria-hidden />
             {t("payNow", { amount: total })}
-          </Link>
+            </button>
+          </form>
         )}
       </div>
     </>

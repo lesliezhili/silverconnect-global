@@ -45,9 +45,31 @@ export class CancelBookingError extends Error {
   }
 }
 
+/** Values of the cancellation_reason DB enum (migration 0015 adds the last three). */
+const DB_REASONS = new Set([
+  "customer_request", "provider_unavailable", "emergency", "duplicate", "policy_violation", "other",
+  "provider_declined", "no_show", "weather",
+]);
+
 export async function cancelBooking(
   sql: SqlClient,
-  { bookingId, cancelledBy, reason = "customer_request", notes = "" }: { bookingId: string; cancelledBy: string; reason?: string; notes?: string },
+  {
+    bookingId,
+    cancelledBy,
+    reason = "customer_request",
+    notes = "",
+    policyOverride,
+    providerPenalty = 0,
+  }: {
+    bookingId: string;
+    cancelledBy: string;
+    reason?: string;
+    notes?: string;
+    /** Recorded policy label (e.g. Release 1 provider notice tier) instead of the engine's. */
+    policyOverride?: string;
+    /** Release 1 provider withdrawal penalty, recorded with the cancellation. */
+    providerPenalty?: number;
+  },
 ): Promise<CancelBookingResult> {
   // cancellations.cancelled_by is a FK to users.id, so the caller must
   // always pass a user id — including for a provider-initiated
@@ -166,8 +188,12 @@ export async function cancelBooking(
 
     await tx`UPDATE bookings SET status = 'cancelled', updated_at = NOW() WHERE id = ${bookingId}`;
 
-    await tx`INSERT INTO cancellations (booking_id, cancelled_by, reason, notes, refund_amount, cancellation_fee, provider_compensation, refund_status, refund_transaction_id, payment_provider, policy_applied)
-      VALUES (${bookingId}, ${cancelledBy}, ${reason}, ${notes}, ${refundAmount}, ${cancellationFee}, ${providerCompensation}, ${refundAmount > 0 ? 'completed' : 'none'}, ${refundTransactionId}, ${paymentProvider}, ${policyApplied})`;
+    // Free-text reasons (e.g. from the decline modal) go into notes; the
+    // enum column only takes known values.
+    const dbReason = DB_REASONS.has(reason) ? reason : "other";
+    const dbNotes = DB_REASONS.has(reason) || !reason ? notes : `${reason}${notes ? ` — ${notes}` : ""}`;
+    await tx`INSERT INTO cancellations (booking_id, cancelled_by, reason, notes, refund_amount, cancellation_fee, provider_compensation, provider_penalty, refund_status, refund_transaction_id, payment_provider, policy_applied)
+      VALUES (${bookingId}, ${cancelledBy}, ${dbReason}, ${dbNotes}, ${refundAmount}, ${cancellationFee}, ${providerCompensation}, ${providerPenalty}, ${refundAmount > 0 ? 'completed' : 'none'}, ${refundTransactionId}, ${paymentProvider}, ${policyOverride ?? policyApplied})`;
   });
 
   const notifyUserId = isProviderCancel ? booking.customer_id : booking.provider_id;

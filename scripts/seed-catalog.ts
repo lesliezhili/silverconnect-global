@@ -7,7 +7,9 @@
  *   npx tsx scripts/seed-catalog.ts
  */
 import { config } from "dotenv";
-config({ path: ".env.local", override: true });
+// Never override an explicit DATABASE_URL: .env.local points at production,
+// and an override here once seeded production when a test DB was intended.
+config({ path: ".env.local", override: false });
 
 import { drizzle } from "drizzle-orm/postgres-js";
 import { eq, sql } from "drizzle-orm";

@@ -4,6 +4,9 @@
  */
 import { test, expect } from '@playwright/test';
 
+// Future release (docs/FUTURE_RELEASES.md): these routes redirect to /coming-soon in Release 1.
+test.skip(true, 'Future release — not reachable in Release 1');
+
 const LOCALES = ['en', 'zh', 'zh_tw', 'th', 'ko', 'ja', 'vi'];
 const PRAYER_TYPES = ['morning', 'noon', 'afternoon', 'evening', 'meal', 'sunday'];
 

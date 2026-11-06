@@ -25,6 +25,8 @@ interface UploadInput {
 interface SignedUploadInput {
   bucket: StorageBucket;
   path: string;
+  /** OSS signs the Content-Type, so the client must PUT with this exact type. */
+  contentType?: string;
 }
 
 // ════════════════════════════════════════════════════════════
@@ -102,6 +104,21 @@ export async function createSignedUploadUrl(input: SignedUploadInput): Promise<S
   return createSignedUploadUrlSupabase(input);
 }
 
+/** Public URL of an object uploaded directly by the client via a signed URL. */
+export function getPublicUrl(bucket: StorageBucket, path: string): string {
+  if (getStorageProvider() === "oss") {
+    const cdnDomain = process.env.ALIYUN_OSS_CDN_DOMAIN;
+    const ossBucket = ossBucketFor(bucket);
+    const region = process.env.ALIYUN_OSS_REGION;
+    if (cdnDomain) return `https://${cdnDomain}/${path}`;
+    if (ossBucket && region) return `https://${ossBucket}.${region}.aliyuncs.com/${path}`;
+    return `https://storage.silverconnect.cn/${bucket}/${path}`;
+  }
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!url) return `https://storage.silverconnect.app/${bucket}/${path}`;
+  return `${url}/storage/v1/object/public/${bucket}/${path}`;
+}
+
 async function createSignedUploadUrlSupabase({ bucket, path }: SignedUploadInput): Promise<SignedUploadResult> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -115,7 +132,7 @@ async function createSignedUploadUrlSupabase({ bucket, path }: SignedUploadInput
   return { success: true, provider: "supabase", signedUrl: data.signedUrl, path };
 }
 
-async function createSignedUploadUrlOSS({ bucket, path }: SignedUploadInput): Promise<SignedUploadResult> {
+async function createSignedUploadUrlOSS({ bucket, path, contentType }: SignedUploadInput): Promise<SignedUploadResult> {
   const { region, accessKeyId, accessKeySecret } = ossCredentials();
   const ossBucket = ossBucketFor(bucket);
   if (!region || !accessKeyId || !accessKeySecret || !ossBucket) {
@@ -123,6 +140,10 @@ async function createSignedUploadUrlOSS({ bucket, path }: SignedUploadInput): Pr
   }
   const OSS = (await import("ali-oss")).default;
   const client = new OSS({ region, accessKeyId, accessKeySecret, bucket: ossBucket });
-  const signedUrl = client.signatureUrl(path, { method: "PUT", expires: 900 });
+  const signedUrl = client.signatureUrl(path, {
+    method: "PUT",
+    expires: 900,
+    ...(contentType ? { "Content-Type": contentType } : {}),
+  });
   return { success: true, provider: "oss", signedUrl, path };
 }

@@ -10,6 +10,10 @@ export type Role = "customer" | "provider";
 
 export interface BookingDraft {
   serviceId?: string;
+  /** Release 1: category + effort tier (+ handyman job type). */
+  category?: string;
+  tier?: string;
+  jobType?: string;
   providerId?: string;
   addressId?: string;
   /** ISO 8601 timestamp. */

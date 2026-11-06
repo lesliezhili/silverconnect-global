@@ -1,5 +1,8 @@
 import { test, expect } from '@playwright/test'
 
+// Future release (docs/FUTURE_RELEASES.md): these routes redirect to /coming-soon in Release 1.
+test.skip(true, 'Future release — not reachable in Release 1');
+
 const BASE = process.env.BASE_URL || 'https://silverconnect-global.vercel.app'
 
 const TEST_PROVIDER = {

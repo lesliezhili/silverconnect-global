@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import postgres from "postgres";
 import { hasGovtFundingAccess } from "@/lib/auth/govtFundingAccess";
+import { findLiveArea, isReleaseCategory, isReleaseSubtype } from "@/lib/release";
 
 export const dynamic = "force-dynamic";
+
+/** Provider-initiated cancellations in 90 days before matching is paused. */
+const MAX_PROVIDER_CANCELS_90D = 3;
 
 const VALID_SCHEMES = ["tac", "worksafe", "ndis", "my_aged_care", "dva", "hcp", "aged_pension", "super"];
 
@@ -44,6 +48,18 @@ export async function POST(req: NextRequest) {
     if (!categoryCode || !scheduledAt || !basePrice) {
       await sql.end();
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    // Release 1 boundary (lib/release.ts): cleaning / garden / no-licence
+    // handyman only, and
+    // only in a live area — today Box Hill, Kew, Toorak and around.
+    if (!isReleaseCategory(categoryCode) || !isReleaseSubtype(categoryCode, body.subtype || null)) {
+      await sql.end();
+      return NextResponse.json({ error: "This service is not available yet" }, { status: 400 });
+    }
+    if (!findLiveArea(String(body.country ?? ""), body.postcode)) {
+      await sql.end();
+      return NextResponse.json({ error: "We don't serve this area yet — please join the waitlist", waitlist: true }, { status: 400 });
     }
 
     // A funding scheme is only honored for allowlisted accounts — a
@@ -95,6 +111,16 @@ export async function POST(req: NextRequest) {
           JOIN provider_categories pc ON pc.provider_id = pp.id AND pc.category = ${categoryCode}
           LEFT JOIN reviews r ON r.provider_id = pp.id AND r.status = 'published'
           WHERE pp.onboarding_status = 'approved'
+            -- Reliability gate (risk management): providers who cancelled
+            -- MAX_PROVIDER_CANCELS_90D+ jobs themselves in the last 90 days are not
+            -- matched until an admin reviews them.
+            AND (
+              SELECT COUNT(*) FROM cancellations c
+              JOIN bookings b2 ON b2.id = c.booking_id
+              WHERE b2.provider_id = pp.id
+                AND c.cancelled_by = pp.user_id
+                AND c.created_at > NOW() - INTERVAL '90 days'
+            ) < ${MAX_PROVIDER_CANCELS_90D}
             ${schemeFilter ? sql`AND pp.govt_schemes IS NOT NULL AND ${schemeFilter} = ANY(pp.govt_schemes)` : sql``}
           GROUP BY pp.id
         )
@@ -120,13 +146,8 @@ export async function POST(req: NextRequest) {
     } else {
       const [provider] = await rankedProviders(null);
       providerId = provider?.id;
-
-      // Fallback: any approved provider, regardless of category — only
-      // reached if literally no one offers this category yet.
-      if (!providerId) {
-        const [any] = await sql`SELECT id FROM provider_profiles WHERE onboarding_status = 'approved' LIMIT 1`;
-        providerId = any?.id;
-      }
+      // No any-provider fallback: sending someone who doesn't offer this
+      // service (e.g. a cleaner to a handyman job) defeats quality control.
     }
 
     if (!providerId) { await sql.end(); return NextResponse.json({ error: "No available providers" }, { status: 404 }); }

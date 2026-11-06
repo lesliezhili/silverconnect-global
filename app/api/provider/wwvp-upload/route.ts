@@ -17,6 +17,9 @@ const TYPE_MAP: Record<string, string> = {
   identity: "identity",
 };
 
+/** Release 1 background check (lib/release-quality.ts TRUST_RULES.requiredDocs). */
+const BACKGROUND_CHECK_DOCS = new Set(["police_check", "identity"]);
+
 export async function POST(req: NextRequest) {
   const url = process.env.DATABASE_URL;
   if (!url) return NextResponse.json({ error: "No DATABASE_URL" }, { status: 500 });
@@ -56,7 +59,21 @@ export async function POST(req: NextRequest) {
       documentType = body.documentType || "wwvp";
       expiryDate = body.expiryDate || null;
       cardNumber = body.cardNumber || null;
-      fileUrl = body.fileUrl || "https://storage.silverconnect.app/documents/" + profile.id + "/pending_" + Date.now();
+      // Background-check documents must be an actual uploaded file — a bare
+      // record with a placeholder URL can't be verified by an admin.
+      if (BACKGROUND_CHECK_DOCS.has(TYPE_MAP[documentType] ?? "") || !body.fileUrl) {
+        await sql.end();
+        return NextResponse.json({ error: "Please upload the document file" }, { status: 400 });
+      }
+      fileUrl = body.fileUrl;
+    }
+    // An already-expired document can never pass the background check.
+    if (expiryDate) {
+      const exp = new Date(expiryDate);
+      if (Number.isNaN(exp.getTime()) || exp.getTime() < Date.now()) {
+        await sql.end();
+        return NextResponse.json({ error: "This document has expired — please upload a current one" }, { status: 400 });
+      }
     }
 
     // Map to DB enum

@@ -19,8 +19,13 @@ export async function POST(req: NextRequest) {
     if (!documentId || !action) return NextResponse.json({ error: "documentId and action required" }, { status: 400 });
     if (!["verify", "reject"].includes(action)) return NextResponse.json({ error: "action must be verify or reject" }, { status: 400 });
 
-    const [doc] = await sql`SELECT id, provider_id, type FROM provider_documents WHERE id = ${documentId}`;
+    const [doc] = await sql`SELECT id, provider_id, type, expires_at FROM provider_documents WHERE id = ${documentId}`;
     if (!doc) { await sql.end(); return NextResponse.json({ error: "Document not found" }, { status: 404 }); }
+    // An expired document can't pass the background check — ask for a current one.
+    if (action === "verify" && doc.expires_at && new Date(doc.expires_at).getTime() < Date.now()) {
+      await sql.end();
+      return NextResponse.json({ error: "Document has expired — ask the provider to upload a current one" }, { status: 400 });
+    }
 
     const newStatus = action === "verify" ? "approved" : "rejected";
     await sql`UPDATE provider_documents SET status = ${newStatus}, reviewed_at = NOW(), reviewer_note = ${reason || null}, updated_at = NOW() WHERE id = ${documentId}`;

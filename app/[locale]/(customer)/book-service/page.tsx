@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect, Suspense } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { CURRENCY_SYMBOL, TAX_ABBR, TAX_RATE } from "@/components/domain/country";
+import { findLiveArea, isReleaseCategory, isReleaseSubtype, liveAreasFor, NEXT_AREAS, type ReleaseCountry } from "@/lib/release";
 
 interface ServiceItem {
   id: string; code: string; category_code: string;
@@ -10,7 +12,7 @@ interface ServiceItem {
 const CATEGORIES = [
   { code: "cleaning", emoji: "🧹", en: "Cleaning", zh: "清洁", th: "ทำความสะอาด", ko: "청소", ja: "清掃", vi: "Dọn dẹp" },
   { code: "garden", emoji: "🌳", en: "Garden", zh: "园艺", th: "สวน", ko: "정원", ja: "庭園", vi: "Làm vườn" },
-  { code: "repair", emoji: "🔧", en: "Repairs & Renovation", zh: "维修翻新", th: "ซ่อมแซม", ko: "수리 & 보수", ja: "修理・リノベ", vi: "Sửa chữa" },
+  { code: "repair", emoji: "🔧", en: "Handyman (small jobs)", zh: "杂工小修", th: "ซ่อมแซม", ko: "수리 & 보수", ja: "修理・リノベ", vi: "Sửa chữa" },
   { code: "personalCare", emoji: "💊", en: "Personal Care", zh: "护理", th: "ดูแลส่วนตัว", ko: "개인 돌봄", ja: "介護", vi: "Chăm sóc" },
   { code: "companion", emoji: "👋", en: "Companion", zh: "陪伴", th: "เพื่อนคู่ใจ", ko: "동행", ja: "付き添い", vi: "Bầu bạn" },
   { code: "transport", emoji: "🚗", en: "Transport", zh: "接送", th: "รับ-ส่ง", ko: "교통", ja: "送迎", vi: "Đưa đón" },
@@ -18,13 +20,16 @@ const CATEGORIES = [
   { code: "mealDelivery", emoji: "🍱", en: "Meal Delivery", zh: "餐食配送", th: "จัดส่งอาหาร", ko: "식사 배달", ja: "食事宅配", vi: "Giao đồ ăn" },
 ];
 
+// Release 1: only cleaning / garden are bookable (lib/release.ts)
+const BOOKABLE_CATEGORIES = CATEGORIES.filter((c) => isReleaseCategory(c.code));
+
 const HOURLY_RATE = 45; // AUD base
-const CN_CATEGORY_RATE: Record<string, number> = { cleaning: 120, repair: 200, garden: 100, personalCare: 150, companion: 100, transport: 80, itSupport: 200, mealDelivery: 130 }; // CNY/hr
 
 // Smart Price — market rate recommendations ($/hr AUD)
 const SMART_RATE: Record<string, number> = {
   regular: 40, medium: 50, deep: 65, external: 55, gutter: 60,
   electrical: 85, plumber: 90, window: 55, floor: 60, door: 55, curtain: 45, tree_cut: 75,
+  furniture: 50, hanging: 50, small_fix: 55,
   garden_general: 50, personal_care: 55, companion: 40, transport: 45, it_support: 65,
 };
 const CATEGORY_RATE: Record<string, number> = {
@@ -53,6 +58,9 @@ const REPAIR_SUBTYPES = [
   { code: "floor", emoji: "🪵", en: "Floor", zh: "地板", th: "พื้น", ko: "바닥", ja: "床", vi: "Sàn nhà" },
   { code: "door", emoji: "🚪", en: "Door", zh: "门", th: "ประตู", ko: "문", ja: "ドア", vi: "Cửa" },
   { code: "curtain", emoji: "🪢", en: "Curtain", zh: "窗帘", th: "ผ้าม่าน", ko: "커튼", ja: "カーテン", vi: "Rèm" },
+  { code: "furniture", emoji: "🪑", en: "Furniture assembly", zh: "家具组装", th: "ประกอบเฟอร์นิเจอร์", ko: "가구 조립", ja: "家具組立", vi: "Lắp đồ nội thất" },
+  { code: "hanging", emoji: "🖼️", en: "Pictures & shelves", zh: "挂画装架", th: "แขวนรูป/ชั้น", ko: "액자·선반", ja: "額・棚の取付", vi: "Treo tranh, kệ" },
+  { code: "small_fix", emoji: "🧰", en: "Small fixes", zh: "小修小补", th: "ซ่อมเล็กน้อย", ko: "간단 수리", ja: "小さな修理", vi: "Sửa vặt" },
   { code: "tree_cut", emoji: "🌳", en: "Tree Cut", zh: "砍树修剪", th: "ตัดต้นไม้", ko: "나무 절단", ja: "伐採", vi: "Cắt cây" },
 ];
 
@@ -132,35 +140,45 @@ function BookServiceContent() {
       .catch(() => setGovtFundingAllowed(false));
   }, []);
   const [platformTier, setPlatformTier] = useState<"standard" | "premium" | "free">("standard");
-  const [country, setCountry] = useState<"AU" | "CN">("AU");
-  const [region, setRegion] = useState("");
-  const AU_REGIONS = ["NSW", "VIC", "QLD", "WA", "SA", "TAS", "NT", "ACT"];
-  const CN_REGIONS = ["北京 Beijing", "上海 Shanghai", "广州 Guangzhou", "深圳 Shenzhen", "成都 Chengdu", "杭州 Hangzhou", "武汉 Wuhan", "西安 Xi'an", "南京 Nanjing", "重庆 Chongqing", "天津 Tianjin", "苏州 Suzhou", "青岛 Qingdao", "长沙 Changsha", "郑州 Zhengzhou"];
-
-  // Auto-select China when viewing in Simplified Chinese
-  // Sync country after SSR hydration (useParams=null inside Suspense during SSR)
-    useEffect(() => {
-      if (locale === "zh") { setCountry("CN"); setRegion(""); }
-    }, [locale]);
+  // Release 1 markets are AU + CA. Country follows the header switcher
+  // cookie — never the UI language, since our customers are
+  // Chinese-speaking seniors living in Australia / Canada.
+  const [country, setCountry] = useState<ReleaseCountry>("AU");
+  const [postcode, setPostcode] = useState("");
+  useEffect(() => {
+    const m = document.cookie.match(/(?:^|; )sc-country=([^;]+)/);
+    if (m?.[1] === "CA") setCountry("CA");
+  }, []);
+  const liveArea = findLiveArea(country, postcode);
+  const region = liveArea ? `${liveArea.city} ${liveArea.state} ${postcode.trim()}` : "";
+  const sym = CURRENCY_SYMBOL[country];
+  // Tax follows the served area (BC: 5% GST), else the country default.
+  const tax = liveArea?.tax ?? { abbr: TAX_ABBR[country], rate: TAX_RATE[country] };
+  const taxLabel = `${tax.abbr} ${Math.round(tax.rate * 100)}%`;
+  const sep = isZh ? "、" : ", ";
+  const servingNow = liveAreasFor(country)
+    .map((a) => isZh ? `${a.cityZh}${a.hubs.map((h) => h.zh).join("、")}` : `${a.city} (${a.hubs.map((h) => h.en).join(", ")})`)
+    .join(sep);
+  const comingNext = NEXT_AREAS.filter((a) => a.country === country).map((a) => (isZh ? a.zh : a.en)).join(sep);
   const [showTierInfo, setShowTierInfo] = useState(false);
 
-  const marketRate = subtype ? (SMART_RATE[subtype] || HOURLY_RATE) : (country === "CN" ? (CN_CATEGORY_RATE[category] || 120) : (CATEGORY_RATE[category] || HOURLY_RATE));
+  const marketRate = subtype ? (SMART_RATE[subtype] || HOURLY_RATE) : (CATEGORY_RATE[category] || HOURLY_RATE);
   const smartRate = providerRate || marketRate;
   const calInfo = getCalendarLabel(date, time);
   const effectiveRate = Math.round(smartRate * calInfo.mult * 100) / 100;
   const basePrice = Math.round((effectiveRate * duration / 60) * 100) / 100;
-  const taxRate = country === "CN" ? 0.06 : 0.10; // VAT/GST: CN 6%, AU 10%
+  const taxRate = tax.rate;
   const taxAmount = Math.round(basePrice * taxRate * 100) / 100;
   // Bank fee: Stripe 1.7% + 30c (free with PHLedger)
   // CN uses WeChat Pay / Alipay — no Stripe fee. Bank fee waived for CN.
-  const bankFee = (platformTier === "free" || country === "CN") ? 0 : Math.round(((basePrice + taxAmount) * 0.017 + 0.30) * 100) / 100;
+  const bankFee = platformTier === "free" ? 0 : Math.round(((basePrice + taxAmount) * 0.017 + 0.30) * 100) / 100;
   // Cloud platform fee: serverless compute + database hosting
   const CLOUD_FEES = { standard: 1.50, premium: 3.50, free: 0 }; // per booking
   const cloudFee = CLOUD_FEES[platformTier];
   const totalPrice = Math.round((basePrice + taxAmount + bankFee + cloudFee) * 100) / 100;
 
   const submit = async () => {
-    if (!category || !date || !time) return;
+    if (!category || !date || !time || !liveArea) return;
     setSubmitting(true);
     try {
       const subtypeNote = subtype ? `[${subtype}] ` : "";
@@ -168,7 +186,7 @@ function BookServiceContent() {
       const resp = await fetch("/api/bookings/charged", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ categoryCode: category, durationMin: duration, scheduledAt, notes: subtypeNote + notes, basePrice, taxAmount, bankFee, cloudFee, platformTier, totalPrice, country, region, currency: country === "CN" ? "CNY" : "AUD", fundingScheme: govtFundingAllowed && fundingScheme ? fundingScheme : null }),
+        body: JSON.stringify({ categoryCode: category, durationMin: duration, scheduledAt, subtype: subtype || null, notes: subtypeNote + notes, basePrice, taxAmount, bankFee, cloudFee, platformTier, totalPrice, country, region, postcode: postcode.trim(), currency: country === "CA" ? "CAD" : "AUD", fundingScheme: govtFundingAllowed && fundingScheme ? fundingScheme : null }),
       });
       const d = await resp.json();
       if (d.bookingId) { setResult({ bookingId: d.bookingId, total: totalPrice }); setStep(4); }
@@ -251,40 +269,38 @@ function BookServiceContent() {
       <h1 className="text-3xl font-bold text-gray-900 mb-2">{t("Book a Service", "预约服务", "จองบริการ", "서비스 예약", "サービス予約")}</h1>
       <p className="text-lg text-gray-500 mb-6">{t("Choose a service category", "选择服务类别", "เลือกประเภทบริการ", "서비스 카테고리 선택", "カテゴリーを選択")}</p>
 
-      {/* Country & Region Selector */}
+      {/* Service area check — Release 1 is live in Box Hill, Kew, Toorak and around */}
       <div className="bg-white border border-gray-200 rounded-xl p-4 mb-5 shadow-sm">
-        <div className="flex items-center gap-3 mb-3">
-          <span className="text-sm font-medium text-gray-700">{t("Location", "地区", "ที่ตั้ง", "위치", "地域", "Khu vực")}</span>
-        </div>
         <div className="flex gap-2 mb-3">
-          <button onClick={() => { setCountry("AU"); setRegion(""); }} className={"flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border-2 text-sm font-semibold transition " + (country === "AU" ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-gray-200 bg-white text-gray-600 hover:border-gray-300")}>
-            <span className="text-lg">{String.fromCodePoint(0x1F1E6, 0x1F1FA)}</span> {t("Australia", "澳大利亚", "ออสเตรเลีย", "호주", "オーストラリア", "Úc")}
-            <span className="text-xs text-gray-400 ml-1">AUD</span>
-          </button>
-          <button onClick={() => { setCountry("CN"); setRegion(""); }} className={"flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border-2 text-sm font-semibold transition " + (country === "CN" ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-gray-200 bg-white text-gray-600 hover:border-gray-300")}>
-            <span className="text-lg">{String.fromCodePoint(0x1F1E8, 0x1F1F3)}</span> {t("China", "中国大陆", "จีน", "중국", "中国", "Trung Quốc")}
-            <span className="text-xs text-gray-400 ml-1">CNY</span>
-          </button>
+          {(["AU", "CA"] as const).map(cc => (
+            <button key={cc} onClick={() => setCountry(cc)} className={"flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border-2 text-base font-semibold transition " + (country === cc ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-gray-200 bg-white text-gray-600 hover:border-gray-300")}>
+              <span className="text-lg">{cc === "AU" ? "🇦🇺" : "🇨🇦"}</span> {cc === "AU" ? t("Australia", "澳大利亚") : t("Canada", "加拿大")}
+            </button>
+          ))}
         </div>
-        <select value={region} onChange={e => setRegion(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-300">
-          <option value="">{t("Select region", country === "CN" ? "选择城市" : "选择地区", "เลือกภูมิภาค", "지역 선택", "地域を選択", "Chọn vùng")}</option>
-          {(country === "CN" ? CN_REGIONS : AU_REGIONS).map(r => <option key={r} value={r}>{r}</option>)}
-        </select>
-        {country === "CN" && (
-          <p className="text-xs text-red-600 mt-2 flex items-center gap-1">
-            <span>{String.fromCodePoint(0x2139, 0xFE0F)}</span> {t("China: 6% VAT applies. Prices in CNY (¥). WeChat Pay / Alipay supported.", "中国大陆：增值税 6%，价格以人民币 (¥) 计。支持微信支付 / 支付宝。")}
-          </p>
+        <label htmlFor="postcode" className="block text-base font-medium text-gray-700 mb-1">{t("Your postcode", "您的邮编")}</label>
+        <input id="postcode" value={postcode} onChange={e => setPostcode(e.target.value)} inputMode={country === "AU" ? "numeric" : "text"} autoComplete="postal-code" placeholder={country === "AU" ? "3128" : "V6B 1A1"}
+          className="w-full rounded-lg border border-gray-300 px-3 py-3 text-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-300" />
+        {liveArea ? (
+          <p className="text-base text-emerald-700 mt-2">✅ {t(`We serve your area (${liveArea.city}).`, `您所在地区已开通服务（${liveArea.cityZh}）。`)}</p>
+        ) : postcode.trim().length >= 3 ? (
+          <p className="text-base text-amber-700 mt-2">🕒 {t(`Not in your area yet. Now serving ${servingNow}. Coming next: ${comingNext}.`, `暂未覆盖您的地区。现已开通：${servingNow}。即将开通：${comingNext}。`)}</p>
+        ) : (
+          <p className="text-base text-gray-500 mt-2">{t(`Now serving ${servingNow} and nearby suburbs.`, `现已开通：${servingNow}及周边地区。`)}</p>
+        )}
+        {!liveArea && postcode.trim().length >= 3 && (
+          <a href={`/${locale}/help`} className="mt-3 inline-block text-base font-semibold text-emerald-700 underline">{t("Join the waitlist", "加入候补名单")} →</a>
         )}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        {CATEGORIES.map(c => (
-          <button key={c.code} onClick={() => { setCategory(c.code); setSubtype(""); (c.code === "repair" || c.code === "cleaning") ? setStep(15) : setStep(2); }}
-            className="flex flex-col items-center justify-center rounded-2xl border-2 border-gray-200 bg-white p-6 shadow-sm active:scale-[0.96] active:bg-teal-50"
+        {BOOKABLE_CATEGORIES.map(c => (
+          <button key={c.code} disabled={!liveArea} onClick={() => { setCategory(c.code); setSubtype(""); (c.code === "repair" || c.code === "cleaning") ? setStep(15) : setStep(2); }}
+            className="flex flex-col items-center justify-center rounded-2xl border-2 border-gray-200 bg-white p-6 shadow-sm active:scale-[0.96] active:bg-teal-50 disabled:opacity-40 disabled:active:scale-100"
             style={{ minHeight: "130px" }}>
             <span className="text-[42px] mb-2">{c.emoji}</span>
             <span className="text-[18px] font-semibold text-gray-900">{locale === "th" ? c.th : locale === "ko" ? c.ko : locale === "ja" ? c.ja : locale === "vi" ? c.vi : isZh ? c.zh : c.en}</span>
-            <span className="text-sm text-emerald-600 mt-1 font-medium">{isZh ? "从" : "from"} {country === "CN" ? "¥" : "A$"}{country === "CN" ? (CN_CATEGORY_RATE[c.code] || 120) : (CATEGORY_RATE[c.code] || HOURLY_RATE)}/hr</span>
+            <span className="text-sm text-emerald-600 mt-1 font-medium">{isZh ? "从" : "from"} {sym}{CATEGORY_RATE[c.code] || HOURLY_RATE}/hr</span>
           </button>
         ))}
       </div>
@@ -293,15 +309,21 @@ function BookServiceContent() {
 
   // Step 1.5: Subtype selection (repair or cleaning)
   if (step === 15) {
-    const subtypes = category === "repair" ? REPAIR_SUBTYPES : CLEANING_SUBTYPES;
+    // Release 1: no-licence handyman jobs + no ladder work (lib/release.ts)
+    const subtypes = (category === "repair" ? REPAIR_SUBTYPES : CLEANING_SUBTYPES).filter(st => isReleaseSubtype(category, st.code));
     const title = category === "repair"
-      ? t("What type of repair?", "需要什么维修?", "ต้องการซ่อมแซมอะไร?", "어떤 수리가 필요하세요?", "どのような修理ですか?", "Loại sửa chữa nào?")
+      ? t("What handyman job?", "需要什么杂工服务?", "ต้องการซ่อมแซมอะไร?", "어떤 수리가 필요하세요?", "どのような修理ですか?", "Loại sửa chữa nào?")
       : t("What type of cleaning?", "需要什么清洁?", "ต้องการทำความสะอาดแบบไหน?", "어떤 청소가 필요하세요?", "どのような清掃ですか?", "Loại dọn dẹp nào?");
     return (
       <main className="max-w-lg mx-auto p-6">
         <button onClick={() => setStep(1)} className="text-teal-700 text-lg mb-4">← {t("Back", "返回", "กลับ", "뒤로", "戻る")}</button>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">{title}</h2>
         <p className="text-lg text-gray-500 mb-6">{category === "repair" ? t("Select repair type", "选择维修类型", "เลือกประเภทการซ่อม", "수리 유형 선택", "修理タイプを選択") : t("Select cleaning level", "选择清洁类型", "เลือกระดับความสะอาด", "청소 유형 선택", "清掃レベルを選択")}</p>
+        {category === "repair" && (
+          <p className="mb-4 rounded-lg bg-amber-50 border border-amber-200 p-3 text-base text-amber-800">
+            {t("Small jobs only. Electrical, plumbing, gas, tree felling and roof/gutter work need a licensed tradesperson — we can't book those.", "仅限小型杂工。电工、水管、燃气、砍树及屋顶/排水沟等高处作业需持牌技工，本平台暂不提供。")}
+          </p>
+        )}
         <div className="grid grid-cols-2 gap-4">
           {subtypes.map(s => (
             <button key={s.code} onClick={() => { setSubtype(s.code); setStep(2); }}
@@ -410,16 +432,16 @@ function BookServiceContent() {
             </div>
             <div className="flex justify-between text-lg font-bold text-gray-900">
               <span>{t("Subtotal", "小计", "ยอดรวม", "소계", "小計", "Tạm tính")}</span>
-              <span>{country === "CN" ? "¥" : "A$"}{basePrice.toFixed(2)}</span>
+              <span>{sym}{basePrice.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-gray-500 text-sm">
-              <span>+ {country === "CN" ? "VAT 6%" : "GST 10%"}</span>
-              <span>{country === "CN" ? "¥" : "A$"}{taxAmount.toFixed(2)}</span>
+              <span>+ {taxLabel}</span>
+              <span>{sym}{taxAmount.toFixed(2)}</span>
             </div>
             {bankFee > 0 && (
               <div className="flex justify-between text-gray-500 text-sm">
                 <span>{t("+ Bank fee", "+ 银行手续费", "+ ค่าธรรมเนียม", "+ 은행 수수료", "+ 銀行手数料", "+ Phí NH")}</span>
-                <span>{country === "CN" ? "¥" : "A$"}{bankFee.toFixed(2)}</span>
+                <span>{sym}{bankFee.toFixed(2)}</span>
               </div>
             )}
             {cloudFee > 0 && (
@@ -430,7 +452,7 @@ function BookServiceContent() {
             )}
             <div className="flex justify-between text-xl font-bold text-teal-800 border-t pt-2 mt-2">
               <span>{t("Total", "总计", "ทั้งหมด", "합계", "合計", "Tổng")}</span>
-              <span>{country === "CN" ? "¥" : "A$"}{totalPrice.toFixed(2)}</span>
+              <span>{sym}{totalPrice.toFixed(2)}</span>
             </div>
 
           <p className="text-xs text-gray-400 text-center mt-3 italic">
@@ -476,16 +498,16 @@ function BookServiceContent() {
           <hr />
           <div className="flex justify-between text-lg">
             <span className="text-gray-600">{t("Service fee", "基本费用", "ค่าบริการ", "서비스 비용", "サービス料")}</span>
-            <span className="font-medium">{country === "CN" ? "¥" : "A$"}{basePrice.toFixed(2)}</span>
+            <span className="font-medium">{sym}{basePrice.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-lg">
-            <span className="text-gray-600">{country === "CN" ? "VAT (6%)" : "GST (10%)"}</span>
-            <span className="font-medium">{country === "CN" ? "¥" : "A$"}{taxAmount.toFixed(2)}</span>
+            <span className="text-gray-600">{taxLabel}</span>
+            <span className="font-medium">{sym}{taxAmount.toFixed(2)}</span>
           </div>
           {bankFee > 0 && (
             <div className="flex justify-between text-lg">
               <span className="text-gray-600">{t("Bank fee", "银行手续费", "ค่าธรรมเนียม", "은행 수수료", "銀行手数料")}</span>
-              <span className="font-medium">{country === "CN" ? "¥" : "A$"}{bankFee.toFixed(2)}</span>
+              <span className="font-medium">{sym}{bankFee.toFixed(2)}</span>
             </div>
           )}
           {cloudFee > 0 && (
@@ -496,7 +518,7 @@ function BookServiceContent() {
           )}
           <div className="flex justify-between text-xl font-bold border-t pt-3">
             <span>{t("Total", "总计", "ทั้งหมด", "합계", "合計")}</span>
-            <span className="text-teal-800">{country === "CN" ? "¥" : "A$"}{totalPrice.toFixed(2)}</span>
+            <span className="text-teal-800">{sym}{totalPrice.toFixed(2)}</span>
           </div>
         </div>
         <p className="mt-3 text-center text-sm text-gray-400">
@@ -537,7 +559,7 @@ function BookServiceContent() {
     <main className="max-w-lg mx-auto p-6 text-center">
       <div className="text-6xl mb-4">✅</div>
       <h2 className="text-2xl font-bold text-gray-900 mb-2">{t("Booking Confirmed!", "预约成功!", "จองสำเร็จ!", "예약 완료!", "予約確定！")}</h2>
-      <p className="text-lg text-gray-600 mb-6">{t("Total", "总计", "ทั้งหมด", "합계", "合計")}: {country === "CN" ? "¥" : "A$"}{result?.total?.toFixed(2)}</p>
+      <p className="text-lg text-gray-600 mb-6">{t("Total", "总计", "ทั้งหมด", "합계", "合計")}: {sym}{result?.total?.toFixed(2)}</p>
       <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
         <p className="text-green-700">{t("Your verified helper will contact you shortly", "您的专业服务人员将很快联系您", "ผู้ช่วยที่ผ่านการตรวจสอบจะติดต่อคุณเร็วๆ นี้", "인증된 도우미가 곧 연락드립니다", "認定ヘルパーがまもなくご連絡します")}</p>
       </div>

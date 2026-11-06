@@ -7,6 +7,8 @@ import {
   decimal,
   date,
   index,
+  uniqueIndex,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import { users } from "./users";
 import { addresses } from "./customer-data";
@@ -80,6 +82,14 @@ export const bookings = pgTable(
     completedAt: timestamp("completed_at", { withTimezone: true }),
     cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
     cancelReason: text("cancel_reason"),
+    /** Release 1 effort tier (regular | medium | high) — lib/release-pricing.ts */
+    effortTier: text("effort_tier"),
+    /** Provider's ticked QC checklist, { itemKey: true } — lib/release-quality.ts */
+    qcChecklist: jsonb("qc_checklist").$type<Record<string, boolean>>(),
+    /** QC flag set at completion (e.g. 'short_visit'); payout held while set. */
+    qcFlag: text("qc_flag"),
+    /** Handyman job type chosen at booking (furniture, hanging, ...). */
+    jobType: text("job_type"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
@@ -139,3 +149,33 @@ export type NewBooking = typeof bookings.$inferInsert;
 export type BookingChange = typeof bookingChanges.$inferSelect;
 export type RecurringSeries = typeof recurringSeries.$inferSelect;
 export type BookingEvidence = typeof bookingEvidence.$inferSelect;
+
+export const serviceQuotes = pgTable(
+  "service_quotes",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    bookingId: uuid("booking_id").notNull().references(() => bookings.id, { onDelete: "cascade" }),
+    customerId: uuid("customer_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    providerId: uuid("provider_id").notNull().references(() => providerProfiles.id, { onDelete: "cascade" }),
+    category: text("category").notNull(),
+    fromTier: text("from_tier").notNull(),
+    tier: text("tier").notNull(),
+    hours: decimal("hours", { precision: 4, scale: 1 }).notNull(),
+    bookedMin: integer("booked_min").notNull(),
+    actualMin: integer("actual_min"),
+    basePrice: decimal("base_price", { precision: 10, scale: 2 }).notNull(),
+    currency: text("currency").notNull(),
+    reason: text("reason").notNull(),
+    /** pending | approved | declined | expired | used */
+    status: text("status").notNull().default("pending"),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    decidedAt: timestamp("decided_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => ({
+    bookingUq: uniqueIndex("service_quotes_booking_uq").on(t.bookingId),
+    pairIdx: index("service_quotes_pair_idx").on(t.customerId, t.providerId, t.category, t.status),
+  }),
+);
+
+export type ServiceQuote = typeof serviceQuotes.$inferSelect;

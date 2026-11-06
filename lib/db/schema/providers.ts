@@ -35,6 +35,8 @@ export const providerProfiles = pgTable(
     serviceLat: decimal("service_lat", { precision: 9, scale: 6 }),
     serviceLng: decimal("service_lng", { precision: 9, scale: 6 }),
     serviceRadiusKm: integer("service_radius_km").notNull().default(10),
+    /** Emergency cover team: preferred when a booked provider withdraws (lib/bookings/emergencyCover.ts). */
+    emergencyOptIn: boolean("emergency_opt_in").notNull().default(false),
     bsb: text("bsb"),
     accountNumber: text("account_number"),
     accountName: text("account_name"),

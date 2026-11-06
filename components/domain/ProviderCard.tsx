@@ -27,11 +27,14 @@ export function ProviderCard({
   country,
   compact = false,
   initialFavourited = false,
+  category,
 }: {
   provider: ProviderCardData;
   country: CountryCode;
   compact?: boolean;
   initialFavourited?: boolean;
+  /** Pre-selects the service category in the booking flow. */
+  category?: string;
 }) {
   const locale = useLocale() as Locale;
   const t = useTranslations("provider");
@@ -128,7 +131,7 @@ export function ProviderCard({
               {t("view")}
             </Link>
             <Link
-              href={`/bookings/new?providerId=${provider.id}&step=1`}
+              href={`/bookings/new?providerId=${provider.id}&step=1${category ? `&cat=${category}` : ""}`}
               className="inline-flex h-12 flex-1 items-center justify-center rounded-md bg-brand text-[16px] font-semibold text-white hover:bg-brand-hover"
             >
               {t("bookNow")} →
